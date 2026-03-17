@@ -1,0 +1,16 @@
+{
+  "name": "ito",
+  "version": "0.0.1",
+  "private": true,
+  "description": "ito - collaborative thread-based task management",
+  "scripts": {
+    "dev:api": "turbo run dev --filter=@ito/api",
+    "dev:desktop": "turbo run dev --filter=@ito/desktop",
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint"
+  },
+  "devDependencies": {
+    "turbo": "^2.8.17"
+  }
+}

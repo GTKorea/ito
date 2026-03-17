@@ -1,0 +1,271 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ──────────────────── Auth & Users ────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String?
+  name         String
+  avatarUrl    String?
+
+  googleId String? @unique
+  githubId String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workspaceMembers WorkspaceMember[]
+  teamMembers      TeamMember[]
+  todosCreated     Todo[]         @relation("TodoCreator")
+  todosAssigned    Todo[]         @relation("TodoAssignee")
+  threadLinksFrom  ThreadLink[]   @relation("ThreadLinkSender")
+  threadLinksTo    ThreadLink[]   @relation("ThreadLinkReceiver")
+  notifications    Notification[]
+  refreshTokens    RefreshToken[]
+  activities       Activity[]
+  filesUploaded    File[]
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// ──────────────────── Workspace & Teams ────────────────────
+
+model Workspace {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members    WorkspaceMember[]
+  teams      Team[]
+  todos      Todo[]
+  invites    WorkspaceInvite[]
+  activities Activity[]
+}
+
+model WorkspaceMember {
+  id          String        @id @default(cuid())
+  userId      String
+  workspaceId String
+  role        WorkspaceRole @default(MEMBER)
+  joinedAt    DateTime      @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workspaceId])
+  @@index([workspaceId])
+}
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+model WorkspaceInvite {
+  id          String   @id @default(cuid())
+  workspaceId String
+  email       String
+  token       String   @unique @default(cuid())
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([email])
+}
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  workspaceId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  members   TeamMember[]
+
+  @@index([workspaceId])
+}
+
+model TeamMember {
+  id       String   @id @default(cuid())
+  userId   String
+  teamId   String
+  role     TeamRole @default(MEMBER)
+  joinedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, teamId])
+  @@index([teamId])
+}
+
+enum TeamRole {
+  LEAD
+  MEMBER
+}
+
+// ──────────────────── Todo & Thread System ────────────────────
+
+model Todo {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  status      TodoStatus @default(OPEN)
+  priority    Priority   @default(MEDIUM)
+  dueDate     DateTime?
+
+  creatorId   String
+  assigneeId  String
+  workspaceId String
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  completedAt DateTime?
+
+  creator   User      @relation("TodoCreator", fields: [creatorId], references: [id])
+  assignee  User      @relation("TodoAssignee", fields: [assigneeId], references: [id])
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  threadLinks ThreadLink[]
+  files       File[]
+
+  @@index([assigneeId])
+  @@index([creatorId])
+  @@index([workspaceId])
+}
+
+enum TodoStatus {
+  OPEN
+  IN_PROGRESS
+  BLOCKED
+  COMPLETED
+  CANCELLED
+}
+
+enum Priority {
+  URGENT
+  HIGH
+  MEDIUM
+  LOW
+}
+
+model ThreadLink {
+  id         String           @id @default(cuid())
+  todoId     String
+  fromUserId String
+  toUserId   String
+  message    String?
+  status     ThreadLinkStatus @default(PENDING)
+  chainIndex Int
+
+  createdAt  DateTime  @default(now())
+  resolvedAt DateTime?
+
+  todo     Todo   @relation(fields: [todoId], references: [id], onDelete: Cascade)
+  fromUser User   @relation("ThreadLinkSender", fields: [fromUserId], references: [id])
+  toUser   User   @relation("ThreadLinkReceiver", fields: [toUserId], references: [id])
+  files    File[]
+
+  @@index([todoId, chainIndex])
+  @@index([toUserId, status])
+  @@index([fromUserId])
+}
+
+enum ThreadLinkStatus {
+  PENDING
+  COMPLETED
+  FORWARDED
+  CANCELLED
+}
+
+// ──────────────────── Notifications ────────────────────
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String?
+  data      Json?
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read, createdAt])
+}
+
+enum NotificationType {
+  THREAD_RECEIVED
+  THREAD_SNAPPED
+  THREAD_COMPLETED
+  WORKSPACE_INVITE
+  TODO_ASSIGNED
+  TODO_COMPLETED
+}
+
+// ──────────────────── Activity Log ────────────────────
+
+model Activity {
+  id          String   @id @default(cuid())
+  workspaceId String
+  userId      String
+  action      String
+  entityType  String
+  entityId    String
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@index([workspaceId, createdAt])
+  @@index([entityType, entityId])
+}
+
+// ──────────────────── Files ────────────────────
+
+model File {
+  id           String  @id @default(cuid())
+  filename     String
+  url          String
+  size         Int
+  mimeType     String
+  uploaderId   String
+  todoId       String?
+  threadLinkId String?
+
+  createdAt DateTime @default(now())
+
+  uploader   User        @relation(fields: [uploaderId], references: [id])
+  todo       Todo?       @relation(fields: [todoId], references: [id], onDelete: SetNull)
+  threadLink ThreadLink? @relation(fields: [threadLinkId], references: [id], onDelete: SetNull)
+
+  @@index([todoId])
+  @@index([threadLinkId])
+}
