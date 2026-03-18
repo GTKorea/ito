@@ -18,6 +18,7 @@ import { useNotificationStore } from '@/stores/notification-store';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { ThemeToggle } from '@/components/layout/theme-toggle';
 
 const navItems = [
   { href: '/workspace', icon: CheckSquare, label: 'My Tasks' },
@@ -99,6 +100,11 @@ export function Sidebar() {
           Settings
         </Link>
       </nav>
+
+      {/* Theme Toggle */}
+      <div className="px-3 pb-2">
+        <ThemeToggle />
+      </div>
 
       {/* User */}
       <div className="border-t border-border p-2">

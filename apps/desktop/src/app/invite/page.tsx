@@ -63,12 +63,12 @@ function InviteContent() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#0A0A0A]">
-      <div className="w-full max-w-sm rounded-xl border border-[#2A2A2A] bg-[#1A1A1A] p-8">
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="w-full max-w-sm rounded-xl border border-border bg-card p-8">
         {isLoading ? (
           <div className="flex flex-col items-center gap-4">
-            <Loader2 className="h-8 w-8 animate-spin text-[#888888]" />
-            <p className="text-sm text-[#888888]">Loading invite...</p>
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">Loading invite...</p>
           </div>
         ) : error && !inviteInfo ? (
           <div className="flex flex-col items-center gap-4">
@@ -76,8 +76,8 @@ function InviteContent() {
               <AlertCircle className="h-7 w-7 text-red-500" />
             </div>
             <div className="text-center">
-              <p className="text-sm font-medium text-[#ECECEC]">Invalid Invite</p>
-              <p className="mt-1 text-xs text-[#888888]">{error}</p>
+              <p className="text-sm font-medium text-foreground">Invalid Invite</p>
+              <p className="mt-1 text-xs text-muted-foreground">{error}</p>
             </div>
             <Button
               variant="outline"
@@ -93,26 +93,26 @@ function InviteContent() {
               <CheckCircle2 className="h-7 w-7 text-green-500" />
             </div>
             <div className="text-center">
-              <p className="text-sm font-medium text-[#ECECEC]">Joined!</p>
-              <p className="mt-1 text-xs text-[#888888]">
+              <p className="text-sm font-medium text-foreground">Joined!</p>
+              <p className="mt-1 text-xs text-muted-foreground">
                 Redirecting to workspace...
               </p>
             </div>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#2A2A2A]">
-              <Building2 className="h-7 w-7 text-[#ECECEC]" />
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-accent">
+              <Building2 className="h-7 w-7 text-foreground" />
             </div>
             <div className="text-center">
-              <p className="text-sm font-medium text-[#ECECEC]">
+              <p className="text-sm font-medium text-foreground">
                 You&apos;ve been invited to join
               </p>
-              <p className="mt-1 text-lg font-semibold text-[#ECECEC]">
+              <p className="mt-1 text-lg font-semibold text-foreground">
                 {inviteInfo?.workspaceName}
               </p>
               {inviteInfo?.inviterName && (
-                <p className="mt-1 text-xs text-[#888888]">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Invited by {inviteInfo.inviterName}
                 </p>
               )}
@@ -136,7 +136,7 @@ function InviteContent() {
             </Button>
             <Button
               variant="ghost"
-              className="w-full text-[#888888]"
+              className="w-full text-muted-foreground"
               onClick={() => router.push('/workspace')}
             >
               Cancel
@@ -152,8 +152,8 @@ export default function InvitePage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-[#0A0A0A]">
-          <Loader2 className="h-8 w-8 animate-spin text-[#888888]" />
+        <div className="flex min-h-screen items-center justify-center bg-background">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       }
     >
