@@ -6,9 +6,37 @@ ito(糸)는 실(Thread) 기반 협업 태스크 관리 SaaS입니다. 사람 간
 
 ## 모노레포 구조
 
-- `apps/api` — NestJS 11 백엔드 (PostgreSQL + Prisma 5)
-- `apps/desktop` — Tauri v2 + Next.js 16 프론트엔드 (웹 + 데스크톱)
-- `packages/shared` — 공유 타입/유틸
+```
+ito/
+├── apps/
+│   ├── api/                 # NestJS 11 백엔드
+│   │   ├── src/
+│   │   │   ├── auth/        # 인증 (JWT, OAuth)
+│   │   │   ├── todos/       # 태스크 CRUD
+│   │   │   ├── threads/     # 실 체인 (connect/resolve)
+│   │   │   ├── workspaces/  # 워크스페이스 + 초대
+│   │   │   ├── users/       # 사용자 관리
+│   │   │   ├── notifications/ # 알림
+│   │   │   ├── activities/  # 활동 로그
+│   │   │   ├── files/       # 파일 업로드
+│   │   │   ├── email/       # Resend 이메일
+│   │   │   └── websocket/   # Socket.IO 실시간
+│   │   ├── prisma/          # DB 스키마 + 마이그레이션
+│   │   ├── test/            # E2E 테스트
+│   │   └── Dockerfile       # 프로덕션 빌드
+│   └── desktop/             # Next.js 16 + Tauri v2 프론트엔드
+│       ├── src/
+│       │   ├── app/         # 페이지 (App Router)
+│       │   │   ├── (app)/   # 인증 필요 영역 (workspace, threads, settings 등)
+│       │   │   └── (auth)/  # 인증 영역 (login, register, callback)
+│       │   ├── components/  # UI 컴포넌트
+│       │   ├── stores/      # Zustand 상태 관리
+│       │   └── lib/         # API 클라이언트, WebSocket 클라이언트
+│       ├── src-tauri/       # Tauri 네이티브 설정
+│       └── vercel.json      # Vercel 배포 설정
+└── packages/
+    └── shared/              # 공유 타입/유틸
+```
 
 ## 주요 명령어
 
@@ -30,7 +58,7 @@ npx prisma generate       # 클라이언트 생성
 npx prisma studio         # DB GUI
 ```
 
-## 기술 스택 핵심 사항
+## 기술 스택
 
 ### Backend (apps/api)
 - **NestJS 11** — 모듈 기반 아키텍처, 각 도메인이 Module/Service/Controller로 분리
@@ -101,10 +129,10 @@ npx prisma studio         # DB GUI
 API 서버 (`apps/api/.env`): → `.env.example` 참고
 - `DATABASE_URL` — PostgreSQL 연결 문자열
 - `JWT_SECRET`, `JWT_REFRESH_SECRET`, `JWT_EXPIRATION`, `JWT_REFRESH_EXPIRATION`
-- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` (OAuth, 선택)
-- `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` (OAuth, 선택)
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL` (OAuth, 선택)
+- `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GITHUB_CALLBACK_URL` (OAuth, 선택)
 - `API_PORT` (기본 3001, 사용 중이면 자동으로 다음 포트 탐색)
-- `FRONTEND_URL` (기본 `http://localhost:3000`, CORS origin으로 사용)
+- `FRONTEND_URL` (기본 `http://localhost:3000`, CORS + WebSocket origin으로 사용, 콤마 구분 복수 지원)
 - `RESEND_API_KEY`, `RESEND_FROM` (이메일 발송, 선택)
 
 Desktop (`apps/desktop/.env.local`): → `.env.example` 참고
@@ -112,30 +140,41 @@ Desktop (`apps/desktop/.env.local`): → `.env.example` 참고
 
 ## 배포
 
-### 아키텍처
-- **EC2 1대** (t3.small)에 여러 백엔드 서비스 + PostgreSQL
-- 각 서비스는 `*.krow.kr` 서브도메인 (Route53 와일드카드 A 레코드)
-- 프론트엔드는 Vercel
-- **인프라 레포 분리**: `krow-infra` (docker-compose, Caddy, 배포 스크립트)
+### 전체 아키텍처
 
-### EC2 디렉토리 구조
 ```
-~/
-├── krow-infra/     ← 인프라 레포 (docker-compose, Caddy, env)
-├── ito/            ← 이 레포
-├── project-b/      ← 다른 프로젝트 (미래)
+┌─ Vercel ──────────────────────────┐
+│  ito.krow.kr  → ito frontend      │
+│  foo.krow.kr  → foo frontend (미래)│
+└───────────────────────────────────┘
+          │ API 호출
+          ▼
+┌─ EC2 (t3.small) ──────────────────┐
+│  Caddy (80/443, 자동 HTTPS)        │
+│    ├─ api.ito.krow.kr → ito-api   │
+│    └─ api.foo.krow.kr → foo (미래) │
+│                                    │
+│  PostgreSQL 16 (내부 네트워크)       │
+│    ├─ ito DB                       │
+│    └─ foo DB (미래)                 │
+└────────────────────────────────────┘
 ```
 
-### 프로덕션 구성
-- **프론트엔드**: Vercel (`ito.krow.kr`)
-- **API**: EC2 Docker (`api.ito.krow.kr` → Caddy → `ito-api:3001`)
-- **DB**: PostgreSQL (서비스별 DB 분리)
-- **HTTPS**: Caddy 자동 Let's Encrypt
-- **인프라 관리**: [krow-infra](https://github.com/GTKorea/krow-infra)
+### 레포 분리 원칙
+
+| 레포 | 역할 | EC2 경로 |
+|------|------|----------|
+| **krow-infra** | 공유 인프라 (docker-compose, Caddy, 배포 스크립트) | `~/krow-infra/` |
+| **ito** (이 레포) | ito 서비스 코드 + Dockerfile | `~/ito/` |
+| 다른 프로젝트 | 각자의 코드 + Dockerfile | `~/project-b/` 등 |
 
 ### 이 레포의 배포 관련 파일
-- `apps/api/Dockerfile` — API 멀티스테이지 빌드
-- `apps/desktop/vercel.json` — Vercel 배포 설정
+- `apps/api/Dockerfile` — API 멀티스테이지 Docker 빌드
+- `apps/desktop/vercel.json` — Vercel 정적 배포 설정
+
+### DNS (Route53)
+- `*.krow.kr` → EC2 Elastic IP (A 레코드, 와일드카드)
+- `ito.krow.kr` → `cname.vercel-dns.com` (CNAME, 와일드카드보다 우선)
 
 ## 코딩 컨벤션
 

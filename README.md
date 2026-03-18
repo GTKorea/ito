@@ -66,7 +66,7 @@ ito/
 │   │   │   ├── threads/              # 실 연결/해제 (핵심 로직)
 │   │   │   ├── notifications/        # 알림 서비스
 │   │   │   ├── email/                # 이메일 발송 (Resend)
-│   │   │   ├── activity/             # 활동 로그
+│   │   │   ├── activities/           # 활동 로그
 │   │   │   ├── files/                # 파일 첨부
 │   │   │   ├── websocket/            # Socket.IO 게이트웨이
 │   │   │   └── common/               # Guard, Filter, Prisma
@@ -83,20 +83,18 @@ ito/
 │       │   │   │   ├── notifications/# 알림 센터
 │       │   │   │   ├── activity/     # 활동 로그
 │       │   │   │   └── settings/     # 설정 (프로필, 워크스페이스, 초대)
-│       │   │   ├── (auth)/           # 로그인/회원가입
+│       │   │   ├── (auth)/           # 로그인/회원가입/콜백
 │       │   │   └── invite/           # 초대 수락 페이지
 │       │   ├── components/           # UI 컴포넌트
 │       │   ├── stores/               # Zustand 스토어
-│       │   └── lib/                  # API 클라이언트, 유틸
+│       │   └── lib/                  # API 클라이언트, WebSocket 클라이언트
+│       ├── src-tauri/                # Tauri 네이티브 설정
 │       └── vercel.json               # Vercel 배포 설정
 │
 ├── packages/
 │   └── shared/                       # 공유 타입/상수
 │
-├── docker-compose.yml                # 개발용 PostgreSQL
-├── docker-compose.prod.yml           # 프로덕션 (API + DB + Caddy)
-├── Caddyfile                         # 리버스 프록시 + 자동 HTTPS
-└── deploy.sh                         # EC2 배포 스크립트
+└── docker-compose.yml                # 개발용 PostgreSQL
 ```
 
 ---
@@ -107,67 +105,50 @@ ito/
 
 - Node.js 20+
 - pnpm 9+
-- PostgreSQL 16
-- Rust (Tauri 빌드 시)
+- PostgreSQL 16 (또는 Docker)
+- Rust + Tauri CLI (데스크톱 빌드 시)
 
-### 1. 의존성 설치
+### 로컬 개발
 
 ```bash
+# 1. 의존성 설치
 pnpm install
-```
 
-### 2. 환경 변수 설정
-
-```bash
-# API 환경변수 (.env.example 참고)
-cp apps/api/.env.example apps/api/.env
-# 필요한 값 수정 (JWT_SECRET 등)
-
-# Desktop 환경변수
-cp apps/desktop/.env.example apps/desktop/.env.local
-```
-
-### 3. 데이터베이스 설정
-
-```bash
-# Docker로 PostgreSQL 실행
+# 2. PostgreSQL 실행 (Docker)
 docker compose up -d
 
-# 또는 로컬 PostgreSQL 사용
-createdb ito
+# 3. 환경 변수 설정
+cp apps/api/.env.example apps/api/.env
+cp apps/desktop/.env.example apps/desktop/.env.local
 
-# 마이그레이션 적용
-cd apps/api
-npx prisma migrate deploy
-npx prisma generate
+# 4. DB 마이그레이션
+cd apps/api && npx prisma migrate dev
+
+# 5. 개발 서버 실행
+pnpm dev    # API (3001) + Desktop (3000) 동시 실행
 ```
 
-### 4. 개발 서버 실행
+### 주요 명령어
 
 ```bash
-# 전체 (API + Desktop)
-pnpm dev
+pnpm dev              # 전체 개발 서버
+pnpm dev:api          # API만
+pnpm dev:desktop      # Desktop만
+pnpm build            # 전체 빌드
 
-# 개별 실행
-pnpm dev:api        # http://localhost:3001
-pnpm dev:desktop    # http://localhost:3000
+cd apps/api
+pnpm test:e2e         # E2E 테스트 (50개)
+npx prisma studio     # DB GUI
 ```
-
-### 5. API 문서 확인
-
-서버 실행 후 Swagger UI: `http://localhost:3001/api/docs`
 
 ---
 
 ## 테스트
 
 ```bash
-# E2E 테스트 (테스트 DB 필요)
 createdb ito_test
 cd apps/api && pnpm test:e2e
 ```
-
-### 테스트 커버리지
 
 | 영역 | 테스트 수 | 내용 |
 |------|----------|------|
@@ -183,78 +164,40 @@ cd apps/api && pnpm test:e2e
 
 ## 배포
 
-### 웹 배포 아키텍처
+### 아키텍처
 
 ```
-ito.krow.kr (Vercel)  ──→  api.ito.krow.kr (API 서버)
-   Frontend (Next.js)         NestJS + PostgreSQL
+┌─ Vercel ──────────────┐      ┌─ EC2 (t3.small) ──────────────┐
+│  ito.krow.kr           │ ──▶ │  Caddy (자동 HTTPS)             │
+│  (Next.js Static)      │      │    └─ api.ito.krow.kr          │
+└────────────────────────┘      │       └─ ito-api:3001          │
+                                │  PostgreSQL 16                  │
+                                └─────────────────────────────────┘
 ```
 
-### 방법 1: 로컬 서버 + Cloudflare Tunnel (개발/검증용)
+### 레포 분리
 
-로컬에서 API를 실행하고 Cloudflare Tunnel로 인터넷에 노출:
+| 레포 | 역할 | EC2 경로 |
+|------|------|----------|
+| [**krow-infra**](https://github.com/GTKorea/krow-infra) | 공유 인프라 (docker-compose, Caddy, 배포 스크립트) | `~/krow-infra/` |
+| **ito** (이 레포) | ito 서비스 코드 + Dockerfile | `~/ito/` |
 
-```bash
-# 1. cloudflared 설치
-brew install cloudflared
-
-# 2. Cloudflare 로그인 및 터널 생성
-cloudflared tunnel login
-cloudflared tunnel create ito-api
-cloudflared tunnel route dns ito-api api.ito.krow.kr
-
-# 3. 터널 설정 (~/.cloudflared/config.yml)
-tunnel: ito-api
-credentials-file: ~/.cloudflared/<TUNNEL_ID>.json
-ingress:
-  - hostname: api.ito.krow.kr
-    service: http://localhost:3001
-  - service: http_status:404
-
-# 4. 로컬 서버 + 터널 실행
-docker compose up -d          # PostgreSQL
-pnpm dev:api                  # API (localhost:3001)
-cloudflared tunnel run ito-api  # 터널 (api.ito.krow.kr → localhost:3001)
-```
-
-### 방법 2: AWS EC2 (프로덕션)
-
-Docker Compose로 API + PostgreSQL + Caddy를 EC2에서 실행:
-
-```bash
-# EC2에서 실행
-git clone <repo> ~/ito && cd ~/ito
-
-# 환경변수 설정
-cp .env.production.example .env.production
-# DB_PASSWORD, JWT_SECRET 등 수정
-
-# 빌드 및 실행
-docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
-
-# DB 마이그레이션
-docker compose -f docker-compose.prod.yml exec api npx prisma migrate deploy
-```
-
-또는 배포 스크립트 사용:
-```bash
-./deploy.sh ubuntu@<EC2_IP> ~/.ssh/key.pem
-```
+인프라 관련 설정과 배포 방법은 [krow-infra](https://github.com/GTKorea/krow-infra) 레포를 참고하세요.
 
 ### Vercel 프론트엔드 배포
 
 1. Vercel에서 GitHub 레포 연결
 2. Root Directory: `apps/desktop`
-3. Environment Variables: `NEXT_PUBLIC_API_URL=https://api.ito.krow.kr`
-4. Deploy → Settings → Domains → `ito.krow.kr` 추가
+3. Framework Preset: `Other` (Static Export)
+4. Environment Variables: `NEXT_PUBLIC_API_URL=https://api.ito.krow.kr`
+5. Domains → `ito.krow.kr` 추가
 
-### DNS 설정
+### DNS (Route53)
 
 | 타입 | 이름 | 값 |
 |------|------|-----|
-| CNAME | `ito` | `cname.vercel-dns.com` |
-| CNAME | `api.ito` | `<tunnel-id>.cfargotunnel.com` (Cloudflare Tunnel) |
-| A | `api.ito` | EC2 Elastic IP (프로덕션) |
+| A | `*.krow.kr` | EC2 Elastic IP (와일드카드) |
+| CNAME | `ito.krow.kr` | `cname.vercel-dns.com` (Vercel) |
 
 ---
 
