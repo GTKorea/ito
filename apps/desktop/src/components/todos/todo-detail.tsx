@@ -10,7 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { X, Save, Link2, Paperclip } from 'lucide-react';
+import { ThreadGraph } from '@/components/threads/thread-graph';
+import { X, Save, Link2, Paperclip, List, Network } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const statuses = ['OPEN', 'IN_PROGRESS', 'BLOCKED', 'COMPLETED', 'CANCELLED'];
@@ -32,6 +33,7 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
   const [dueDate, setDueDate] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [fileRefreshKey, setFileRefreshKey] = useState(0);
+  const [threadView, setThreadView] = useState<'chain' | 'graph'>('chain');
 
   useEffect(() => {
     setIsLoading(true);
@@ -177,11 +179,45 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
         {/* Thread Chain */}
         {todo.threadLinks?.length > 0 && (
           <div className="space-y-2">
-            <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
-              <Link2 className="h-3.5 w-3.5" />
-              Thread Chain ({todo.threadLinks.length})
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                <Link2 className="h-3.5 w-3.5" />
+                Thread Chain ({todo.threadLinks.length})
+              </div>
+              {todo.threadLinks.length >= 2 && (
+                <div className="flex items-center gap-0.5 rounded-md border border-border p-0.5">
+                  <button
+                    onClick={() => setThreadView('chain')}
+                    className={cn(
+                      'rounded p-1 transition-colors',
+                      threadView === 'chain'
+                        ? 'bg-secondary text-foreground'
+                        : 'text-muted-foreground hover:text-foreground',
+                    )}
+                    title="Linear view"
+                  >
+                    <List className="h-3 w-3" />
+                  </button>
+                  <button
+                    onClick={() => setThreadView('graph')}
+                    className={cn(
+                      'rounded p-1 transition-colors',
+                      threadView === 'graph'
+                        ? 'bg-secondary text-foreground'
+                        : 'text-muted-foreground hover:text-foreground',
+                    )}
+                    title="Graph view"
+                  >
+                    <Network className="h-3 w-3" />
+                  </button>
+                </div>
+              )}
             </div>
-            <ThreadChain links={todo.threadLinks} creator={todo.creator} />
+            {threadView === 'graph' && todo.threadLinks.length >= 2 ? (
+              <ThreadGraph links={todo.threadLinks} creator={todo.creator} />
+            ) : (
+              <ThreadChain links={todo.threadLinks} creator={todo.creator} />
+            )}
           </div>
         )}
 
