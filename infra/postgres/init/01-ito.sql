@@ -1,0 +1,6 @@
+-- ito service database
+-- Note: POSTGRES_DB=ito already creates this DB on first init.
+-- This file serves as the pattern for adding future service databases.
+-- Example for a new service:
+--   CREATE DATABASE myservice;
+--   GRANT ALL PRIVILEGES ON DATABASE myservice TO ito;

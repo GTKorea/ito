@@ -10,7 +10,6 @@ export function connectWs(token: string): Socket {
   socket = io(WS_URL, {
     auth: { token },
     transports: ['websocket'],
-    extraHeaders: { 'ngrok-skip-browser-warning': '1' },
   });
 
   socket.on('connect', () => {

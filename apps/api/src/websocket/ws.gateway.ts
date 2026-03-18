@@ -10,7 +10,10 @@ import { ConfigService } from '@nestjs/config';
 
 @WebSocketGateway({
   cors: {
-    origin: '*',
+    origin: process.env.FRONTEND_URL
+      ? process.env.FRONTEND_URL.split(',').map((u) => u.trim())
+      : true,
+    credentials: true,
   },
 })
 export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {

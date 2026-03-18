@@ -1,0 +1,25 @@
+# ============================================
+# krow.kr Multi-Service Production Environment
+# ============================================
+# Copy to .env.production and fill in values
+# Used by: docker-compose.prod.yml
+
+# ── Shared ───────────────────────────────────
+DB_PASSWORD=CHANGE_ME_TO_STRONG_PASSWORD
+
+# ── ito Service ──────────────────────────────
+ITO_JWT_SECRET=CHANGE_ME_RANDOM_64_CHARS
+ITO_JWT_REFRESH_SECRET=CHANGE_ME_RANDOM_64_CHARS
+ITO_FRONTEND_URL=https://ito.krow.kr
+ITO_GOOGLE_CLIENT_ID=
+ITO_GOOGLE_CLIENT_SECRET=
+ITO_GOOGLE_CALLBACK_URL=https://api.ito.krow.kr/auth/google/callback
+ITO_GITHUB_CLIENT_ID=
+ITO_GITHUB_CLIENT_SECRET=
+ITO_GITHUB_CALLBACK_URL=https://api.ito.krow.kr/auth/github/callback
+ITO_RESEND_API_KEY=
+ITO_RESEND_FROM=ito <noreply@krow.kr>
+
+# ── Future Service Template ──────────────────
+# SVC_JWT_SECRET=
+# SVC_FRONTEND_URL=https://svc.krow.kr

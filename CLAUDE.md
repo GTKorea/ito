@@ -112,17 +112,29 @@ Desktop (`apps/desktop/.env.local`): → `.env.example` 참고
 
 ## 배포
 
-### 로컬 개발 (Cloudflare Tunnel)
-- 프론트엔드: Vercel (`ito.krow.kr`)
-- API: 로컬 서버 + Cloudflare Tunnel (`api.ito.krow.kr` → `localhost:3001`)
-- DB: 로컬 PostgreSQL (docker-compose)
+### 아키텍처 (멀티 서비스)
+- **EC2 1대** (t3.small)에 여러 백엔드 서비스 + PostgreSQL 배포
+- 각 서비스는 `*.krow.kr` 서브도메인 (와일드카드 A 레코드)
+- 프론트엔드는 Vercel에서 별도 배포
 
-### 프로덕션 (AWS)
-- 프론트엔드: Vercel
-- API: EC2 t3.micro + Docker (`apps/api/Dockerfile`)
-- DB: Docker Compose 내 PostgreSQL (`docker-compose.prod.yml`)
-- HTTPS: Caddy 리버스 프록시 (`Caddyfile`)
-- 배포: `deploy.sh` 스크립트
+### 프로덕션 구성
+- **프론트엔드**: Vercel (`ito.krow.kr` → CNAME)
+- **API**: EC2 Docker (`api.ito.krow.kr` → Caddy → `ito-api:3001`)
+- **DB**: Docker Compose 내 PostgreSQL (서비스별 DB 분리)
+- **HTTPS**: Caddy 자동 Let's Encrypt (`Caddyfile`)
+- **배포**: `deploy.sh` (서비스별 배포 지원: `--service ito-api`)
+
+### DNS (Route53)
+- `*.krow.kr` → EC2 Elastic IP (A 레코드)
+- `ito.krow.kr` → `cname.vercel-dns.com` (CNAME, 와일드카드보다 우선)
+
+### 주요 파일
+- `docker-compose.prod.yml` — 프로덕션 서비스 정의
+- `Caddyfile` — 서브도메인별 리버스 프록시
+- `apps/api/Dockerfile` — API 멀티스테이지 빌드
+- `deploy.sh` — EC2 배포 스크립트
+- `env-production-template` — 프로덕션 환경변수 템플릿
+- `infra/postgres/init/` — DB 초기화 SQL 스크립트
 
 ## 코딩 컨벤션
 
