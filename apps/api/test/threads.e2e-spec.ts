@@ -103,7 +103,7 @@ describe('Threads (e2e)', () => {
         .expect(403);
     });
 
-    it('should prevent circular connection', async () => {
+    it('should allow circular thread connection (A->B->A)', async () => {
       const { userA, userB, userBId, todo } = await setupChainScenario();
       const userAId = await getUserId(userA.accessToken);
 
@@ -114,12 +114,42 @@ describe('Threads (e2e)', () => {
         .send({ toUserId: userBId })
         .expect(201);
 
-      // B -> A (circular, A is already in chain as creator)
-      await request(app.getHttpServer())
+      // B -> A (circular, should now succeed)
+      const res = await request(app.getHttpServer())
         .post(`/todos/${todo.id}/connect`)
         .set('Authorization', `Bearer ${userB.accessToken}`)
         .send({ toUserId: userAId })
-        .expect(400);
+        .expect(201);
+
+      expect(res.body.chainIndex).toBe(1);
+    });
+
+    it('should allow circular connection to intermediate user (A->B->C->B)', async () => {
+      const { userA, userB, userC, userBId, userCId, todo } =
+        await setupChainScenario();
+
+      // A -> B
+      await request(app.getHttpServer())
+        .post(`/todos/${todo.id}/connect`)
+        .set('Authorization', `Bearer ${userA.accessToken}`)
+        .send({ toUserId: userBId })
+        .expect(201);
+
+      // B -> C
+      await request(app.getHttpServer())
+        .post(`/todos/${todo.id}/connect`)
+        .set('Authorization', `Bearer ${userB.accessToken}`)
+        .send({ toUserId: userCId })
+        .expect(201);
+
+      // C -> B (circular back to intermediate user, should succeed)
+      const res = await request(app.getHttpServer())
+        .post(`/todos/${todo.id}/connect`)
+        .set('Authorization', `Bearer ${userC.accessToken}`)
+        .send({ toUserId: userBId })
+        .expect(201);
+
+      expect(res.body.chainIndex).toBe(2);
     });
 
     it('should allow chaining: A -> B -> C', async () => {

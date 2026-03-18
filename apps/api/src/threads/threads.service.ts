@@ -47,21 +47,6 @@ export class ThreadsService {
       );
     }
 
-    // Check circular: target user must not be in an active part of the chain
-    const usersInChain = new Set<string>();
-    usersInChain.add(todo.creatorId);
-    for (const link of todo.threadLinks) {
-      if (link.status === 'PENDING' || link.status === 'FORWARDED') {
-        usersInChain.add(link.fromUserId);
-        usersInChain.add(link.toUserId);
-      }
-    }
-    if (usersInChain.has(toUserId)) {
-      throw new BadRequestException(
-        'This user is already part of the thread chain',
-      );
-    }
-
     // Check max depth
     const nextIndex = todo.threadLinks.length;
     if (nextIndex >= MAX_CHAIN_DEPTH) {
