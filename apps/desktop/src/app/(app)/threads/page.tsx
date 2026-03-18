@@ -151,7 +151,7 @@ export default function ThreadsPage() {
                 <div className="flex items-center gap-2">
                   <Avatar className="h-6 w-6">
                     <AvatarFallback className="text-[9px] bg-secondary">
-                      {(tab === 'incoming' ? link.fromUser?.name : link.toUser?.name || '?')
+                      {((tab === 'incoming' ? link.fromUser?.name : link.toUser?.name) || '?')
                         .charAt(0)
                         .toUpperCase()}
                     </AvatarFallback>
