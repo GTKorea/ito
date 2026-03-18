@@ -20,6 +20,7 @@ export class TodosService {
         creatorId: userId,
         assigneeId: userId,
         workspaceId,
+        teamId: dto.teamId || undefined,
       },
       include: {
         creator: { select: { id: true, name: true, avatarUrl: true } },
@@ -43,7 +44,7 @@ export class TodosService {
   async findAllInWorkspace(
     workspaceId: string,
     userId: string,
-    filter?: { assignedToMe?: boolean; status?: string },
+    filter?: { assignedToMe?: boolean; status?: string; teamId?: string },
   ) {
     const where: any = { workspaceId };
 
@@ -52,6 +53,9 @@ export class TodosService {
     }
     if (filter?.status) {
       where.status = filter.status;
+    }
+    if (filter?.teamId) {
+      where.teamId = filter.teamId;
     }
 
     return this.prisma.todo.findMany({

@@ -16,8 +16,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { User, Building2, UserPlus, Check, Camera, Copy, Link, CalendarDays, Trash2 } from 'lucide-react';
-import { useRef } from 'react';
+import { User, Building2, UserPlus, Check, Camera, Copy, Link, CalendarDays, Trash2, Shield } from 'lucide-react';
+import { useRef, useEffect } from 'react';
 
 export default function SettingsPage() {
   const { user, uploadAvatar } = useAuthStore();
@@ -33,8 +33,21 @@ export default function SettingsPage() {
   const [wsName, setWsName] = useState('');
   const [wsSlug, setWsSlug] = useState('');
 
+  const [wsMembers, setWsMembers] = useState<
+    { id: string; role: string; user: { id: string; name: string; email: string; avatarUrl?: string } }[]
+  >([]);
+
+  // Fetch workspace members when current workspace changes
+  useEffect(() => {
+    if (!currentWorkspace) return;
+    api.get(`/workspaces/${currentWorkspace.id}`).then(({ data }) => {
+      setWsMembers(data.members || []);
+    }).catch(() => {});
+  }, [currentWorkspace]);
+
   const [showInvite, setShowInvite] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState<'MEMBER' | 'GUEST'>('MEMBER');
   const [inviteSent, setInviteSent] = useState(false);
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -93,6 +106,7 @@ export default function SettingsPage() {
     try {
       const res = await api.post(`/workspaces/${currentWorkspace.id}/invite`, {
         email: inviteEmail,
+        role: inviteRole,
       });
       setInviteSent(true);
       setInviteLink(res.data.inviteLink);
@@ -112,6 +126,7 @@ export default function SettingsPage() {
     setShowInvite(false);
     setInviteSent(false);
     setInviteEmail('');
+    setInviteRole('MEMBER');
     setInviteLink(null);
     setCopied(false);
   };
@@ -238,6 +253,44 @@ export default function SettingsPage() {
               <UserPlus className="mr-1 h-3.5 w-3.5" />
               Invite to {currentWorkspace.name}
             </Button>
+          )}
+
+          {/* Workspace Members */}
+          {currentWorkspace && wsMembers.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Shield className="h-3.5 w-3.5 text-muted-foreground" />
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Members
+                </h3>
+              </div>
+              <div className="space-y-1">
+                {wsMembers.map((m) => (
+                  <div
+                    key={m.id}
+                    className="flex items-center gap-2 rounded-md px-3 py-1.5"
+                  >
+                    <Avatar className="h-6 w-6">
+                      <AvatarFallback className="text-[9px] bg-secondary">
+                        {m.user.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm truncate">{m.user.name}</p>
+                      <p className="text-[10px] text-muted-foreground truncate">
+                        {m.user.email}
+                      </p>
+                    </div>
+                    <Badge
+                      variant={m.role === 'GUEST' ? 'destructive' : 'outline'}
+                      className="text-[9px] px-1.5"
+                    >
+                      {m.role}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </section>
 
@@ -377,6 +430,36 @@ export default function SettingsPage() {
                   onKeyDown={(e) => e.key === 'Enter' && handleInvite()}
                   autoFocus
                 />
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Role</Label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setInviteRole('MEMBER')}
+                      className={`flex-1 rounded-md border px-3 py-1.5 text-sm transition-colors ${
+                        inviteRole === 'MEMBER'
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-border hover:bg-accent/50'
+                      }`}
+                    >
+                      Member
+                    </button>
+                    <button
+                      onClick={() => setInviteRole('GUEST')}
+                      className={`flex-1 rounded-md border px-3 py-1.5 text-sm transition-colors ${
+                        inviteRole === 'GUEST'
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-border hover:bg-accent/50'
+                      }`}
+                    >
+                      Guest
+                    </button>
+                  </div>
+                  {inviteRole === 'GUEST' && (
+                    <p className="text-[10px] text-muted-foreground">
+                      Guests have read-only access and can only work on assigned tasks
+                    </p>
+                  )}
+                </div>
                 <Button
                   onClick={handleInvite}
                   className="w-full"

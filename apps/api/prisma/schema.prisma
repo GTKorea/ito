@@ -50,12 +50,13 @@ model RefreshToken {
 // ──────────────────── Workspace & Teams ────────────────────
 
 model Workspace {
-  id        String   @id @default(cuid())
-  name      String
-  slug      String   @unique
-  avatarUrl String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  avatarUrl   String?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   members         WorkspaceMember[]
   teams           Team[]
@@ -83,15 +84,17 @@ enum WorkspaceRole {
   OWNER
   ADMIN
   MEMBER
+  GUEST
 }
 
 model WorkspaceInvite {
-  id          String   @id @default(cuid())
+  id          String        @id @default(cuid())
   workspaceId String
   email       String
-  token       String   @unique @default(cuid())
+  token       String        @unique @default(cuid())
+  role        WorkspaceRole @default(MEMBER)
   expiresAt   DateTime
-  createdAt   DateTime @default(now())
+  createdAt   DateTime      @default(now())
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
@@ -108,6 +111,7 @@ model Team {
 
   workspace Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   members   TeamMember[]
+  todos     Todo[]
 
   @@index([workspaceId])
 }
@@ -144,6 +148,7 @@ model Todo {
   creatorId   String
   assigneeId  String
   workspaceId String
+  teamId      String?
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -152,6 +157,7 @@ model Todo {
   creator   User      @relation("TodoCreator", fields: [creatorId], references: [id])
   assignee  User      @relation("TodoAssignee", fields: [assigneeId], references: [id])
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  team      Team?     @relation(fields: [teamId], references: [id], onDelete: SetNull)
 
   threadLinks ThreadLink[]
   files       File[]
@@ -159,6 +165,7 @@ model Todo {
   @@index([assigneeId])
   @@index([creatorId])
   @@index([workspaceId])
+  @@index([teamId])
 }
 
 enum TodoStatus {
