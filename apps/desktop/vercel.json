@@ -3,7 +3,6 @@
   "buildCommand": "pnpm build",
   "outputDirectory": "out",
   "installCommand": "pnpm install",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  "cleanUrls": true,
+  "trailingSlash": false
 }
