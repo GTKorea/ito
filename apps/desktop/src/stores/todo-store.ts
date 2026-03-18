@@ -39,6 +39,7 @@ interface TodoState {
   createTodo: (workspaceId: string, title: string, description?: string, priority?: string, dueDate?: string) => Promise<Todo>;
   updateTodo: (id: string, data: Partial<Todo>) => Promise<void>;
   deleteTodo: (id: string) => Promise<void>;
+  connectChain: (todoId: string, userIds: string[]) => Promise<any>;
   connectThread: (todoId: string, toUserId: string, message?: string) => Promise<void>;
   resolveThread: (threadLinkId: string) => Promise<void>;
 }
@@ -80,6 +81,15 @@ export const useTodoStore = create<TodoState>((set) => ({
   deleteTodo: async (id) => {
     await api.delete(`/todos/${id}`);
     set((state) => ({ todos: state.todos.filter((t) => t.id !== id) }));
+  },
+
+  connectChain: async (todoId: string, userIds: string[]) => {
+    const res = await api.post(`/todos/${todoId}/connect-chain`, { userIds });
+    // Remove the todo from local state (assignee changed)
+    set((state) => ({
+      todos: state.todos.filter((t) => t.id !== todoId),
+    }));
+    return res.data;
   },
 
   connectThread: async (todoId, toUserId, message) => {
