@@ -279,7 +279,6 @@ model File {
   @@index([threadLinkId])
 }
 
-<<<<<<< HEAD
 // ──────────────────── Slack Integration ────────────────────
 
 model SlackWorkspace {
