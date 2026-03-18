@@ -12,6 +12,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ThreadsService } from './threads.service';
 import { ConnectThreadDto } from './dto/connect-thread.dto';
+import { ConnectChainDto } from './dto/connect-chain.dto';
 
 @ApiTags('threads')
 @ApiBearerAuth()
@@ -33,6 +34,16 @@ export class ThreadsController {
       dto.toUserId,
       dto.message,
     );
+  }
+
+  @Post('todos/:todoId/connect-chain')
+  @ApiOperation({ summary: 'Connect a chain of users to a todo in one request' })
+  connectChain(
+    @Param('todoId') todoId: string,
+    @Body() dto: ConnectChainDto,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.threadsService.connectChain(todoId, userId, dto.userIds);
   }
 
   @Post('thread-links/:id/resolve')

@@ -200,6 +200,148 @@ export class ThreadsService {
   }
 
   /**
+   * Connect a chain of users to a todo in a single transaction.
+   * Creates links: creator → userIds[0] → userIds[1] → ... → userIds[N-1]
+   * The last user in the chain becomes the assignee.
+   */
+  async connectChain(
+    todoId: string,
+    creatorId: string,
+    userIds: string[],
+  ): Promise<{ todo: any; threadLinks: any[] }> {
+    // 1. Validate todo exists and creator is the current assignee
+    const todo = await this.prisma.todo.findUnique({
+      where: { id: todoId },
+      include: { threadLinks: { orderBy: { chainIndex: 'asc' } } },
+    });
+
+    if (!todo) throw new NotFoundException('Todo not found');
+
+    if (todo.assigneeId !== creatorId) {
+      throw new ForbiddenException(
+        'Only the current assignee can connect this todo',
+      );
+    }
+
+    // 2. Validate no self-connections and no duplicates in the chain
+    const allUsers = [creatorId, ...userIds];
+    for (let i = 0; i < userIds.length; i++) {
+      if (allUsers[i] === userIds[i]) {
+        throw new BadRequestException('Cannot connect a thread to yourself');
+      }
+    }
+
+    // Check for circular connections with existing active chain
+    const usersInActiveChain = new Set<string>();
+    usersInActiveChain.add(todo.creatorId);
+    for (const link of todo.threadLinks) {
+      if (link.status === 'PENDING' || link.status === 'FORWARDED') {
+        usersInActiveChain.add(link.fromUserId);
+        usersInActiveChain.add(link.toUserId);
+      }
+    }
+    for (const userId of userIds) {
+      if (usersInActiveChain.has(userId)) {
+        throw new BadRequestException(
+          'A user in the chain is already part of the active thread chain',
+        );
+      }
+    }
+
+    // Also check for duplicates within the new chain itself
+    const newChainSet = new Set<string>();
+    for (const userId of userIds) {
+      if (newChainSet.has(userId)) {
+        throw new BadRequestException(
+          'Duplicate user in the chain',
+        );
+      }
+      newChainSet.add(userId);
+    }
+
+    // 3. Validate chain depth won't exceed MAX_CHAIN_DEPTH
+    const startIndex = todo.threadLinks.length;
+    if (startIndex + userIds.length > MAX_CHAIN_DEPTH) {
+      throw new BadRequestException(
+        `Thread chain cannot exceed ${MAX_CHAIN_DEPTH} connections`,
+      );
+    }
+
+    // 4. Execute in a single transaction
+    const currentLink = todo.threadLinks.find(
+      (l) => l.toUserId === creatorId && l.status === 'PENDING',
+    );
+
+    const threadLinks: any[] = [];
+
+    const result = await this.prisma.$transaction(async (tx) => {
+      // Mark current user's link as FORWARDED if they have a pending link
+      if (currentLink) {
+        await tx.threadLink.update({
+          where: { id: currentLink.id },
+          data: { status: 'FORWARDED' },
+        });
+      }
+
+      let previousUserId = creatorId;
+
+      for (let i = 0; i < userIds.length; i++) {
+        const toUserId = userIds[i];
+        const isLast = i === userIds.length - 1;
+
+        const link = await tx.threadLink.create({
+          data: {
+            todoId,
+            fromUserId: previousUserId,
+            toUserId,
+            chainIndex: startIndex + i,
+            status: isLast ? 'PENDING' : 'FORWARDED',
+          },
+          include: {
+            fromUser: { select: { id: true, name: true } },
+            toUser: { select: { id: true, name: true } },
+          },
+        });
+
+        threadLinks.push(link);
+        previousUserId = toUserId;
+      }
+
+      // Set todo assignee to last user in chain
+      const lastUserId = userIds[userIds.length - 1];
+      const updatedTodo = await tx.todo.update({
+        where: { id: todoId },
+        data: { assigneeId: lastUserId, status: 'IN_PROGRESS' },
+      });
+
+      return updatedTodo;
+    });
+
+    // 5. Send THREAD_RECEIVED notification to each user in the chain
+    for (const link of threadLinks) {
+      await this.notificationsService.create({
+        userId: link.toUserId,
+        type: 'THREAD_RECEIVED',
+        title: 'New thread connected to you',
+        body: `${link.fromUser.name} connected a task to you`,
+        data: { todoId, threadLinkId: link.id },
+      });
+    }
+
+    // 6. Log activity
+    await this.activityService.log({
+      workspaceId: todo.workspaceId,
+      userId: creatorId,
+      action: 'CONNECTED',
+      entityType: 'ThreadLink',
+      entityId: threadLinks[0].id,
+      metadata: { todoId, chainUserIds: userIds },
+    });
+
+    return { todo: result, threadLinks };
+  }
+
+  /**
    * Get all thread links for a specific todo
    */
   async getChain(todoId: string) {

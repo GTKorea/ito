@@ -276,6 +276,56 @@ describe('Threads (e2e)', () => {
     });
   });
 
+  describe('POST /todos/:todoId/connect-chain', () => {
+    it('should create a chain of connections (A→B→C)', async () => {
+      const { userA, userBId, userCId, ws, todo } =
+        await setupChainScenario();
+
+      const res = await request(app.getHttpServer())
+        .post(`/todos/${todo.id}/connect-chain`)
+        .set('Authorization', `Bearer ${userA.accessToken}`)
+        .send({ userIds: [userBId, userCId] })
+        .expect(201);
+
+      expect(res.body.threadLinks).toHaveLength(2);
+      expect(res.body.todo.assigneeId).toBe(userCId);
+
+      // Verify the chain state
+      const chain = await request(app.getHttpServer())
+        .get(`/todos/${todo.id}/chain`)
+        .set('Authorization', `Bearer ${userA.accessToken}`)
+        .expect(200);
+
+      expect(chain.body).toHaveLength(2);
+      // A→B link should be FORWARDED
+      expect(chain.body[0].toUserId).toBe(userBId);
+      expect(chain.body[0].status).toBe('FORWARDED');
+      // B→C link should be PENDING
+      expect(chain.body[1].toUserId).toBe(userCId);
+      expect(chain.body[1].status).toBe('PENDING');
+    });
+
+    it('should fail if not the creator/assignee', async () => {
+      const { userB, userCId, todo } = await setupChainScenario();
+
+      await request(app.getHttpServer())
+        .post(`/todos/${todo.id}/connect-chain`)
+        .set('Authorization', `Bearer ${userB.accessToken}`)
+        .send({ userIds: [userCId] })
+        .expect(403);
+    });
+
+    it('should fail with empty userIds', async () => {
+      const { userA, todo } = await setupChainScenario();
+
+      await request(app.getHttpServer())
+        .post(`/todos/${todo.id}/connect-chain`)
+        .set('Authorization', `Bearer ${userA.accessToken}`)
+        .send({ userIds: [] })
+        .expect(400);
+    });
+  });
+
   describe('GET /todos/:todoId/chain', () => {
     it('should return ordered thread links', async () => {
       const { userA, userB, userBId, userCId, todo } =
