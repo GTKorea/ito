@@ -1,12 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { ActivityService } from '../activity/activity.service';
 
 @Injectable()
 export class TeamsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private activityService: ActivityService,
+  ) {}
 
   async create(workspaceId: string, name: string, creatorId: string) {
-    return this.prisma.team.create({
+    const team = await this.prisma.team.create({
       data: {
         name,
         workspaceId,
@@ -14,6 +18,17 @@ export class TeamsService {
       },
       include: { members: { include: { user: true } } },
     });
+
+    await this.activityService.log({
+      workspaceId,
+      userId: creatorId,
+      action: 'CREATED',
+      entityType: 'Team',
+      entityId: team.id,
+      metadata: { name },
+    });
+
+    return team;
   }
 
   async findAllInWorkspace(workspaceId: string) {
@@ -31,9 +46,22 @@ export class TeamsService {
   }
 
   async addMember(teamId: string, userId: string) {
-    return this.prisma.teamMember.create({
+    const team = await this.prisma.team.findUnique({ where: { id: teamId } });
+    if (!team) throw new NotFoundException('Team not found');
+
+    const member = await this.prisma.teamMember.create({
       data: { teamId, userId },
     });
+
+    await this.activityService.log({
+      workspaceId: team.workspaceId,
+      userId,
+      action: 'JOINED',
+      entityType: 'Team',
+      entityId: teamId,
+    });
+
+    return member;
   }
 
   async removeMember(teamId: string, userId: string) {

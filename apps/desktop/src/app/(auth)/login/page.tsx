@@ -51,14 +51,38 @@ export default function LoginPage() {
           <Button
             variant="outline"
             className="w-full"
-            onClick={() => window.location.href = `${API_URL}/auth/google`}
+            onClick={async () => {
+              try {
+                const res = await fetch(`${API_URL}/auth/google`, { redirect: 'manual' });
+                if (res.type === 'opaqueredirect' || res.status === 302) {
+                  window.location.href = `${API_URL}/auth/google`;
+                } else {
+                  const data = await res.json().catch(() => null);
+                  setError(data?.message || 'Google OAuth is not available');
+                }
+              } catch {
+                window.location.href = `${API_URL}/auth/google`;
+              }
+            }}
           >
             Continue with Google
           </Button>
           <Button
             variant="outline"
             className="w-full"
-            onClick={() => window.location.href = `${API_URL}/auth/github`}
+            onClick={async () => {
+              try {
+                const res = await fetch(`${API_URL}/auth/github`, { redirect: 'manual' });
+                if (res.type === 'opaqueredirect' || res.status === 302) {
+                  window.location.href = `${API_URL}/auth/github`;
+                } else {
+                  const data = await res.json().catch(() => null);
+                  setError(data?.message || 'GitHub OAuth is not available');
+                }
+              } catch {
+                window.location.href = `${API_URL}/auth/github`;
+              }
+            }}
           >
             Continue with GitHub
           </Button>

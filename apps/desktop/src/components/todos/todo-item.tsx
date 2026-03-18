@@ -21,6 +21,7 @@ import {
   Circle,
   CircleDot,
   Ban,
+  Calendar,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -38,6 +39,22 @@ const statusIcons: Record<string, React.ReactNode> = {
   COMPLETED: <Check className="h-4 w-4 text-green-500" />,
 };
 
+function getDueDateInfo(dueDate?: string) {
+  if (!dueDate) return null;
+  const due = new Date(dueDate);
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  due.setHours(0, 0, 0, 0);
+  const diff = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  if (diff < 0) return { text: 'Overdue', color: 'text-red-500' };
+  if (diff === 0) return { text: 'Due today', color: 'text-yellow-500' };
+  if (diff === 1) return { text: 'Due tomorrow', color: 'text-yellow-500' };
+  return {
+    text: due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    color: 'text-muted-foreground',
+  };
+}
+
 interface TodoItemProps {
   todo: {
     id: string;
@@ -45,6 +62,7 @@ interface TodoItemProps {
     description?: string;
     status: string;
     priority: string;
+    dueDate?: string;
     creator: { id: string; name: string; avatarUrl?: string };
     assignee: { id: string; name: string; avatarUrl?: string };
     threadLinks: Array<{
@@ -56,14 +74,16 @@ interface TodoItemProps {
       chainIndex: number;
     }>;
   };
+  onSelect?: (id: string) => void;
 }
 
-export function TodoItem({ todo }: TodoItemProps) {
+export function TodoItem({ todo, onSelect }: TodoItemProps) {
   const [showConnect, setShowConnect] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const { updateTodo, deleteTodo, resolveThread } = useTodoStore();
 
   const hasThreads = todo.threadLinks.length > 0;
+  const dueDateInfo = getDueDateInfo(todo.dueDate);
   const pendingLink = todo.threadLinks.find(
     (l) => l.status === 'PENDING' && l.toUser.id === todo.assignee.id,
   );
@@ -84,7 +104,7 @@ export function TodoItem({ todo }: TodoItemProps) {
         </button>
 
         {/* Content */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onSelect?.(todo.id)}>
           <div className="flex items-center gap-2">
             <span
               className={cn(
@@ -113,6 +133,12 @@ export function TodoItem({ todo }: TodoItemProps) {
             <p className="text-xs text-muted-foreground mt-0.5 truncate">
               {todo.description}
             </p>
+          )}
+          {dueDateInfo && (
+            <div className={cn('flex items-center gap-1 mt-0.5', dueDateInfo.color)}>
+              <Calendar className="h-3 w-3" />
+              <span className="text-[10px]">{dueDateInfo.text}</span>
+            </div>
           )}
         </div>
 

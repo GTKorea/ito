@@ -10,6 +10,8 @@ import { TodosModule } from './todos/todos.module';
 import { ThreadsModule } from './threads/threads.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { WsEventsModule } from './websocket/ws.module';
+import { ActivityModule } from './activity/activity.module';
+import { FilesModule } from './files/files.module';
 
 @Module({
   imports: [
@@ -23,6 +25,8 @@ import { WsEventsModule } from './websocket/ws.module';
     TodosModule,
     ThreadsModule,
     NotificationsModule,
+    ActivityModule,
+    FilesModule,
     WsEventsModule,
   ],
 })

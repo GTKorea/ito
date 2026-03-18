@@ -1,17 +1,38 @@
+import * as net from 'net';
+import { join } from 'path';
 import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 
+function isPortFree(port: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const server = net.createServer();
+    server.once('error', () => resolve(false));
+    server.once('listening', () => {
+      server.close(() => resolve(true));
+    });
+    server.listen(port);
+  });
+}
+
+async function findFreePort(start: number): Promise<number> {
+  for (let port = start; port < start + 100; port++) {
+    if (await isPortFree(port)) return port;
+  }
+  throw new Error(`No free port found in range ${start}-${start + 99}`);
+}
+
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   const configService = app.get(ConfigService);
 
   app.enableCors({
-    origin: configService.get('FRONTEND_URL', 'http://localhost:3000'),
+    origin: true,
     credentials: true,
   });
 
@@ -25,6 +46,11 @@ async function bootstrap() {
 
   app.useGlobalFilters(new AllExceptionsFilter());
 
+  // Serve uploaded files
+  app.useStaticAssets(join(process.cwd(), 'uploads'), {
+    prefix: '/uploads',
+  });
+
   const swaggerConfig = new DocumentBuilder()
     .setTitle('ito API')
     .setDescription('ito — collaborative thread-based task management')
@@ -34,7 +60,12 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document);
 
-  const port = configService.get('API_PORT', 3001);
+  const preferredPort = parseInt(configService.get('API_PORT', '3001'), 10);
+  const port = await findFreePort(preferredPort);
   await app.listen(port);
+
+  const url = await app.getUrl();
+  console.log(`\n  🧵 ito API running at ${url}`);
+  console.log(`  📖 Swagger docs at ${url}/api/docs\n`);
 }
 bootstrap();

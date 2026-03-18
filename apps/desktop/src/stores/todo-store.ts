@@ -36,7 +36,7 @@ interface TodoState {
   todos: Todo[];
   isLoading: boolean;
   fetchTodos: (workspaceId: string, assignedToMe?: boolean) => Promise<void>;
-  createTodo: (workspaceId: string, title: string, description?: string, priority?: string) => Promise<Todo>;
+  createTodo: (workspaceId: string, title: string, description?: string, priority?: string, dueDate?: string) => Promise<Todo>;
   updateTodo: (id: string, data: Partial<Todo>) => Promise<void>;
   deleteTodo: (id: string) => Promise<void>;
   connectThread: (todoId: string, toUserId: string, message?: string) => Promise<void>;
@@ -49,17 +49,22 @@ export const useTodoStore = create<TodoState>((set) => ({
 
   fetchTodos: async (workspaceId, assignedToMe = true) => {
     set({ isLoading: true });
-    const { data } = await api.get(`/workspaces/${workspaceId}/todos`, {
-      params: { assignedToMe: String(assignedToMe) },
-    });
-    set({ todos: data, isLoading: false });
+    try {
+      const { data } = await api.get(`/workspaces/${workspaceId}/todos`, {
+        params: { assignedToMe: String(assignedToMe) },
+      });
+      set({ todos: data, isLoading: false });
+    } catch {
+      set({ isLoading: false });
+    }
   },
 
-  createTodo: async (workspaceId, title, description, priority) => {
+  createTodo: async (workspaceId, title, description, priority, dueDate) => {
     const { data } = await api.post(`/workspaces/${workspaceId}/todos`, {
       title,
       description,
       priority,
+      dueDate,
     });
     set((state) => ({ todos: [data, ...state.todos] }));
     return data;

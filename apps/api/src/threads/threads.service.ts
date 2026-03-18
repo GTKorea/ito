@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ActivityService } from '../activity/activity.service';
 
 const MAX_CHAIN_DEPTH = 20;
 
@@ -14,6 +15,7 @@ export class ThreadsService {
   constructor(
     private prisma: PrismaService,
     private notificationsService: NotificationsService,
+    private activityService: ActivityService,
   ) {}
 
   /**
@@ -111,6 +113,15 @@ export class ThreadsService {
       data: { todoId, threadLinkId: threadLink.id },
     });
 
+    await this.activityService.log({
+      workspaceId: todo.workspaceId,
+      userId: fromUserId,
+      action: 'CONNECTED',
+      entityType: 'ThreadLink',
+      entityId: threadLink.id,
+      metadata: { todoId, toUserId },
+    });
+
     return threadLink;
   }
 
@@ -173,6 +184,15 @@ export class ThreadsService {
       title: 'Thread resolved — your turn',
       body: 'A dependency was resolved and the task is back to you',
       data: { todoId: link.todoId, threadLinkId: link.id },
+    });
+
+    await this.activityService.log({
+      workspaceId: link.todo.workspaceId,
+      userId,
+      action: 'RESOLVED',
+      entityType: 'ThreadLink',
+      entityId: threadLinkId,
+      metadata: { todoId: link.todoId },
     });
 
     return { message: 'Thread link resolved', snapBackTo: previousUser };

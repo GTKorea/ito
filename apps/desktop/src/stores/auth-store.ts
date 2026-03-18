@@ -19,6 +19,7 @@ interface AuthState {
   register: (email: string, password: string, name: string) => Promise<void>;
   setTokens: (accessToken: string, refreshToken: string) => void;
   fetchUser: () => Promise<void>;
+  uploadAvatar: (file: File) => Promise<void>;
   logout: () => void;
 }
 
@@ -64,6 +65,17 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch {
       set({ user: null, isAuthenticated: false, isLoading: false });
     }
+  },
+
+  uploadAvatar: async (file: File) => {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    const { data } = await api.post('/users/me/avatar', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    set((state) => ({
+      user: state.user ? { ...state.user, avatarUrl: data.avatarUrl } : null,
+    }));
   },
 
   logout: () => {

@@ -28,9 +28,13 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   unreadCount: 0,
 
   fetchNotifications: async () => {
-    const { data } = await api.get('/notifications');
-    const unreadCount = data.filter((n: Notification) => !n.read).length;
-    set({ notifications: data, unreadCount });
+    try {
+      const { data } = await api.get('/notifications');
+      const unreadCount = data.filter((n: Notification) => !n.read).length;
+      set({ notifications: data, unreadCount });
+    } catch {
+      // API not available yet — ignore silently
+    }
   },
 
   markAsRead: async (id) => {

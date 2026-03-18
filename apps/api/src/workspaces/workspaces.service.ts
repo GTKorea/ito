@@ -5,11 +5,15 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { ActivityService } from '../activity/activity.service';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 
 @Injectable()
 export class WorkspacesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private activityService: ActivityService,
+  ) {}
 
   async create(dto: CreateWorkspaceDto, userId: string) {
     const existing = await this.prisma.workspace.findUnique({
@@ -17,7 +21,7 @@ export class WorkspacesService {
     });
     if (existing) throw new ConflictException('Slug already taken');
 
-    return this.prisma.workspace.create({
+    const workspace = await this.prisma.workspace.create({
       data: {
         name: dto.name,
         slug: dto.slug,
@@ -27,6 +31,17 @@ export class WorkspacesService {
       },
       include: { members: { include: { user: true } } },
     });
+
+    await this.activityService.log({
+      workspaceId: workspace.id,
+      userId,
+      action: 'CREATED',
+      entityType: 'Workspace',
+      entityId: workspace.id,
+      metadata: { name: workspace.name },
+    });
+
+    return workspace;
   }
 
   async findAllForUser(userId: string) {
@@ -52,6 +67,24 @@ export class WorkspacesService {
     });
     if (!ws) throw new NotFoundException('Workspace not found');
     return ws;
+  }
+
+  async getInviteInfo(token: string) {
+    const invite = await this.prisma.workspaceInvite.findUnique({
+      where: { token },
+      include: {
+        workspace: { select: { id: true, name: true, slug: true } },
+      },
+    });
+    if (!invite || invite.expiresAt < new Date()) {
+      throw new ForbiddenException('Invalid or expired invite');
+    }
+    return {
+      workspaceName: invite.workspace.name,
+      workspaceSlug: invite.workspace.slug,
+      email: invite.email,
+      expiresAt: invite.expiresAt,
+    };
   }
 
   async invite(workspaceId: string, email: string) {
@@ -87,6 +120,14 @@ export class WorkspacesService {
       }),
       this.prisma.workspaceInvite.delete({ where: { id: invite.id } }),
     ]);
+
+    await this.activityService.log({
+      workspaceId: invite.workspaceId,
+      userId,
+      action: 'JOINED',
+      entityType: 'WorkspaceMember',
+      entityId: member.id,
+    });
 
     return member;
   }

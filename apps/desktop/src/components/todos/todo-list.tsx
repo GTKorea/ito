@@ -31,9 +31,10 @@ interface Todo {
 
 interface TodoListProps {
   todos: Todo[];
+  onSelectTodo?: (id: string) => void;
 }
 
-export function TodoList({ todos }: TodoListProps) {
+export function TodoList({ todos, onSelectTodo }: TodoListProps) {
   if (todos.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
@@ -53,7 +54,7 @@ export function TodoList({ todos }: TodoListProps) {
       {grouped.active.length > 0 && (
         <div className="space-y-1">
           {grouped.active.map((todo) => (
-            <TodoItem key={todo.id} todo={todo} />
+            <TodoItem key={todo.id} todo={todo} onSelect={onSelectTodo} />
           ))}
         </div>
       )}
@@ -65,7 +66,7 @@ export function TodoList({ todos }: TodoListProps) {
           </p>
           <div className="space-y-1 opacity-60">
             {grouped.completed.map((todo) => (
-              <TodoItem key={todo.id} todo={todo} />
+              <TodoItem key={todo.id} todo={todo} onSelect={onSelectTodo} />
             ))}
           </div>
         </div>

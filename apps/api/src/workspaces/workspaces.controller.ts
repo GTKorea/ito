@@ -40,6 +40,12 @@ export class WorkspacesController {
     return this.workspacesService.findById(id);
   }
 
+  @Get('invites/:token')
+  @ApiOperation({ summary: 'Get invite info by token' })
+  getInviteInfo(@Param('token') token: string) {
+    return this.workspacesService.getInviteInfo(token);
+  }
+
   @Post(':id/invite')
   @ApiOperation({ summary: 'Invite a member by email' })
   invite(@Param('id') id: string, @Body() dto: InviteMemberDto) {

@@ -5,13 +5,79 @@ import { useTodoStore } from '@/stores/todo-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 import { TodoList } from '@/components/todos/todo-list';
 import { CreateTodo } from '@/components/todos/create-todo';
+import { TodoDetail } from '@/components/todos/todo-detail';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Plus, Building2 } from 'lucide-react';
+
+function CreateWorkspacePrompt() {
+  const { createWorkspace } = useWorkspaceStore();
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState('');
+
+  const handleCreate = async () => {
+    if (!name.trim()) return;
+    const slug = name.toLowerCase().replace(/\s+/g, '-');
+    await createWorkspace(name, slug);
+    setOpen(false);
+  };
+
+  return (
+    <div className="flex h-full flex-col items-center justify-center gap-4">
+      <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-accent">
+        <Building2 className="h-7 w-7 text-muted-foreground" />
+      </div>
+      <div className="text-center">
+        <p className="text-sm font-medium">No workspace yet</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          Create a workspace to start managing your tasks
+        </p>
+      </div>
+      <Button onClick={() => setOpen(true)}>
+        <Plus className="mr-1 h-4 w-4" />
+        Create Workspace
+      </Button>
+
+      {open && (
+        <Dialog open onOpenChange={() => setOpen(false)}>
+          <DialogContent className="sm:max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Create Workspace</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <Label>Workspace Name</Label>
+                <Input
+                  placeholder="e.g. My Team"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
+                  autoFocus
+                />
+              </div>
+              <Button onClick={handleCreate} className="w-full" disabled={!name.trim()}>
+                Create
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
+  );
+}
 
 export default function WorkspacePage() {
   const { currentWorkspace, isLoading: wsLoading } = useWorkspaceStore();
   const { todos, isLoading, fetchTodos } = useTodoStore();
   const [showCreate, setShowCreate] = useState(false);
+  const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null);
 
   useEffect(() => {
     if (currentWorkspace) fetchTodos(currentWorkspace.id);
@@ -19,18 +85,14 @@ export default function WorkspacePage() {
 
   if (wsLoading) {
     return (
-      <div className="flex h-full items-center justify-center text-muted-foreground">
-        Loading workspaces...
+      <div className="flex h-full items-center justify-center">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       </div>
     );
   }
 
   if (!currentWorkspace) {
-    return (
-      <div className="flex h-full items-center justify-center text-muted-foreground">
-        No workspace selected
-      </div>
-    );
+    return <CreateWorkspacePrompt />;
   }
 
   return (
@@ -68,9 +130,17 @@ export default function WorkspacePage() {
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>
         ) : (
-          <TodoList todos={todos} />
+          <TodoList todos={todos} onSelectTodo={setSelectedTodoId} />
         )}
       </div>
+
+      {/* Todo Detail Slide-over */}
+      {selectedTodoId && (
+        <TodoDetail
+          todoId={selectedTodoId}
+          onClose={() => setSelectedTodoId(null)}
+        />
+      )}
     </div>
   );
 }

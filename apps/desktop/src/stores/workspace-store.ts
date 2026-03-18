@@ -23,14 +23,18 @@ interface WorkspaceState {
 export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   workspaces: [],
   currentWorkspace: null,
-  isLoading: false,
+  isLoading: true,
 
   fetchWorkspaces: async () => {
     set({ isLoading: true });
-    const { data } = await api.get('/workspaces');
-    set({ workspaces: data, isLoading: false });
-    if (data.length > 0 && !get().currentWorkspace) {
-      set({ currentWorkspace: data[0] });
+    try {
+      const { data } = await api.get('/workspaces');
+      set({ workspaces: data, isLoading: false });
+      if (data.length > 0 && !get().currentWorkspace) {
+        set({ currentWorkspace: data[0] });
+      }
+    } catch {
+      set({ isLoading: false });
     }
   },
 

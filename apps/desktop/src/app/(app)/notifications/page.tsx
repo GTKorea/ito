@@ -1,0 +1,107 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useNotificationStore } from '@/stores/notification-store';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  Bell,
+  BellOff,
+  Check,
+  CheckCheck,
+  Link2,
+  ArrowLeftRight,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+const typeIcons: Record<string, React.ReactNode> = {
+  THREAD_RECEIVED: <Link2 className="h-4 w-4 text-blue-500" />,
+  THREAD_SNAPPED: <ArrowLeftRight className="h-4 w-4 text-green-500" />,
+  TODO_COMPLETED: <Check className="h-4 w-4 text-green-500" />,
+};
+
+export default function NotificationsPage() {
+  const {
+    notifications,
+    unreadCount,
+    fetchNotifications,
+    markAsRead,
+    markAllAsRead,
+  } = useNotificationStore();
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
+
+  return (
+    <div className="h-full">
+      <div className="flex items-center justify-between border-b border-border px-6 py-3">
+        <div>
+          <h1 className="text-lg font-semibold">Notifications</h1>
+          <p className="text-xs text-muted-foreground">
+            {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
+          </p>
+        </div>
+        {unreadCount > 0 && (
+          <Button size="sm" variant="outline" onClick={markAllAsRead}>
+            <CheckCheck className="mr-1 h-4 w-4" />
+            Mark all read
+          </Button>
+        )}
+      </div>
+
+      <div className="p-6 space-y-1">
+        {notifications.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+            <BellOff className="h-8 w-8 mb-3 opacity-40" />
+            <p className="text-sm">No notifications yet</p>
+          </div>
+        ) : (
+          notifications.map((n) => (
+            <div
+              key={n.id}
+              className={cn(
+                'flex items-start gap-3 rounded-lg px-3 py-3 transition-colors cursor-pointer',
+                !n.read
+                  ? 'bg-accent/40 hover:bg-accent/60'
+                  : 'hover:bg-accent/20',
+              )}
+              onClick={() => !n.read && markAsRead(n.id)}
+            >
+              <div className="mt-0.5 shrink-0">
+                {typeIcons[n.type] || <Bell className="h-4 w-4 text-muted-foreground" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className={cn('text-sm', !n.read && 'font-medium')}>
+                  {n.title}
+                </p>
+                {n.body && (
+                  <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                    {n.body}
+                  </p>
+                )}
+                <p className="text-[10px] text-muted-foreground/60 mt-1">
+                  {formatRelativeTime(n.createdAt)}
+                </p>
+              </div>
+              {!n.read && (
+                <div className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
+              )}
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+function formatRelativeTime(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}

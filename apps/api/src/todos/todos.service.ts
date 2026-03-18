@@ -1,13 +1,17 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { ActivityService } from '../activity/activity.service';
 import { CreateTodoDto, UpdateTodoDto } from './dto/create-todo.dto';
 
 @Injectable()
 export class TodosService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private activityService: ActivityService,
+  ) {}
 
   async create(dto: CreateTodoDto, workspaceId: string, userId: string) {
-    return this.prisma.todo.create({
+    const todo = await this.prisma.todo.create({
       data: {
         title: dto.title,
         description: dto.description,
@@ -23,6 +27,17 @@ export class TodosService {
         threadLinks: true,
       },
     });
+
+    await this.activityService.log({
+      workspaceId,
+      userId,
+      action: 'CREATED',
+      entityType: 'Todo',
+      entityId: todo.id,
+      metadata: { title: todo.title },
+    });
+
+    return todo;
   }
 
   async findAllInWorkspace(
@@ -70,6 +85,7 @@ export class TodosService {
           },
           orderBy: { chainIndex: 'asc' },
         },
+        files: true,
       },
     });
     if (!todo) throw new NotFoundException('Todo not found');
@@ -87,7 +103,7 @@ export class TodosService {
     if (dto.dueDate) data.dueDate = new Date(dto.dueDate);
     if (dto.status === 'COMPLETED') data.completedAt = new Date();
 
-    return this.prisma.todo.update({
+    const updated = await this.prisma.todo.update({
       where: { id },
       data,
       include: {
@@ -96,6 +112,17 @@ export class TodosService {
         threadLinks: true,
       },
     });
+
+    await this.activityService.log({
+      workspaceId: todo.workspaceId,
+      userId,
+      action: 'UPDATED',
+      entityType: 'Todo',
+      entityId: id,
+      metadata: { changes: dto },
+    });
+
+    return updated;
   }
 
   async delete(id: string, userId: string) {
@@ -105,6 +132,17 @@ export class TodosService {
       throw new ForbiddenException('Only the creator can delete a todo');
     }
 
-    return this.prisma.todo.delete({ where: { id } });
+    const deleted = await this.prisma.todo.delete({ where: { id } });
+
+    await this.activityService.log({
+      workspaceId: todo.workspaceId,
+      userId,
+      action: 'DELETED',
+      entityType: 'Todo',
+      entityId: id,
+      metadata: { title: todo.title },
+    });
+
+    return deleted;
   }
 }
