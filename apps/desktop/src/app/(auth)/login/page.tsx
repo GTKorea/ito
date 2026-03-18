@@ -52,7 +52,7 @@ export default function LoginPage() {
             variant="outline"
             className="w-full"
             onClick={() => {
-              window.location.href = `${API_URL}/auth/google`;
+              window.location.href = `${API_URL}/auth/google/init?from=${encodeURIComponent(window.location.origin)}`;
             }}
           >
             Continue with Google
@@ -61,7 +61,7 @@ export default function LoginPage() {
             variant="outline"
             className="w-full"
             onClick={() => {
-              window.location.href = `${API_URL}/auth/github`;
+              window.location.href = `${API_URL}/auth/github/init?from=${encodeURIComponent(window.location.origin)}`;
             }}
           >
             Continue with GitHub

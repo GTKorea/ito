@@ -3,6 +3,7 @@ import {
   Post,
   Body,
   Get,
+  Query,
   UseGuards,
   Req,
   Res,
@@ -44,6 +45,23 @@ export class AuthController {
     return this.authService.refreshTokens(refreshToken);
   }
 
+  // Save frontend origin in cookie, then redirect to OAuth
+  @Get('google/init')
+  @ApiOperation({ summary: 'Initiate Google OAuth with origin tracking' })
+  googleInit(
+    @Query('from') from: string,
+    @Res() res: Response,
+  ) {
+    if (from) {
+      res.cookie('oauth_redirect', from, {
+        httpOnly: true,
+        maxAge: 5 * 60 * 1000,
+        sameSite: 'lax',
+      });
+    }
+    res.redirect('/auth/google');
+  }
+
   @Get('google')
   @UseGuards(GoogleOAuthGuard)
   @ApiOperation({ summary: 'Initiate Google OAuth' })
@@ -54,9 +72,26 @@ export class AuthController {
   async googleCallback(@Req() req: Request, @Res() res: Response) {
     const tokens = await this.authService.handleOAuthUser(req.user as any);
     const frontendUrl = this.resolveFrontendUrl(req);
+    res.clearCookie('oauth_redirect');
     res.redirect(
       `${frontendUrl}/auth/callback?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
     );
+  }
+
+  @Get('github/init')
+  @ApiOperation({ summary: 'Initiate GitHub OAuth with origin tracking' })
+  githubInit(
+    @Query('from') from: string,
+    @Res() res: Response,
+  ) {
+    if (from) {
+      res.cookie('oauth_redirect', from, {
+        httpOnly: true,
+        maxAge: 5 * 60 * 1000,
+        sameSite: 'lax',
+      });
+    }
+    res.redirect('/auth/github');
   }
 
   @Get('github')
@@ -69,18 +104,25 @@ export class AuthController {
   async githubCallback(@Req() req: Request, @Res() res: Response) {
     const tokens = await this.authService.handleOAuthUser(req.user as any);
     const frontendUrl = this.resolveFrontendUrl(req);
+    res.clearCookie('oauth_redirect');
     res.redirect(
       `${frontendUrl}/auth/callback?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
     );
   }
 
   private resolveFrontendUrl(req: Request): string {
+    // First check cookie set by /init endpoint
+    const cookieRedirect = req.cookies?.oauth_redirect;
+    if (cookieRedirect) {
+      return cookieRedirect as string;
+    }
+
+    // Fallback: match by Referer/Origin header
     const raw: string = this.configService.get<string>(
       'FRONTEND_URL',
       'http://localhost:3000',
     ) as string;
     const urls = raw.split(',').map((url: string) => url.trim());
-
     const origin = req.headers.referer || req.headers.origin || '';
     const matched = urls.find((url: string) =>
       (origin as string).startsWith(url),
