@@ -10,7 +10,19 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "ito",
-  description: "Collaborative thread-based task management",
+  description: "Thread-based task collaboration",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-icon.png",
+  },
+  openGraph: {
+    title: "ito",
+    description: "Thread-based task collaboration",
+    url: "https://ito.krow.kr",
+    siteName: "ito",
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+    type: "website",
+  },
 };
 
 export default function RootLayout({
