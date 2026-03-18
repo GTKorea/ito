@@ -25,9 +25,6 @@ RUN pnpm --filter @ito/shared build
 RUN cd apps/api && npx prisma generate
 RUN pnpm --filter @ito/api build
 
-# Prune to production dependencies only
-RUN pnpm prune --prod
-
 # ── Production stage ──
 FROM node:20-alpine AS runner
 
@@ -35,9 +32,12 @@ RUN apk add --no-cache openssl
 
 WORKDIR /app
 
-# Copy everything needed from builder (with pruned node_modules)
+# Copy node_modules (includes Prisma generated client)
 COPY --from=builder /app/node_modules node_modules
 COPY --from=builder /app/apps/api/node_modules apps/api/node_modules
+COPY --from=builder /app/packages/shared/node_modules packages/shared/node_modules
+
+# Copy built artifacts + config
 COPY --from=builder /app/apps/api/dist apps/api/dist
 COPY --from=builder /app/apps/api/prisma apps/api/prisma
 COPY --from=builder /app/apps/api/package.json apps/api/
