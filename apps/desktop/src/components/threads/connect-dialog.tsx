@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTodoStore } from '@/stores/todo-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
+import { useAuthStore } from '@/stores/auth-store';
 import { api } from '@/lib/api-client';
 import {
   Dialog,
@@ -30,23 +31,42 @@ interface ConnectDialogProps {
 
 export function ConnectDialog({ todoId, onClose }: ConnectDialogProps) {
   const [search, setSearch] = useState('');
-  const [results, setResults] = useState<User[]>([]);
+  const [members, setMembers] = useState<User[]>([]);
   const [selected, setSelected] = useState<User | null>(null);
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { connectThread, fetchTodos } = useTodoStore();
   const { currentWorkspace } = useWorkspaceStore();
 
+  // Load workspace members on mount
+  useEffect(() => {
+    if (!currentWorkspace) return;
+    const loadMembers = async () => {
+      try {
+        const { data } = await api.get('/users/search', {
+          params: { workspaceId: currentWorkspace.id },
+        });
+        setMembers(data);
+      } catch {
+        setMembers([]);
+      }
+    };
+    loadMembers();
+  }, [currentWorkspace]);
+
   const handleSearch = async (query: string) => {
     setSearch(query);
-    if (query.length < 2 || !currentWorkspace) return;
+    if (!currentWorkspace) return;
     try {
       const { data } = await api.get('/users/search', {
-        params: { email: query, workspaceId: currentWorkspace.id },
+        params: {
+          workspaceId: currentWorkspace.id,
+          ...(query.length > 0 ? { query } : {}),
+        },
       });
-      setResults(data);
+      setMembers(data);
     } catch {
-      setResults([]);
+      setMembers([]);
     }
   };
 
@@ -78,13 +98,13 @@ export function ConnectDialog({ todoId, onClose }: ConnectDialogProps) {
           {!selected ? (
             <>
               <Input
-                placeholder="Search by email..."
+                placeholder="Search by name or email..."
                 value={search}
                 onChange={(e) => handleSearch(e.target.value)}
                 autoFocus
               />
               <div className="max-h-48 overflow-y-auto space-y-1">
-                {results.map((user) => (
+                {members.map((user) => (
                   <button
                     key={user.id}
                     onClick={() => setSelected(user)}
@@ -101,9 +121,9 @@ export function ConnectDialog({ todoId, onClose }: ConnectDialogProps) {
                     </div>
                   </button>
                 ))}
-                {search.length >= 2 && results.length === 0 && (
+                {members.length === 0 && (
                   <p className="text-sm text-muted-foreground text-center py-4">
-                    No users found
+                    No members found
                   </p>
                 )}
               </div>

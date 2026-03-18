@@ -48,8 +48,12 @@ export class WorkspacesController {
 
   @Post(':id/invite')
   @ApiOperation({ summary: 'Invite a member by email' })
-  invite(@Param('id') id: string, @Body() dto: InviteMemberDto) {
-    return this.workspacesService.invite(id, dto.email);
+  invite(
+    @Param('id') id: string,
+    @Body() dto: InviteMemberDto,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.workspacesService.invite(id, dto.email, userId);
   }
 
   @Post('join/:token')

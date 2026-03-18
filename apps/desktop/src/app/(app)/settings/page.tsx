@@ -16,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { User, Building2, UserPlus, Check, Camera } from 'lucide-react';
+import { User, Building2, UserPlus, Check, Camera, Copy, Link } from 'lucide-react';
 import { useRef } from 'react';
 
 export default function SettingsPage() {
@@ -36,6 +36,8 @@ export default function SettingsPage() {
   const [showInvite, setShowInvite] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteSent, setInviteSent] = useState(false);
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const handleSaveProfile = async () => {
     setIsSaving(true);
@@ -62,18 +64,29 @@ export default function SettingsPage() {
   const handleInvite = async () => {
     if (!inviteEmail.trim() || !currentWorkspace) return;
     try {
-      await api.post(`/workspaces/${currentWorkspace.id}/invite`, {
+      const res = await api.post(`/workspaces/${currentWorkspace.id}/invite`, {
         email: inviteEmail,
       });
       setInviteSent(true);
-      setTimeout(() => {
-        setInviteSent(false);
-        setInviteEmail('');
-        setShowInvite(false);
-      }, 1500);
+      setInviteLink(res.data.inviteLink);
     } catch {
       // handle
     }
+  };
+
+  const handleCopyLink = async () => {
+    if (!inviteLink) return;
+    await navigator.clipboard.writeText(inviteLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleCloseInvite = () => {
+    setShowInvite(false);
+    setInviteSent(false);
+    setInviteEmail('');
+    setInviteLink(null);
+    setCopied(false);
   };
 
   return (
@@ -240,36 +253,69 @@ export default function SettingsPage() {
 
       {/* Invite Dialog */}
       {showInvite && (
-        <Dialog open onOpenChange={() => setShowInvite(false)}>
+        <Dialog open onOpenChange={handleCloseInvite}>
           <DialogContent className="sm:max-w-sm">
             <DialogHeader>
               <DialogTitle>Invite to {currentWorkspace?.name}</DialogTitle>
             </DialogHeader>
-            <div className="space-y-3">
-              <Input
-                type="email"
-                placeholder="colleague@example.com"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleInvite()}
-                autoFocus
-              />
-              <Button
-                onClick={handleInvite}
-                className="w-full"
-                disabled={!inviteEmail.trim() || inviteSent}
-              >
-                {inviteSent ? (
-                  <>
-                    <Check className="mr-1 h-4 w-4" /> Sent!
-                  </>
-                ) : (
-                  <>
-                    <UserPlus className="mr-1 h-4 w-4" /> Send Invite
-                  </>
+            {!inviteSent ? (
+              <div className="space-y-3">
+                <Input
+                  type="email"
+                  placeholder="colleague@example.com"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleInvite()}
+                  autoFocus
+                />
+                <Button
+                  onClick={handleInvite}
+                  className="w-full"
+                  disabled={!inviteEmail.trim()}
+                >
+                  <UserPlus className="mr-1 h-4 w-4" /> Send Invite
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-sm text-green-500">
+                  <Check className="h-4 w-4" />
+                  <span>Invite sent to {inviteEmail}</span>
+                </div>
+                {inviteLink && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground">
+                      Share this link with the invitee:
+                    </p>
+                    <div className="flex gap-2">
+                      <Input
+                        readOnly
+                        value={inviteLink}
+                        className="text-xs"
+                      />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleCopyLink}
+                      >
+                        {copied ? (
+                          <Check className="h-4 w-4" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
                 )}
-              </Button>
-            </div>
+                <Button
+                  onClick={handleCloseInvite}
+                  variant="outline"
+                  className="w-full"
+                >
+                  Done
+                </Button>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       )}

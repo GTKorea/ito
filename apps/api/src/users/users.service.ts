@@ -33,14 +33,31 @@ export class UsersService {
     });
   }
 
-  async searchByEmail(email: string, workspaceId: string) {
+  async searchMembers(
+    workspaceId: string,
+    excludeUserId?: string,
+    query?: string,
+  ) {
+    const where: any = {
+      workspaceMembers: { some: { workspaceId } },
+    };
+
+    if (excludeUserId) {
+      where.id = { not: excludeUserId };
+    }
+
+    if (query) {
+      where.OR = [
+        { name: { contains: query, mode: 'insensitive' } },
+        { email: { contains: query, mode: 'insensitive' } },
+      ];
+    }
+
     return this.prisma.user.findMany({
-      where: {
-        email: { contains: email, mode: 'insensitive' },
-        workspaceMembers: { some: { workspaceId } },
-      },
+      where,
       select: { id: true, email: true, name: true, avatarUrl: true },
-      take: 10,
+      take: 20,
+      orderBy: { name: 'asc' },
     });
   }
 }

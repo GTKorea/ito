@@ -1,0 +1,3 @@
+api.ito.krow.kr {
+	reverse_proxy api:3001
+}

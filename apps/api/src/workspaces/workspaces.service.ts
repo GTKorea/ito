@@ -4,8 +4,11 @@ import {
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { ActivityService } from '../activity/activity.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { EmailService } from '../email/email.service';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 
 @Injectable()
@@ -13,6 +16,9 @@ export class WorkspacesService {
   constructor(
     private prisma: PrismaService,
     private activityService: ActivityService,
+    private notificationsService: NotificationsService,
+    private emailService: EmailService,
+    private configService: ConfigService,
   ) {}
 
   async create(dto: CreateWorkspaceDto, userId: string) {
@@ -87,13 +93,46 @@ export class WorkspacesService {
     };
   }
 
-  async invite(workspaceId: string, email: string) {
+  async invite(workspaceId: string, email: string, inviterUserId: string) {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
-    return this.prisma.workspaceInvite.create({
+    const invite = await this.prisma.workspaceInvite.create({
       data: { workspaceId, email, expiresAt },
     });
+
+    const [inviter, workspace] = await Promise.all([
+      this.prisma.user.findUnique({ where: { id: inviterUserId } }),
+      this.prisma.workspace.findUnique({ where: { id: workspaceId } }),
+    ]);
+
+    const frontendUrl = this.configService.get<string>(
+      'FRONTEND_URL',
+      'http://localhost:3000',
+    );
+    const inviteLink = `${frontendUrl}/invite?token=${invite.token}`;
+
+    // Send email to invitee
+    await this.emailService.sendInviteEmail(
+      email,
+      inviter?.name || 'Someone',
+      workspace?.name || 'a workspace',
+      inviteLink,
+    );
+
+    // If invitee is a registered user, send in-app notification
+    const invitee = await this.prisma.user.findUnique({ where: { email } });
+    if (invitee) {
+      await this.notificationsService.create({
+        userId: invitee.id,
+        type: 'WORKSPACE_INVITE',
+        title: `${inviter?.name || 'Someone'} invited you to ${workspace?.name}`,
+        body: `You've been invited to join ${workspace?.name}. Click to accept.`,
+        data: { workspaceId, token: invite.token },
+      });
+    }
+
+    return { ...invite, inviteLink };
   }
 
   async acceptInvite(token: string, userId: string) {

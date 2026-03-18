@@ -47,12 +47,14 @@ export class ThreadsService {
       );
     }
 
-    // Check circular: target user must not already be in the chain
+    // Check circular: target user must not be in an active part of the chain
     const usersInChain = new Set<string>();
     usersInChain.add(todo.creatorId);
     for (const link of todo.threadLinks) {
-      usersInChain.add(link.fromUserId);
-      usersInChain.add(link.toUserId);
+      if (link.status === 'PENDING' || link.status === 'FORWARDED') {
+        usersInChain.add(link.fromUserId);
+        usersInChain.add(link.toUserId);
+      }
     }
     if (usersInChain.has(toUserId)) {
       throw new BadRequestException(
@@ -91,7 +93,7 @@ export class ThreadsService {
       // Update todo assignee and status
       this.prisma.todo.update({
         where: { id: todoId },
-        data: { assigneeId: toUserId, status: 'BLOCKED' },
+        data: { assigneeId: toUserId, status: 'IN_PROGRESS' },
       }),
       // Mark current link as forwarded
       ...(currentLink
@@ -172,8 +174,7 @@ export class ThreadsService {
       where: { id: link.todoId },
       data: {
         assigneeId: previousUser,
-        status:
-          previousUser === link.todo.creatorId ? 'IN_PROGRESS' : 'BLOCKED',
+        status: 'IN_PROGRESS',
       },
     });
 

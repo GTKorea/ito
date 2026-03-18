@@ -80,7 +80,18 @@ interface TodoItemProps {
 export function TodoItem({ todo, onSelect }: TodoItemProps) {
   const [showConnect, setShowConnect] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [isResolving, setIsResolving] = useState(false);
   const { updateTodo, deleteTodo, resolveThread } = useTodoStore();
+
+  const handleResolve = async (linkId: string) => {
+    if (isResolving) return;
+    setIsResolving(true);
+    try {
+      await resolveThread(linkId);
+    } catch {
+      setIsResolving(false);
+    }
+  };
 
   const hasThreads = todo.threadLinks.length > 0;
   const dueDateInfo = getDueDateInfo(todo.dueDate);
@@ -90,7 +101,7 @@ export function TodoItem({ todo, onSelect }: TodoItemProps) {
 
   return (
     <div className="group rounded-lg border border-border bg-card p-3 hover:border-border/80 transition-colors">
-      <div className="flex items-start gap-3">
+      <div className="flex items-center gap-3">
         {/* Status icon / toggle */}
         <button
           onClick={() =>
@@ -98,7 +109,7 @@ export function TodoItem({ todo, onSelect }: TodoItemProps) {
               status: todo.status === 'COMPLETED' ? 'OPEN' : 'COMPLETED',
             })
           }
-          className="mt-0.5 shrink-0"
+          className="shrink-0"
         >
           {statusIcons[todo.status] || statusIcons.OPEN}
         </button>
@@ -156,10 +167,11 @@ export function TodoItem({ todo, onSelect }: TodoItemProps) {
               size="sm"
               variant="ghost"
               className="h-7 text-xs text-green-500 hover:text-green-400"
-              onClick={() => resolveThread(pendingLink.id)}
+              disabled={isResolving}
+              onClick={() => handleResolve(pendingLink.id)}
             >
               <Check className="h-3.5 w-3.5 mr-1" />
-              Done
+              {isResolving ? 'Resolving...' : 'Done'}
             </Button>
           )}
           <Button

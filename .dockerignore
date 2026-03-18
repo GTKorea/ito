@@ -1,0 +1,11 @@
+node_modules
+.next
+out
+dist
+.git
+.github
+.claude
+*.md
+*.log
+apps/desktop/src-tauri/target
+apps/api/uploads

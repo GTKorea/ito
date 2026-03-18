@@ -53,11 +53,12 @@ export class UsersController {
   }
 
   @Get('search')
-  @ApiOperation({ summary: 'Search users by email within workspace' })
+  @ApiOperation({ summary: 'Search workspace members by name or email' })
   search(
-    @Query('email') email: string,
     @Query('workspaceId') workspaceId: string,
+    @CurrentUser('id') userId: string,
+    @Query('query') query?: string,
   ) {
-    return this.usersService.searchByEmail(email, workspaceId);
+    return this.usersService.searchMembers(workspaceId, userId, query);
   }
 }

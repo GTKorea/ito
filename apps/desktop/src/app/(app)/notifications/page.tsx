@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useNotificationStore } from '@/stores/notification-store';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +12,7 @@ import {
   CheckCheck,
   Link2,
   ArrowLeftRight,
+  UserPlus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -18,9 +20,11 @@ const typeIcons: Record<string, React.ReactNode> = {
   THREAD_RECEIVED: <Link2 className="h-4 w-4 text-blue-500" />,
   THREAD_SNAPPED: <ArrowLeftRight className="h-4 w-4 text-green-500" />,
   TODO_COMPLETED: <Check className="h-4 w-4 text-green-500" />,
+  WORKSPACE_INVITE: <UserPlus className="h-4 w-4 text-purple-500" />,
 };
 
 export default function NotificationsPage() {
+  const router = useRouter();
   const {
     notifications,
     unreadCount,
@@ -66,7 +70,12 @@ export default function NotificationsPage() {
                   ? 'bg-accent/40 hover:bg-accent/60'
                   : 'hover:bg-accent/20',
               )}
-              onClick={() => !n.read && markAsRead(n.id)}
+              onClick={() => {
+                if (!n.read) markAsRead(n.id);
+                if (n.type === 'WORKSPACE_INVITE' && n.data?.token) {
+                  router.push(`/invite?token=${n.data.token}`);
+                }
+              }}
             >
               <div className="mt-0.5 shrink-0">
                 {typeIcons[n.type] || <Bell className="h-4 w-4 text-muted-foreground" />}

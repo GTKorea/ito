@@ -84,9 +84,24 @@ export const useTodoStore = create<TodoState>((set) => ({
 
   connectThread: async (todoId, toUserId, message) => {
     await api.post(`/todos/${todoId}/connect`, { toUserId, message });
+    // Remove the todo from local state (it's now assigned to someone else)
+    set((state) => ({ todos: state.todos.filter((t) => t.id !== todoId) }));
   },
 
   resolveThread: async (threadLinkId) => {
     await api.post(`/thread-links/${threadLinkId}/resolve`);
+    // Remove the resolved todo from local state (it snapped back to sender)
+    set((state) => ({
+      todos: state.todos.map((t) => ({
+        ...t,
+        threadLinks: t.threadLinks.map((l) =>
+          l.id === threadLinkId ? { ...l, status: 'COMPLETED' } : l,
+        ),
+      })).filter((t) => {
+        // Remove if the resolved link belonged to this todo and we're no longer assignee
+        const resolvedLink = t.threadLinks.find((l) => l.id === threadLinkId);
+        return !resolvedLink;
+      }),
+    }));
   },
 }));

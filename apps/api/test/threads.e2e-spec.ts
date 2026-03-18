@@ -174,6 +174,32 @@ describe('Threads (e2e)', () => {
       expect(todoRes.body.status).toBe('IN_PROGRESS');
     });
 
+    it('should allow reconnection to a previously resolved user', async () => {
+      const { userA, userB, userBId, todo } = await setupChainScenario();
+
+      // A -> B
+      const connectRes = await request(app.getHttpServer())
+        .post(`/todos/${todo.id}/connect`)
+        .set('Authorization', `Bearer ${userA.accessToken}`)
+        .send({ toUserId: userBId })
+        .expect(201);
+
+      // B resolves -> snap back to A
+      await request(app.getHttpServer())
+        .post(`/thread-links/${connectRes.body.id}/resolve`)
+        .set('Authorization', `Bearer ${userB.accessToken}`)
+        .expect(201);
+
+      // A reconnects to B (should succeed, B's link is COMPLETED)
+      const reconnectRes = await request(app.getHttpServer())
+        .post(`/todos/${todo.id}/connect`)
+        .set('Authorization', `Bearer ${userA.accessToken}`)
+        .send({ toUserId: userBId })
+        .expect(201);
+
+      expect(reconnectRes.body.chainIndex).toBe(1);
+    });
+
     it('should snap back through chain: C resolves -> B gets it, B resolves -> A gets it', async () => {
       const { userA, userB, userC, userBId, userCId, todo } =
         await setupChainScenario();
@@ -198,7 +224,7 @@ describe('Threads (e2e)', () => {
         .set('Authorization', `Bearer ${userC.accessToken}`)
         .expect(201);
 
-      // Check: B should be the assignee now, status should be BLOCKED (not creator)
+      // Check: B should be the assignee now, status should be IN_PROGRESS
       let todoCheck = await request(app.getHttpServer())
         .get(`/todos/${todo.id}`)
         .set('Authorization', `Bearer ${userA.accessToken}`)
