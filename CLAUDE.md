@@ -42,8 +42,8 @@ ito/
 
 ```bash
 pnpm dev              # API + Desktop 동시 실행
-pnpm dev:api          # API만 (기본 포트 3001)
-pnpm dev:desktop      # Desktop만 (기본 포트 3000)
+pnpm dev:api          # API만 (포트 3011)
+pnpm dev:desktop      # Desktop만 (포트 3010)
 pnpm build            # 전체 빌드
 
 # API 테스트
@@ -68,7 +68,7 @@ npx prisma studio         # DB GUI
 - **Passport** — Google/GitHub OAuth 지원
 - **Multer** — 파일 업로드 (10MB 제한, `uploads/` 디렉토리)
 - **Resend** — 초대 이메일 발송 (선택, `RESEND_API_KEY` 미설정 시 skip)
-- **Swagger** — `http://localhost:3001/api/docs`
+- **Swagger** — `http://localhost:3011/api/docs`
 
 ### Frontend (apps/desktop)
 - **Next.js 16** — Static Export (`output: 'export'`)
@@ -126,38 +126,56 @@ npx prisma studio         # DB GUI
 
 ## 환경 변수
 
-API 서버 (`apps/api/.env`): → `.env.example` 참고
-- `DATABASE_URL` — PostgreSQL 연결 문자열
-- `JWT_SECRET`, `JWT_REFRESH_SECRET`, `JWT_EXPIRATION`, `JWT_REFRESH_EXPIRATION`
-- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL` (OAuth, 선택)
-- `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GITHUB_CALLBACK_URL` (OAuth, 선택)
-- `API_PORT` (기본 3001, 사용 중이면 자동으로 다음 포트 탐색)
-- `FRONTEND_URL` (기본 `http://localhost:3000`, CORS + WebSocket origin으로 사용, 콤마 구분 복수 지원)
-- `RESEND_API_KEY`, `RESEND_FROM` (이메일 발송, 선택)
+### 로컬 개발 — `apps/api/.env`
+```env
+DATABASE_URL="postgresql://ito:ito_dev@localhost:5432/ito?schema=public"
+JWT_SECRET="dev-secret"
+JWT_REFRESH_SECRET="dev-refresh-secret"
+JWT_EXPIRATION="15m"
+JWT_REFRESH_EXPIRATION="7d"
+API_PORT=3011
+FRONTEND_URL="http://localhost:3010"
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
+GOOGLE_CALLBACK_URL="http://localhost:3011/auth/google/callback"
+GITHUB_CLIENT_ID=""
+GITHUB_CLIENT_SECRET=""
+GITHUB_CALLBACK_URL="http://localhost:3011/auth/github/callback"
+RESEND_API_KEY=""
+RESEND_FROM=""
+```
 
-Desktop (`apps/desktop/.env.local`): → `.env.example` 참고
-- `NEXT_PUBLIC_API_URL` (기본 `http://localhost:3001`)
+### 로컬 개발 — `apps/desktop/.env.local`
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3011
+```
+
+### 프로덕션 환경변수
+- EC2: `~/krow-infra/.env.production` (krow-infra 레포의 env-template 참고)
+- Vercel: `NEXT_PUBLIC_API_URL=https://api.ito.krow.kr`
+- GitHub Secrets: `EC2_HOST`, `EC2_SSH_KEY`
 
 ## 배포
 
 ### 전체 아키텍처
 
 ```
-┌─ Vercel ──────────────────────────┐
-│  ito.krow.kr  → ito frontend      │
-│  foo.krow.kr  → foo frontend (미래)│
-└───────────────────────────────────┘
-          │ API 호출
-          ▼
-┌─ EC2 (t3.small) ──────────────────┐
-│  Caddy (80/443, 자동 HTTPS)        │
-│    ├─ api.ito.krow.kr → ito-api   │
-│    └─ api.foo.krow.kr → foo (미래) │
-│                                    │
-│  PostgreSQL 16 (내부 네트워크)       │
-│    ├─ ito DB                       │
-│    └─ foo DB (미래)                 │
-└────────────────────────────────────┘
+사용자 → ito.krow.kr (Vercel, 프론트엔드)
+              │ API 호출
+              ▼
+         api.ito.krow.kr (EC2)
+              │
+         ┌────┴────┐
+         │  Caddy   │ ← 자동 HTTPS
+         └────┬────┘
+              │
+         ┌────┴────┐
+         │ ito-api  │ ← NestJS (포트 3011)
+         └────┬────┘
+              │
+         ┌────┴────┐
+         │PostgreSQL│ ← 데이터베이스
+         └─────────┘
 ```
 
 ### 레포 분리 원칙
@@ -170,11 +188,20 @@ Desktop (`apps/desktop/.env.local`): → `.env.example` 참고
 
 ### 이 레포의 배포 관련 파일
 - `apps/api/Dockerfile` — API 멀티스테이지 Docker 빌드
-- `apps/desktop/vercel.json` — Vercel 정적 배포 설정
+- `apps/desktop/vercel.json` — Vercel 정적 배포 설정 (`"framework": null`, SPA 리라이트)
+- `.github/workflows/deploy-api.yml` — API CI/CD (GHCR 빌드 → EC2 배포)
+- `.github/workflows/desktop-build.yml` — Tauri 데스크톱 빌드
+
+### CI/CD 흐름
+1. `apps/api/` 코드 push → GitHub Actions → GHCR에 Docker 이미지 빌드 → EC2에 SSH 접속 → 이미지 pull & 재시작
+2. `apps/desktop/` 코드 push → Vercel 자동 빌드 (GitHub 연동)
 
 ### DNS (Route53)
-- `*.krow.kr` → EC2 Elastic IP (A 레코드, 와일드카드)
+- `*.krow.kr` → EC2 Elastic IP `15.164.197.165` (A 레코드, 와일드카드)
 - `ito.krow.kr` → `cname.vercel-dns.com` (CNAME, 와일드카드보다 우선)
+
+### 배포 가이드
+상세한 단계별 배포 가이드는 **krow-infra** 레포의 `DEPLOY_GUIDE.md` 참조
 
 ## 코딩 컨벤션
 
