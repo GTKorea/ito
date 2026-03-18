@@ -1,6 +1,6 @@
 {
   "name": "ito",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": true,
   "description": "ito - collaborative thread-based task management",
   "scripts": {
@@ -8,7 +8,8 @@
     "dev:desktop": "turbo run dev --filter=@ito/desktop",
     "dev": "turbo run dev",
     "build": "turbo run build",
-    "lint": "turbo run lint"
+    "lint": "turbo run lint",
+    "release": "git tag v$(node -p \"require('./package.json').version\") && git push origin v$(node -p \"require('./package.json').version\")"
   },
   "devDependencies": {
     "turbo": "^2.8.17"
