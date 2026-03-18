@@ -74,7 +74,7 @@ export class AuthController {
     const frontendUrl = this.resolveFrontendUrl(req);
     res.clearCookie('oauth_redirect');
     res.redirect(
-      `${frontendUrl}/auth/callback?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
+      `${frontendUrl}/callback?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
     );
   }
 
@@ -106,7 +106,7 @@ export class AuthController {
     const frontendUrl = this.resolveFrontendUrl(req);
     res.clearCookie('oauth_redirect');
     res.redirect(
-      `${frontendUrl}/auth/callback?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
+      `${frontendUrl}/callback?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
     );
   }
 

@@ -15,8 +15,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
+    // Only fetch if not already authenticated (avoid overriding login() state on mount)
+    if (!isAuthenticated) {
+      fetchUser();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
