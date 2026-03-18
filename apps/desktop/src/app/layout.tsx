@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeInitializer } from "@/components/layout/theme-initializer";
 import "./globals.css";
 
 const inter = Inter({
@@ -31,8 +32,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var t=localStorage.getItem('ito-theme')||'dark';if(t==='auto'){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}if(t==='dark'){document.documentElement.classList.add('dark')}})()`,
+          }}
+        />
+      </head>
       <body className={`${inter.variable} font-sans antialiased`}>
+        <ThemeInitializer />
         <TooltipProvider>{children}</TooltipProvider>
       </body>
     </html>

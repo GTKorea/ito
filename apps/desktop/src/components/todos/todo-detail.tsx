@@ -71,17 +71,17 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
 
   if (isLoading || !todo) {
     return (
-      <div className="fixed right-0 top-0 z-50 flex h-full w-[420px] items-center justify-center border-l border-border bg-[#1A1A1A]">
+      <div className="fixed right-0 top-0 z-50 flex h-full w-[420px] items-center justify-center border-l border-border bg-card">
         <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="fixed right-0 top-0 z-50 flex h-full w-[420px] flex-col border-l border-border bg-[#1A1A1A] animate-in slide-in-from-right duration-200">
+    <div className="fixed right-0 top-0 z-50 flex h-full w-[420px] flex-col border-l border-border bg-card animate-in slide-in-from-right duration-200">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
-        <h2 className="text-sm font-semibold text-[#ECECEC]">Task Detail</h2>
+        <h2 className="text-sm font-semibold text-foreground">Task Detail</h2>
         <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={onClose}>
           <X className="h-4 w-4" />
         </Button>
