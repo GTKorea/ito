@@ -112,29 +112,30 @@ Desktop (`apps/desktop/.env.local`): → `.env.example` 참고
 
 ## 배포
 
-### 아키텍처 (멀티 서비스)
-- **EC2 1대** (t3.small)에 여러 백엔드 서비스 + PostgreSQL 배포
-- 각 서비스는 `*.krow.kr` 서브도메인 (와일드카드 A 레코드)
-- 프론트엔드는 Vercel에서 별도 배포
+### 아키텍처
+- **EC2 1대** (t3.small)에 여러 백엔드 서비스 + PostgreSQL
+- 각 서비스는 `*.krow.kr` 서브도메인 (Route53 와일드카드 A 레코드)
+- 프론트엔드는 Vercel
+- **인프라 레포 분리**: `krow-infra` (docker-compose, Caddy, 배포 스크립트)
+
+### EC2 디렉토리 구조
+```
+~/
+├── krow-infra/     ← 인프라 레포 (docker-compose, Caddy, env)
+├── ito/            ← 이 레포
+├── project-b/      ← 다른 프로젝트 (미래)
+```
 
 ### 프로덕션 구성
-- **프론트엔드**: Vercel (`ito.krow.kr` → CNAME)
+- **프론트엔드**: Vercel (`ito.krow.kr`)
 - **API**: EC2 Docker (`api.ito.krow.kr` → Caddy → `ito-api:3001`)
-- **DB**: Docker Compose 내 PostgreSQL (서비스별 DB 분리)
-- **HTTPS**: Caddy 자동 Let's Encrypt (`Caddyfile`)
-- **배포**: `deploy.sh` (서비스별 배포 지원: `--service ito-api`)
+- **DB**: PostgreSQL (서비스별 DB 분리)
+- **HTTPS**: Caddy 자동 Let's Encrypt
+- **인프라 관리**: [krow-infra](https://github.com/GTKorea/krow-infra)
 
-### DNS (Route53)
-- `*.krow.kr` → EC2 Elastic IP (A 레코드)
-- `ito.krow.kr` → `cname.vercel-dns.com` (CNAME, 와일드카드보다 우선)
-
-### 주요 파일
-- `docker-compose.prod.yml` — 프로덕션 서비스 정의
-- `Caddyfile` — 서브도메인별 리버스 프록시
+### 이 레포의 배포 관련 파일
 - `apps/api/Dockerfile` — API 멀티스테이지 빌드
-- `deploy.sh` — EC2 배포 스크립트
-- `env-production-template` — 프로덕션 환경변수 템플릿
-- `infra/postgres/init/` — DB 초기화 SQL 스크립트
+- `apps/desktop/vercel.json` — Vercel 배포 설정
 
 ## 코딩 컨벤션
 

@@ -1,8 +1,0 @@
-api.ito.krow.kr {
-	reverse_proxy ito-api:3001
-}
-
-# 새 서비스 추가 예시:
-# api.foo.krow.kr {
-# 	reverse_proxy foo-api:3002
-# }
