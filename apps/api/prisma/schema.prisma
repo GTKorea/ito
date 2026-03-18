@@ -32,6 +32,7 @@ model User {
   refreshTokens    RefreshToken[]
   activities       Activity[]
   filesUploaded    File[]
+  slackUsers       SlackUser[]
 }
 
 model RefreshToken {
@@ -55,11 +56,12 @@ model Workspace {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  members    WorkspaceMember[]
-  teams      Team[]
-  todos      Todo[]
-  invites    WorkspaceInvite[]
-  activities Activity[]
+  members         WorkspaceMember[]
+  teams           Team[]
+  todos           Todo[]
+  invites         WorkspaceInvite[]
+  activities      Activity[]
+  slackWorkspaces SlackWorkspace[]
 }
 
 model WorkspaceMember {
@@ -267,4 +269,33 @@ model File {
 
   @@index([todoId])
   @@index([threadLinkId])
+}
+
+// ──────────────────── Slack Integration ────────────────────
+
+model SlackWorkspace {
+  id            String      @id @default(cuid())
+  slackTeamId   String      @unique
+  slackTeamName String
+  accessToken   String
+  workspaceId   String
+  workspace     Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  slackUsers    SlackUser[]
+  createdAt     DateTime    @default(now())
+
+  @@index([workspaceId])
+}
+
+model SlackUser {
+  id               String         @id @default(cuid())
+  slackUserId      String
+  slackWorkspaceId String
+  userId           String
+  slackChannelId   String?
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slackWorkspace   SlackWorkspace @relation(fields: [slackWorkspaceId], references: [id], onDelete: Cascade)
+  createdAt        DateTime       @default(now())
+
+  @@unique([slackUserId, slackWorkspaceId])
+  @@index([userId])
 }

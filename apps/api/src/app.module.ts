@@ -13,6 +13,7 @@ import { WsEventsModule } from './websocket/ws.module';
 import { ActivityModule } from './activity/activity.module';
 import { FilesModule } from './files/files.module';
 import { EmailModule } from './email/email.module';
+import { SlackModule } from './slack/slack.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { EmailModule } from './email/email.module';
     FilesModule,
     WsEventsModule,
     EmailModule,
+    SlackModule,
   ],
 })
 export class AppModule {}
