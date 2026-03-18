@@ -67,7 +67,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document);
 
-  const preferredPort = parseInt(configService.get('API_PORT', '3001'), 10);
+  const preferredPort = parseInt(configService.get('API_PORT', '3011'), 10);
   const port = await findFreePort(preferredPort);
   await app.listen(port);
 

@@ -51,6 +51,6 @@ RUN mkdir -p apps/api/uploads
 
 WORKDIR /app/apps/api
 
-EXPOSE 3001
+EXPOSE 3011
 
 CMD ["node", "dist/main"]
