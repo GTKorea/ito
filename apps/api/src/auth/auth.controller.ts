@@ -53,10 +53,7 @@ export class AuthController {
   @UseGuards(GoogleOAuthGuard)
   async googleCallback(@Req() req: Request, @Res() res: Response) {
     const tokens = await this.authService.handleOAuthUser(req.user as any);
-    const frontendUrl = this.configService.get(
-      'FRONTEND_URL',
-      'http://localhost:3000',
-    );
+    const frontendUrl = this.resolveFrontendUrl(req);
     res.redirect(
       `${frontendUrl}/auth/callback?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
     );
@@ -71,12 +68,21 @@ export class AuthController {
   @UseGuards(GitHubOAuthGuard)
   async githubCallback(@Req() req: Request, @Res() res: Response) {
     const tokens = await this.authService.handleOAuthUser(req.user as any);
-    const frontendUrl = this.configService.get(
-      'FRONTEND_URL',
-      'http://localhost:3000',
-    );
+    const frontendUrl = this.resolveFrontendUrl(req);
     res.redirect(
       `${frontendUrl}/auth/callback?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
     );
+  }
+
+  private resolveFrontendUrl(req: Request): string {
+    const urls = this.configService
+      .get('FRONTEND_URL', 'http://localhost:3000')
+      .split(',')
+      .map((u) => u.trim());
+
+    // Match frontend URL based on Referer or Origin header
+    const origin = req.headers.referer || req.headers.origin || '';
+    const matched = urls.find((u) => origin.startsWith(u));
+    return matched || urls[0];
   }
 }
