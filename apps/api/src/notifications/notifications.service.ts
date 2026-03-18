@@ -1,13 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, Optional } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { NotificationType } from '@prisma/client';
 import { WsGateway } from '../websocket/ws.gateway';
+import { SlackService } from '../slack/slack.service';
 
 @Injectable()
 export class NotificationsService {
   constructor(
     private prisma: PrismaService,
     private wsGateway: WsGateway,
+    @Optional() @Inject(SlackService) private slackService?: SlackService,
   ) {}
 
   async create(data: {
@@ -29,6 +31,19 @@ export class NotificationsService {
 
     // Push via WebSocket in real-time
     this.wsGateway.sendToUser(data.userId, 'notification:new', notification);
+
+    // Push via Slack DM if connected
+    if (this.slackService?.isEnabled()) {
+      this.slackService
+        .sendNotification(data.userId, {
+          type: data.type as string,
+          title: data.title,
+          data: data.data,
+        })
+        .catch(() => {
+          // Slack notification failures should not affect the main flow
+        });
+    }
 
     return notification;
   }
