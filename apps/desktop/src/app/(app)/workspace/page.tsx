@@ -100,7 +100,7 @@ export default function WorkspacePage() {
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-6 py-3">
         <div>
-          <h1 className="text-lg font-semibold">My Todos</h1>
+          <h1 className="text-lg font-semibold">My Tasks</h1>
           <p className="text-xs text-muted-foreground">
             Tasks assigned to you
           </p>
@@ -111,7 +111,7 @@ export default function WorkspacePage() {
           </kbd>
           <Button size="sm" onClick={() => setShowCreate(true)}>
             <Plus className="mr-1 h-4 w-4" />
-            New Todo
+            New Task
           </Button>
         </div>
       </div>

@@ -44,7 +44,7 @@ export function CreateTodo({ workspaceId, onClose }: CreateTodoProps) {
       className="mb-4 rounded-lg border border-border bg-card p-4 space-y-3"
     >
       <Input
-        placeholder="Todo title"
+        placeholder="Task title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         autoFocus

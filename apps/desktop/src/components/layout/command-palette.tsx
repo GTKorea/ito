@@ -47,13 +47,13 @@ export function CommandPalette() {
         <CommandGroup heading="Actions">
           <CommandItem onSelect={() => navigate('/workspace')}>
             <Plus className="mr-2 h-4 w-4" />
-            Create new todo
+            Create new task
           </CommandItem>
         </CommandGroup>
         <CommandGroup heading="Navigation">
           <CommandItem onSelect={() => navigate('/workspace')}>
             <CheckSquare className="mr-2 h-4 w-4" />
-            My Todos
+            My Tasks
           </CommandItem>
           <CommandItem onSelect={() => navigate('/threads')}>
             <Link2 className="mr-2 h-4 w-4" />

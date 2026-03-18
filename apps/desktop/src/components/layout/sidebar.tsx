@@ -20,7 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
 const navItems = [
-  { href: '/workspace', icon: CheckSquare, label: 'My Todos' },
+  { href: '/workspace', icon: CheckSquare, label: 'My Tasks' },
   { href: '/threads', icon: Link2, label: 'Threads' },
   { href: '/teams', icon: Users, label: 'Teams' },
   { href: '/activity', icon: ActivityIcon, label: 'Activity' },
