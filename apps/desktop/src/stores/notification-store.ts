@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 import { api } from '@/lib/api-client';
 import { getSocket } from '@/lib/ws-client';
+import { sendDesktopNotification, formatNotification } from '@/lib/desktop-notify';
 
 interface Notification {
   id: string;
@@ -64,6 +65,9 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         notifications: [notification, ...state.notifications],
         unreadCount: state.unreadCount + 1,
       }));
+
+      const { title, body } = formatNotification(notification);
+      sendDesktopNotification(title, body);
     });
   },
 }));
