@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 import { api } from '@/lib/api-client';
 import { connectWs, disconnectWs } from '@/lib/ws-client';
+import { requestNotificationPermission } from '@/lib/desktop-notify';
 
 interface User {
   id: string;
@@ -35,6 +36,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     connectWs(data.accessToken);
     const { data: user } = await api.get('/users/me');
     set({ user, isAuthenticated: true, isLoading: false });
+    requestNotificationPermission();
   },
 
   register: async (email, password, name) => {
@@ -44,6 +46,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     connectWs(data.accessToken);
     const { data: user } = await api.get('/users/me');
     set({ user, isAuthenticated: true, isLoading: false });
+    requestNotificationPermission();
   },
 
   setTokens: (accessToken, refreshToken) => {
@@ -62,6 +65,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       connectWs(token);
       const { data } = await api.get('/users/me');
       set({ user: data, isAuthenticated: true, isLoading: false });
+      requestNotificationPermission();
     } catch {
       set({ user: null, isAuthenticated: false, isLoading: false });
     }
