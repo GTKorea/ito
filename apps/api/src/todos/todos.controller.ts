@@ -34,6 +34,18 @@ export class TodosController {
     return this.todosService.create(dto, workspaceId, userId);
   }
 
+  @Get('workspaces/:workspaceId/todos/calendar')
+  @UseGuards(WorkspaceMemberGuard)
+  @ApiOperation({ summary: 'Get calendar todos (completed + upcoming)' })
+  getCalendarTodos(
+    @Param('workspaceId') workspaceId: string,
+    @Query('start') start: string,
+    @Query('end') end: string,
+    @Query('userId') userId?: string,
+  ) {
+    return this.todosService.getCalendarTodos(workspaceId, start, end, userId);
+  }
+
   @Get('workspaces/:workspaceId/todos')
   @UseGuards(WorkspaceMemberGuard)
   @ApiOperation({ summary: 'List todos in workspace' })

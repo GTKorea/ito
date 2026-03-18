@@ -33,7 +33,7 @@ export async function createTestApp(): Promise<INestApplication> {
 export async function cleanDatabase(prisma: PrismaService): Promise<void> {
   // Single TRUNCATE statement avoids lock deadlocks between tables
   await prisma.$executeRawUnsafe(
-    `TRUNCATE TABLE "File", "Activity", "Notification", "ThreadLink", "Todo", "TeamMember", "Team", "SlackUser", "SlackWorkspace", "WorkspaceMember", "WorkspaceInvite", "Workspace", "RefreshToken", "User" CASCADE`,
+    `TRUNCATE TABLE "CalendarIntegration", "File", "Activity", "Notification", "ThreadLink", "Todo", "TeamMember", "Team", "SlackUser", "SlackWorkspace", "WorkspaceMember", "WorkspaceInvite", "Workspace", "RefreshToken", "User" CASCADE`,
   );
 }
 

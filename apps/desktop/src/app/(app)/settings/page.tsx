@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/stores/auth-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 import { api } from '@/lib/api-client';
@@ -16,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { User, Building2, UserPlus, Check, Camera, Copy, Link } from 'lucide-react';
+import { User, Building2, UserPlus, Check, Camera, Copy, Link, CalendarDays, Trash2 } from 'lucide-react';
 import { useRef } from 'react';
 
 export default function SettingsPage() {
@@ -38,6 +38,33 @@ export default function SettingsPage() {
   const [inviteSent, setInviteSent] = useState(false);
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // Calendar integrations
+  interface CalendarIntegration {
+    id: string;
+    provider: string;
+    syncEnabled: boolean;
+    calendarId: string | null;
+    createdAt: string;
+  }
+  const [calendarIntegrations, setCalendarIntegrations] = useState<CalendarIntegration[]>([]);
+  const [calendarLoading, setCalendarLoading] = useState(false);
+
+  useEffect(() => {
+    setCalendarLoading(true);
+    api
+      .get('/calendar/integrations')
+      .then(({ data }) => setCalendarIntegrations(data))
+      .catch(() => {})
+      .finally(() => setCalendarLoading(false));
+  }, []);
+
+  const handleDisconnectCalendar = async (id: string) => {
+    await api.delete(`/calendar/integrations/${id}`);
+    setCalendarIntegrations((prev) => prev.filter((c) => c.id !== id));
+  };
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3011';
 
   const handleSaveProfile = async () => {
     setIsSaving(true);
@@ -211,6 +238,88 @@ export default function SettingsPage() {
               <UserPlus className="mr-1 h-3.5 w-3.5" />
               Invite to {currentWorkspace.name}
             </Button>
+          )}
+        </section>
+
+        <Separator />
+
+        {/* Calendar Integrations */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <CalendarDays className="h-4 w-4 text-muted-foreground" />
+            <h2 className="text-sm font-semibold">Calendar Integrations</h2>
+          </div>
+
+          <p className="text-xs text-muted-foreground">
+            Connect your calendar to sync task deadlines as events.
+          </p>
+
+          {calendarLoading ? (
+            <div className="flex justify-center py-4">
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            </div>
+          ) : (
+            <>
+              {calendarIntegrations.length > 0 && (
+                <div className="space-y-2">
+                  {calendarIntegrations.map((integration) => (
+                    <div
+                      key={integration.id}
+                      className="flex items-center justify-between rounded-md border border-border px-3 py-2"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-7 w-7 items-center justify-center rounded bg-card text-xs font-bold">
+                          {integration.provider === 'google' ? 'G' : 'O'}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium capitalize">
+                            {integration.provider} Calendar
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">
+                            Connected {new Date(integration.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-muted-foreground hover:text-destructive"
+                        onClick={() => handleDisconnectCalendar(integration.id)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                {!calendarIntegrations.find((c) => c.provider === 'google') && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      window.location.href = `${apiUrl}/calendar/google/connect`;
+                    }}
+                  >
+                    Connect Google Calendar
+                  </Button>
+                )}
+                {!calendarIntegrations.find((c) => c.provider === 'outlook') && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      window.location.href = `${apiUrl}/calendar/outlook/connect`;
+                    }}
+                  >
+                    Connect Outlook Calendar
+                  </Button>
+                )}
+              </div>
+            </>
           )}
         </section>
       </div>

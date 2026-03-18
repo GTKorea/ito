@@ -20,6 +20,11 @@ export class CreateTodoDto {
   @IsOptional()
   @IsDateString()
   dueDate?: string;
+
+  @ApiPropertyOptional({ description: 'Team ID to assign this todo to' })
+  @IsOptional()
+  @IsString()
+  teamId?: string;
 }
 
 export class UpdateTodoDto {
@@ -42,4 +47,8 @@ export class UpdateTodoDto {
   @IsOptional()
   @IsDateString()
   dueDate?: string;
+
+  @IsOptional()
+  @IsString()
+  teamId?: string;
 }

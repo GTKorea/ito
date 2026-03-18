@@ -170,4 +170,202 @@ describe('Teams (e2e)', () => {
       expect(listRes.body).toHaveLength(0);
     });
   });
+
+  describe('Team Todos', () => {
+    it('should create a todo with teamId', async () => {
+      const { owner, ws } = await setupWorkspaceWithMember();
+
+      // Create team
+      const teamRes = await request(app.getHttpServer())
+        .post(`/workspaces/${ws.id}/teams`)
+        .set('Authorization', `Bearer ${owner.accessToken}`)
+        .send({ name: 'Dev Team' })
+        .expect(201);
+
+      // Create todo with teamId
+      const todoRes = await request(app.getHttpServer())
+        .post(`/workspaces/${ws.id}/todos`)
+        .set('Authorization', `Bearer ${owner.accessToken}`)
+        .send({ title: 'Team Task', teamId: teamRes.body.id })
+        .expect(201);
+
+      expect(todoRes.body.title).toBe('Team Task');
+    });
+
+    it('should get team todos', async () => {
+      const { owner, ws } = await setupWorkspaceWithMember();
+
+      // Create team
+      const teamRes = await request(app.getHttpServer())
+        .post(`/workspaces/${ws.id}/teams`)
+        .set('Authorization', `Bearer ${owner.accessToken}`)
+        .send({ name: 'Dev Team' })
+        .expect(201);
+
+      // Create todo with teamId
+      await request(app.getHttpServer())
+        .post(`/workspaces/${ws.id}/todos`)
+        .set('Authorization', `Bearer ${owner.accessToken}`)
+        .send({ title: 'Team Task 1', teamId: teamRes.body.id })
+        .expect(201);
+
+      // Create todo without teamId
+      await request(app.getHttpServer())
+        .post(`/workspaces/${ws.id}/todos`)
+        .set('Authorization', `Bearer ${owner.accessToken}`)
+        .send({ title: 'Personal Task' })
+        .expect(201);
+
+      // Get team todos
+      const todosRes = await request(app.getHttpServer())
+        .get(`/workspaces/${ws.id}/teams/${teamRes.body.id}/todos`)
+        .set('Authorization', `Bearer ${owner.accessToken}`)
+        .expect(200);
+
+      expect(todosRes.body).toHaveLength(1);
+      expect(todosRes.body[0].title).toBe('Team Task 1');
+    });
+
+    it('should get team dashboard', async () => {
+      const { owner, ws } = await setupWorkspaceWithMember();
+
+      // Create team
+      const teamRes = await request(app.getHttpServer())
+        .post(`/workspaces/${ws.id}/teams`)
+        .set('Authorization', `Bearer ${owner.accessToken}`)
+        .send({ name: 'Dev Team' })
+        .expect(201);
+
+      // Create a team todo
+      await request(app.getHttpServer())
+        .post(`/workspaces/${ws.id}/todos`)
+        .set('Authorization', `Bearer ${owner.accessToken}`)
+        .send({ title: 'Dashboard Task', teamId: teamRes.body.id })
+        .expect(201);
+
+      // Get dashboard
+      const dashRes = await request(app.getHttpServer())
+        .get(`/workspaces/${ws.id}/teams/${teamRes.body.id}/dashboard`)
+        .set('Authorization', `Bearer ${owner.accessToken}`)
+        .expect(200);
+
+      expect(dashRes.body).toHaveProperty('name', 'Dev Team');
+      expect(dashRes.body).toHaveProperty('members');
+      expect(dashRes.body).toHaveProperty('totals');
+      expect(dashRes.body.members).toHaveLength(1);
+      expect(dashRes.body.totals.activeTodos).toBe(1);
+    });
+  });
+
+  describe('Guest Role', () => {
+    it('should invite a user as GUEST', async () => {
+      const owner = await registerTestUser(app);
+      const guest = await registerTestUser(app);
+      const ws = await createTestWorkspace(app, owner.accessToken);
+
+      // Invite as GUEST
+      const inviteRes = await request(app.getHttpServer())
+        .post(`/workspaces/${ws.id}/invite`)
+        .set('Authorization', `Bearer ${owner.accessToken}`)
+        .send({ email: guest.email, role: 'GUEST' })
+        .expect(201);
+
+      // Accept invite
+      await request(app.getHttpServer())
+        .post(`/workspaces/join/${inviteRes.body.token}`)
+        .set('Authorization', `Bearer ${guest.accessToken}`)
+        .expect(201);
+
+      // Verify GUEST role was set
+      const member = await prisma.workspaceMember.findUnique({
+        where: {
+          userId_workspaceId: {
+            userId: (
+              await request(app.getHttpServer())
+                .get('/users/me')
+                .set('Authorization', `Bearer ${guest.accessToken}`)
+                .expect(200)
+            ).body.id,
+            workspaceId: ws.id,
+          },
+        },
+      });
+
+      expect(member?.role).toBe('GUEST');
+    });
+
+    it('should block GUEST from creating todos', async () => {
+      const owner = await registerTestUser(app);
+      const guest = await registerTestUser(app);
+      const ws = await createTestWorkspace(app, owner.accessToken);
+
+      // Invite as GUEST
+      const inviteRes = await request(app.getHttpServer())
+        .post(`/workspaces/${ws.id}/invite`)
+        .set('Authorization', `Bearer ${owner.accessToken}`)
+        .send({ email: guest.email, role: 'GUEST' })
+        .expect(201);
+
+      await request(app.getHttpServer())
+        .post(`/workspaces/join/${inviteRes.body.token}`)
+        .set('Authorization', `Bearer ${guest.accessToken}`)
+        .expect(201);
+
+      // GUEST should not be able to create todos
+      await request(app.getHttpServer())
+        .post(`/workspaces/${ws.id}/todos`)
+        .set('Authorization', `Bearer ${guest.accessToken}`)
+        .send({ title: 'Guest Task' })
+        .expect(403);
+    });
+
+    it('should block GUEST from accessing teams', async () => {
+      const owner = await registerTestUser(app);
+      const guest = await registerTestUser(app);
+      const ws = await createTestWorkspace(app, owner.accessToken);
+
+      const inviteRes = await request(app.getHttpServer())
+        .post(`/workspaces/${ws.id}/invite`)
+        .set('Authorization', `Bearer ${owner.accessToken}`)
+        .send({ email: guest.email, role: 'GUEST' })
+        .expect(201);
+
+      await request(app.getHttpServer())
+        .post(`/workspaces/join/${inviteRes.body.token}`)
+        .set('Authorization', `Bearer ${guest.accessToken}`)
+        .expect(201);
+
+      // GUEST should not access teams
+      await request(app.getHttpServer())
+        .get(`/workspaces/${ws.id}/teams`)
+        .set('Authorization', `Bearer ${guest.accessToken}`)
+        .expect(403);
+    });
+  });
+
+  describe('Workspace Update', () => {
+    it('should allow OWNER to update workspace settings', async () => {
+      const owner = await registerTestUser(app);
+      const ws = await createTestWorkspace(app, owner.accessToken);
+
+      const res = await request(app.getHttpServer())
+        .patch(`/workspaces/${ws.id}`)
+        .set('Authorization', `Bearer ${owner.accessToken}`)
+        .send({ name: 'Updated Name', description: 'A test workspace' })
+        .expect(200);
+
+      expect(res.body.name).toBe('Updated Name');
+      expect(res.body.description).toBe('A test workspace');
+    });
+
+    it('should block MEMBER from updating workspace settings', async () => {
+      const { member, ws } = await setupWorkspaceWithMember();
+
+      await request(app.getHttpServer())
+        .patch(`/workspaces/${ws.id}`)
+        .set('Authorization', `Bearer ${member.accessToken}`)
+        .send({ name: 'Hacked Name' })
+        .expect(403);
+    });
+  });
 });

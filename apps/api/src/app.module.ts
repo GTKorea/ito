@@ -14,6 +14,7 @@ import { ActivityModule } from './activity/activity.module';
 import { FilesModule } from './files/files.module';
 import { EmailModule } from './email/email.module';
 import { SlackModule } from './slack/slack.module';
+import { CalendarModule } from './calendar/calendar.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { SlackModule } from './slack/slack.module';
     WsEventsModule,
     EmailModule,
     SlackModule,
+    CalendarModule,
   ],
 })
 export class AppModule {}

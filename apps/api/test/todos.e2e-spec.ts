@@ -179,6 +179,68 @@ describe('Todos (e2e)', () => {
     });
   });
 
+  describe('GET /workspaces/:wid/todos/calendar', () => {
+    it('should return completed and upcoming todos for date range', async () => {
+      const owner = await registerTestUser(app);
+      const ws = await createTestWorkspace(app, owner.accessToken);
+
+      // Create a todo with a due date
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const todoRes = await request(app.getHttpServer())
+        .post(`/workspaces/${ws.id}/todos`)
+        .set('Authorization', `Bearer ${owner.accessToken}`)
+        .send({
+          title: 'Calendar Task',
+          priority: 'HIGH',
+          dueDate: tomorrow.toISOString(),
+        })
+        .expect(201);
+
+      // Complete the todo
+      await request(app.getHttpServer())
+        .patch(`/todos/${todoRes.body.id}`)
+        .set('Authorization', `Bearer ${owner.accessToken}`)
+        .send({ status: 'COMPLETED' })
+        .expect(200);
+
+      // Create another todo with due date (not completed)
+      const nextWeek = new Date();
+      nextWeek.setDate(nextWeek.getDate() + 7);
+      await request(app.getHttpServer())
+        .post(`/workspaces/${ws.id}/todos`)
+        .set('Authorization', `Bearer ${owner.accessToken}`)
+        .send({
+          title: 'Upcoming Task',
+          priority: 'MEDIUM',
+          dueDate: nextWeek.toISOString(),
+        })
+        .expect(201);
+
+      // Query calendar endpoint
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - 1);
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() + 14);
+
+      const res = await request(app.getHttpServer())
+        .get(`/workspaces/${ws.id}/todos/calendar`)
+        .query({
+          start: startDate.toISOString(),
+          end: endDate.toISOString(),
+        })
+        .set('Authorization', `Bearer ${owner.accessToken}`)
+        .expect(200);
+
+      expect(res.body.completed).toBeDefined();
+      expect(res.body.upcoming).toBeDefined();
+      expect(res.body.completed.length).toBe(1);
+      expect(res.body.completed[0].title).toBe('Calendar Task');
+      expect(res.body.upcoming.length).toBe(1);
+      expect(res.body.upcoming[0].title).toBe('Upcoming Task');
+    });
+  });
+
   describe('DELETE /todos/:id', () => {
     it('should delete a todo by creator', async () => {
       const { owner, todo } = await setupWorkspaceWithTodo();

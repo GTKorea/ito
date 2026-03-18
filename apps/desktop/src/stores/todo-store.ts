@@ -32,10 +32,29 @@ interface Todo {
   createdAt: string;
 }
 
+interface CalendarTodo {
+  id: string;
+  title: string;
+  status: string;
+  priority: string;
+  dueDate?: string;
+  completedAt?: string;
+  creator: User;
+  assignee: User;
+}
+
+interface CalendarData {
+  completed: CalendarTodo[];
+  upcoming: CalendarTodo[];
+}
+
 interface TodoState {
   todos: Todo[];
   isLoading: boolean;
+  calendarData: CalendarData | null;
+  calendarLoading: boolean;
   fetchTodos: (workspaceId: string, assignedToMe?: boolean) => Promise<void>;
+  fetchCalendarTodos: (workspaceId: string, start: string, end: string) => Promise<void>;
   createTodo: (workspaceId: string, title: string, description?: string, priority?: string, dueDate?: string) => Promise<Todo>;
   updateTodo: (id: string, data: Partial<Todo>) => Promise<void>;
   deleteTodo: (id: string) => Promise<void>;
@@ -47,6 +66,20 @@ interface TodoState {
 export const useTodoStore = create<TodoState>((set) => ({
   todos: [],
   isLoading: false,
+  calendarData: null,
+  calendarLoading: false,
+
+  fetchCalendarTodos: async (workspaceId, start, end) => {
+    set({ calendarLoading: true });
+    try {
+      const { data } = await api.get(`/workspaces/${workspaceId}/todos/calendar`, {
+        params: { start, end },
+      });
+      set({ calendarData: data, calendarLoading: false });
+    } catch {
+      set({ calendarLoading: false });
+    }
+  },
 
   fetchTodos: async (workspaceId, assignedToMe = true) => {
     set({ isLoading: true });

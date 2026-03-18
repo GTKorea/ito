@@ -1,5 +1,5 @@
-import { IsString, MinLength, Matches } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsOptional, IsEnum, MinLength, Matches } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateWorkspaceDto {
   @ApiProperty({ example: 'My Team' })
@@ -15,8 +15,30 @@ export class CreateWorkspaceDto {
   slug: string;
 }
 
+export class UpdateWorkspaceDto {
+  @ApiPropertyOptional({ example: 'My Team' })
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @ApiPropertyOptional({ example: 'A workspace for design collaboration' })
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  avatarUrl?: string;
+}
+
 export class InviteMemberDto {
   @ApiProperty({ example: 'member@example.com' })
   @IsString()
   email: string;
+
+  @ApiPropertyOptional({ enum: ['MEMBER', 'GUEST'], default: 'MEMBER' })
+  @IsOptional()
+  @IsEnum(['MEMBER', 'GUEST'])
+  role?: 'MEMBER' | 'GUEST';
 }

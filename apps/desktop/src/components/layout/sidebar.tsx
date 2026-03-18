@@ -9,6 +9,7 @@ import {
   Bell,
   Settings,
   ActivityIcon,
+  CalendarDays,
   LogOut,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -25,6 +26,7 @@ const navItems = [
   { href: '/threads', icon: Link2, label: 'Threads' },
   { href: '/teams', icon: Users, label: 'Teams' },
   { href: '/activity', icon: ActivityIcon, label: 'Activity' },
+  { href: '/calendar', icon: CalendarDays, label: 'Calendar' },
 ];
 
 export function Sidebar() {

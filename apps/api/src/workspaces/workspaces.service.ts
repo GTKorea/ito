@@ -93,12 +93,51 @@ export class WorkspacesService {
     };
   }
 
-  async invite(workspaceId: string, email: string, inviterUserId: string) {
+  async update(
+    workspaceId: string,
+    data: { name?: string; description?: string; avatarUrl?: string },
+    userId: string,
+  ) {
+    const ws = await this.prisma.workspace.findUnique({
+      where: { id: workspaceId },
+    });
+    if (!ws) throw new NotFoundException('Workspace not found');
+
+    // Only OWNER or ADMIN can update workspace
+    const member = await this.prisma.workspaceMember.findUnique({
+      where: { userId_workspaceId: { userId, workspaceId } },
+    });
+    if (!member || !['OWNER', 'ADMIN'].includes(member.role)) {
+      throw new ForbiddenException('Only workspace owners and admins can update settings');
+    }
+
+    const updated = await this.prisma.workspace.update({
+      where: { id: workspaceId },
+      data: {
+        ...(data.name !== undefined && { name: data.name }),
+        ...(data.description !== undefined && { description: data.description }),
+        ...(data.avatarUrl !== undefined && { avatarUrl: data.avatarUrl }),
+      },
+    });
+
+    await this.activityService.log({
+      workspaceId,
+      userId,
+      action: 'UPDATED',
+      entityType: 'Workspace',
+      entityId: workspaceId,
+      metadata: { changes: data },
+    });
+
+    return updated;
+  }
+
+  async invite(workspaceId: string, email: string, inviterUserId: string, role: 'MEMBER' | 'GUEST' = 'MEMBER') {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
     const invite = await this.prisma.workspaceInvite.create({
-      data: { workspaceId, email, expiresAt },
+      data: { workspaceId, email, expiresAt, role: role as any },
     });
 
     const [inviter, workspace] = await Promise.all([
@@ -155,7 +194,7 @@ export class WorkspacesService {
 
     const [member] = await this.prisma.$transaction([
       this.prisma.workspaceMember.create({
-        data: { userId, workspaceId: invite.workspaceId },
+        data: { userId, workspaceId: invite.workspaceId, role: invite.role },
       }),
       this.prisma.workspaceInvite.delete({ where: { id: invite.id } }),
     ]);

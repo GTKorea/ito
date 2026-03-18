@@ -22,17 +22,18 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  workspaceMembers WorkspaceMember[]
-  teamMembers      TeamMember[]
-  todosCreated     Todo[]         @relation("TodoCreator")
-  todosAssigned    Todo[]         @relation("TodoAssignee")
-  threadLinksFrom  ThreadLink[]   @relation("ThreadLinkSender")
-  threadLinksTo    ThreadLink[]   @relation("ThreadLinkReceiver")
-  notifications    Notification[]
-  refreshTokens    RefreshToken[]
-  activities       Activity[]
-  filesUploaded    File[]
-  slackUsers       SlackUser[]
+  workspaceMembers     WorkspaceMember[]
+  teamMembers          TeamMember[]
+  todosCreated         Todo[]         @relation("TodoCreator")
+  todosAssigned        Todo[]         @relation("TodoAssignee")
+  threadLinksFrom      ThreadLink[]   @relation("ThreadLinkSender")
+  threadLinksTo        ThreadLink[]   @relation("ThreadLinkReceiver")
+  notifications        Notification[]
+  refreshTokens        RefreshToken[]
+  activities           Activity[]
+  filesUploaded        File[]
+  slackUsers           SlackUser[]
+  calendarIntegrations CalendarIntegration[]
 }
 
 model RefreshToken {
@@ -271,6 +272,7 @@ model File {
   @@index([threadLinkId])
 }
 
+<<<<<<< HEAD
 // ──────────────────── Slack Integration ────────────────────
 
 model SlackWorkspace {
@@ -297,5 +299,25 @@ model SlackUser {
   createdAt        DateTime       @default(now())
 
   @@unique([slackUserId, slackWorkspaceId])
+  @@index([userId])
+}
+
+// ──────────────────── Calendar Integration ────────────────────
+
+model CalendarIntegration {
+  id           String  @id @default(cuid())
+  userId       String
+  provider     String  // 'google' | 'outlook'
+  accessToken  String
+  refreshToken String
+  calendarId   String?
+  syncEnabled  Boolean @default(true)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, provider])
   @@index([userId])
 }
