@@ -75,14 +75,16 @@ export class AuthController {
   }
 
   private resolveFrontendUrl(req: Request): string {
-    const urls = this.configService
-      .get('FRONTEND_URL', 'http://localhost:3000')
-      .split(',')
-      .map((u) => u.trim());
+    const raw: string = this.configService.get<string>(
+      'FRONTEND_URL',
+      'http://localhost:3000',
+    ) as string;
+    const urls = raw.split(',').map((url: string) => url.trim());
 
-    // Match frontend URL based on Referer or Origin header
     const origin = req.headers.referer || req.headers.origin || '';
-    const matched = urls.find((u) => origin.startsWith(u));
+    const matched = urls.find((url: string) =>
+      (origin as string).startsWith(url),
+    );
     return matched || urls[0];
   }
 }
