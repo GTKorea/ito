@@ -125,6 +125,49 @@ export class TodosService {
     return updated;
   }
 
+  async getCalendarTodos(
+    workspaceId: string,
+    start: string,
+    end: string,
+    userId?: string,
+  ) {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+
+    const baseWhere: any = { workspaceId };
+    if (userId) {
+      baseWhere.assigneeId = userId;
+    }
+
+    const include = {
+      creator: { select: { id: true, name: true, avatarUrl: true } },
+      assignee: { select: { id: true, name: true, avatarUrl: true } },
+    };
+
+    const [completed, upcoming] = await Promise.all([
+      this.prisma.todo.findMany({
+        where: {
+          ...baseWhere,
+          status: 'COMPLETED',
+          completedAt: { gte: startDate, lte: endDate },
+        },
+        include,
+        orderBy: { completedAt: 'asc' },
+      }),
+      this.prisma.todo.findMany({
+        where: {
+          ...baseWhere,
+          dueDate: { gte: startDate, lte: endDate },
+          status: { not: 'COMPLETED' },
+        },
+        include,
+        orderBy: { dueDate: 'asc' },
+      }),
+    ]);
+
+    return { completed, upcoming };
+  }
+
   async delete(id: string, userId: string) {
     const todo = await this.prisma.todo.findUnique({ where: { id } });
     if (!todo) throw new NotFoundException('Todo not found');

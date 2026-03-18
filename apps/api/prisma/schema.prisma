@@ -22,16 +22,17 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  workspaceMembers WorkspaceMember[]
-  teamMembers      TeamMember[]
-  todosCreated     Todo[]         @relation("TodoCreator")
-  todosAssigned    Todo[]         @relation("TodoAssignee")
-  threadLinksFrom  ThreadLink[]   @relation("ThreadLinkSender")
-  threadLinksTo    ThreadLink[]   @relation("ThreadLinkReceiver")
-  notifications    Notification[]
-  refreshTokens    RefreshToken[]
-  activities       Activity[]
-  filesUploaded    File[]
+  workspaceMembers     WorkspaceMember[]
+  teamMembers          TeamMember[]
+  todosCreated         Todo[]         @relation("TodoCreator")
+  todosAssigned        Todo[]         @relation("TodoAssignee")
+  threadLinksFrom      ThreadLink[]   @relation("ThreadLinkSender")
+  threadLinksTo        ThreadLink[]   @relation("ThreadLinkReceiver")
+  notifications        Notification[]
+  refreshTokens        RefreshToken[]
+  activities           Activity[]
+  filesUploaded        File[]
+  calendarIntegrations CalendarIntegration[]
 }
 
 model RefreshToken {
@@ -267,4 +268,24 @@ model File {
 
   @@index([todoId])
   @@index([threadLinkId])
+}
+
+// ──────────────────── Calendar Integration ────────────────────
+
+model CalendarIntegration {
+  id           String  @id @default(cuid())
+  userId       String
+  provider     String  // 'google' | 'outlook'
+  accessToken  String
+  refreshToken String
+  calendarId   String?
+  syncEnabled  Boolean @default(true)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, provider])
+  @@index([userId])
 }
