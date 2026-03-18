@@ -5,6 +5,7 @@ import {
   Delete,
   Param,
   Body,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
@@ -34,6 +35,22 @@ export class TeamsController {
   @ApiOperation({ summary: 'List teams in workspace' })
   findAll(@Param('workspaceId') workspaceId: string) {
     return this.teamsService.findAllInWorkspace(workspaceId);
+  }
+
+  @Get(':teamId/dashboard')
+  @ApiOperation({ summary: 'Get team workload dashboard' })
+  getDashboard(@Param('teamId') teamId: string) {
+    return this.teamsService.getTeamDashboard(teamId);
+  }
+
+  @Get(':teamId/todos')
+  @ApiOperation({ summary: "Get team's todos" })
+  getTeamTodos(
+    @Param('teamId') teamId: string,
+    @Query('status') status?: string,
+    @Query('assigneeId') assigneeId?: string,
+  ) {
+    return this.teamsService.getTeamTodos(teamId, { status, assigneeId });
   }
 
   @Post(':teamId/members')

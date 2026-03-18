@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Get,
+  Patch,
   Param,
   Body,
   UseGuards,
@@ -10,7 +11,11 @@ import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { WorkspacesService } from './workspaces.service';
-import { CreateWorkspaceDto, InviteMemberDto } from './dto/create-workspace.dto';
+import {
+  CreateWorkspaceDto,
+  UpdateWorkspaceDto,
+  InviteMemberDto,
+} from './dto/create-workspace.dto';
 
 @ApiTags('workspaces')
 @ApiBearerAuth()
@@ -40,6 +45,16 @@ export class WorkspacesController {
     return this.workspacesService.findById(id);
   }
 
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update workspace settings (OWNER/ADMIN only)' })
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateWorkspaceDto,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.workspacesService.update(id, dto, userId);
+  }
+
   @Get('invites/:token')
   @ApiOperation({ summary: 'Get invite info by token' })
   getInviteInfo(@Param('token') token: string) {
@@ -53,7 +68,7 @@ export class WorkspacesController {
     @Body() dto: InviteMemberDto,
     @CurrentUser('id') userId: string,
   ) {
-    return this.workspacesService.invite(id, dto.email, userId);
+    return this.workspacesService.invite(id, dto.email, userId, dto.role);
   }
 
   @Post('join/:token')
