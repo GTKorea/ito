@@ -16,6 +16,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Plus, Building2 } from 'lucide-react';
+import { QuickInput } from '@/components/todos/quick-input';
 
 function CreateWorkspacePrompt() {
   const { createWorkspace } = useWorkspaceStore();
@@ -96,7 +97,7 @@ export default function WorkspacePage() {
   }
 
   return (
-    <div className="h-full">
+    <div className="flex h-full flex-col">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-6 py-3">
         <div>
@@ -117,7 +118,7 @@ export default function WorkspacePage() {
       </div>
 
       {/* Content */}
-      <div className="p-6">
+      <div className="flex-1 overflow-y-auto p-6 pb-2">
         {showCreate && (
           <CreateTodo
             workspaceId={currentWorkspace.id}
@@ -133,6 +134,9 @@ export default function WorkspacePage() {
           <TodoList todos={todos} onSelectTodo={setSelectedTodoId} />
         )}
       </div>
+
+      {/* Quick Input */}
+      <QuickInput />
 
       {/* Todo Detail Slide-over */}
       {selectedTodoId && (
