@@ -21,7 +21,7 @@ COPY apps/api/ apps/api/
 # Build shared package
 RUN pnpm --filter @ito/shared build
 
-# Generate Prisma client
+# Generate Prisma client (output: apps/api/node_modules/.prisma/client)
 RUN cd apps/api && npx prisma generate
 
 # Build API
@@ -44,7 +44,7 @@ RUN pnpm install --frozen-lockfile --prod
 
 # Copy Prisma schema + generated client from builder
 COPY --from=builder /app/apps/api/prisma apps/api/prisma
-COPY --from=builder /app/node_modules/.prisma node_modules/.prisma
+COPY --from=builder /app/apps/api/node_modules/.prisma apps/api/node_modules/.prisma
 
 # Copy built artifacts
 COPY --from=builder /app/apps/api/dist apps/api/dist
