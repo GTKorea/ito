@@ -40,10 +40,12 @@ COPY --from=builder /app/packages/shared/package.json packages/shared/
 # Install production dependencies only
 RUN pnpm install --frozen-lockfile --prod
 
+# Generate Prisma client in production node_modules
+COPY --from=builder /app/apps/api/prisma apps/api/prisma
+RUN cd apps/api && npx prisma generate
+
 # Copy built artifacts
 COPY --from=builder /app/apps/api/dist apps/api/dist
-COPY --from=builder /app/apps/api/prisma apps/api/prisma
-COPY --from=builder /app/apps/api/node_modules/.prisma apps/api/node_modules/.prisma
 COPY --from=builder /app/packages/shared/dist packages/shared/dist
 
 # Create uploads directory
