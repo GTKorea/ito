@@ -9,6 +9,9 @@ on:
 env:
   NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL || 'https://api.ito.krow.kr' }}
 
+permissions:
+  contents: write
+
 jobs:
   build:
     strategy:
