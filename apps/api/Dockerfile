@@ -1,6 +1,7 @@
 # ── Build stage ──
 FROM node:20-alpine AS builder
 
+RUN apk add --no-cache openssl
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
@@ -29,6 +30,7 @@ RUN pnpm --filter @ito/api build
 # ── Production stage ──
 FROM node:20-alpine AS runner
 
+RUN apk add --no-cache openssl
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
@@ -40,9 +42,9 @@ COPY --from=builder /app/packages/shared/package.json packages/shared/
 # Install production dependencies only
 RUN pnpm install --frozen-lockfile --prod
 
-# Generate Prisma client in production node_modules
+# Copy Prisma schema + generated client from builder
 COPY --from=builder /app/apps/api/prisma apps/api/prisma
-RUN cd apps/api && npx prisma generate
+COPY --from=builder /app/node_modules/.prisma node_modules/.prisma
 
 # Copy built artifacts
 COPY --from=builder /app/apps/api/dist apps/api/dist
