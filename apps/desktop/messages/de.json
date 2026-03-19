@@ -240,7 +240,8 @@
       "step2": "Verbinde sie mit jemand anderem",
       "step3": "Der kann sie auch weiterleiten",
       "step4": "Wenn erledigt, springt sie zurück",
-      "step5": "Bis alle fertig sind"
+      "step5": "Es springt weiter zurück",
+      "step6": "Bis alle fertig sind"
     },
     "quickInput": {
       "title": "Tippen. Verketten. Fertig.",

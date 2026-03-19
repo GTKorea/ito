@@ -240,7 +240,8 @@
       "step2": "Conéctala a otra persona",
       "step3": "Ellos también pueden pasarla",
       "step4": "Al terminar, regresa automáticamente",
-      "step5": "Hasta que todos terminen"
+      "step5": "Sigue volviendo",
+      "step6": "Hasta que todos terminen"
     },
     "quickInput": {
       "title": "Escríbelo. Encadénalo. Listo.",

@@ -6,19 +6,24 @@ import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 import { useScrollAnimation } from './use-scroll-animation';
 
-const STEPS = 5;
+const STEPS = 6;
 const STEP_INTERVAL = 2500;
 
+const VB_W = 580;
+const VB_H = 200;
+const NODE_Y = 70;
+const NODE_R = 25;
+
 const NODES = [
-  { id: 'alice', label: 'Alice', x: 80, y: 100 },
-  { id: 'bob', label: 'Bob', x: 260, y: 100 },
-  { id: 'charlie', label: 'Charlie', x: 440, y: 100 },
+  { id: 'alice', label: 'Alice', x: 80, y: NODE_Y },
+  { id: 'bob', label: 'Bob', x: 290, y: NODE_Y },
+  { id: 'charlie', label: 'Charlie', x: 500, y: NODE_Y },
 ];
 
 function DemoVisual({ step }: { step: number }) {
   return (
     <div className="relative h-[240px] w-full sm:h-[280px]">
-      <svg viewBox="0 0 520 200" fill="none" className="h-full w-full">
+      <svg viewBox={`0 0 ${VB_W} ${VB_H}`} fill="none" className="h-full w-full">
         <defs>
           <linearGradient id="demo-line" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#6366f1" />
@@ -36,11 +41,11 @@ function DemoVisual({ step }: { step: number }) {
         {/* Line Alice → Bob */}
         {step >= 2 && (
           <line
-            x1="120"
-            y1="100"
-            x2="220"
-            y2="100"
-            stroke={step >= 5 ? 'url(#demo-line-done)' : 'url(#demo-line)'}
+            x1={NODES[0].x + NODE_R}
+            y1={NODE_Y}
+            x2={NODES[1].x - NODE_R}
+            y2={NODE_Y}
+            stroke={step >= 6 ? 'url(#demo-line-done)' : 'url(#demo-line)'}
             strokeWidth="2"
             strokeDasharray={step === 2 ? '200' : 'none'}
             strokeDashoffset={step === 2 ? '0' : '0'}
@@ -61,11 +66,11 @@ function DemoVisual({ step }: { step: number }) {
         {/* Line Bob → Charlie */}
         {step >= 3 && (
           <line
-            x1="300"
-            y1="100"
-            x2="400"
-            y2="100"
-            stroke={step >= 5 ? 'url(#demo-line-done)' : 'url(#demo-line)'}
+            x1={NODES[1].x + NODE_R}
+            y1={NODE_Y}
+            x2={NODES[2].x - NODE_R}
+            y2={NODE_Y}
+            stroke={step >= 6 ? 'url(#demo-line-done)' : 'url(#demo-line)'}
             strokeWidth="2"
             className="transition-all duration-700"
           >
@@ -81,30 +86,30 @@ function DemoVisual({ step }: { step: number }) {
           </line>
         )}
 
-        {/* Arrow heads */}
+        {/* Arrow heads — midpoint between nodes */}
         {step >= 2 && (
           <polygon
-            points="220,94 220,106 232,100"
-            fill={step >= 5 ? '#22c55e' : '#6366f1'}
+            points={`${(NODES[0].x + NODES[1].x) / 2 - 6},${NODE_Y - 5} ${(NODES[0].x + NODES[1].x) / 2 - 6},${NODE_Y + 5} ${(NODES[0].x + NODES[1].x) / 2 + 6},${NODE_Y}`}
+            fill={step >= 6 ? '#22c55e' : '#6366f1'}
             className="transition-colors duration-500"
           />
         )}
         {step >= 3 && (
           <polygon
-            points="400,94 400,106 412,100"
-            fill={step >= 5 ? '#22c55e' : '#6366f1'}
+            points={`${(NODES[1].x + NODES[2].x) / 2 - 6},${NODE_Y - 5} ${(NODES[1].x + NODES[2].x) / 2 - 6},${NODE_Y + 5} ${(NODES[1].x + NODES[2].x) / 2 + 6},${NODE_Y}`}
+            fill={step >= 6 ? '#22c55e' : '#6366f1'}
             className="transition-colors duration-500"
           />
         )}
 
-        {/* Snap-back arrows (step 4+) */}
+        {/* Snap-back: Charlie → Bob (step 4) */}
         {step === 4 && (
           <g opacity="0.6">
             <line
-              x1="400"
-              y1="130"
-              x2="300"
-              y2="130"
+              x1={NODES[2].x - NODE_R}
+              y1={NODE_Y + 18}
+              x2={NODES[1].x + NODE_R}
+              y2={NODE_Y + 18}
               stroke="#f59e0b"
               strokeWidth="1.5"
               strokeDasharray="4 4"
@@ -117,7 +122,37 @@ function DemoVisual({ step }: { step: number }) {
                 repeatCount="indefinite"
               />
             </line>
-            <polygon points="300,126 300,134 290,130" fill="#f59e0b" />
+            <polygon
+              points={`${NODES[1].x + NODE_R},${NODE_Y + 14} ${NODES[1].x + NODE_R},${NODE_Y + 22} ${NODES[1].x + NODE_R - 10},${NODE_Y + 18}`}
+              fill="#f59e0b"
+            />
+          </g>
+        )}
+
+        {/* Snap-back: Bob → Alice (step 5) */}
+        {step === 5 && (
+          <g opacity="0.6">
+            <line
+              x1={NODES[1].x - NODE_R}
+              y1={NODE_Y + 18}
+              x2={NODES[0].x + NODE_R}
+              y2={NODE_Y + 18}
+              stroke="#f59e0b"
+              strokeWidth="1.5"
+              strokeDasharray="4 4"
+            >
+              <animate
+                attributeName="stroke-dashoffset"
+                from="0"
+                to="16"
+                dur="0.6s"
+                repeatCount="indefinite"
+              />
+            </line>
+            <polygon
+              points={`${NODES[0].x + NODE_R},${NODE_Y + 14} ${NODES[0].x + NODE_R},${NODE_Y + 22} ${NODES[0].x + NODE_R - 10},${NODE_Y + 18}`}
+              fill="#f59e0b"
+            />
           </g>
         )}
       </svg>
@@ -129,58 +164,60 @@ function DemoVisual({ step }: { step: number }) {
           (step === 2 && i === 1) ||
           (step === 3 && i === 2) ||
           (step === 4 && i === 1) ||
-          (step === 5 && i === 0);
+          (step === 5 && i === 0) ||
+          (step === 6 && i === 0);
 
         const isCompleted =
           (step >= 4 && i === 2) ||
           (step >= 5 && i === 1) ||
-          (step >= 5 && i === 0);
+          (step >= 6 && i === 0);
 
         return (
-          <motion.div
+          <div
             key={node.id}
-            className="absolute flex flex-col items-center gap-1.5"
+            className="absolute -translate-x-1/2 -translate-y-1/2"
             style={{
-              left: `${(node.x / 520) * 100}%`,
-              top: `${(node.y / 200) * 100 - 15}%`,
-              transform: 'translate(-50%, -50%)',
+              left: `${(node.x / VB_W) * 100}%`,
+              top: `${(node.y / VB_H) * 100}%`,
             }}
-            animate={
-              step === 4 && i === 1
-                ? { scale: 1.15 }
-                : step === 5 && i === 0
+          >
+            <motion.div
+              className="flex flex-col items-center gap-1.5"
+              animate={
+                (step === 4 && i === 1) || (step === 5 && i === 0)
                   ? { scale: 1.15 }
                   : { scale: 1 }
-            }
-            transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-          >
-            <div
-              className={`flex h-10 w-10 items-center justify-center rounded-full border-2 text-xs font-semibold transition-all duration-500 sm:h-12 sm:w-12 sm:text-sm ${
-                isCompleted
-                  ? 'border-green-500 bg-green-500/20 text-green-400'
-                  : isActive
-                    ? 'border-indigo-400 bg-indigo-500/20 text-indigo-300'
-                    : 'border-border bg-card text-muted-foreground'
-              }`}
+              }
+              transition={{ type: 'spring', stiffness: 300, damping: 15 }}
             >
-              {isCompleted ? <Check size={16} /> : node.label[0]}
-            </div>
-            <span className="text-[10px] text-muted-foreground sm:text-xs">{node.label}</span>
-          </motion.div>
+              <div
+                className={`flex h-10 w-10 items-center justify-center rounded-full border-2 text-xs font-semibold transition-all duration-500 sm:h-12 sm:w-12 sm:text-sm ${
+                  isCompleted
+                    ? 'border-green-500 bg-green-500/20 text-green-400'
+                    : isActive
+                      ? 'border-indigo-400 bg-indigo-500/20 text-indigo-300'
+                      : 'border-border bg-card text-muted-foreground'
+                }`}
+              >
+                {isCompleted ? <Check size={16} /> : node.label[0]}
+              </div>
+              <span className="text-[10px] text-muted-foreground sm:text-xs">{node.label}</span>
+            </motion.div>
+          </div>
         );
       })}
 
       {/* Task card */}
       {step >= 1 && (
         <motion.div
-          className="absolute left-1/2 top-[70%] -translate-x-1/2 rounded-lg border border-border bg-card/80 px-3 py-1.5 text-[10px] text-muted-foreground backdrop-blur-sm sm:text-xs"
+          className="absolute left-1/2 top-[75%] -translate-x-1/2 rounded-lg border border-border bg-card/80 px-3 py-1.5 text-[10px] text-muted-foreground backdrop-blur-sm sm:text-xs"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
         >
           <span className="text-foreground">Design homepage</span>
           {step >= 2 && (
             <span className="ml-2 text-indigo-400">
-              → {step >= 3 ? (step >= 4 ? (step >= 5 ? 'Alice ✓' : 'Bob') : 'Charlie') : 'Bob'}
+              → {step >= 6 ? 'Alice ✓' : step >= 5 ? 'Alice' : step >= 4 ? 'Bob' : step >= 3 ? 'Charlie' : 'Bob'}
             </span>
           )}
         </motion.div>
@@ -228,6 +265,7 @@ export function ThreadDemoSection() {
     'threadDemo.step3',
     'threadDemo.step4',
     'threadDemo.step5',
+    'threadDemo.step6',
   ];
 
   return (

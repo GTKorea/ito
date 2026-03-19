@@ -240,7 +240,8 @@
       "step2": "Connect it to someone else",
       "step3": "They can pass it forward too",
       "step4": "When done, it snaps back",
-      "step5": "Until everyone's done"
+      "step5": "It keeps snapping back",
+      "step6": "Until everyone's done"
     },
     "quickInput": {
       "title": "Type it. Chain it. Done.",

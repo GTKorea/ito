@@ -240,7 +240,8 @@
       "step2": "Conecte-a a outra pessoa",
       "step3": "Ela também pode passar adiante",
       "step4": "Ao terminar, volta automaticamente",
-      "step5": "Até que todos terminem"
+      "step5": "Continua voltando",
+      "step6": "Até que todos terminem"
     },
     "quickInput": {
       "title": "Digite. Encadeie. Pronto.",
