@@ -33,3 +33,6 @@ coverage/
 
 # Turbo
 .turbo/
+
+# Storybook
+storybook-static/
