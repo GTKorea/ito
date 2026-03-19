@@ -262,12 +262,13 @@ export function QuickInput() {
       {/* Floating neon input */}
       <div className={cn(
         'flex items-center gap-2 rounded-[20px] px-5 py-2.5',
-        'bg-card/60 backdrop-blur-md',
+        'bg-card/40 backdrop-blur-md',
         'border border-lime-400/8',
         'shadow-[0_4px_20px_rgba(0,0,0,0.25)]',
         'transition-all duration-300',
-        'focus-within:border-lime-400/20',
-        'focus-within:shadow-[0_4px_20px_rgba(160,220,0,0.06),0_8px_32px_rgba(0,0,0,0.25)]',
+        'focus-within:bg-card/80',
+        'focus-within:border-lime-400/30',
+        'focus-within:shadow-[0_4px_20px_rgba(160,220,0,0.08),0_8px_32px_rgba(0,0,0,0.3)]',
       )}>
         <input
           ref={inputRef}
