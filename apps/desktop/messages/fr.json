@@ -200,5 +200,94 @@
     "uploading": "Téléchargement...",
     "dropFileHere": "Déposez un fichier ici ou",
     "chooseFile": "Choisir un Fichier"
+  },
+  "landing": {
+    "nav": {
+      "features": "Fonctionnalités",
+      "integrations": "Intégrations",
+      "login": "Se connecter",
+      "getStarted": "Commencer"
+    },
+    "hero": {
+      "headline": "Des tâches qui coulent comme des fils",
+      "subtext": "Connectez les personnes, déléguez le travail et regardez-le revenir automatiquement. ito tisse des chaînes de responsabilité qui se gèrent toutes seules.",
+      "cta": "Commencer gratuitement",
+      "ctaSecondary": "Découvrir le fonctionnement"
+    },
+    "threadDemo": {
+      "title": "La chaîne de fils",
+      "subtitle": "Le travail circule à travers les personnes, pas seulement vers elles. Quand quelqu'un termine, il revient automatiquement.",
+      "step1": "Créez une tâche et elle est à vous",
+      "step2": "Connectez-la à quelqu'un d'autre",
+      "step3": "Il peut aussi la transmettre",
+      "step4": "Une fois terminée, elle revient automatiquement",
+      "step5": "Jusqu'à ce que tout le monde ait fini"
+    },
+    "quickInput": {
+      "title": "Tapez. Chaînez. Terminé.",
+      "subtitle": "Créez des tâches et construisez des chaînes en une ligne. Tapez une tâche, puis > pour connecter des personnes."
+    },
+    "graph": {
+      "title": "Voyez la vue d'ensemble",
+      "subtitle": "Chaque fil, chaque connexion, visualisé en temps réel. Comprenez le workflow de votre équipe en un coup d'œil."
+    },
+    "features": {
+      "title": "Tout ce dont vous avez besoin",
+      "subtitle": "Des fonctionnalités puissantes qui rendent la collaboration d'équipe facile.",
+      "calendar": {
+        "title": "Synchronisation Calendrier",
+        "description": "Synchronisez les échéances avec Google Calendar et Outlook automatiquement."
+      },
+      "teams": {
+        "title": "Tableaux de Bord d'Équipe",
+        "description": "Visualisez la répartition de la charge de travail et les statistiques d'équipe en un coup d'œil."
+      },
+      "notifications": {
+        "title": "Alertes en Temps Réel",
+        "description": "Notifications bureau, alertes dans l'app et pings Slack."
+      },
+      "slack": {
+        "title": "Commandes Slack",
+        "description": "Créez et gérez des tâches sans quitter Slack avec /ito."
+      },
+      "i18n": {
+        "title": "9 Langues",
+        "description": "Conçu pour les équipes internationales avec un support complet de l'internationalisation."
+      },
+      "desktop": {
+        "title": "Application Bureau",
+        "description": "Application native pour macOS, Windows et Linux via Tauri."
+      }
+    },
+    "integrations": {
+      "title": "Fonctionne là où vous travaillez",
+      "calendar": {
+        "title": "Vos tâches, votre calendrier",
+        "description": "Les échéances se synchronisent automatiquement avec Google Calendar et Outlook. Ne manquez plus aucune date limite."
+      },
+      "slack": {
+        "title": "Gérez les fils depuis Slack",
+        "description": "Créez des tâches, vérifiez le statut et soyez notifié — le tout avec /ito."
+      },
+      "desktop": {
+        "title": "Natif et rapide",
+        "description": "Construit avec Tauri pour une expérience native. Léger, rapide, multiplateforme."
+      }
+    },
+    "stats": {
+      "languages": { "value": "9", "label": "Langues" },
+      "realtime": { "value": "Temps réel", "label": "Synchronisation" },
+      "crossPlatform": { "value": "3", "label": "Plateformes" },
+      "openArch": { "value": "Ouverte", "label": "Architecture" }
+    },
+    "cta": {
+      "title": "Commencez à tisser votre workflow",
+      "subtitle": "Gratuit pour commencer. Aucune carte de crédit requise.",
+      "button": "Commencer"
+    },
+    "footer": {
+      "privacy": "Confidentialité",
+      "terms": "Conditions"
+    }
   }
 }

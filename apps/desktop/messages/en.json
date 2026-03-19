@@ -200,5 +200,94 @@
     "uploading": "Uploading...",
     "dropFileHere": "Drop a file here or",
     "chooseFile": "Choose File"
+  },
+  "landing": {
+    "nav": {
+      "features": "Features",
+      "integrations": "Integrations",
+      "login": "Log in",
+      "getStarted": "Get Started"
+    },
+    "hero": {
+      "headline": "Tasks that flow like threads",
+      "subtext": "Connect people, delegate work, and watch it snap back. ito weaves responsibility chains that manage themselves.",
+      "cta": "Start for free",
+      "ctaSecondary": "See how it works"
+    },
+    "threadDemo": {
+      "title": "The thread chain",
+      "subtitle": "Work flows through people, not just to them. When someone finishes, it automatically snaps back.",
+      "step1": "Create a task and it's yours",
+      "step2": "Connect it to someone else",
+      "step3": "They can pass it forward too",
+      "step4": "When done, it snaps back",
+      "step5": "Until everyone's done"
+    },
+    "quickInput": {
+      "title": "Type it. Chain it. Done.",
+      "subtitle": "Create tasks and build chains in one line. Just type a task, then > to connect people."
+    },
+    "graph": {
+      "title": "See the big picture",
+      "subtitle": "Every thread, every connection, visualized in real-time. Understand your team's workflow at a glance."
+    },
+    "features": {
+      "title": "Everything you need",
+      "subtitle": "Powerful features that make team collaboration effortless.",
+      "calendar": {
+        "title": "Calendar Sync",
+        "description": "Sync due dates with Google Calendar and Outlook automatically."
+      },
+      "teams": {
+        "title": "Team Dashboards",
+        "description": "See workload distribution and team stats at a glance."
+      },
+      "notifications": {
+        "title": "Real-time Alerts",
+        "description": "Desktop notifications, in-app alerts, and Slack pings."
+      },
+      "slack": {
+        "title": "Slack Commands",
+        "description": "Create and manage tasks without leaving Slack with /ito."
+      },
+      "i18n": {
+        "title": "9 Languages",
+        "description": "Built for global teams with full internationalization support."
+      },
+      "desktop": {
+        "title": "Desktop App",
+        "description": "Native app for macOS, Windows, and Linux via Tauri."
+      }
+    },
+    "integrations": {
+      "title": "Works where you work",
+      "calendar": {
+        "title": "Your tasks, your calendar",
+        "description": "Due dates automatically sync to Google Calendar and Outlook. Never miss a deadline."
+      },
+      "slack": {
+        "title": "Manage threads from Slack",
+        "description": "Create tasks, check status, and get notified — all with /ito."
+      },
+      "desktop": {
+        "title": "Native and fast",
+        "description": "Built with Tauri for a native experience. Light, fast, cross-platform."
+      }
+    },
+    "stats": {
+      "languages": { "value": "9", "label": "Languages" },
+      "realtime": { "value": "Real-time", "label": "Sync" },
+      "crossPlatform": { "value": "3", "label": "Platforms" },
+      "openArch": { "value": "Open", "label": "Architecture" }
+    },
+    "cta": {
+      "title": "Start weaving your workflow",
+      "subtitle": "Free to start. No credit card required.",
+      "button": "Get Started"
+    },
+    "footer": {
+      "privacy": "Privacy",
+      "terms": "Terms"
+    }
   }
 }
