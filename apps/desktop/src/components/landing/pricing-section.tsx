@@ -123,7 +123,7 @@ function PlanCard({
       {/* CTA */}
       {isEnterprise ? (
         <a
-          href="mailto:contact@ito.krow.kr"
+          href="mailto:contact@itothread.com"
           className="inline-flex h-10 items-center justify-center rounded-xl border border-border px-6 text-sm font-medium text-foreground transition-colors hover:bg-accent"
         >
           {t('pricing.plans.enterprise.cta')}
