@@ -204,7 +204,7 @@ export function QuickInput() {
     <div className="relative px-8 pb-6 pt-4">
       {/* Autocomplete dropdown — positioned above the input */}
       {showAutocomplete && autocompleteResults.length > 0 && (
-        <div className="absolute bottom-full left-8 right-8 mb-3 max-h-48 overflow-y-auto rounded-xl border border-cyan-500/20 bg-card/95 backdrop-blur-md shadow-[0_-8px_30px_rgba(0,200,255,0.08)]">
+        <div className="absolute bottom-full left-8 right-8 mb-3 max-h-48 overflow-y-auto rounded-2xl border border-lime-400/10 bg-card/95 backdrop-blur-md shadow-[0_-4px_20px_rgba(160,220,0,0.04)]">
           {autocompleteResults.map((user, index) => (
             <button
               key={user.id}
@@ -234,13 +234,13 @@ export function QuickInput() {
 
       {/* Floating neon input */}
       <div className={cn(
-        'flex items-center gap-2 rounded-2xl px-4 py-2.5',
+        'flex items-center gap-2 rounded-[20px] px-5 py-2.5',
         'bg-card/60 backdrop-blur-md',
-        'border border-cyan-500/15',
-        'shadow-[0_4px_24px_rgba(0,200,255,0.06),0_8px_40px_rgba(0,0,0,0.3)]',
+        'border border-lime-400/8',
+        'shadow-[0_4px_20px_rgba(0,0,0,0.25)]',
         'transition-all duration-300',
-        'focus-within:border-cyan-400/40',
-        'focus-within:shadow-[0_4px_24px_rgba(0,200,255,0.15),0_0px_60px_rgba(0,200,255,0.05),0_8px_40px_rgba(0,0,0,0.3)]',
+        'focus-within:border-lime-400/20',
+        'focus-within:shadow-[0_4px_20px_rgba(160,220,0,0.06),0_8px_32px_rgba(0,0,0,0.25)]',
       )}>
         <input
           ref={inputRef}
@@ -257,9 +257,9 @@ export function QuickInput() {
           disabled={!input.trim() || isSubmitting}
           className={cn(
             'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
-            'bg-cyan-500/90 text-white',
+            'bg-lime-500/80 text-white',
             'transition-all duration-200',
-            'hover:bg-cyan-400 hover:scale-105 hover:shadow-[0_0_12px_rgba(0,200,255,0.4)]',
+            'hover:bg-lime-400/90 hover:scale-105 hover:shadow-[0_0_8px_rgba(160,220,0,0.25)]',
             'disabled:opacity-20 disabled:hover:scale-100 disabled:hover:shadow-none disabled:cursor-not-allowed',
           )}
         >
