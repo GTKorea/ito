@@ -354,6 +354,7 @@ export class ThreadsService {
         include: {
           todo: { select: { id: true, title: true, priority: true } },
           fromUser: { select: { id: true, name: true, avatarUrl: true } },
+          toUser: { select: { id: true, name: true, avatarUrl: true } },
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -365,6 +366,7 @@ export class ThreadsService {
         },
         include: {
           todo: { select: { id: true, title: true, priority: true } },
+          fromUser: { select: { id: true, name: true, avatarUrl: true } },
           toUser: { select: { id: true, name: true, avatarUrl: true } },
         },
         orderBy: { createdAt: 'desc' },
