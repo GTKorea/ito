@@ -341,6 +341,70 @@ export class ThreadsService {
   }
 
   /**
+   * Get a task graph for the current user — all todos where they are
+   * creator, assignee, or appear in the thread chain.
+   */
+  async getTaskGraph(
+    userId: string,
+    workspaceId: string,
+    scope?: string,
+    statusFilter?: string[],
+    priorityFilter?: string[],
+  ) {
+    const statusCondition =
+      scope === 'active'
+        ? { status: { in: ['OPEN', 'IN_PROGRESS', 'BLOCKED'] as any[] } }
+        : scope === 'completed'
+          ? { status: 'COMPLETED' as any }
+          : {};
+
+    const extraFilters: any = {};
+    if (statusFilter && statusFilter.length > 0) {
+      extraFilters.status = { in: statusFilter };
+    }
+    if (priorityFilter && priorityFilter.length > 0) {
+      extraFilters.priority = { in: priorityFilter };
+    }
+
+    const todos = await this.prisma.todo.findMany({
+      where: {
+        workspaceId,
+        OR: [
+          { creatorId: userId },
+          { assigneeId: userId },
+          { threadLinks: { some: { fromUserId: userId } } },
+          { threadLinks: { some: { toUserId: userId } } },
+        ],
+        ...statusCondition,
+        ...extraFilters,
+      },
+      include: {
+        creator: { select: { id: true, name: true, avatarUrl: true } },
+        assignee: { select: { id: true, name: true, avatarUrl: true } },
+        threadLinks: {
+          include: {
+            fromUser: { select: { id: true, name: true, avatarUrl: true } },
+            toUser: { select: { id: true, name: true, avatarUrl: true } },
+          },
+          orderBy: { chainIndex: 'asc' },
+        },
+      },
+      orderBy: { updatedAt: 'desc' },
+    });
+
+    // Post-process: add myRole for each todo
+    return todos.map((todo) => {
+      let myRole: 'creator' | 'assignee' | 'chain_member' = 'chain_member';
+      if (todo.creatorId === userId) {
+        myRole = 'creator';
+      } else if (todo.assigneeId === userId) {
+        myRole = 'assignee';
+      }
+      return { ...todo, myRole };
+    });
+  }
+
+  /**
    * Get threads connected to/from a user (their "thread inbox/outbox")
    */
   async getMyThreads(userId: string, workspaceId: string) {
