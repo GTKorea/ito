@@ -54,7 +54,8 @@
     "workspaceName": "Workspace name",
     "create": "Create",
     "cancel": "Cancel",
-    "logout": "Abmelden"
+    "logout": "Abmelden",
+    "help": "Hilfe"
   },
   "workspace": {
     "myTasks": "Meine Aufgaben",
@@ -443,6 +444,106 @@
       "WORKSPACE_INVITE": "Workspace-Einladung",
       "TODO_ASSIGNED": "Aufgabe zugewiesen",
       "TODO_COMPLETED": "Aufgabe abgeschlossen"
+    }
+  },
+  "help": {
+    "title": "Hilfe",
+    "subtitle": "Erfahren Sie, wie Sie ito verwenden",
+    "gettingStarted": {
+      "title": "Erste Schritte",
+      "description": "ito ist ein threadbasiertes Aufgabenmanagement-Tool. Erstellen Sie einen Workspace, laden Sie Ihr Team ein und beginnen Sie, Aufgaben zu verbinden.",
+      "createWorkspaceTitle": "Workspace erstellen",
+      "step1": "Klicken Sie auf den Workspace-Umschalter oben links in der Seitenleiste.",
+      "step2": "Klicken Sie auf \"Neuer Workspace\" und geben Sie einen Namen ein.",
+      "step3": "Ihr Workspace ist bereit. Beginnen Sie mit dem Erstellen von Aufgaben.",
+      "inviteTitle": "Teammitglieder einladen",
+      "inviteStep1": "Gehen Sie zu den Workspace-Einstellungen in der Seitenleiste.",
+      "inviteStep2": "Geben Sie die E-Mail-Adresse der einzuladenden Person ein.",
+      "inviteStep3": "Ein Einladungslink wird gesendet. Nach Annahme tritt die Person dem Workspace bei."
+    },
+    "taskManagement": {
+      "title": "Aufgabenverwaltung",
+      "description": "Aufgaben sind die grundlegende Arbeitseinheit in ito. Erstellen Sie Aufgaben, setzen Sie Prioritäten, legen Sie Fälligkeitsdaten fest und verfolgen Sie den Fortschritt.",
+      "statusTitle": "Aufgabenstatus",
+      "priorityTitle": "Prioritätsstufen",
+      "urgent": "Dringend",
+      "high": "Hoch",
+      "medium": "Mittel",
+      "low": "Niedrig",
+      "createTaskTitle": "Aufgabe erstellen",
+      "createStep1": "Klicken Sie auf \"Neue Aufgabe\" oder nutzen Sie die Schnelleingabe unten.",
+      "createStep2": "Geben Sie einen Titel ein, setzen Sie Priorität und Fälligkeitsdatum.",
+      "createStep3": "Die Aufgabe wird automatisch Ihnen zugewiesen. Danach können Sie sie an jemand anderen verbinden."
+    },
+    "threadConnection": {
+      "title": "Thread-Verbindung",
+      "description": "Threads sind der Kern von ito. Verbinden Sie eine Aufgabe mit einer anderen Person, um Arbeit zu delegieren. Die Kette kann sich über mehrere Personen erstrecken.",
+      "howItWorksTitle": "So funktioniert es",
+      "step1": "Sie erstellen eine Aufgabe — Sie sind der Verantwortliche.",
+      "step2": "Klicken Sie auf \"Verbinden\", um sie an ein Teammitglied weiterzugeben.",
+      "step3": "Diese Person kann sie weiter verbinden und eine Kette aufbauen (A → B → C).",
+      "step4": "Wenn die letzte Person ihren Teil erledigt, kehrt die Aufgabe automatisch zurück.",
+      "rulesTitle": "Regeln",
+      "rule1": "Sie können keinen Thread mit sich selbst verbinden.",
+      "rule2": "Nur der aktuelle Verantwortliche kann zum Nächsten verbinden.",
+      "rule3": "Sie können keine Schleife mit aktiven Teilnehmern erstellen.",
+      "rule4": "Die maximale Kettentiefe beträgt 20."
+    },
+    "threadDiagram": {
+      "connectPhase": "Verbindungsphase",
+      "snapbackPhase": "Snap-back-Phase",
+      "creator": "Ersteller",
+      "assignee": "Verantwortlicher",
+      "done": "Erledigt",
+      "resolved": "Gelöst"
+    },
+    "snapback": {
+      "title": "Snap-back-System",
+      "description": "Wenn jemand seinen Thread-Link löst, kehrt die Aufgabe automatisch zur vorherigen Person in der Kette zurück. Dies setzt sich bis zum ursprünglichen Ersteller fort.",
+      "exampleTitle": "Beispiel: A → B → C Kette",
+      "example1": "A erstellt eine Aufgabe und verbindet sie mit B.",
+      "example2": "B verbindet sie mit C. Die Kette ist jetzt A → B → C.",
+      "example3": "C erledigt die Arbeit und löst. Die Aufgabe kehrt zu B zurück.",
+      "example4": "B prüft und löst. Die Aufgabe kehrt zu A zurück.",
+      "example5": "A markiert die Aufgabe als COMPLETED. Der Workflow ist abgeschlossen.",
+      "tipLabel": "Tipp:",
+      "tip": "Sie erhalten jedes Mal eine Benachrichtigung, wenn ein Thread zu Ihnen zurückkehrt. Prüfen Sie die Benachrichtigungsseite."
+    },
+    "notifications": {
+      "title": "Benachrichtigungen",
+      "description": "ito sendet Echtzeit-Benachrichtigungen, damit Sie keine wichtigen Updates verpassen. Benachrichtigungen kommen in der App, per E-Mail oder per Slack.",
+      "types": {
+        "threadReceived": {
+          "name": "Thread erhalten",
+          "description": "Jemand hat einen Thread mit Ihnen verbunden. Sie sind jetzt verantwortlich."
+        },
+        "threadSnapped": {
+          "name": "Thread zurückgekehrt",
+          "description": "Ein von Ihnen gesendeter Thread wurde gelöst und ist zurückgekehrt."
+        },
+        "threadCompleted": {
+          "name": "Thread abgeschlossen",
+          "description": "Eine Thread-Kette, an der Sie beteiligt waren, wurde abgeschlossen."
+        },
+        "workspaceInvite": {
+          "name": "Workspace-Einladung",
+          "description": "Sie wurden eingeladen, einem Workspace beizutreten."
+        },
+        "todoAssigned": {
+          "name": "Aufgabe zugewiesen",
+          "description": "Ihnen wurde eine Aufgabe zugewiesen."
+        },
+        "todoCompleted": {
+          "name": "Aufgabe abgeschlossen",
+          "description": "Eine Aufgabe, die Sie erstellt haben oder an der Sie beteiligt waren, wurde abgeschlossen."
+        }
+      }
+    },
+    "shortcuts": {
+      "title": "Tastaturkürzel",
+      "commandPalette": "Befehlspalette öffnen",
+      "newTask": "Neue Aufgabe erstellen",
+      "closePanel": "Panel / Dialog schließen"
     }
   }
 }

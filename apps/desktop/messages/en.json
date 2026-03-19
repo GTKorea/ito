@@ -54,7 +54,8 @@
     "workspaceName": "Workspace name",
     "create": "Create",
     "cancel": "Cancel",
-    "logout": "Log out"
+    "logout": "Log out",
+    "help": "Help"
   },
   "workspace": {
     "myTasks": "My Tasks",
@@ -431,6 +432,106 @@
       "WORKSPACE_INVITE": "Workspace Invite",
       "TODO_ASSIGNED": "Task Assigned",
       "TODO_COMPLETED": "Task Completed"
+    }
+  },
+  "help": {
+    "title": "Help",
+    "subtitle": "Learn how to use ito",
+    "gettingStarted": {
+      "title": "Getting Started",
+      "description": "ito is a thread-based task management tool. Create a workspace, invite your team, and start connecting tasks.",
+      "createWorkspaceTitle": "Create a Workspace",
+      "step1": "Click the workspace switcher in the top-left of the sidebar.",
+      "step2": "Click \"New workspace\" and enter a name.",
+      "step3": "Your workspace is ready. Start creating tasks.",
+      "inviteTitle": "Invite Team Members",
+      "inviteStep1": "Go to Workspace Settings from the sidebar.",
+      "inviteStep2": "Enter the email address of the person you want to invite.",
+      "inviteStep3": "They will receive an invite link. Once they accept, they join your workspace."
+    },
+    "taskManagement": {
+      "title": "Task Management",
+      "description": "Tasks are the basic unit of work in ito. Create tasks, set priorities, assign due dates, and track progress.",
+      "statusTitle": "Task Status",
+      "priorityTitle": "Priority Levels",
+      "urgent": "Urgent",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low",
+      "createTaskTitle": "Creating a Task",
+      "createStep1": "Click the \"New Task\" button or use the quick input at the bottom.",
+      "createStep2": "Enter a title, set priority and due date.",
+      "createStep3": "The task is automatically assigned to you. You can then connect it to someone else."
+    },
+    "threadConnection": {
+      "title": "Thread Connection",
+      "description": "Threads are the core of ito. Connect a task to another person to delegate work. The chain can extend through multiple people.",
+      "howItWorksTitle": "How It Works",
+      "step1": "You create a task — you are the assignee.",
+      "step2": "Click \"Connect\" to pass it to a team member. They become the new assignee.",
+      "step3": "That person can connect it further, building a chain (A \u2192 B \u2192 C).",
+      "step4": "When the last person resolves their part, it snaps back through the chain.",
+      "rulesTitle": "Rules",
+      "rule1": "You cannot connect a thread to yourself.",
+      "rule2": "Only the current assignee can connect to the next person.",
+      "rule3": "You cannot create a loop with active participants in the chain.",
+      "rule4": "Maximum chain depth is 20."
+    },
+    "threadDiagram": {
+      "connectPhase": "Connect Phase",
+      "snapbackPhase": "Snap-back Phase",
+      "creator": "Creator",
+      "assignee": "Assignee",
+      "done": "Done",
+      "resolved": "Resolved"
+    },
+    "snapback": {
+      "title": "Snap-back System",
+      "description": "When someone resolves their thread link, the task automatically returns to the previous person in the chain. This continues until it reaches the original creator.",
+      "exampleTitle": "Example: A \u2192 B \u2192 C Chain",
+      "example1": "A creates a task and connects it to B.",
+      "example2": "B connects it to C. Now the chain is A \u2192 B \u2192 C.",
+      "example3": "C finishes and resolves. The task snaps back to B.",
+      "example4": "B reviews and resolves. The task snaps back to A.",
+      "example5": "A marks the task as COMPLETED. The workflow is done.",
+      "tipLabel": "Tip:",
+      "tip": "You will receive a notification every time a thread snaps back to you. Check the Notifications page to stay on top of your tasks."
+    },
+    "notifications": {
+      "title": "Notifications",
+      "description": "ito sends real-time notifications so you never miss important updates. Notifications appear in-app and can also be sent via email or Slack.",
+      "types": {
+        "threadReceived": {
+          "name": "Thread Received",
+          "description": "Someone connected a thread to you. You are now the assignee."
+        },
+        "threadSnapped": {
+          "name": "Thread Snapped Back",
+          "description": "A thread you sent out has been resolved and returned to you."
+        },
+        "threadCompleted": {
+          "name": "Thread Completed",
+          "description": "A thread chain you were part of has been fully completed."
+        },
+        "workspaceInvite": {
+          "name": "Workspace Invite",
+          "description": "You have been invited to join a workspace."
+        },
+        "todoAssigned": {
+          "name": "Task Assigned",
+          "description": "A task has been assigned to you."
+        },
+        "todoCompleted": {
+          "name": "Task Completed",
+          "description": "A task you created or were involved in has been completed."
+        }
+      }
+    },
+    "shortcuts": {
+      "title": "Keyboard Shortcuts",
+      "commandPalette": "Open command palette",
+      "newTask": "Create new task",
+      "closePanel": "Close panel / dialog"
     }
   }
 }

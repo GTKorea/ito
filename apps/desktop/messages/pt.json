@@ -54,7 +54,8 @@
     "workspaceName": "Workspace name",
     "create": "Create",
     "cancel": "Cancel",
-    "logout": "Sair"
+    "logout": "Sair",
+    "help": "Ajuda"
   },
   "workspace": {
     "myTasks": "Minhas Tarefas",
@@ -443,6 +444,106 @@
       "WORKSPACE_INVITE": "Convite de workspace",
       "TODO_ASSIGNED": "Tarefa atribuída",
       "TODO_COMPLETED": "Tarefa concluída"
+    }
+  },
+  "help": {
+    "title": "Ajuda",
+    "subtitle": "Aprenda a usar o ito",
+    "gettingStarted": {
+      "title": "Primeiros passos",
+      "description": "ito é uma ferramenta de gestão de tarefas baseada em threads. Crie um workspace, convide sua equipe e comece a conectar tarefas.",
+      "createWorkspaceTitle": "Criar um workspace",
+      "step1": "Clique no seletor de workspace no canto superior esquerdo da barra lateral.",
+      "step2": "Clique em \"Novo workspace\" e insira um nome.",
+      "step3": "Seu workspace está pronto. Comece a criar tarefas.",
+      "inviteTitle": "Convidar membros da equipe",
+      "inviteStep1": "Vá para Configurações do workspace na barra lateral.",
+      "inviteStep2": "Insira o e-mail da pessoa que deseja convidar.",
+      "inviteStep3": "Um link de convite será enviado. Ao aceitar, eles entram no seu workspace."
+    },
+    "taskManagement": {
+      "title": "Gestão de tarefas",
+      "description": "Tarefas são a unidade básica de trabalho no ito. Crie tarefas, defina prioridades, atribua datas de vencimento e acompanhe o progresso.",
+      "statusTitle": "Status da tarefa",
+      "priorityTitle": "Níveis de prioridade",
+      "urgent": "Urgente",
+      "high": "Alta",
+      "medium": "Média",
+      "low": "Baixa",
+      "createTaskTitle": "Criar uma tarefa",
+      "createStep1": "Clique em \"Nova tarefa\" ou use a entrada rápida na parte inferior.",
+      "createStep2": "Insira um título, defina prioridade e data de vencimento.",
+      "createStep3": "A tarefa é automaticamente atribuída a você. Depois, você pode conectá-la a outra pessoa."
+    },
+    "threadConnection": {
+      "title": "Conexão de threads",
+      "description": "Threads são o núcleo do ito. Conecte uma tarefa a outra pessoa para delegar trabalho. A cadeia pode se estender por várias pessoas.",
+      "howItWorksTitle": "Como funciona",
+      "step1": "Você cria uma tarefa — você é o responsável.",
+      "step2": "Clique em \"Conectar\" para passá-la a um membro da equipe.",
+      "step3": "Essa pessoa pode conectar adiante, construindo uma cadeia (A → B → C).",
+      "step4": "Quando a última pessoa resolve sua parte, a tarefa volta automaticamente pela cadeia.",
+      "rulesTitle": "Regras",
+      "rule1": "Você não pode conectar um thread a si mesmo.",
+      "rule2": "Apenas o responsável atual pode conectar ao próximo.",
+      "rule3": "Você não pode criar um loop com participantes ativos na cadeia.",
+      "rule4": "A profundidade máxima da cadeia é 20."
+    },
+    "threadDiagram": {
+      "connectPhase": "Fase de conexão",
+      "snapbackPhase": "Fase de snap-back",
+      "creator": "Criador",
+      "assignee": "Responsável",
+      "done": "Feito",
+      "resolved": "Resolvido"
+    },
+    "snapback": {
+      "title": "Sistema Snap-back",
+      "description": "Quando alguém resolve seu link de thread, a tarefa retorna automaticamente para a pessoa anterior na cadeia. Isso continua até chegar ao criador original.",
+      "exampleTitle": "Exemplo: Cadeia A → B → C",
+      "example1": "A cria uma tarefa e conecta a B.",
+      "example2": "B conecta a C. Agora a cadeia é A → B → C.",
+      "example3": "C termina e resolve. A tarefa volta para B.",
+      "example4": "B revisa e resolve. A tarefa volta para A.",
+      "example5": "A marca a tarefa como COMPLETED. O fluxo está concluído.",
+      "tipLabel": "Dica:",
+      "tip": "Você receberá uma notificação toda vez que um thread voltar para você. Verifique a página de Notificações."
+    },
+    "notifications": {
+      "title": "Notificações",
+      "description": "ito envia notificações em tempo real para que você não perca atualizações importantes. As notificações chegam no app, por e-mail ou pelo Slack.",
+      "types": {
+        "threadReceived": {
+          "name": "Thread recebido",
+          "description": "Alguém conectou um thread a você. Você agora é o responsável."
+        },
+        "threadSnapped": {
+          "name": "Thread retornado",
+          "description": "Um thread que você enviou foi resolvido e retornou a você."
+        },
+        "threadCompleted": {
+          "name": "Thread concluído",
+          "description": "Uma cadeia de threads da qual você participou foi concluída."
+        },
+        "workspaceInvite": {
+          "name": "Convite de workspace",
+          "description": "Você foi convidado a entrar em um workspace."
+        },
+        "todoAssigned": {
+          "name": "Tarefa atribuída",
+          "description": "Uma tarefa foi atribuída a você."
+        },
+        "todoCompleted": {
+          "name": "Tarefa concluída",
+          "description": "Uma tarefa que você criou ou participou foi concluída."
+        }
+      }
+    },
+    "shortcuts": {
+      "title": "Atalhos de teclado",
+      "commandPalette": "Abrir paleta de comandos",
+      "newTask": "Criar nova tarefa",
+      "closePanel": "Fechar painel / diálogo"
     }
   }
 }

@@ -18,6 +18,7 @@ import {
   Bell,
   Settings,
   Plus,
+  HelpCircle,
 } from 'lucide-react';
 
 export function CommandPalette() {
@@ -84,6 +85,10 @@ export function CommandPalette() {
           <CommandItem onSelect={() => navigate('/settings')}>
             <Settings className="mr-2 h-4 w-4" />
             {ts('settings')}
+          </CommandItem>
+          <CommandItem onSelect={() => navigate('/help')}>
+            <HelpCircle className="mr-2 h-4 w-4" />
+            {ts('help')}
           </CommandItem>
         </CommandGroup>
       </CommandList>

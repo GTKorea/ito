@@ -54,7 +54,8 @@
     "workspaceName": "Workspace name",
     "create": "Create",
     "cancel": "Cancel",
-    "logout": "登出"
+    "logout": "登出",
+    "help": "說明"
   },
   "workspace": {
     "myTasks": "我的任務",
@@ -443,6 +444,106 @@
       "WORKSPACE_INVITE": "工作區邀請",
       "TODO_ASSIGNED": "任務指派",
       "TODO_COMPLETED": "任務完成"
+    }
+  },
+  "help": {
+    "title": "說明",
+    "subtitle": "了解如何使用 ito",
+    "gettingStarted": {
+      "title": "入門指南",
+      "description": "ito 是基於線程的任務管理工具。建立工作區，邀請團隊成員，開始連接任務。",
+      "createWorkspaceTitle": "建立工作區",
+      "step1": "點擊側邊欄左上角的工作區切換按鈕。",
+      "step2": "點擊「新建工作區」並輸入名稱。",
+      "step3": "工作區已就緒。開始建立任務吧。",
+      "inviteTitle": "邀請團隊成員",
+      "inviteStep1": "從側邊欄進入工作區設定。",
+      "inviteStep2": "輸入要邀請的人的電子郵件地址。",
+      "inviteStep3": "邀請連結將被發送。接受後即可加入工作區。"
+    },
+    "taskManagement": {
+      "title": "任務管理",
+      "description": "任務是 ito 的基本工作單元。建立任務、設定優先級、指定截止日期並追蹤進度。",
+      "statusTitle": "任務狀態",
+      "priorityTitle": "優先級",
+      "urgent": "緊急",
+      "high": "高",
+      "medium": "中",
+      "low": "低",
+      "createTaskTitle": "建立任務",
+      "createStep1": "點擊「新建任務」按鈕或使用底部的快速輸入。",
+      "createStep2": "輸入標題，設定優先級和截止日期。",
+      "createStep3": "任務會自動指派給您。之後可以連接給其他人。"
+    },
+    "threadConnection": {
+      "title": "線程連接",
+      "description": "線程是 ito 的核心功能。將任務連接到其他人以委派工作。鏈可以通過多個人擴展。",
+      "howItWorksTitle": "運作方式",
+      "step1": "建立任務後——您就是負責人。",
+      "step2": "點擊「連接」將任務傳給團隊成員。他們成為新的負責人。",
+      "step3": "他們也可以繼續連接，建構鏈條（A → B → C）。",
+      "step4": "最後一個人完成處理後，沿著鏈條自動回傳。",
+      "rulesTitle": "規則",
+      "rule1": "不能將線程連接給自己。",
+      "rule2": "只有當前負責人才能連接給下一個人。",
+      "rule3": "不能與活躍鏈中的參與者形成循環。",
+      "rule4": "最大鏈深度為 20。"
+    },
+    "threadDiagram": {
+      "connectPhase": "連接階段",
+      "snapbackPhase": "回彈階段",
+      "creator": "建立者",
+      "assignee": "負責人",
+      "done": "完成",
+      "resolved": "已解決"
+    },
+    "snapback": {
+      "title": "Snap-back 系統",
+      "description": "當某人解決了他們的線程連結後，任務會自動返回給鏈中的上一個人。這個過程會一直持續到到達原始建立者。",
+      "exampleTitle": "範例：A → B → C 鏈",
+      "example1": "A 建立任務並連接給 B。",
+      "example2": "B 連接給 C。現在鏈是 A → B → C。",
+      "example3": "C 完成工作並解決。任務回彈給 B。",
+      "example4": "B 審核並解決。任務回彈給 A。",
+      "example5": "A 將任務標記為 COMPLETED。工作流完成。",
+      "tipLabel": "提示：",
+      "tip": "每次線程回彈給您時都會收到通知。在通知頁面查看您的任務。"
+    },
+    "notifications": {
+      "title": "通知",
+      "description": "ito 透過即時通知讓您不錯過重要更新。支援應用內通知、電子郵件和 Slack 通知。",
+      "types": {
+        "threadReceived": {
+          "name": "收到線程",
+          "description": "有人將線程連接給了您。您現在是負責人。"
+        },
+        "threadSnapped": {
+          "name": "線程回彈",
+          "description": "您發出的線程已被解決並返回給您。"
+        },
+        "threadCompleted": {
+          "name": "線程完成",
+          "description": "您參與的線程鏈已完全完成。"
+        },
+        "workspaceInvite": {
+          "name": "工作區邀請",
+          "description": "您被邀請加入工作區。"
+        },
+        "todoAssigned": {
+          "name": "任務指派",
+          "description": "有任務指派給了您。"
+        },
+        "todoCompleted": {
+          "name": "任務完成",
+          "description": "您建立或參與的任務已完成。"
+        }
+      }
+    },
+    "shortcuts": {
+      "title": "鍵盤快捷鍵",
+      "commandPalette": "開啟命令面板",
+      "newTask": "建立新任務",
+      "closePanel": "關閉面板/對話框"
     }
   }
 }

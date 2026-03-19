@@ -13,6 +13,7 @@ import {
   CalendarDays,
   Network,
   LogOut,
+  HelpCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth-store';
@@ -97,6 +98,19 @@ export function Sidebar() {
         >
           <Settings className="h-4 w-4" />
           {t('settings')}
+        </Link>
+
+        <Link
+          href="/help"
+          className={cn(
+            'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
+            pathname.includes('/help')
+              ? 'bg-accent text-accent-foreground'
+              : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
+          )}
+        >
+          <HelpCircle className="h-4 w-4" />
+          {t('help')}
         </Link>
       </nav>
 

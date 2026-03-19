@@ -54,7 +54,8 @@
     "workspaceName": "Workspace name",
     "create": "Create",
     "cancel": "Cancel",
-    "logout": "ログアウト"
+    "logout": "ログアウト",
+    "help": "ヘルプ"
   },
   "workspace": {
     "myTasks": "マイタスク",
@@ -443,6 +444,106 @@
       "WORKSPACE_INVITE": "ワークスペース招待",
       "TODO_ASSIGNED": "タスク割り当て",
       "TODO_COMPLETED": "タスク完了"
+    }
+  },
+  "help": {
+    "title": "ヘルプ",
+    "subtitle": "itoの使い方を学ぶ",
+    "gettingStarted": {
+      "title": "はじめに",
+      "description": "itoはスレッドベースのタスク管理ツールです。ワークスペースを作成し、チームを招待し、タスクを接続しましょう。",
+      "createWorkspaceTitle": "ワークスペースの作成",
+      "step1": "サイドバー左上のワークスペース切替ボタンをクリックします。",
+      "step2": "「新規ワークスペース」をクリックし、名前を入力します。",
+      "step3": "ワークスペースが準備できました。タスクを作成しましょう。",
+      "inviteTitle": "チームメンバーの招待",
+      "inviteStep1": "サイドバーからワークスペース設定に移動します。",
+      "inviteStep2": "招待したい人のメールアドレスを入力します。",
+      "inviteStep3": "招待リンクが送信されます。承諾するとワークスペースに参加します。"
+    },
+    "taskManagement": {
+      "title": "タスク管理",
+      "description": "タスクはitoの基本的な作業単位です。タスクを作成し、優先度を設定し、期日を指定し、進捗を追跡しましょう。",
+      "statusTitle": "タスクの状態",
+      "priorityTitle": "優先度",
+      "urgent": "緊急",
+      "high": "高",
+      "medium": "中",
+      "low": "低",
+      "createTaskTitle": "タスクの作成",
+      "createStep1": "「新規タスク」ボタンまたは下部のクイック入力を使用します。",
+      "createStep2": "タイトルを入力し、優先度と期日を設定します。",
+      "createStep3": "タスクは自動的にあなたに割り当てられます。その後、他の人に接続できます。"
+    },
+    "threadConnection": {
+      "title": "スレッド接続",
+      "description": "スレッドはitoの核心機能です。タスクを他の人に接続して作業を委任しましょう。チェーンは複数の人を通じて拡張できます。",
+      "howItWorksTitle": "仕組み",
+      "step1": "タスクを作成すると、あなたが担当者になります。",
+      "step2": "「接続」をクリックしてチームメンバーに渡します。その人が新しい担当者になります。",
+      "step3": "その人もさらに接続でき、チェーンを構築します（A → B → C）。",
+      "step4": "最後の人が処理を完了すると、チェーンに沿って自動的に戻ります。",
+      "rulesTitle": "ルール",
+      "rule1": "自分自身にスレッドを接続することはできません。",
+      "rule2": "現在の担当者のみが次の人に接続できます。",
+      "rule3": "アクティブなチェーン参加者とのループを作成することはできません。",
+      "rule4": "最大チェーン深度は20です。"
+    },
+    "threadDiagram": {
+      "connectPhase": "接続フェーズ",
+      "snapbackPhase": "スナップバックフェーズ",
+      "creator": "作成者",
+      "assignee": "担当者",
+      "done": "完了",
+      "resolved": "解決済み"
+    },
+    "snapback": {
+      "title": "スナップバックシステム",
+      "description": "誰かがスレッドリンクを解決すると、タスクは自動的にチェーンの前の人に戻ります。この過程は元の作成者に到達するまで続きます。",
+      "exampleTitle": "例：A → B → C チェーン",
+      "example1": "AがタスクをBに接続します。",
+      "example2": "BがCに接続します。チェーンはA → B → Cです。",
+      "example3": "Cが作業を完了し解決します。タスクがBに戻ります。",
+      "example4": "Bが確認し解決します。タスクがAに戻ります。",
+      "example5": "AがタスクをCOMPLETEDに変更します。ワークフローが完了です。",
+      "tipLabel": "ヒント：",
+      "tip": "スレッドが戻るたびに通知を受け取ります。通知ページでタスクを確認しましょう。"
+    },
+    "notifications": {
+      "title": "通知",
+      "description": "itoはリアルタイム通知で重要な更新を見逃しません。アプリ内通知に加え、メールやSlackでも受け取れます。",
+      "types": {
+        "threadReceived": {
+          "name": "スレッド受信",
+          "description": "誰かがあなたにスレッドを接続しました。あなたが担当者です。"
+        },
+        "threadSnapped": {
+          "name": "スレッドスナップバック",
+          "description": "送信したスレッドが解決されて戻ってきました。"
+        },
+        "threadCompleted": {
+          "name": "スレッド完了",
+          "description": "参加していたスレッドチェーンが完全に完了しました。"
+        },
+        "workspaceInvite": {
+          "name": "ワークスペース招待",
+          "description": "ワークスペースに招待されました。"
+        },
+        "todoAssigned": {
+          "name": "タスク割り当て",
+          "description": "タスクが割り当てられました。"
+        },
+        "todoCompleted": {
+          "name": "タスク完了",
+          "description": "作成または参加したタスクが完了しました。"
+        }
+      }
+    },
+    "shortcuts": {
+      "title": "キーボードショートカット",
+      "commandPalette": "コマンドパレットを開く",
+      "newTask": "新規タスクを作成",
+      "closePanel": "パネル/ダイアログを閉じる"
     }
   }
 }

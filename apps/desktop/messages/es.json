@@ -54,7 +54,8 @@
     "workspaceName": "Workspace name",
     "create": "Create",
     "cancel": "Cancel",
-    "logout": "Cerrar sesión"
+    "logout": "Cerrar sesión",
+    "help": "Ayuda"
   },
   "workspace": {
     "myTasks": "Mis Tareas",
@@ -443,6 +444,106 @@
       "WORKSPACE_INVITE": "Invitación al workspace",
       "TODO_ASSIGNED": "Tarea asignada",
       "TODO_COMPLETED": "Tarea completada"
+    }
+  },
+  "help": {
+    "title": "Ayuda",
+    "subtitle": "Aprende a usar ito",
+    "gettingStarted": {
+      "title": "Primeros pasos",
+      "description": "ito es una herramienta de gestión de tareas basada en hilos. Crea un espacio de trabajo, invita a tu equipo y comienza a conectar tareas.",
+      "createWorkspaceTitle": "Crear un espacio de trabajo",
+      "step1": "Haz clic en el selector de espacios de trabajo en la esquina superior izquierda.",
+      "step2": "Haz clic en \"Nuevo espacio\" e ingresa un nombre.",
+      "step3": "Tu espacio de trabajo está listo. Comienza a crear tareas.",
+      "inviteTitle": "Invitar miembros del equipo",
+      "inviteStep1": "Ve a Configuración del espacio de trabajo desde la barra lateral.",
+      "inviteStep2": "Ingresa el correo electrónico de la persona que deseas invitar.",
+      "inviteStep3": "Se enviará un enlace de invitación. Al aceptar, se unirán a tu espacio."
+    },
+    "taskManagement": {
+      "title": "Gestión de tareas",
+      "description": "Las tareas son la unidad básica de trabajo en ito. Crea tareas, establece prioridades, asigna fechas límite y sigue el progreso.",
+      "statusTitle": "Estado de la tarea",
+      "priorityTitle": "Niveles de prioridad",
+      "urgent": "Urgente",
+      "high": "Alta",
+      "medium": "Media",
+      "low": "Baja",
+      "createTaskTitle": "Crear una tarea",
+      "createStep1": "Haz clic en \"Nueva tarea\" o usa la entrada rápida en la parte inferior.",
+      "createStep2": "Ingresa un título, establece prioridad y fecha límite.",
+      "createStep3": "La tarea se asigna automáticamente a ti. Luego puedes conectarla a otra persona."
+    },
+    "threadConnection": {
+      "title": "Conexión de hilos",
+      "description": "Los hilos son el núcleo de ito. Conecta una tarea a otra persona para delegar trabajo. La cadena puede extenderse a través de múltiples personas.",
+      "howItWorksTitle": "Cómo funciona",
+      "step1": "Creas una tarea — tú eres el responsable.",
+      "step2": "Haz clic en \"Conectar\" para pasarla a un miembro del equipo. Ellos se convierten en el nuevo responsable.",
+      "step3": "Esa persona puede conectarla más, construyendo una cadena (A → B → C).",
+      "step4": "Cuando la última persona resuelve su parte, vuelve automáticamente por la cadena.",
+      "rulesTitle": "Reglas",
+      "rule1": "No puedes conectar un hilo a ti mismo.",
+      "rule2": "Solo el responsable actual puede conectar al siguiente.",
+      "rule3": "No puedes crear un ciclo con participantes activos en la cadena.",
+      "rule4": "La profundidad máxima de la cadena es 20."
+    },
+    "threadDiagram": {
+      "connectPhase": "Fase de conexión",
+      "snapbackPhase": "Fase de snap-back",
+      "creator": "Creador",
+      "assignee": "Responsable",
+      "done": "Hecho",
+      "resolved": "Resuelto"
+    },
+    "snapback": {
+      "title": "Sistema Snap-back",
+      "description": "Cuando alguien resuelve su enlace de hilo, la tarea vuelve automáticamente a la persona anterior en la cadena. Esto continúa hasta llegar al creador original.",
+      "exampleTitle": "Ejemplo: Cadena A → B → C",
+      "example1": "A crea una tarea y la conecta a B.",
+      "example2": "B la conecta a C. Ahora la cadena es A → B → C.",
+      "example3": "C termina y resuelve. La tarea vuelve a B.",
+      "example4": "B revisa y resuelve. La tarea vuelve a A.",
+      "example5": "A marca la tarea como COMPLETED. El flujo ha terminado.",
+      "tipLabel": "Consejo:",
+      "tip": "Recibirás una notificación cada vez que un hilo vuelva a ti. Consulta la página de Notificaciones."
+    },
+    "notifications": {
+      "title": "Notificaciones",
+      "description": "ito envía notificaciones en tiempo real para que no te pierdas actualizaciones importantes. Las notificaciones llegan en la app, por correo o por Slack.",
+      "types": {
+        "threadReceived": {
+          "name": "Hilo recibido",
+          "description": "Alguien conectó un hilo contigo. Ahora eres el responsable."
+        },
+        "threadSnapped": {
+          "name": "Hilo devuelto",
+          "description": "Un hilo que enviaste ha sido resuelto y ha vuelto a ti."
+        },
+        "threadCompleted": {
+          "name": "Hilo completado",
+          "description": "Una cadena de hilos en la que participaste se ha completado."
+        },
+        "workspaceInvite": {
+          "name": "Invitación al espacio",
+          "description": "Has sido invitado a unirte a un espacio de trabajo."
+        },
+        "todoAssigned": {
+          "name": "Tarea asignada",
+          "description": "Se te ha asignado una tarea."
+        },
+        "todoCompleted": {
+          "name": "Tarea completada",
+          "description": "Una tarea que creaste o en la que participaste se ha completado."
+        }
+      }
+    },
+    "shortcuts": {
+      "title": "Atajos de teclado",
+      "commandPalette": "Abrir paleta de comandos",
+      "newTask": "Crear nueva tarea",
+      "closePanel": "Cerrar panel / diálogo"
     }
   }
 }

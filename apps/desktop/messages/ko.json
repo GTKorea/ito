@@ -54,7 +54,8 @@
     "workspaceName": "워크스페이스 이름",
     "create": "생성",
     "cancel": "취소",
-    "logout": "로그아웃"
+    "logout": "로그아웃",
+    "help": "도움말"
   },
   "workspace": {
     "myTasks": "내 태스크",
@@ -431,6 +432,106 @@
       "WORKSPACE_INVITE": "워크스페이스 초대",
       "TODO_ASSIGNED": "태스크 배정",
       "TODO_COMPLETED": "태스크 완료"
+    }
+  },
+  "help": {
+    "title": "도움말",
+    "subtitle": "ito 사용 방법 안내",
+    "gettingStarted": {
+      "title": "시작하기",
+      "description": "ito는 실(Thread) 기반 태스크 관리 도구입니다. 워크스페이스를 만들고, 팀원을 초대하고, 태스크를 연결하세요.",
+      "createWorkspaceTitle": "워크스페이스 만들기",
+      "step1": "사이드바 상단의 워크스페이스 전환 버튼을 클릭하세요.",
+      "step2": "\"새 워크스페이스\"를 클릭하고 이름을 입력하세요.",
+      "step3": "워크스페이스가 준비되었습니다. 태스크를 만들어 보세요.",
+      "inviteTitle": "팀원 초대하기",
+      "inviteStep1": "사이드바에서 워크스페이스 설정으로 이동하세요.",
+      "inviteStep2": "초대할 사람의 이메일 주소를 입력하세요.",
+      "inviteStep3": "초대 링크가 발송됩니다. 수락하면 워크스페이스에 참여합니다."
+    },
+    "taskManagement": {
+      "title": "태스크 관리",
+      "description": "태스크는 ito의 기본 작업 단위입니다. 태스크를 생성하고, 우선순위를 설정하고, 마감일을 지정하고, 진행 상황을 추적하세요.",
+      "statusTitle": "태스크 상태",
+      "priorityTitle": "우선순위",
+      "urgent": "긴급",
+      "high": "높음",
+      "medium": "보통",
+      "low": "낮음",
+      "createTaskTitle": "태스크 만들기",
+      "createStep1": "\"새 태스크\" 버튼을 클릭하거나 하단의 빠른 입력을 사용하세요.",
+      "createStep2": "제목을 입력하고, 우선순위와 마감일을 설정하세요.",
+      "createStep3": "태스크는 자동으로 본인에게 배정됩니다. 이후 다른 사람에게 연결할 수 있습니다."
+    },
+    "threadConnection": {
+      "title": "실 연결",
+      "description": "실(Thread)은 ito의 핵심 기능입니다. 태스크를 다른 사람에게 연결하여 업무를 위임하세요. 체인은 여러 사람을 거쳐 확장될 수 있습니다.",
+      "howItWorksTitle": "작동 방식",
+      "step1": "태스크를 생성하면 — 본인이 담당자입니다.",
+      "step2": "\"연결\"을 클릭하여 팀원에게 넘기세요. 그 사람이 새로운 담당자가 됩니다.",
+      "step3": "그 사람도 다시 연결하여 체인을 확장할 수 있습니다 (A \u2192 B \u2192 C).",
+      "step4": "마지막 사람이 처리를 완료하면, 체인을 따라 자동으로 되돌아옵니다.",
+      "rulesTitle": "규칙",
+      "rule1": "자기 자신에게는 실을 연결할 수 없습니다.",
+      "rule2": "현재 담당자만 다음 사람에게 연결할 수 있습니다.",
+      "rule3": "활성 체인 참가자에게 순환 연결을 만들 수 없습니다.",
+      "rule4": "최대 체인 깊이는 20입니다."
+    },
+    "threadDiagram": {
+      "connectPhase": "연결 단계",
+      "snapbackPhase": "스냅백 단계",
+      "creator": "생성자",
+      "assignee": "담당자",
+      "done": "완료",
+      "resolved": "해결됨"
+    },
+    "snapback": {
+      "title": "Snap-back 시스템",
+      "description": "누군가 자신의 스레드 링크를 해결하면, 태스크가 자동으로 체인의 이전 사람에게 되돌아갑니다. 이 과정은 원래 생성자에게 도달할 때까지 계속됩니다.",
+      "exampleTitle": "예시: A \u2192 B \u2192 C 체인",
+      "example1": "A가 태스크를 만들고 B에게 연결합니다.",
+      "example2": "B가 C에게 연결합니다. 이제 체인은 A \u2192 B \u2192 C입니다.",
+      "example3": "C가 작업을 완료하고 해결합니다. 태스크가 B에게 되돌아갑니다.",
+      "example4": "B가 검토하고 해결합니다. 태스크가 A에게 되돌아갑니다.",
+      "example5": "A가 태스크를 COMPLETED로 변경합니다. 워크플로가 완료됩니다.",
+      "tipLabel": "팁:",
+      "tip": "스레드가 되돌아올 때마다 알림을 받습니다. 알림 페이지에서 태스크를 확인하세요."
+    },
+    "notifications": {
+      "title": "알림",
+      "description": "ito는 실시간 알림으로 중요한 업데이트를 놓치지 않게 합니다. 인앱 알림은 물론 이메일, Slack으로도 받을 수 있습니다.",
+      "types": {
+        "threadReceived": {
+          "name": "스레드 수신",
+          "description": "누군가 당신에게 스레드를 연결했습니다. 이제 담당자입니다."
+        },
+        "threadSnapped": {
+          "name": "스레드 스냅백",
+          "description": "보낸 스레드가 해결되어 돌아왔습니다."
+        },
+        "threadCompleted": {
+          "name": "스레드 완료",
+          "description": "참여한 스레드 체인이 완전히 완료되었습니다."
+        },
+        "workspaceInvite": {
+          "name": "워크스페이스 초대",
+          "description": "워크스페이스에 초대되었습니다."
+        },
+        "todoAssigned": {
+          "name": "태스크 배정",
+          "description": "태스크가 배정되었습니다."
+        },
+        "todoCompleted": {
+          "name": "태스크 완료",
+          "description": "생성했거나 참여한 태스크가 완료되었습니다."
+        }
+      }
+    },
+    "shortcuts": {
+      "title": "키보드 단축키",
+      "commandPalette": "커맨드 팔레트 열기",
+      "newTask": "새 태스크 만들기",
+      "closePanel": "패널 / 대화상자 닫기"
     }
   }
 }

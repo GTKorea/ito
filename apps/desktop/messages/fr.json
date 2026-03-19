@@ -54,7 +54,8 @@
     "workspaceName": "Workspace name",
     "create": "Create",
     "cancel": "Cancel",
-    "logout": "Se déconnecter"
+    "logout": "Se déconnecter",
+    "help": "Aide"
   },
   "workspace": {
     "myTasks": "Mes Tâches",
@@ -443,6 +444,106 @@
       "WORKSPACE_INVITE": "Invitation workspace",
       "TODO_ASSIGNED": "Tâche assignée",
       "TODO_COMPLETED": "Tâche terminée"
+    }
+  },
+  "help": {
+    "title": "Aide",
+    "subtitle": "Apprenez à utiliser ito",
+    "gettingStarted": {
+      "title": "Pour commencer",
+      "description": "ito est un outil de gestion de tâches basé sur les fils. Créez un espace de travail, invitez votre équipe et commencez à connecter des tâches.",
+      "createWorkspaceTitle": "Créer un espace de travail",
+      "step1": "Cliquez sur le sélecteur d'espace de travail en haut à gauche.",
+      "step2": "Cliquez sur « Nouvel espace » et entrez un nom.",
+      "step3": "Votre espace de travail est prêt. Commencez à créer des tâches.",
+      "inviteTitle": "Inviter des membres",
+      "inviteStep1": "Accédez aux Paramètres de l'espace de travail depuis la barre latérale.",
+      "inviteStep2": "Entrez l'adresse e-mail de la personne à inviter.",
+      "inviteStep3": "Un lien d'invitation sera envoyé. Une fois accepté, ils rejoindront votre espace."
+    },
+    "taskManagement": {
+      "title": "Gestion des tâches",
+      "description": "Les tâches sont l'unité de travail de base dans ito. Créez des tâches, définissez des priorités, assignez des dates limites et suivez la progression.",
+      "statusTitle": "Statut de la tâche",
+      "priorityTitle": "Niveaux de priorité",
+      "urgent": "Urgent",
+      "high": "Haute",
+      "medium": "Moyenne",
+      "low": "Basse",
+      "createTaskTitle": "Créer une tâche",
+      "createStep1": "Cliquez sur « Nouvelle tâche » ou utilisez la saisie rapide en bas.",
+      "createStep2": "Entrez un titre, définissez la priorité et la date limite.",
+      "createStep3": "La tâche vous est automatiquement assignée. Vous pouvez ensuite la connecter à quelqu'un d'autre."
+    },
+    "threadConnection": {
+      "title": "Connexion de fils",
+      "description": "Les fils sont au cœur d'ito. Connectez une tâche à une autre personne pour déléguer du travail. La chaîne peut s'étendre à travers plusieurs personnes.",
+      "howItWorksTitle": "Comment ça marche",
+      "step1": "Vous créez une tâche — vous êtes le responsable.",
+      "step2": "Cliquez sur « Connecter » pour la transmettre à un membre de l'équipe.",
+      "step3": "Cette personne peut la connecter davantage, construisant une chaîne (A → B → C).",
+      "step4": "Quand la dernière personne résout sa partie, la tâche revient automatiquement.",
+      "rulesTitle": "Règles",
+      "rule1": "Vous ne pouvez pas connecter un fil à vous-même.",
+      "rule2": "Seul le responsable actuel peut connecter au suivant.",
+      "rule3": "Vous ne pouvez pas créer de boucle avec les participants actifs.",
+      "rule4": "La profondeur maximale de la chaîne est de 20."
+    },
+    "threadDiagram": {
+      "connectPhase": "Phase de connexion",
+      "snapbackPhase": "Phase de snap-back",
+      "creator": "Créateur",
+      "assignee": "Responsable",
+      "done": "Terminé",
+      "resolved": "Résolu"
+    },
+    "snapback": {
+      "title": "Système Snap-back",
+      "description": "Quand quelqu'un résout son lien de fil, la tâche revient automatiquement à la personne précédente. Cela continue jusqu'au créateur original.",
+      "exampleTitle": "Exemple : Chaîne A → B → C",
+      "example1": "A crée une tâche et la connecte à B.",
+      "example2": "B la connecte à C. La chaîne est A → B → C.",
+      "example3": "C termine et résout. La tâche revient à B.",
+      "example4": "B vérifie et résout. La tâche revient à A.",
+      "example5": "A marque la tâche COMPLETED. Le flux est terminé.",
+      "tipLabel": "Astuce :",
+      "tip": "Vous recevrez une notification à chaque fois qu'un fil vous revient. Consultez la page Notifications."
+    },
+    "notifications": {
+      "title": "Notifications",
+      "description": "ito envoie des notifications en temps réel pour ne rien manquer. Les notifications arrivent dans l'app, par e-mail ou par Slack.",
+      "types": {
+        "threadReceived": {
+          "name": "Fil reçu",
+          "description": "Quelqu'un vous a connecté un fil. Vous êtes maintenant responsable."
+        },
+        "threadSnapped": {
+          "name": "Fil retourné",
+          "description": "Un fil que vous avez envoyé a été résolu et est revenu à vous."
+        },
+        "threadCompleted": {
+          "name": "Fil complété",
+          "description": "Une chaîne de fils à laquelle vous participiez est terminée."
+        },
+        "workspaceInvite": {
+          "name": "Invitation",
+          "description": "Vous avez été invité à rejoindre un espace de travail."
+        },
+        "todoAssigned": {
+          "name": "Tâche assignée",
+          "description": "Une tâche vous a été assignée."
+        },
+        "todoCompleted": {
+          "name": "Tâche terminée",
+          "description": "Une tâche que vous avez créée ou à laquelle vous participiez est terminée."
+        }
+      }
+    },
+    "shortcuts": {
+      "title": "Raccourcis clavier",
+      "commandPalette": "Ouvrir la palette de commandes",
+      "newTask": "Créer une nouvelle tâche",
+      "closePanel": "Fermer le panneau / dialogue"
     }
   }
 }
