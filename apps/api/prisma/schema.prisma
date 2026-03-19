@@ -302,10 +302,13 @@ model SlackWorkspace {
   slackTeamId   String      @unique
   slackTeamName String
   accessToken   String
+  botUserId     String?
+  scope         String?
   workspaceId   String
   workspace     Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   slackUsers    SlackUser[]
   createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
   @@index([workspaceId])
 }

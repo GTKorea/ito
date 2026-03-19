@@ -1,11 +1,14 @@
 import {
   Controller,
+  Get,
   Post,
+  Query,
   Req,
   Res,
   Logger,
   HttpStatus,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import type { Request, Response } from 'express';
 import { SlackService } from './slack.service';
 import { SlackCommandDto } from './dto/slack-command.dto';
@@ -15,7 +18,64 @@ import { SlackEventDto } from './dto/slack-event.dto';
 export class SlackController {
   private readonly logger = new Logger(SlackController.name);
 
-  constructor(private readonly slackService: SlackService) {}
+  constructor(
+    private readonly slackService: SlackService,
+    private readonly configService: ConfigService,
+  ) {}
+
+  // ──────────────────── OAuth Install Flow ────────────────────
+
+  @Get('install')
+  install(@Res() res: Response) {
+    if (!this.slackService.isOAuthConfigured()) {
+      return res
+        .status(HttpStatus.SERVICE_UNAVAILABLE)
+        .json({ error: 'Slack OAuth is not configured' });
+    }
+
+    const installUrl = this.slackService.getInstallUrl();
+    return res.redirect(installUrl);
+  }
+
+  @Get('oauth/callback')
+  async oauthCallback(
+    @Query('code') code: string,
+    @Query('error') error: string,
+    @Res() res: Response,
+  ) {
+    const frontendUrl =
+      this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3010';
+
+    if (error) {
+      this.logger.warn(`Slack OAuth error: ${error}`);
+      return res.redirect(
+        `${frontendUrl}/settings/integrations?slack=error&reason=${encodeURIComponent(error)}`,
+      );
+    }
+
+    if (!code) {
+      return res.redirect(
+        `${frontendUrl}/settings/integrations?slack=error&reason=missing_code`,
+      );
+    }
+
+    try {
+      const result = await this.slackService.handleOAuthCallback(code);
+      this.logger.log(
+        `Slack OAuth success: ${result.slackTeamName} (${result.slackTeamId})`,
+      );
+      return res.redirect(
+        `${frontendUrl}/settings/integrations?slack=success&team=${encodeURIComponent(result.slackTeamName)}`,
+      );
+    } catch (err) {
+      this.logger.error('Slack OAuth callback failed', err);
+      return res.redirect(
+        `${frontendUrl}/settings/integrations?slack=error&reason=oauth_failed`,
+      );
+    }
+  }
+
+  // ──────────────────── Events & Commands ────────────────────
 
   @Post('events')
   async handleEvent(@Req() req: Request, @Res() res: Response) {

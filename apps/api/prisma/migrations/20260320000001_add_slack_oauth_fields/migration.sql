@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "SlackWorkspace" ADD COLUMN "botUserId" TEXT;
+ALTER TABLE "SlackWorkspace" ADD COLUMN "scope" TEXT;
+ALTER TABLE "SlackWorkspace" ADD COLUMN "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;

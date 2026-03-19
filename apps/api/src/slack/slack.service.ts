@@ -6,12 +6,25 @@ import { TodosService } from '../todos/todos.service';
 import { SlackCommandDto } from './dto/slack-command.dto';
 import * as crypto from 'crypto';
 
+const SLACK_OAUTH_AUTHORIZE_URL = 'https://slack.com/oauth/v2/authorize';
+const SLACK_OAUTH_BOT_SCOPES = [
+  'commands',
+  'chat:write',
+  'users:read',
+  'users:read.email',
+];
+
 @Injectable()
 export class SlackService implements OnModuleInit {
   private readonly logger = new Logger(SlackService.name);
-  private client: WebClient | null = null;
+  /** Fallback client for single-workspace setup (SLACK_BOT_TOKEN) */
+  private defaultClient: WebClient | null = null;
   private signingSecret: string | null = null;
   private enabled = false;
+
+  // OAuth credentials (for multi-workspace / App Directory)
+  private clientId: string | null = null;
+  private clientSecret: string | null = null;
 
   constructor(
     private configService: ConfigService,
@@ -24,15 +37,27 @@ export class SlackService implements OnModuleInit {
     const signingSecret = this.configService.get<string>(
       'SLACK_SIGNING_SECRET',
     );
+    this.clientId = this.configService.get<string>('SLACK_CLIENT_ID') || null;
+    this.clientSecret =
+      this.configService.get<string>('SLACK_CLIENT_SECRET') || null;
 
-    if (botToken && signingSecret) {
-      this.client = new WebClient(botToken);
+    if (signingSecret) {
       this.signingSecret = signingSecret;
       this.enabled = true;
+    }
+
+    if (botToken) {
+      this.defaultClient = new WebClient(botToken);
+    }
+
+    if (this.enabled) {
       this.logger.log('Slack integration initialized');
+      if (this.clientId && this.clientSecret) {
+        this.logger.log('Slack OAuth (multi-workspace) enabled');
+      }
     } else {
       this.logger.warn(
-        'SLACK_BOT_TOKEN or SLACK_SIGNING_SECRET not configured — Slack integration disabled',
+        'SLACK_SIGNING_SECRET not configured — Slack integration disabled',
       );
     }
   }
@@ -40,6 +65,97 @@ export class SlackService implements OnModuleInit {
   isEnabled(): boolean {
     return this.enabled;
   }
+
+  // ──────────────────── OAuth Install Flow ────────────────────
+
+  isOAuthConfigured(): boolean {
+    return !!(this.clientId && this.clientSecret);
+  }
+
+  getInstallUrl(state?: string): string {
+    if (!this.clientId) {
+      throw new Error('SLACK_CLIENT_ID is not configured');
+    }
+
+    const redirectUri = this.getOAuthRedirectUri();
+    const params = new URLSearchParams({
+      client_id: this.clientId,
+      scope: SLACK_OAUTH_BOT_SCOPES.join(','),
+      redirect_uri: redirectUri,
+    });
+
+    if (state) {
+      params.set('state', state);
+    }
+
+    return `${SLACK_OAUTH_AUTHORIZE_URL}?${params.toString()}`;
+  }
+
+  async handleOAuthCallback(
+    code: string,
+  ): Promise<{ slackTeamId: string; slackTeamName: string }> {
+    if (!this.clientId || !this.clientSecret) {
+      throw new Error('Slack OAuth credentials are not configured');
+    }
+
+    const tempClient = new WebClient();
+    const result = await tempClient.oauth.v2.access({
+      client_id: this.clientId,
+      client_secret: this.clientSecret,
+      code,
+      redirect_uri: this.getOAuthRedirectUri(),
+    });
+
+    if (!result.ok) {
+      throw new Error(`Slack OAuth failed: ${result.error}`);
+    }
+
+    const teamId = result.team?.id;
+    const teamName = result.team?.name || 'Unknown';
+    const botToken = result.access_token;
+    const botUserId = result.bot_user_id;
+    const scope = result.scope;
+
+    if (!teamId || !botToken) {
+      throw new Error('Invalid OAuth response from Slack');
+    }
+
+    // Upsert the SlackWorkspace record
+    await this.prisma.slackWorkspace.upsert({
+      where: { slackTeamId: teamId },
+      update: {
+        slackTeamName: teamName,
+        accessToken: botToken,
+        botUserId: botUserId || null,
+        scope: scope || null,
+      },
+      create: {
+        slackTeamId: teamId,
+        slackTeamName: teamName,
+        accessToken: botToken,
+        botUserId: botUserId || null,
+        scope: scope || null,
+        // workspaceId will need to be linked later by the user
+        // For now, we create a placeholder that can be updated
+        workspaceId: '', // Will be set when user links to an ito workspace
+      },
+    });
+
+    this.logger.log(
+      `Slack workspace installed: ${teamName} (${teamId})`,
+    );
+
+    return { slackTeamId: teamId, slackTeamName: teamName };
+  }
+
+  private getOAuthRedirectUri(): string {
+    const apiUrl =
+      this.configService.get<string>('API_URL') ||
+      `http://localhost:${this.configService.get<string>('API_PORT') || '3011'}`;
+    return `${apiUrl}/slack/oauth/callback`;
+  }
+
+  // ──────────────────── Signature Verification ────────────────────
 
   verifySignature(
     signingSecret: string,
@@ -74,18 +190,40 @@ export class SlackService implements OnModuleInit {
     return this.verifySignature(this.signingSecret, headers, rawBody);
   }
 
+  // ──────────────────── Messaging ────────────────────
+
+  /**
+   * Get a WebClient for the given Slack team. Falls back to the default
+   * client (SLACK_BOT_TOKEN) if no per-workspace token is stored.
+   */
+  private async getClientForTeam(
+    slackTeamId?: string,
+  ): Promise<WebClient | null> {
+    if (slackTeamId) {
+      const workspace = await this.prisma.slackWorkspace.findUnique({
+        where: { slackTeamId },
+      });
+      if (workspace?.accessToken) {
+        return new WebClient(workspace.accessToken);
+      }
+    }
+    return this.defaultClient;
+  }
+
   async sendMessage(
     channel: string,
     text: string,
     blocks?: any[],
+    slackTeamId?: string,
   ): Promise<void> {
-    if (!this.client) {
-      this.logger.debug('Slack message skipped (not configured)');
+    const client = await this.getClientForTeam(slackTeamId);
+    if (!client) {
+      this.logger.debug('Slack message skipped (no client available)');
       return;
     }
 
     try {
-      await this.client.chat.postMessage({ channel, text, blocks });
+      await client.chat.postMessage({ channel, text, blocks });
     } catch (error) {
       this.logger.error(`Failed to send Slack message to ${channel}`, error);
     }
@@ -95,13 +233,26 @@ export class SlackService implements OnModuleInit {
     userId: string,
     notification: { type: string; title: string; data?: any },
   ): Promise<void> {
-    if (!this.client) return;
-
     const slackUser = await this.findSlackUser(userId);
     if (!slackUser || !slackUser.slackChannelId) return;
 
+    const client = await this.getClientForTeam(
+      slackUser.slackWorkspace.slackTeamId,
+    );
+    if (!client) return;
+
     const text = this.formatNotification(notification);
-    await this.sendMessage(slackUser.slackChannelId, text);
+    try {
+      await client.chat.postMessage({
+        channel: slackUser.slackChannelId,
+        text,
+      });
+    } catch (error) {
+      this.logger.error(
+        `Failed to send Slack notification to user ${userId}`,
+        error,
+      );
+    }
   }
 
   async findSlackUser(userId: string) {
@@ -137,6 +288,8 @@ export class SlackService implements OnModuleInit {
         return notification.title;
     }
   }
+
+  // ──────────────────── Slash Commands ────────────────────
 
   async handleCommand(
     payload: SlackCommandDto,
