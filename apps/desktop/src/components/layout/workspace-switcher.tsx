@@ -51,14 +51,14 @@ export function WorkspaceSwitcher() {
         </span>
         <ChevronsUpDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
       </PopoverTrigger>
-      <PopoverContent align="start" side="bottom" sideOffset={0} className="w-56 p-1.5">
+      <PopoverContent align="start" side="bottom" sideOffset={0} className="w-56 p-2">
         <div className="space-y-0.5">
           {workspaces.map((ws) => (
             <button
               key={ws.id}
               onClick={() => handleSelect(ws)}
               className={cn(
-                'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
+                'flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-sm transition-colors',
                 ws.id === currentWorkspace?.id
                   ? 'bg-accent text-accent-foreground'
                   : 'hover:bg-accent/50 text-foreground',
@@ -75,7 +75,7 @@ export function WorkspaceSwitcher() {
           ))}
         </div>
 
-        <Separator className="my-1.5" />
+        <Separator className="my-2" />
 
         {creating ? (
           <div className="px-1 pb-1 space-y-1.5">
@@ -118,7 +118,7 @@ export function WorkspaceSwitcher() {
         ) : (
           <button
             onClick={() => setCreating(true)}
-            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
+            className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-sm text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
           >
             <Plus className="h-3.5 w-3.5" />
             {t('createWorkspace')}
@@ -128,7 +128,7 @@ export function WorkspaceSwitcher() {
         <Link
           href="/workspace-settings"
           onClick={() => setOpen(false)}
-          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
+          className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-sm text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
         >
           <Settings className="h-3.5 w-3.5" />
           {t('workspaceSettings')}

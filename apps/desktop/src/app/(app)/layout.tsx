@@ -7,6 +7,7 @@ import { useWorkspaceStore } from '@/stores/workspace-store';
 import { useNotificationStore } from '@/stores/notification-store';
 import { Sidebar } from '@/components/layout/sidebar';
 import { CommandPalette } from '@/components/layout/command-palette';
+import { OnboardingOverlay } from '@/components/onboarding/onboarding-overlay';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading, fetchUser } = useAuthStore();
@@ -48,6 +49,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <Sidebar />
       <main className="flex-1 overflow-auto">{children}</main>
       <CommandPalette />
+      <OnboardingOverlay />
     </div>
   );
 }

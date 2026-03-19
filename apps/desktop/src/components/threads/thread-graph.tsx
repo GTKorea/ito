@@ -167,9 +167,9 @@ export function ThreadGraph({ links, creator }: ThreadGraphProps) {
         source: link.fromUser.id,
         target: link.toUser.id,
         label: `${link.chainIndex}`,
-        labelStyle: { fill: '#999', fontSize: 10 },
-        labelBgStyle: { fill: '#0A0A0A', fillOpacity: 0.8 },
-        labelBgPadding: [4, 2] as [number, number],
+        labelStyle: { fill: '#E0E0E0', fontSize: 10, fontWeight: 600 },
+        labelBgStyle: { fill: '#1A1A1A', fillOpacity: 0.95 },
+        labelBgPadding: [6, 4] as [number, number],
         labelBgBorderRadius: 3,
         style: {
           stroke: color,

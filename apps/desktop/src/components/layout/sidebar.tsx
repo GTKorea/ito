@@ -20,6 +20,7 @@ import { useNotificationStore } from '@/stores/notification-store';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ThemeToggle } from '@/components/layout/theme-toggle';
 import { WorkspaceSwitcher } from '@/components/layout/workspace-switcher';
 
@@ -113,12 +114,19 @@ export function Sidebar() {
             </AvatarFallback>
           </Avatar>
           <span className="flex-1 truncate text-sm">{user?.name}</span>
-          <button
-            onClick={logout}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <LogOut className="h-3.5 w-3.5" />
-          </button>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <button
+                  onClick={logout}
+                  className="text-muted-foreground hover:text-foreground"
+                />
+              }
+            >
+              <LogOut className="h-3.5 w-3.5" />
+            </TooltipTrigger>
+            <TooltipContent side="right">{t('logout')}</TooltipContent>
+          </Tooltip>
         </div>
       </div>
     </aside>

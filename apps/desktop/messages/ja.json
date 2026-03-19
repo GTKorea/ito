@@ -53,7 +53,8 @@
     "workspaceSettings": "Workspace settings",
     "workspaceName": "Workspace name",
     "create": "Create",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "logout": "ログアウト"
   },
   "workspace": {
     "myTasks": "マイタスク",
@@ -172,6 +173,7 @@
     "language": "言語",
     "languageDescription": "お好みの言語を選択してください",
     "calendarIntegrations": "カレンダー連携",
+    "notificationSettings": "通知設定",
     "calendarDescription": "カレンダーを接続してタスクの期限を同期します",
     "googleCalendar": "Google カレンダー",
     "outlookCalendar": "Outlook カレンダー",
@@ -424,5 +426,22 @@
     "creating": "Creating...",
     "create": "Create",
     "googleEvent": "Google Calendar"
+  },
+  "notificationSettings": {
+    "description": "各イベントタイプの通知方法を選択してください。",
+    "type": "タイプ",
+    "inApp": "アプリ内",
+    "email": "メール",
+    "slack": "Slack",
+    "webhookPlaceholder": "https://hooks.slack.com/services/...",
+    "saving": "保存中...",
+    "types": {
+      "THREAD_RECEIVED": "スレッド受信",
+      "THREAD_SNAPPED": "スレッドスナップバック",
+      "THREAD_COMPLETED": "スレッド完了",
+      "WORKSPACE_INVITE": "ワークスペース招待",
+      "TODO_ASSIGNED": "タスク割り当て",
+      "TODO_COMPLETED": "タスク完了"
+    }
   }
 }

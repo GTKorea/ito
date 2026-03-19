@@ -53,7 +53,8 @@
     "workspaceSettings": "Workspace settings",
     "workspaceName": "Workspace name",
     "create": "Create",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "logout": "登出"
   },
   "workspace": {
     "myTasks": "我的任務",
@@ -172,6 +173,7 @@
     "language": "語言",
     "languageDescription": "選擇您偏好的語言",
     "calendarIntegrations": "行事曆整合",
+    "notificationSettings": "通知設定",
     "calendarDescription": "連接行事曆以同步任務截止日期",
     "googleCalendar": "Google 行事曆",
     "outlookCalendar": "Outlook 行事曆",
@@ -424,5 +426,22 @@
     "creating": "Creating...",
     "create": "Create",
     "googleEvent": "Google Calendar"
+  },
+  "notificationSettings": {
+    "description": "選擇每種事件類型的通知方式。",
+    "type": "類型",
+    "inApp": "應用內",
+    "email": "電子郵件",
+    "slack": "Slack",
+    "webhookPlaceholder": "https://hooks.slack.com/services/...",
+    "saving": "儲存中...",
+    "types": {
+      "THREAD_RECEIVED": "收到線程",
+      "THREAD_SNAPPED": "線程回彈",
+      "THREAD_COMPLETED": "線程完成",
+      "WORKSPACE_INVITE": "工作區邀請",
+      "TODO_ASSIGNED": "任務指派",
+      "TODO_COMPLETED": "任務完成"
+    }
   }
 }

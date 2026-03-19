@@ -252,7 +252,7 @@ export function ThreadDemoSection() {
         </div>
 
         {/* Demo area */}
-        <div className="mx-auto grid max-w-4xl gap-12 lg:grid-cols-[1fr_1.5fr] lg:gap-16">
+        <div className="mx-auto grid max-w-4xl items-center gap-12 lg:grid-cols-2 lg:gap-16">
           {/* Steps */}
           <div className="flex flex-col gap-3">
             {stepKeys.map((key, i) => (

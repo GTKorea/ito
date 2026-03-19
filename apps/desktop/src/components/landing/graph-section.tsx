@@ -48,11 +48,11 @@ export function GraphSection() {
 
         {/* Graph card */}
         <div className="mx-auto max-w-3xl overflow-hidden rounded-2xl border border-border bg-card/30">
-          <div className="overflow-x-auto p-4 sm:p-8">
+          <div className="p-4 sm:p-8">
             <svg
               viewBox="0 0 680 400"
               fill="none"
-              className="mx-auto min-w-[500px]"
+              className="mx-auto w-full"
             >
               <defs>
                 <filter id="graph-glow">
