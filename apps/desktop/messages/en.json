@@ -204,6 +204,7 @@
     "nav": {
       "features": "Features",
       "integrations": "Integrations",
+      "pricing": "Pricing",
       "login": "Log in",
       "getStarted": "Get Started"
     },
@@ -278,6 +279,74 @@
       "realtime": { "value": "Real-time", "label": "Sync" },
       "crossPlatform": { "value": "3", "label": "Platforms" },
       "openArch": { "value": "Open", "label": "Architecture" }
+    },
+    "pricing": {
+      "title": "Simple, transparent pricing",
+      "subtitle": "Start free, scale as you grow. No hidden fees.",
+      "earlyAccess": "Early Access — All features are currently free",
+      "popular": "Most Popular",
+      "perUserMonth": "/user/mo",
+      "limits": {
+        "workspaces": "Workspaces",
+        "members": "Members",
+        "teams": "Teams",
+        "fileUpload": "File upload"
+      },
+      "features": {
+        "unlimitedTasks": "Unlimited tasks",
+        "unlimitedChain": "Unlimited chain depth",
+        "calendarSync": "Calendar sync",
+        "slackIntegration": "Slack integration",
+        "teamDashboard": "Team dashboards",
+        "guestRole": "Guest roles",
+        "activityLog": "Activity log",
+        "prioritySupport": "Priority support",
+        "ssoSaml": "SSO / SAML",
+        "dedicatedManager": "Dedicated manager",
+        "slaGuarantee": "SLA guarantee"
+      },
+      "plans": {
+        "free": {
+          "name": "Free",
+          "price": "$0",
+          "description": "For individuals and small teams getting started.",
+          "workspaces": "1",
+          "members": "20",
+          "teams": "2",
+          "fileUpload": "100 MB",
+          "cta": "Get Started"
+        },
+        "pro": {
+          "name": "Pro",
+          "price": "$12",
+          "description": "For growing teams that need more power.",
+          "workspaces": "5",
+          "members": "Unlimited",
+          "teams": "10",
+          "fileUpload": "1 GB",
+          "cta": "Start Free Trial"
+        },
+        "team": {
+          "name": "Team",
+          "price": "$24",
+          "description": "For organizations that need full control.",
+          "workspaces": "Unlimited",
+          "members": "Unlimited",
+          "teams": "Unlimited",
+          "fileUpload": "10 GB",
+          "cta": "Start Free Trial"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "price": "Custom",
+          "description": "For large organizations with advanced needs.",
+          "workspaces": "Unlimited",
+          "members": "Unlimited",
+          "teams": "Unlimited",
+          "fileUpload": "Unlimited",
+          "cta": "Contact Sales"
+        }
+      }
     },
     "cta": {
       "title": "Start weaving your workflow",

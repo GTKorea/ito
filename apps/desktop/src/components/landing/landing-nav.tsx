@@ -52,6 +52,12 @@ export function LandingNav() {
           >
             {t('nav.integrations')}
           </button>
+          <button
+            onClick={() => scrollTo('pricing')}
+            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {t('nav.pricing')}
+          </button>
         </div>
 
         {/* Desktop CTA */}
@@ -94,6 +100,12 @@ export function LandingNav() {
               className="rounded-lg px-3 py-2.5 text-left text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             >
               {t('nav.integrations')}
+            </button>
+            <button
+              onClick={() => scrollTo('pricing')}
+              className="rounded-lg px-3 py-2.5 text-left text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            >
+              {t('nav.pricing')}
             </button>
             <div className="my-2 h-px bg-border" />
             <Link

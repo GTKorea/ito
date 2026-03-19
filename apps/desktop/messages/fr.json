@@ -204,6 +204,7 @@
     "nav": {
       "features": "Fonctionnalités",
       "integrations": "Intégrations",
+      "pricing": "Tarifs",
       "login": "Se connecter",
       "getStarted": "Commencer"
     },
@@ -278,6 +279,74 @@
       "realtime": { "value": "Temps réel", "label": "Synchronisation" },
       "crossPlatform": { "value": "3", "label": "Plateformes" },
       "openArch": { "value": "Ouverte", "label": "Architecture" }
+    },
+    "pricing": {
+      "title": "Des tarifs simples et transparents",
+      "subtitle": "Commencez gratuitement, évoluez selon vos besoins. Aucun frais caché.",
+      "earlyAccess": "Accès anticipé — Toutes les fonctionnalités sont actuellement gratuites",
+      "popular": "Le plus populaire",
+      "perUserMonth": "/utilisateur/mois",
+      "limits": {
+        "workspaces": "Espaces de travail",
+        "members": "Membres",
+        "teams": "Équipes",
+        "fileUpload": "Téléchargement de fichiers"
+      },
+      "features": {
+        "unlimitedTasks": "Tâches illimitées",
+        "unlimitedChain": "Profondeur de chaîne illimitée",
+        "calendarSync": "Synchronisation calendrier",
+        "slackIntegration": "Intégration Slack",
+        "teamDashboard": "Tableaux de bord d'équipe",
+        "guestRole": "Rôles invité",
+        "activityLog": "Journal d'activité",
+        "prioritySupport": "Support prioritaire",
+        "ssoSaml": "SSO / SAML",
+        "dedicatedManager": "Gestionnaire dédié",
+        "slaGuarantee": "Garantie SLA"
+      },
+      "plans": {
+        "free": {
+          "name": "Free",
+          "price": "$0",
+          "description": "Pour les individus et les petites équipes qui débutent.",
+          "workspaces": "1",
+          "members": "20",
+          "teams": "2",
+          "fileUpload": "100 MB",
+          "cta": "Commencer"
+        },
+        "pro": {
+          "name": "Pro",
+          "price": "$12",
+          "description": "Pour les équipes en croissance qui ont besoin de plus de puissance.",
+          "workspaces": "5",
+          "members": "Illimités",
+          "teams": "10",
+          "fileUpload": "1 GB",
+          "cta": "Démarrer l'essai gratuit"
+        },
+        "team": {
+          "name": "Team",
+          "price": "$24",
+          "description": "Pour les organisations qui ont besoin d'un contrôle total.",
+          "workspaces": "Illimités",
+          "members": "Illimités",
+          "teams": "Illimités",
+          "fileUpload": "10 GB",
+          "cta": "Démarrer l'essai gratuit"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "price": "Sur mesure",
+          "description": "Pour les grandes organisations avec des besoins avancés.",
+          "workspaces": "Illimités",
+          "members": "Illimités",
+          "teams": "Illimités",
+          "fileUpload": "Illimité",
+          "cta": "Contacter les ventes"
+        }
+      }
     },
     "cta": {
       "title": "Commencez à tisser votre workflow",

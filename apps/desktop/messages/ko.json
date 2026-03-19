@@ -204,6 +204,7 @@
     "nav": {
       "features": "기능",
       "integrations": "연동",
+      "pricing": "요금제",
       "login": "로그인",
       "getStarted": "시작하기"
     },
@@ -278,6 +279,74 @@
       "realtime": { "value": "실시간", "label": "동기화" },
       "crossPlatform": { "value": "3", "label": "개 플랫폼" },
       "openArch": { "value": "개방형", "label": "아키텍처" }
+    },
+    "pricing": {
+      "title": "심플하고 투명한 요금제",
+      "subtitle": "무료로 시작하고, 성장에 맞춰 확장하세요.",
+      "earlyAccess": "Early Access — 현재 모든 기능이 무료입니다",
+      "popular": "가장 인기",
+      "perUserMonth": "/인/월",
+      "limits": {
+        "workspaces": "워크스페이스",
+        "members": "멤버",
+        "teams": "팀",
+        "fileUpload": "파일 업로드"
+      },
+      "features": {
+        "unlimitedTasks": "무제한 태스크",
+        "unlimitedChain": "무제한 체인 깊이",
+        "calendarSync": "캘린더 동기화",
+        "slackIntegration": "Slack 연동",
+        "teamDashboard": "팀 대시보드",
+        "guestRole": "게스트 역할",
+        "activityLog": "활동 로그",
+        "prioritySupport": "우선 지원",
+        "ssoSaml": "SSO / SAML",
+        "dedicatedManager": "전담 매니저",
+        "slaGuarantee": "SLA 보장"
+      },
+      "plans": {
+        "free": {
+          "name": "Free",
+          "price": "$0",
+          "description": "시작하는 개인과 소규모 팀을 위해.",
+          "workspaces": "1개",
+          "members": "20명",
+          "teams": "2개",
+          "fileUpload": "100 MB",
+          "cta": "시작하기"
+        },
+        "pro": {
+          "name": "Pro",
+          "price": "$12",
+          "description": "더 많은 기능이 필요한 성장하는 팀을 위해.",
+          "workspaces": "5개",
+          "members": "무제한",
+          "teams": "10개",
+          "fileUpload": "1 GB",
+          "cta": "무료 체험 시작"
+        },
+        "team": {
+          "name": "Team",
+          "price": "$24",
+          "description": "완전한 제어가 필요한 조직을 위해.",
+          "workspaces": "무제한",
+          "members": "무제한",
+          "teams": "무제한",
+          "fileUpload": "10 GB",
+          "cta": "무료 체험 시작"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "price": "협의",
+          "description": "고급 요구사항이 있는 대규모 조직을 위해.",
+          "workspaces": "무제한",
+          "members": "무제한",
+          "teams": "무제한",
+          "fileUpload": "무제한",
+          "cta": "영업팀 문의"
+        }
+      }
     },
     "cta": {
       "title": "워크플로를 엮어보세요",

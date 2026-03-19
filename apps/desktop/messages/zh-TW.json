@@ -204,6 +204,7 @@
     "nav": {
       "features": "功能",
       "integrations": "整合",
+      "pricing": "定價",
       "login": "登入",
       "getStarted": "開始使用"
     },
@@ -278,6 +279,74 @@
       "realtime": { "value": "即時", "label": "同步" },
       "crossPlatform": { "value": "3", "label": "個平台" },
       "openArch": { "value": "開放", "label": "架構" }
+    },
+    "pricing": {
+      "title": "簡單透明的定價",
+      "subtitle": "免費開始，隨需擴展。沒有隱藏費用。",
+      "earlyAccess": "搶先體驗 — 目前所有功能均免費",
+      "popular": "最受歡迎",
+      "perUserMonth": "/使用者/月",
+      "limits": {
+        "workspaces": "工作區",
+        "members": "成員",
+        "teams": "團隊",
+        "fileUpload": "檔案上傳"
+      },
+      "features": {
+        "unlimitedTasks": "無限任務",
+        "unlimitedChain": "無限鏈深度",
+        "calendarSync": "行事曆同步",
+        "slackIntegration": "Slack 整合",
+        "teamDashboard": "團隊儀表板",
+        "guestRole": "訪客角色",
+        "activityLog": "活動紀錄",
+        "prioritySupport": "優先支援",
+        "ssoSaml": "SSO / SAML",
+        "dedicatedManager": "專屬客戶經理",
+        "slaGuarantee": "SLA 保證"
+      },
+      "plans": {
+        "free": {
+          "name": "Free",
+          "price": "$0",
+          "description": "適合剛起步的個人和小型團隊。",
+          "workspaces": "1",
+          "members": "20",
+          "teams": "2",
+          "fileUpload": "100 MB",
+          "cta": "開始使用"
+        },
+        "pro": {
+          "name": "Pro",
+          "price": "$12",
+          "description": "適合需要更多功能的成長型團隊。",
+          "workspaces": "5",
+          "members": "無限",
+          "teams": "10",
+          "fileUpload": "1 GB",
+          "cta": "開始免費試用"
+        },
+        "team": {
+          "name": "Team",
+          "price": "$24",
+          "description": "適合需要完全控制的組織。",
+          "workspaces": "無限",
+          "members": "無限",
+          "teams": "無限",
+          "fileUpload": "10 GB",
+          "cta": "開始免費試用"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "price": "自訂",
+          "description": "適合有進階需求的大型組織。",
+          "workspaces": "無限",
+          "members": "無限",
+          "teams": "無限",
+          "fileUpload": "無限",
+          "cta": "聯繫銷售"
+        }
+      }
     },
     "cta": {
       "title": "開始編織你的工作流",
