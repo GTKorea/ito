@@ -20,7 +20,9 @@ import { cn } from '@/lib/utils';
 const typeIcons: Record<string, React.ReactNode> = {
   THREAD_RECEIVED: <Link2 className="h-4 w-4 text-blue-500" />,
   THREAD_SNAPPED: <ArrowLeftRight className="h-4 w-4 text-green-500" />,
+  THREAD_COMPLETED: <CheckCheck className="h-4 w-4 text-green-500" />,
   TODO_COMPLETED: <Check className="h-4 w-4 text-green-500" />,
+  TODO_ASSIGNED: <UserPlus className="h-4 w-4 text-blue-500" />,
   WORKSPACE_INVITE: <UserPlus className="h-4 w-4 text-purple-500" />,
 };
 
@@ -85,8 +87,11 @@ export default function NotificationsPage() {
               )}
               onClick={() => {
                 if (!n.read) markAsRead(n.id);
+
                 if (n.type === 'WORKSPACE_INVITE' && n.data?.token) {
                   router.push(`/invite?token=${n.data.token}`);
+                } else if (n.data?.todoId) {
+                  router.push(`/workspace?todo=${n.data.todoId}`);
                 }
               }}
             >

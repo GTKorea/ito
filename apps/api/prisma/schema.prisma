@@ -28,8 +28,9 @@ model User {
   todosAssigned        Todo[]         @relation("TodoAssignee")
   threadLinksFrom      ThreadLink[]   @relation("ThreadLinkSender")
   threadLinksTo        ThreadLink[]   @relation("ThreadLinkReceiver")
-  notifications        Notification[]
-  refreshTokens        RefreshToken[]
+  notifications             Notification[]
+  notificationPreferences   NotificationPreference[]
+  refreshTokens             RefreshToken[]
   activities           Activity[]
   filesUploaded        File[]
   slackUsers           SlackUser[]
@@ -236,6 +237,21 @@ enum NotificationType {
   WORKSPACE_INVITE
   TODO_ASSIGNED
   TODO_COMPLETED
+}
+
+model NotificationPreference {
+  id              String           @id @default(cuid())
+  userId          String
+  type            NotificationType
+  inApp           Boolean          @default(true)
+  email           Boolean          @default(false)
+  slack           Boolean          @default(false)
+  slackWebhookUrl String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type])
+  @@index([userId])
 }
 
 // ──────────────────── Activity Log ────────────────────

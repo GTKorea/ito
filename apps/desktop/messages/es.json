@@ -53,7 +53,8 @@
     "workspaceSettings": "Workspace settings",
     "workspaceName": "Workspace name",
     "create": "Create",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "logout": "Cerrar sesión"
   },
   "workspace": {
     "myTasks": "Mis Tareas",
@@ -172,6 +173,7 @@
     "language": "Idioma",
     "languageDescription": "Elige tu idioma preferido",
     "calendarIntegrations": "Integraciones de Calendario",
+    "notificationSettings": "Configuración de notificaciones",
     "calendarDescription": "Conecta tus calendarios para sincronizar fechas de vencimiento",
     "googleCalendar": "Google Calendar",
     "outlookCalendar": "Outlook Calendar",
@@ -424,5 +426,22 @@
     "creating": "Creating...",
     "create": "Create",
     "googleEvent": "Google Calendar"
+  },
+  "notificationSettings": {
+    "description": "Elige cómo quieres ser notificado para cada tipo de evento.",
+    "type": "Tipo",
+    "inApp": "En App",
+    "email": "Correo",
+    "slack": "Slack",
+    "webhookPlaceholder": "https://hooks.slack.com/services/...",
+    "saving": "Guardando...",
+    "types": {
+      "THREAD_RECEIVED": "Hilo recibido",
+      "THREAD_SNAPPED": "Hilo devuelto",
+      "THREAD_COMPLETED": "Hilo completado",
+      "WORKSPACE_INVITE": "Invitación al workspace",
+      "TODO_ASSIGNED": "Tarea asignada",
+      "TODO_COMPLETED": "Tarea completada"
+    }
   }
 }

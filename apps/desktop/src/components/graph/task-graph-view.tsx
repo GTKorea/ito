@@ -362,9 +362,9 @@ export function TaskGraphView({ workspaceId }: TaskGraphViewProps) {
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             fitView
-            fitViewOptions={{ padding: 0.2 }}
+            fitViewOptions={{ padding: 0.4 }}
             proOptions={{ hideAttribution: true }}
-            minZoom={0.3}
+            minZoom={0.1}
             maxZoom={2}
             nodesConnectable={false}
             panOnScroll

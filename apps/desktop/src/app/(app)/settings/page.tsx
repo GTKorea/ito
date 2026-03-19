@@ -16,9 +16,11 @@ import {
   Camera,
   Globe,
   Calendar,
+  Bell,
   Unlink,
   Loader2,
 } from 'lucide-react';
+import { NotificationSettings } from '@/components/settings/notification-settings';
 
 interface CalendarIntegration {
   id: string;
@@ -304,6 +306,17 @@ export default function SettingsPage() {
               </div>
             </div>
           )}
+        </section>
+
+        <Separator />
+
+        {/* Notification Settings */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Bell className="h-4 w-4 text-muted-foreground" />
+            <h2 className="text-sm font-semibold">{t('notificationSettings')}</h2>
+          </div>
+          <NotificationSettings />
         </section>
       </div>
     </div>

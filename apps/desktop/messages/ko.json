@@ -53,7 +53,8 @@
     "workspaceSettings": "워크스페이스 설정",
     "workspaceName": "워크스페이스 이름",
     "create": "생성",
-    "cancel": "취소"
+    "cancel": "취소",
+    "logout": "로그아웃"
   },
   "workspace": {
     "myTasks": "내 태스크",
@@ -172,6 +173,7 @@
     "language": "언어",
     "languageDescription": "선호하는 언어를 선택하세요",
     "calendarIntegrations": "캘린더 연동",
+    "notificationSettings": "알림 설정",
     "calendarDescription": "캘린더를 연결하여 태스크 마감일을 동기화하세요",
     "googleCalendar": "Google 캘린더",
     "outlookCalendar": "Outlook 캘린더",
@@ -412,5 +414,22 @@
     "creating": "생성 중...",
     "create": "생성",
     "googleEvent": "Google 캘린더"
+  },
+  "notificationSettings": {
+    "description": "각 이벤트 유형에 대한 알림 방식을 선택하세요.",
+    "type": "유형",
+    "inApp": "앱 내",
+    "email": "이메일",
+    "slack": "Slack",
+    "webhookPlaceholder": "https://hooks.slack.com/services/...",
+    "saving": "저장 중...",
+    "types": {
+      "THREAD_RECEIVED": "스레드 수신",
+      "THREAD_SNAPPED": "스레드 스냅백",
+      "THREAD_COMPLETED": "스레드 완료",
+      "WORKSPACE_INVITE": "워크스페이스 초대",
+      "TODO_ASSIGNED": "태스크 배정",
+      "TODO_COMPLETED": "태스크 완료"
+    }
   }
 }

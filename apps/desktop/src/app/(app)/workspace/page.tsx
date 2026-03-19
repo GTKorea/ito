@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useTodoStore } from '@/stores/todo-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
@@ -83,11 +84,20 @@ export default function WorkspacePage() {
   const { todos, isLoading, fetchTodos } = useTodoStore();
   const [showCreate, setShowCreate] = useState(false);
   const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null);
+  const searchParams = useSearchParams();
   const t = useTranslations('workspace');
 
   useEffect(() => {
     if (currentWorkspace) fetchTodos(currentWorkspace.id);
   }, [currentWorkspace, fetchTodos]);
+
+  // Auto-select todo from query param (e.g. from notification click)
+  useEffect(() => {
+    const todoId = searchParams.get('todo');
+    if (todoId) {
+      setSelectedTodoId(todoId);
+    }
+  }, [searchParams]);
 
   if (wsLoading) {
     return (
@@ -115,7 +125,7 @@ export default function WorkspacePage() {
           <kbd className="hidden sm:inline-flex h-5 items-center gap-0.5 rounded border border-border bg-muted px-1.5 text-[10px] text-muted-foreground">
             <span className="text-xs">&#8984;</span>K
           </kbd>
-          <Button size="sm" onClick={() => setShowCreate(true)}>
+          <Button size="sm" onClick={() => setShowCreate(true)} data-onboarding="new-task">
             <Plus className="mr-1 h-4 w-4" />
             {t('newTask')}
           </Button>

@@ -24,7 +24,22 @@ import {
   Ban,
   Calendar,
 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+
+const priorityNames: Record<string, string> = {
+  URGENT: 'Urgent',
+  HIGH: 'High',
+  MEDIUM: 'Medium',
+  LOW: 'Low',
+};
+
+const statusNames: Record<string, string> = {
+  OPEN: 'Open',
+  IN_PROGRESS: 'In Progress',
+  BLOCKED: 'Blocked',
+  COMPLETED: 'Completed',
+};
 
 const priorityColors: Record<string, string> = {
   URGENT: 'text-red-500',
@@ -106,16 +121,23 @@ export function TodoItem({ todo, onSelect }: TodoItemProps) {
     <div className="group rounded-lg border border-border bg-card p-3 hover:border-border/80 transition-colors">
       <div className="flex items-center gap-3">
         {/* Status icon / toggle */}
-        <button
-          onClick={() =>
-            updateTodo(todo.id, {
-              status: todo.status === 'COMPLETED' ? 'OPEN' : 'COMPLETED',
-            })
-          }
-          className="shrink-0"
-        >
-          {statusIcons[todo.status] || statusIcons.OPEN}
-        </button>
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <button
+                onClick={() =>
+                  updateTodo(todo.id, {
+                    status: todo.status === 'COMPLETED' ? 'OPEN' : 'COMPLETED',
+                  })
+                }
+                className="shrink-0"
+              />
+            }
+          >
+            {statusIcons[todo.status] || statusIcons.OPEN}
+          </TooltipTrigger>
+          <TooltipContent side="left">{statusNames[todo.status] || 'Open'}</TooltipContent>
+        </Tooltip>
 
         {/* Content */}
         <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onSelect?.(todo.id)}>
@@ -128,9 +150,16 @@ export function TodoItem({ todo, onSelect }: TodoItemProps) {
             >
               {todo.title}
             </span>
-            <span className={cn('text-xs', priorityColors[todo.priority])}>
-              {todo.priority[0]}
-            </span>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <span className={cn('text-xs cursor-default', priorityColors[todo.priority])} />
+                }
+              >
+                {todo.priority[0]}
+              </TooltipTrigger>
+              <TooltipContent>{priorityNames[todo.priority] || todo.priority}</TooltipContent>
+            </Tooltip>
             {hasThreads && (
               <Badge
                 variant="outline"
@@ -164,7 +193,7 @@ export function TodoItem({ todo, onSelect }: TodoItemProps) {
         </Avatar>
 
         {/* Actions */}
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
           {pendingLink && (
             <Button
               size="sm"
@@ -182,17 +211,25 @@ export function TodoItem({ todo, onSelect }: TodoItemProps) {
             variant="ghost"
             className="h-7 text-xs"
             onClick={() => setShowConnect(true)}
+            data-onboarding="connect-thread"
           >
             <Link2 className="h-3.5 w-3.5 mr-1" />
             {t('connect')}
           </Button>
 
           <DropdownMenu>
-            <DropdownMenuTrigger
-              render={<Button variant="ghost" size="sm" className="h-7 w-7 p-0" />}
-            >
-              <MoreHorizontal className="h-4 w-4" />
-            </DropdownMenuTrigger>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <DropdownMenuTrigger
+                    render={<Button variant="ghost" size="sm" className="h-7 w-7 p-0" />}
+                  >
+                    <MoreHorizontal className="h-4 w-4" />
+                  </DropdownMenuTrigger>
+                }
+              />
+              <TooltipContent>More actions</TooltipContent>
+            </Tooltip>
             <DropdownMenuContent align="end">
               <DropdownMenuItem
                 className="text-destructive"
