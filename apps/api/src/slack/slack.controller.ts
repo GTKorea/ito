@@ -6,7 +6,7 @@ import {
   Logger,
   HttpStatus,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { SlackService } from './slack.service';
 import { SlackCommandDto } from './dto/slack-command.dto';
 import { SlackEventDto } from './dto/slack-event.dto';
