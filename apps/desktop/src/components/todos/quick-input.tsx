@@ -201,16 +201,16 @@ export function QuickInput() {
   if (!currentWorkspace) return null;
 
   return (
-    <div className="relative border-t border-border bg-[#1A1A1A] px-6 py-3">
+    <div className="relative px-4 pb-4 pt-2">
       {/* Autocomplete dropdown — positioned above the input */}
       {showAutocomplete && autocompleteResults.length > 0 && (
-        <div className="absolute bottom-full left-6 right-6 mb-1 max-h-48 overflow-y-auto rounded-lg border border-border bg-[#1A1A1A] shadow-lg">
+        <div className="absolute bottom-full left-4 right-4 mb-2 max-h-48 overflow-y-auto rounded-xl border border-border bg-card/95 backdrop-blur-sm shadow-2xl">
           {autocompleteResults.map((user, index) => (
             <button
               key={user.id}
               onClick={() => selectUser(user)}
               className={cn(
-                'flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors',
+                'flex w-full items-center gap-2.5 px-3.5 py-2.5 text-sm transition-colors',
                 index === selectedIndex
                   ? 'bg-accent text-accent-foreground'
                   : 'hover:bg-accent/50',
@@ -232,8 +232,8 @@ export function QuickInput() {
         </div>
       )}
 
-      {/* Input row */}
-      <div className="flex items-center gap-2">
+      {/* Floating rounded input */}
+      <div className="flex items-center gap-2 rounded-2xl border border-border bg-card/80 backdrop-blur-sm px-4 py-2 shadow-lg transition-all focus-within:border-ring focus-within:shadow-xl focus-within:shadow-ring/5">
         <input
           ref={inputRef}
           type="text"
@@ -242,17 +242,17 @@ export function QuickInput() {
           onKeyDown={handleKeyDown}
           placeholder="새 태스크... ( > @유저 로 바로 연결)"
           disabled={isSubmitting}
-          className="h-9 flex-1 rounded-lg border border-border bg-[#0A0A0A] px-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring/50 disabled:opacity-50"
+          className="h-8 flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none disabled:opacity-50"
         />
         <button
           onClick={handleSubmit}
           disabled={!input.trim() || isSubmitting}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-all hover:bg-primary/90 hover:scale-105 disabled:opacity-30 disabled:hover:scale-100 disabled:cursor-not-allowed"
         >
           {isSubmitting ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
           ) : (
-            <Send className="h-4 w-4" />
+            <Send className="h-3.5 w-3.5" />
           )}
         </button>
       </div>
