@@ -10,6 +10,7 @@ import {
   Bell,
   Settings,
   ActivityIcon,
+  CalendarDays,
   LogOut,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -19,12 +20,14 @@ import { useNotificationStore } from '@/stores/notification-store';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { ThemeToggle } from '@/components/layout/theme-toggle';
 
 const navItems = [
   { href: '/workspace', icon: CheckSquare, labelKey: 'myTasks' as const },
   { href: '/threads', icon: Link2, labelKey: 'threads' as const },
   { href: '/teams', icon: Users, labelKey: 'teams' as const },
   { href: '/activity', icon: ActivityIcon, labelKey: 'activity' as const },
+  { href: '/calendar', icon: CalendarDays, labelKey: 'calendar' as const },
 ];
 
 export function Sidebar() {
@@ -101,6 +104,11 @@ export function Sidebar() {
           {t('settings')}
         </Link>
       </nav>
+
+      {/* Theme */}
+      <div className="px-3 pb-2">
+        <ThemeToggle />
+      </div>
 
       {/* User */}
       <div className="border-t border-border p-2">

@@ -5,13 +5,14 @@ import { useTranslations } from 'next-intl';
 import { useTodoStore } from '@/stores/todo-store';
 import { api } from '@/lib/api-client';
 import { ThreadChain } from '@/components/threads/thread-chain';
+import { ThreadGraph } from '@/components/threads/thread-graph';
 import { FileUpload } from '@/components/files/file-upload';
 import { FileList } from '@/components/files/file-list';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { X, Save, Link2, Paperclip } from 'lucide-react';
+import { X, Save, Link2, Paperclip, List, Network } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const statuses = ['OPEN', 'IN_PROGRESS', 'BLOCKED', 'COMPLETED', 'CANCELLED'];
@@ -32,6 +33,7 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
   const [priority, setPriority] = useState('MEDIUM');
   const [dueDate, setDueDate] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [graphView, setGraphView] = useState(false);
   const [fileRefreshKey, setFileRefreshKey] = useState(0);
   const t = useTranslations('todos');
 
@@ -179,11 +181,41 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
         {/* Thread Chain */}
         {todo.threadLinks?.length > 0 && (
           <div className="space-y-2">
-            <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
-              <Link2 className="h-3.5 w-3.5" />
-              {t('threadChain')} ({todo.threadLinks.length})
+            <div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <Link2 className="h-3.5 w-3.5" />
+                {t('threadChain')} ({todo.threadLinks.length})
+              </div>
+              {todo.threadLinks.length >= 2 && (
+                <div className="flex gap-0.5">
+                  <button
+                    onClick={() => setGraphView(false)}
+                    className={cn(
+                      'rounded p-1 transition-colors',
+                      !graphView ? 'bg-accent text-foreground' : 'hover:bg-accent/50',
+                    )}
+                  >
+                    <List className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={() => setGraphView(true)}
+                    className={cn(
+                      'rounded p-1 transition-colors',
+                      graphView ? 'bg-accent text-foreground' : 'hover:bg-accent/50',
+                    )}
+                  >
+                    <Network className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              )}
             </div>
-            <ThreadChain links={todo.threadLinks} creator={todo.creator} />
+            {graphView ? (
+              <div className="h-64 rounded-lg border border-border overflow-hidden">
+                <ThreadGraph links={todo.threadLinks} creator={todo.creator} />
+              </div>
+            ) : (
+              <ThreadChain links={todo.threadLinks} creator={todo.creator} />
+            )}
           </div>
         )}
 
