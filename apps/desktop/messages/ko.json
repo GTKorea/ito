@@ -47,7 +47,13 @@
     "calendar": "캘린더",
     "graph": "그래프",
     "notifications": "알림",
-    "settings": "설정"
+    "settings": "설정",
+    "switchWorkspace": "워크스페이스 전환",
+    "createWorkspace": "새 워크스페이스",
+    "workspaceSettings": "워크스페이스 설정",
+    "workspaceName": "워크스페이스 이름",
+    "create": "생성",
+    "cancel": "취소"
   },
   "workspace": {
     "myTasks": "내 태스크",
@@ -115,7 +121,17 @@
     "members": "명",
     "addMember": "멤버 추가",
     "deleteTeam": "팀 삭제",
-    "searchByEmail": "이메일로 검색..."
+    "searchByEmail": "이메일로 검색...",
+    "memberDetail": "멤버 상세",
+    "assignedTasks": "담당 태스크",
+    "activeThreads": "활성 스레드",
+    "recentActivity": "최근 활동",
+    "totalTasks": "태스크",
+    "completionRate": "완료율",
+    "activeThreadsCount": "스레드",
+    "noTasks": "할당된 태스크 없음",
+    "noThreads": "활성 스레드 없음",
+    "noActivity": "최근 활동 없음"
   },
   "notifications": {
     "title": "알림",
@@ -358,5 +374,43 @@
       "privacy": "개인정보처리방침",
       "terms": "이용약관"
     }
+  },
+  "workspaceSettings": {
+    "title": "워크스페이스 설정",
+    "subtitle": "워크스페이스 멤버 및 설정 관리",
+    "workspaceInfo": "워크스페이스 정보",
+    "members": "멤버",
+    "membersDescription": "{name}의 멤버",
+    "invite": "초대",
+    "changeRole": "역할 변경",
+    "removeMember": "멤버 제거",
+    "confirmRemove": "이 멤버를 제거하시겠습니까?",
+    "leaveWorkspace": "워크스페이스 나가기",
+    "roleChanged": "역할이 변경되었습니다",
+    "memberRemoved": "멤버가 제거되었습니다",
+    "you": "나",
+    "role_OWNER": "소유자",
+    "role_ADMIN": "관리자",
+    "role_MEMBER": "멤버",
+    "role_GUEST": "게스트",
+    "inviteTo": "{name}에 초대",
+    "invitePlaceholder": "colleague@example.com",
+    "sendInvite": "초대 보내기",
+    "inviteSentTo": "{email}에게 초대를 보냈습니다",
+    "shareLinkWithInvitee": "초대 대상에게 이 링크를 공유하세요:",
+    "inviteRole": "역할",
+    "roleMemberDesc": "워크스페이스 전체 접근",
+    "roleGuestDesc": "제한된 보기 접근",
+    "noWorkspace": "워크스페이스를 선택하세요"
+  },
+  "calendar": {
+    "title": "캘린더",
+    "subtitle": "마감일과 일정 관리",
+    "createTask": "태스크 생성",
+    "taskTitlePlaceholder": "태스크 제목...",
+    "dueDate": "마감일",
+    "creating": "생성 중...",
+    "create": "생성",
+    "googleEvent": "Google 캘린더"
   }
 }

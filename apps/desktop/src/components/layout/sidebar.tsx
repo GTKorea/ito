@@ -16,12 +16,12 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth-store';
-import { useWorkspaceStore } from '@/stores/workspace-store';
 import { useNotificationStore } from '@/stores/notification-store';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ThemeToggle } from '@/components/layout/theme-toggle';
+import { WorkspaceSwitcher } from '@/components/layout/workspace-switcher';
 
 const navItems = [
   { href: '/workspace', icon: CheckSquare, labelKey: 'myTasks' as const },
@@ -35,21 +35,13 @@ const navItems = [
 export function Sidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
-  const { currentWorkspace } = useWorkspaceStore();
   const { unreadCount } = useNotificationStore();
   const t = useTranslations('sidebar');
 
   return (
     <aside className="flex h-screen w-56 flex-col border-r border-border bg-card">
-      {/* Workspace name */}
-      <div className="flex h-12 items-center gap-2 border-b border-border px-4">
-        <div className="flex h-6 w-6 items-center justify-center rounded bg-primary text-[10px] font-bold text-primary-foreground">
-          糸
-        </div>
-        <span className="text-sm font-semibold truncate">
-          {currentWorkspace?.name || 'ito'}
-        </span>
-      </div>
+      {/* Workspace switcher */}
+      <WorkspaceSwitcher />
 
       {/* Navigation */}
       <nav className="flex-1 space-y-0.5 p-2">

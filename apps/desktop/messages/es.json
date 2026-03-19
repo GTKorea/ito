@@ -47,7 +47,13 @@
     "calendar": "Calendario",
     "graph": "Gráfico",
     "notifications": "Notificaciones",
-    "settings": "Configuración"
+    "settings": "Configuración",
+    "switchWorkspace": "Switch workspace",
+    "createWorkspace": "New workspace",
+    "workspaceSettings": "Workspace settings",
+    "workspaceName": "Workspace name",
+    "create": "Create",
+    "cancel": "Cancel"
   },
   "workspace": {
     "myTasks": "Mis Tareas",
@@ -115,7 +121,17 @@
     "members": "miembros",
     "addMember": "Agregar Miembro",
     "deleteTeam": "Eliminar Equipo",
-    "searchByEmail": "Buscar por correo..."
+    "searchByEmail": "Buscar por correo...",
+    "memberDetail": "Member Detail",
+    "assignedTasks": "Assigned Tasks",
+    "activeThreads": "Active Threads",
+    "recentActivity": "Recent Activity",
+    "totalTasks": "Tasks",
+    "completionRate": "Completed",
+    "activeThreadsCount": "Threads",
+    "noTasks": "No tasks assigned",
+    "noThreads": "No active threads",
+    "noActivity": "No recent activity"
   },
   "notifications": {
     "title": "Notificaciones",
@@ -276,10 +292,22 @@
       }
     },
     "stats": {
-      "languages": { "value": "9", "label": "Idiomas" },
-      "realtime": { "value": "Tiempo real", "label": "Sincronización" },
-      "crossPlatform": { "value": "3", "label": "Plataformas" },
-      "openArch": { "value": "Abierta", "label": "Arquitectura" }
+      "languages": {
+        "value": "9",
+        "label": "Idiomas"
+      },
+      "realtime": {
+        "value": "Tiempo real",
+        "label": "Sincronización"
+      },
+      "crossPlatform": {
+        "value": "3",
+        "label": "Plataformas"
+      },
+      "openArch": {
+        "value": "Abierta",
+        "label": "Arquitectura"
+      }
     },
     "pricing": {
       "title": "Precios simples y transparentes",
@@ -358,5 +386,43 @@
       "privacy": "Privacidad",
       "terms": "Términos"
     }
+  },
+  "workspaceSettings": {
+    "title": "Workspace Settings",
+    "subtitle": "Manage workspace members and settings",
+    "workspaceInfo": "Workspace Info",
+    "members": "Members",
+    "membersDescription": "Members of {name}",
+    "invite": "Invite",
+    "changeRole": "Change Role",
+    "removeMember": "Remove Member",
+    "confirmRemove": "Are you sure you want to remove this member?",
+    "leaveWorkspace": "Leave Workspace",
+    "roleChanged": "Role changed successfully",
+    "memberRemoved": "Member removed",
+    "you": "you",
+    "role_OWNER": "Owner",
+    "role_ADMIN": "Admin",
+    "role_MEMBER": "Member",
+    "role_GUEST": "Guest",
+    "inviteTo": "Invite to {name}",
+    "invitePlaceholder": "colleague@example.com",
+    "sendInvite": "Send Invite",
+    "inviteSentTo": "Invite sent to {email}",
+    "shareLinkWithInvitee": "Share this link with the invitee:",
+    "inviteRole": "Role",
+    "roleMemberDesc": "Full access to workspace",
+    "roleGuestDesc": "Limited view access",
+    "noWorkspace": "No workspace selected"
+  },
+  "calendar": {
+    "title": "Calendar",
+    "subtitle": "Track deadlines and events",
+    "createTask": "Create Task",
+    "taskTitlePlaceholder": "Task title...",
+    "dueDate": "Due Date",
+    "creating": "Creating...",
+    "create": "Create",
+    "googleEvent": "Google Calendar"
   }
 }

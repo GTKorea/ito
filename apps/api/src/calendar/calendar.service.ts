@@ -197,6 +197,67 @@ export class CalendarService implements OnModuleInit {
     }
   }
 
+  async fetchGoogleEvents(
+    userId: string,
+    timeMin: string,
+    timeMax: string,
+  ) {
+    const integration = await this.prisma.calendarIntegration.findUnique({
+      where: { userId_provider: { userId, provider: 'google' } },
+    });
+    if (!integration || !integration.syncEnabled) return [];
+
+    if (!this.googleEnabled) return [];
+
+    try {
+      const { google } = await import('googleapis');
+      const oauth2Client = new google.auth.OAuth2(
+        this.googleClientId,
+        this.googleClientSecret,
+      );
+      oauth2Client.setCredentials({
+        access_token: integration.accessToken,
+        refresh_token: integration.refreshToken,
+      });
+
+      const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+      const response = await calendar.events.list({
+        calendarId: 'primary',
+        timeMin,
+        timeMax,
+        singleEvents: true,
+        orderBy: 'startTime',
+        maxResults: 100,
+      });
+
+      // If the token was refreshed, persist the new access token
+      const newCredentials = oauth2Client.credentials;
+      if (
+        newCredentials.access_token &&
+        newCredentials.access_token !== integration.accessToken
+      ) {
+        await this.prisma.calendarIntegration.update({
+          where: { userId_provider: { userId, provider: 'google' } },
+          data: { accessToken: newCredentials.access_token },
+        });
+      }
+
+      return (response.data.items || []).map((event) => ({
+        id: event.id,
+        title: event.summary || '',
+        description: event.description || '',
+        start: event.start?.dateTime || event.start?.date || '',
+        end: event.end?.dateTime || event.end?.date || '',
+        isAllDay: !event.start?.dateTime,
+        htmlLink: event.htmlLink || '',
+        source: 'google' as const,
+      }));
+    } catch (error) {
+      this.logger.error('Failed to fetch Google Calendar events', error);
+      return [];
+    }
+  }
+
   private async createGoogleEvent(
     integration: { accessToken: string; refreshToken: string },
     todo: { title: string; description?: string; dueDate: Date },

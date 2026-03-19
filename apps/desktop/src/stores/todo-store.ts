@@ -48,13 +48,27 @@ interface CalendarData {
   upcoming: CalendarTodo[];
 }
 
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  description: string;
+  start: string;
+  end: string;
+  isAllDay: boolean;
+  htmlLink: string;
+  source: 'google' | 'outlook';
+}
+
 interface TodoState {
   todos: Todo[];
   isLoading: boolean;
   calendarData: CalendarData | null;
   calendarLoading: boolean;
+  calendarEvents: CalendarEvent[];
+  calendarEventsLoading: boolean;
   fetchTodos: (workspaceId: string, assignedToMe?: boolean) => Promise<void>;
   fetchCalendarTodos: (workspaceId: string, start: string, end: string) => Promise<void>;
+  fetchCalendarEvents: (start: string, end: string) => Promise<void>;
   createTodo: (workspaceId: string, title: string, description?: string, priority?: string, dueDate?: string) => Promise<Todo>;
   updateTodo: (id: string, data: Partial<Todo>) => Promise<void>;
   deleteTodo: (id: string) => Promise<void>;
@@ -68,6 +82,8 @@ export const useTodoStore = create<TodoState>((set) => ({
   isLoading: false,
   calendarData: null,
   calendarLoading: false,
+  calendarEvents: [],
+  calendarEventsLoading: false,
 
   fetchCalendarTodos: async (workspaceId, start, end) => {
     set({ calendarLoading: true });
@@ -78,6 +94,16 @@ export const useTodoStore = create<TodoState>((set) => ({
       set({ calendarData: data, calendarLoading: false });
     } catch {
       set({ calendarLoading: false });
+    }
+  },
+
+  fetchCalendarEvents: async (start, end) => {
+    set({ calendarEventsLoading: true });
+    try {
+      const { data } = await api.get('/calendar/events', { params: { start, end } });
+      set({ calendarEvents: data, calendarEventsLoading: false });
+    } catch {
+      set({ calendarEvents: [], calendarEventsLoading: false });
     }
   },
 

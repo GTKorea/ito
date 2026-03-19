@@ -37,6 +37,12 @@ export class TeamsController {
     return this.teamsService.findAllInWorkspace(workspaceId);
   }
 
+  @Get(':teamId')
+  @ApiOperation({ summary: 'Get team with members' })
+  findOne(@Param('teamId') teamId: string) {
+    return this.teamsService.findById(teamId);
+  }
+
   @Get(':teamId/dashboard')
   @ApiOperation({ summary: 'Get team workload dashboard' })
   getDashboard(@Param('teamId') teamId: string) {

@@ -47,7 +47,13 @@
     "calendar": "カレンダー",
     "graph": "グラフ",
     "notifications": "通知",
-    "settings": "設定"
+    "settings": "設定",
+    "switchWorkspace": "Switch workspace",
+    "createWorkspace": "New workspace",
+    "workspaceSettings": "Workspace settings",
+    "workspaceName": "Workspace name",
+    "create": "Create",
+    "cancel": "Cancel"
   },
   "workspace": {
     "myTasks": "マイタスク",
@@ -115,7 +121,17 @@
     "members": "メンバー",
     "addMember": "メンバーを追加",
     "deleteTeam": "チームを削除",
-    "searchByEmail": "メールで検索..."
+    "searchByEmail": "メールで検索...",
+    "memberDetail": "Member Detail",
+    "assignedTasks": "Assigned Tasks",
+    "activeThreads": "Active Threads",
+    "recentActivity": "Recent Activity",
+    "totalTasks": "Tasks",
+    "completionRate": "Completed",
+    "activeThreadsCount": "Threads",
+    "noTasks": "No tasks assigned",
+    "noThreads": "No active threads",
+    "noActivity": "No recent activity"
   },
   "notifications": {
     "title": "通知",
@@ -276,10 +292,22 @@
       }
     },
     "stats": {
-      "languages": { "value": "9", "label": "言語" },
-      "realtime": { "value": "リアルタイム", "label": "同期" },
-      "crossPlatform": { "value": "3", "label": "プラットフォーム" },
-      "openArch": { "value": "オープン", "label": "アーキテクチャ" }
+      "languages": {
+        "value": "9",
+        "label": "言語"
+      },
+      "realtime": {
+        "value": "リアルタイム",
+        "label": "同期"
+      },
+      "crossPlatform": {
+        "value": "3",
+        "label": "プラットフォーム"
+      },
+      "openArch": {
+        "value": "オープン",
+        "label": "アーキテクチャ"
+      }
     },
     "pricing": {
       "title": "シンプルで透明な料金",
@@ -358,5 +386,43 @@
       "privacy": "プライバシー",
       "terms": "利用規約"
     }
+  },
+  "workspaceSettings": {
+    "title": "Workspace Settings",
+    "subtitle": "Manage workspace members and settings",
+    "workspaceInfo": "Workspace Info",
+    "members": "Members",
+    "membersDescription": "Members of {name}",
+    "invite": "Invite",
+    "changeRole": "Change Role",
+    "removeMember": "Remove Member",
+    "confirmRemove": "Are you sure you want to remove this member?",
+    "leaveWorkspace": "Leave Workspace",
+    "roleChanged": "Role changed successfully",
+    "memberRemoved": "Member removed",
+    "you": "you",
+    "role_OWNER": "Owner",
+    "role_ADMIN": "Admin",
+    "role_MEMBER": "Member",
+    "role_GUEST": "Guest",
+    "inviteTo": "Invite to {name}",
+    "invitePlaceholder": "colleague@example.com",
+    "sendInvite": "Send Invite",
+    "inviteSentTo": "Invite sent to {email}",
+    "shareLinkWithInvitee": "Share this link with the invitee:",
+    "inviteRole": "Role",
+    "roleMemberDesc": "Full access to workspace",
+    "roleGuestDesc": "Limited view access",
+    "noWorkspace": "No workspace selected"
+  },
+  "calendar": {
+    "title": "Calendar",
+    "subtitle": "Track deadlines and events",
+    "createTask": "Create Task",
+    "taskTitlePlaceholder": "Task title...",
+    "dueDate": "Due Date",
+    "creating": "Creating...",
+    "create": "Create",
+    "googleEvent": "Google Calendar"
   }
 }

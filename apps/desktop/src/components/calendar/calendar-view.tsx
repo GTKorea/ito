@@ -4,6 +4,7 @@ import { useMemo, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CalendarDayCell } from './calendar-day-cell';
+import type { CalendarEvent } from '@/stores/todo-store';
 
 interface TodoItem {
   id: string;
@@ -22,6 +23,8 @@ interface CalendarViewProps {
   completedTodos: TodoItem[];
   upcomingTodos: TodoItem[];
   isLoading: boolean;
+  externalEvents?: CalendarEvent[];
+  onCreateTodo?: (date: Date) => void;
 }
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -70,6 +73,8 @@ export function CalendarView({
   completedTodos,
   upcomingTodos,
   isLoading,
+  externalEvents,
+  onCreateTodo,
 }: CalendarViewProps) {
   const today = useMemo(() => new Date(), []);
   const days = useMemo(() => getDaysInMonth(year, month), [year, month]);
@@ -100,15 +105,17 @@ export function CalendarView({
     year: 'numeric',
   });
 
+  const dateKey = useCallback(
+    (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`,
+    [],
+  );
+
   // Build a map of date -> todos for efficient lookup
   const todosByDate = useMemo(() => {
     const map = new Map<
       string,
       { completed: TodoItem[]; upcoming: TodoItem[] }
     >();
-
-    const dateKey = (d: Date) =>
-      `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 
     for (const todo of completedTodos) {
       if (!todo.completedAt) continue;
@@ -127,7 +134,20 @@ export function CalendarView({
     }
 
     return map;
-  }, [completedTodos, upcomingTodos]);
+  }, [completedTodos, upcomingTodos, dateKey]);
+
+  // Build a map of date -> external calendar events
+  const externalByDate = useMemo(() => {
+    const map = new Map<string, CalendarEvent[]>();
+    for (const event of (externalEvents || [])) {
+      if (!event.start) continue;
+      const d = new Date(event.start);
+      const key = dateKey(d);
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(event);
+    }
+    return map;
+  }, [externalEvents, dateKey]);
 
   return (
     <div className="flex flex-col h-full">
@@ -154,7 +174,7 @@ export function CalendarView({
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         </div>
       ) : (
-        <div className="flex-1 border-t border-l border-border rounded-lg overflow-hidden">
+        <div className="flex-1 flex flex-col border-t border-l border-border rounded-lg overflow-hidden">
           {/* Weekday headers */}
           <div className="grid grid-cols-7">
             {WEEKDAYS.map((day) => (
@@ -168,13 +188,16 @@ export function CalendarView({
           </div>
 
           {/* Day grid */}
-          <div className="grid grid-cols-7">
+          <div className="grid grid-cols-7 flex-1" style={{ gridAutoRows: '1fr' }}>
             {days.map((date, i) => {
               const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
               const dayTodos = todosByDate.get(key) || {
                 completed: [],
                 upcoming: [],
               };
+
+              const externalKey = dateKey(date);
+              const dayExternalEvents = externalByDate.get(externalKey) || [];
 
               return (
                 <CalendarDayCell
@@ -184,6 +207,8 @@ export function CalendarView({
                   isToday={isSameDay(date, today)}
                   completedTodos={dayTodos.completed}
                   upcomingTodos={dayTodos.upcoming}
+                  externalEvents={dayExternalEvents}
+                  onCreateTodo={onCreateTodo}
                 />
               );
             })}

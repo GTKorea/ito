@@ -9,7 +9,7 @@ import {
   BadRequestException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import type { Response } from 'express';
@@ -119,6 +119,22 @@ export class CalendarController {
     await this.calendarService.handleOutlookCallback(code, redirectUri, userId);
     const frontendUrl = this.configService.get('FRONTEND_URL', 'http://localhost:3010');
     return res.redirect(`${frontendUrl}/settings?calendar=outlook&connected=true`);
+  }
+
+  // ── Events ───────────────────────────────────
+
+  @Get('events')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Fetch calendar events from connected providers' })
+  @ApiQuery({ name: 'start', required: true, description: 'ISO date string for range start' })
+  @ApiQuery({ name: 'end', required: true, description: 'ISO date string for range end' })
+  async getEvents(
+    @CurrentUser('id') userId: string,
+    @Query('start') start: string,
+    @Query('end') end: string,
+  ) {
+    return this.calendarService.fetchGoogleEvents(userId, start, end);
   }
 
   // ── Helper ─────────────────────────────────

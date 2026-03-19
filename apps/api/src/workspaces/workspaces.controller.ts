@@ -3,6 +3,7 @@ import {
   Post,
   Get,
   Patch,
+  Delete,
   Param,
   Body,
   UseGuards,
@@ -15,6 +16,7 @@ import {
   CreateWorkspaceDto,
   UpdateWorkspaceDto,
   InviteMemberDto,
+  UpdateMemberRoleDto,
 } from './dto/create-workspace.dto';
 
 @ApiTags('workspaces')
@@ -78,5 +80,44 @@ export class WorkspacesController {
     @CurrentUser('id') userId: string,
   ) {
     return this.workspacesService.acceptInvite(token, userId);
+  }
+
+  @Patch(':workspaceId/members/:userId/role')
+  @ApiOperation({ summary: 'Update a member role (OWNER/ADMIN only)' })
+  updateMemberRole(
+    @Param('workspaceId') workspaceId: string,
+    @Param('userId') userId: string,
+    @Body() dto: UpdateMemberRoleDto,
+    @CurrentUser('id') requestingUserId: string,
+  ) {
+    return this.workspacesService.updateMemberRole(
+      workspaceId,
+      userId,
+      dto.role,
+      requestingUserId,
+    );
+  }
+
+  @Delete(':workspaceId/members/:userId')
+  @ApiOperation({ summary: 'Remove a member or leave workspace' })
+  removeMember(
+    @Param('workspaceId') workspaceId: string,
+    @Param('userId') userId: string,
+    @CurrentUser('id') requestingUserId: string,
+  ) {
+    return this.workspacesService.removeMember(
+      workspaceId,
+      userId,
+      requestingUserId,
+    );
+  }
+
+  @Get(':workspaceId/members/:userId/summary')
+  @ApiOperation({ summary: 'Get member summary with stats' })
+  getMemberSummary(
+    @Param('workspaceId') workspaceId: string,
+    @Param('userId') userId: string,
+  ) {
+    return this.workspacesService.getMemberSummary(workspaceId, userId);
   }
 }

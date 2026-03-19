@@ -1,4 +1,10 @@
-import { IsString, IsOptional, IsEnum, MinLength, Matches } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  MinLength,
+  Matches,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { WorkspaceRole } from '@prisma/client';
 
@@ -42,4 +48,10 @@ export class InviteMemberDto {
   @IsOptional()
   @IsEnum(WorkspaceRole)
   role?: WorkspaceRole;
+}
+
+export class UpdateMemberRoleDto {
+  @ApiProperty({ enum: ['OWNER', 'ADMIN', 'MEMBER', 'GUEST'] })
+  @IsEnum(WorkspaceRole)
+  role: string;
 }

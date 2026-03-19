@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { Plus, Building2 } from 'lucide-react';
 import { QuickInput } from '@/components/todos/quick-input';
+import { cn } from '@/lib/utils';
 
 function CreateWorkspacePrompt() {
   const { createWorkspace } = useWorkspaceStore();
@@ -143,12 +144,19 @@ export default function WorkspacePage() {
       <QuickInput />
 
       {/* Todo Detail Slide-over */}
-      {selectedTodoId && (
-        <TodoDetail
-          todoId={selectedTodoId}
-          onClose={() => setSelectedTodoId(null)}
-        />
-      )}
+      <div
+        className={cn(
+          'fixed right-0 top-0 z-50 h-full w-[420px] transition-transform duration-200 ease-out',
+          selectedTodoId ? 'translate-x-0' : 'translate-x-full pointer-events-none',
+        )}
+      >
+        {selectedTodoId && (
+          <TodoDetail
+            todoId={selectedTodoId}
+            onClose={() => setSelectedTodoId(null)}
+          />
+        )}
+      </div>
     </div>
   );
 }

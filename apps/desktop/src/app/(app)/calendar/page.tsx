@@ -4,15 +4,17 @@ import { useEffect, useState, useCallback } from 'react';
 import { useTodoStore } from '@/stores/todo-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 import { CalendarView } from '@/components/calendar/calendar-view';
+import { QuickCreateTodoDialog } from '@/components/calendar/quick-create-todo-dialog';
 import { CalendarDays } from 'lucide-react';
 
 export default function CalendarPage() {
   const { currentWorkspace } = useWorkspaceStore();
-  const { calendarData, calendarLoading, fetchCalendarTodos } = useTodoStore();
+  const { calendarData, calendarLoading, fetchCalendarTodos, calendarEvents, fetchCalendarEvents } = useTodoStore();
 
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
+  const [createDate, setCreateDate] = useState<Date | null>(null);
 
   const handleMonthChange = useCallback((newYear: number, newMonth: number) => {
     setYear(newYear);
@@ -28,12 +30,12 @@ export default function CalendarPage() {
     const end = new Date(year, month + 1, 0);
     end.setDate(end.getDate() + 7); // buffer for next month days shown
 
-    fetchCalendarTodos(
-      currentWorkspace.id,
-      start.toISOString(),
-      end.toISOString(),
-    );
-  }, [currentWorkspace, year, month, fetchCalendarTodos]);
+    const startISO = start.toISOString();
+    const endISO = end.toISOString();
+
+    fetchCalendarTodos(currentWorkspace.id, startISO, endISO);
+    fetchCalendarEvents(startISO, endISO);
+  }, [currentWorkspace, year, month, fetchCalendarTodos, fetchCalendarEvents]);
 
   return (
     <div className="h-full flex flex-col">
@@ -62,9 +64,28 @@ export default function CalendarPage() {
             completedTodos={calendarData?.completed || []}
             upcomingTodos={calendarData?.upcoming || []}
             isLoading={calendarLoading}
+            externalEvents={calendarEvents}
+            onCreateTodo={(date) => setCreateDate(date)}
           />
         )}
       </div>
+
+      {createDate && (
+        <QuickCreateTodoDialog
+          date={createDate}
+          open={!!createDate}
+          onOpenChange={(open) => { if (!open) setCreateDate(null); }}
+          onCreated={() => {
+            if (currentWorkspace) {
+              const start = new Date(year, month, 1);
+              start.setDate(start.getDate() - 7);
+              const end = new Date(year, month + 1, 0);
+              end.setDate(end.getDate() + 7);
+              fetchCalendarTodos(currentWorkspace.id, start.toISOString(), end.toISOString());
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

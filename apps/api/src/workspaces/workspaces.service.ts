@@ -1,5 +1,6 @@
 import {
   Injectable,
+  BadRequestException,
   ConflictException,
   NotFoundException,
   ForbiddenException,
@@ -209,5 +210,197 @@ export class WorkspacesService {
     });
 
     return member;
+  }
+
+  async updateMemberRole(
+    workspaceId: string,
+    targetUserId: string,
+    newRole: string,
+    requestingUserId: string,
+  ) {
+    const requester = await this.prisma.workspaceMember.findUnique({
+      where: {
+        userId_workspaceId: { userId: requestingUserId, workspaceId },
+      },
+    });
+    if (!requester || !['OWNER', 'ADMIN'].includes(requester.role)) {
+      throw new ForbiddenException(
+        'Only workspace owners and admins can change member roles',
+      );
+    }
+
+    const target = await this.prisma.workspaceMember.findUnique({
+      where: {
+        userId_workspaceId: { userId: targetUserId, workspaceId },
+      },
+    });
+    if (!target) throw new NotFoundException('Member not found');
+
+    if (target.role === 'OWNER') {
+      throw new ForbiddenException('Cannot change the owner role');
+    }
+
+    if (requester.role === 'ADMIN' && target.role === 'ADMIN') {
+      throw new ForbiddenException('Admins cannot change other admin roles');
+    }
+
+    await this.prisma.workspaceMember.updateMany({
+      where: { userId: targetUserId, workspaceId },
+      data: { role: newRole as any },
+    });
+
+    await this.activityService.log({
+      workspaceId,
+      userId: requestingUserId,
+      action: 'UPDATED',
+      entityType: 'WorkspaceMember',
+      entityId: target.id,
+      metadata: { targetUserId, newRole },
+    });
+
+    return { message: 'Role updated' };
+  }
+
+  async removeMember(
+    workspaceId: string,
+    targetUserId: string,
+    requestingUserId: string,
+  ) {
+    const target = await this.prisma.workspaceMember.findUnique({
+      where: {
+        userId_workspaceId: { userId: targetUserId, workspaceId },
+      },
+    });
+    if (!target) throw new NotFoundException('Member not found');
+
+    // Self-removal (leaving workspace)
+    if (targetUserId === requestingUserId) {
+      if (target.role === 'OWNER') {
+        throw new ForbiddenException(
+          'Owner cannot leave the workspace. Transfer ownership first.',
+        );
+      }
+    } else {
+      // Removing another member
+      const requester = await this.prisma.workspaceMember.findUnique({
+        where: {
+          userId_workspaceId: { userId: requestingUserId, workspaceId },
+        },
+      });
+      if (!requester || !['OWNER', 'ADMIN'].includes(requester.role)) {
+        throw new ForbiddenException(
+          'Only workspace owners and admins can remove members',
+        );
+      }
+
+      if (target.role === 'OWNER') {
+        throw new ForbiddenException('Cannot remove the workspace owner');
+      }
+
+      if (requester.role === 'ADMIN' && target.role === 'ADMIN') {
+        throw new ForbiddenException('Admins cannot remove other admins');
+      }
+    }
+
+    await this.prisma.workspaceMember.deleteMany({
+      where: { userId: targetUserId, workspaceId },
+    });
+
+    await this.activityService.log({
+      workspaceId,
+      userId: requestingUserId,
+      action: targetUserId === requestingUserId ? 'LEFT' : 'REMOVED',
+      entityType: 'WorkspaceMember',
+      entityId: target.id,
+      metadata: { targetUserId },
+    });
+
+    return { message: 'Member removed' };
+  }
+
+  async getMemberSummary(workspaceId: string, targetUserId: string) {
+    const member = await this.prisma.workspaceMember.findUnique({
+      where: {
+        userId_workspaceId: { userId: targetUserId, workspaceId },
+      },
+      include: {
+        user: {
+          select: { id: true, name: true, email: true, avatarUrl: true },
+        },
+      },
+    });
+    if (!member) throw new NotFoundException('Member not found');
+
+    const [assignedTodos, activeThreads, recentActivity, stats] =
+      await Promise.all([
+        this.prisma.todo.findMany({
+          where: { workspaceId, assigneeId: targetUserId },
+          take: 10,
+          orderBy: { updatedAt: 'desc' },
+          select: {
+            id: true,
+            title: true,
+            status: true,
+            priority: true,
+            dueDate: true,
+          },
+        }),
+        this.prisma.threadLink.findMany({
+          where: {
+            OR: [
+              { fromUserId: targetUserId },
+              { toUserId: targetUserId },
+            ],
+            status: { in: ['PENDING', 'FORWARDED'] },
+            todo: { workspaceId },
+          },
+          take: 10,
+          include: {
+            fromUser: { select: { id: true, name: true } },
+            toUser: { select: { id: true, name: true } },
+            todo: { select: { id: true, title: true } },
+          },
+        }),
+        this.prisma.activity.findMany({
+          where: { workspaceId, userId: targetUserId },
+          take: 10,
+          orderBy: { createdAt: 'desc' },
+        }),
+        Promise.all([
+          this.prisma.todo.count({
+            where: { workspaceId, assigneeId: targetUserId },
+          }),
+          this.prisma.todo.count({
+            where: {
+              workspaceId,
+              assigneeId: targetUserId,
+              status: 'COMPLETED',
+            },
+          }),
+          this.prisma.threadLink.count({
+            where: {
+              OR: [
+                { fromUserId: targetUserId },
+                { toUserId: targetUserId },
+              ],
+              status: { in: ['PENDING', 'FORWARDED'] },
+              todo: { workspaceId },
+            },
+          }),
+        ]),
+      ]);
+
+    return {
+      user: member.user,
+      role: member.role,
+      assignedTodos,
+      activeThreads,
+      recentActivity,
+      stats: {
+        totalTodos: stats[0],
+        completedTodos: stats[1],
+        activeThreads: stats[2],
+      },
+    };
   }
 }

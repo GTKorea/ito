@@ -75,14 +75,14 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
 
   if (isLoading || !todo) {
     return (
-      <div className="fixed right-0 top-0 z-50 flex h-full w-[420px] items-center justify-center border-l border-border bg-[#1A1A1A]">
+      <div className="flex h-full w-full items-center justify-center border-l border-border bg-[#1A1A1A]">
         <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="fixed right-0 top-0 z-50 flex h-full w-[420px] flex-col border-l border-border bg-[#1A1A1A] animate-in slide-in-from-right duration-200">
+    <div className="flex h-full w-full flex-col border-l border-border bg-[#1A1A1A]">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <h2 className="text-sm font-semibold text-[#ECECEC]">{t('taskDetail')}</h2>

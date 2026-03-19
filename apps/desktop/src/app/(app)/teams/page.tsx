@@ -28,6 +28,8 @@ import {
   UserPlus,
   ChevronRight,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { MemberDetailPanel } from '@/components/teams/member-detail-panel';
 
 interface TeamMember {
   id: string;
@@ -50,6 +52,7 @@ export default function TeamsPage() {
   const [expandedTeam, setExpandedTeam] = useState<string | null>(null);
   const [addMemberEmail, setAddMemberEmail] = useState('');
   const [addMemberTeamId, setAddMemberTeamId] = useState<string | null>(null);
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const { currentWorkspace } = useWorkspaceStore();
   const t = useTranslations('teams');
   const tc = useTranslations('common');
@@ -83,7 +86,8 @@ export default function TeamsPage() {
   };
 
   const handleDelete = async (teamId: string) => {
-    await api.delete(`/teams/${teamId}`);
+    if (!currentWorkspace) return;
+    await api.delete(`/workspaces/${currentWorkspace.id}/teams/${teamId}`);
     fetchTeams();
   };
 
@@ -93,7 +97,7 @@ export default function TeamsPage() {
       return;
     }
     try {
-      const { data } = await api.get(`/teams/${teamId}`);
+      const { data } = await api.get(`/workspaces/${currentWorkspace.id}/teams/${teamId}`);
       setTeams((prev) =>
         prev.map((t) => (t.id === teamId ? { ...t, members: data.members } : t)),
       );
@@ -110,7 +114,7 @@ export default function TeamsPage() {
         params: { email: addMemberEmail, workspaceId: currentWorkspace.id },
       });
       if (users.length > 0) {
-        await api.post(`/teams/${addMemberTeamId}/members`, { userId: users[0].id });
+        await api.post(`/workspaces/${currentWorkspace.id}/teams/${addMemberTeamId}/members`, { userId: users[0].id });
         setAddMemberEmail('');
         setAddMemberTeamId(null);
         handleExpand(addMemberTeamId);
@@ -121,7 +125,8 @@ export default function TeamsPage() {
   };
 
   const handleRemoveMember = async (teamId: string, userId: string) => {
-    await api.delete(`/teams/${teamId}/members/${userId}`);
+    if (!currentWorkspace) return;
+    await api.delete(`/workspaces/${currentWorkspace.id}/teams/${teamId}/members/${userId}`);
     handleExpand(teamId);
   };
 
@@ -214,7 +219,8 @@ export default function TeamsPage() {
                   {team.members.map((member) => (
                     <div
                       key={member.id}
-                      className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-accent/30 group"
+                      className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-accent/30 group cursor-pointer"
+                      onClick={() => setSelectedMemberId(member.user.id)}
                     >
                       <Avatar className="h-6 w-6">
                         <AvatarFallback className="text-[9px] bg-secondary">
@@ -269,6 +275,21 @@ export default function TeamsPage() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Member Detail Panel */}
+      <div
+        className={cn(
+          'fixed right-0 top-0 z-50 h-full w-[420px] transition-transform duration-200 ease-out',
+          selectedMemberId ? 'translate-x-0' : 'translate-x-full pointer-events-none',
+        )}
+      >
+        {selectedMemberId && (
+          <MemberDetailPanel
+            userId={selectedMemberId}
+            onClose={() => setSelectedMemberId(null)}
+          />
+        )}
+      </div>
 
       {/* Add Member Dialog */}
       {addMemberTeamId && (
