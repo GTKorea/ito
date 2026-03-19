@@ -15,22 +15,22 @@ async function main() {
   const password = await bcrypt.hash('password123', 10);
 
   const alice = await prisma.user.create({
-    data: { email: 'alice@krow.kr', name: 'Alice Kim', passwordHash: password },
+    data: { email: 'alice@itothread.com', name: 'Alice Kim', passwordHash: password },
   });
   const bob = await prisma.user.create({
-    data: { email: 'bob@krow.kr', name: 'Bob Park', passwordHash: password },
+    data: { email: 'bob@itothread.com', name: 'Bob Park', passwordHash: password },
   });
   const charlie = await prisma.user.create({
-    data: { email: 'charlie@krow.kr', name: 'Charlie Lee', passwordHash: password },
+    data: { email: 'charlie@itothread.com', name: 'Charlie Lee', passwordHash: password },
   });
   const diana = await prisma.user.create({
-    data: { email: 'diana@krow.kr', name: 'Diana Choi', passwordHash: password },
+    data: { email: 'diana@itothread.com', name: 'Diana Choi', passwordHash: password },
   });
   const evan = await prisma.user.create({
-    data: { email: 'evan@krow.kr', name: 'Evan Yoon', passwordHash: password },
+    data: { email: 'evan@itothread.com', name: 'Evan Yoon', passwordHash: password },
   });
   const fiona = await prisma.user.create({
-    data: { email: 'fiona@krow.kr', name: 'Fiona Han', passwordHash: password },
+    data: { email: 'fiona@itothread.com', name: 'Fiona Han', passwordHash: password },
   });
 
   const users = [alice, bob, charlie, diana, evan, fiona];
@@ -503,7 +503,7 @@ async function main() {
         action: 'invited',
         entityType: 'workspace',
         entityId: ws1.id,
-        metadata: { email: 'evan@krow.kr', role: 'GUEST' },
+        metadata: { email: 'evan@itothread.com', role: 'GUEST' },
         createdAt: daysAgo(10),
       },
     ],
@@ -514,7 +514,7 @@ async function main() {
   await prisma.workspaceInvite.create({
     data: {
       workspaceId: ws1.id,
-      email: 'newbie@krow.kr',
+      email: 'newbie@itothread.com',
       expiresAt: daysLater(7),
       role: 'MEMBER',
     },
@@ -525,8 +525,8 @@ async function main() {
   console.log('\n🎉 Seed complete!\n');
   console.log('📋 Login credentials (all users):');
   console.log('   Password: password123');
-  console.log('   Emails: alice@krow.kr, bob@krow.kr, charlie@krow.kr,');
-  console.log('           diana@krow.kr, evan@krow.kr, fiona@krow.kr');
+  console.log('   Emails: alice@itothread.com, bob@itothread.com, charlie@itothread.com,');
+  console.log('           diana@itothread.com, evan@itothread.com, fiona@itothread.com');
   console.log('\n📊 Data created:');
   console.log('   • 6 users (4 roles: OWNER, ADMIN, MEMBER, GUEST)');
   console.log('   • 2 workspaces (Krow Studio + Side Project)');

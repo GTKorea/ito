@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL || 'https://api.ito.krow.kr' }}
+  NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL || 'https://api.itothread.com' }}
 
 permissions:
   contents: write

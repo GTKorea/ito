@@ -39,7 +39,7 @@ export default function TermsPage() {
           {/* Intro */}
           <section>
             <p>
-              본 이용약관(이하 "약관")은 Krow(이하 "회사")가 제공하는 ito(糸) 서비스(이하 "서비스", https://ito.krow.kr)의 이용 조건 및
+              본 이용약관(이하 "약관")은 Krow Inc(이하 "회사")가 제공하는 ito(糸) 서비스(이하 "서비스", https://itothread.com)의 이용 조건 및
               절차에 관한 사항을 규정합니다. 서비스에 접속하거나 계정을 생성함으로써 이용자는 본 약관에 동의한 것으로 간주합니다.
             </p>
           </section>
@@ -61,7 +61,7 @@ export default function TermsPage() {
               {[
                 '서비스 이용을 위해 유효한 이메일 주소로 계정을 생성하거나, Google 또는 GitHub OAuth를 통해 가입할 수 있습니다.',
                 '이용자는 만 14세 이상이어야 합니다. 미성년자는 법정대리인의 동의 후 이용할 수 있습니다.',
-                '계정 정보(이메일, 비밀번호)의 보안 유지 책임은 이용자에게 있습니다. 무단 접근이 의심될 경우 즉시 비밀번호를 변경하고 support@krow.kr로 알려주십시오.',
+                '계정 정보(이메일, 비밀번호)의 보안 유지 책임은 이용자에게 있습니다. 무단 접근이 의심될 경우 즉시 비밀번호를 변경하고 support@itothread.com로 알려주십시오.',
                 '1인 1계정을 원칙으로 합니다. 타인의 계정을 무단으로 이용하는 행위는 금지됩니다.',
                 '가입 시 제공하는 정보는 정확하고 최신 상태로 유지해야 합니다.',
               ].map((item, i) => (
@@ -185,7 +185,7 @@ export default function TermsPage() {
             <SectionTitle number="8" title="계정 해지 및 서비스 탈퇴" />
             <ul className="space-y-2.5 list-none">
               {[
-                '이용자는 설정 > 계정 메뉴 또는 support@krow.kr 이메일을 통해 언제든지 계정 탈퇴를 요청할 수 있습니다.',
+                '이용자는 설정 > 계정 메뉴 또는 support@itothread.com 이메일을 통해 언제든지 계정 탈퇴를 요청할 수 있습니다.',
                 '탈퇴 시 이용자 계정 및 관련 개인정보는 관계 법령에 따른 보관 기간을 제외하고 즉시 삭제됩니다.',
                 '워크스페이스 소유자가 탈퇴할 경우, 탈퇴 전 소유권을 다른 멤버에게 이전하거나 워크스페이스를 삭제해야 합니다.',
                 '회사는 본 약관 위반 또는 불법 행위가 확인된 경우 계정을 즉시 해지할 수 있습니다.',
@@ -224,15 +224,15 @@ export default function TermsPage() {
             <div className="rounded-lg border border-[#2A2A2A] bg-[#1A1A1A] p-5 space-y-2.5">
               <div className="flex gap-3">
                 <span className="w-24 shrink-0 text-[#888888] text-xs">회사명</span>
-                <span className="text-[#ECECEC] text-xs">Krow</span>
+                <span className="text-[#ECECEC] text-xs">Krow Inc</span>
               </div>
               <div className="flex gap-3">
                 <span className="w-24 shrink-0 text-[#888888] text-xs">서비스</span>
-                <a href="https://ito.krow.kr" className="text-[#ECECEC] text-xs hover:underline">https://ito.krow.kr</a>
+                <a href="https://itothread.com" className="text-[#ECECEC] text-xs hover:underline">https://itothread.com</a>
               </div>
               <div className="flex gap-3">
                 <span className="w-24 shrink-0 text-[#888888] text-xs">이메일</span>
-                <a href="mailto:support@krow.kr" className="text-[#ECECEC] text-xs hover:underline">support@krow.kr</a>
+                <a href="mailto:support@itothread.com" className="text-[#ECECEC] text-xs hover:underline">support@itothread.com</a>
               </div>
             </div>
           </section>
@@ -243,7 +243,7 @@ export default function TermsPage() {
       {/* Footer */}
       <footer className="border-t border-[#2A2A2A] mt-16">
         <div className="mx-auto max-w-3xl px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-[#888888]">© 2025 Krow. All rights reserved.</p>
+          <p className="text-xs text-[#888888]">© 2025 Krow Inc. All rights reserved.</p>
           <div className="flex items-center gap-5">
             <Link href="/privacy" className="text-xs text-[#888888] hover:text-[#ECECEC] transition-colors">
               개인정보처리방침
@@ -251,8 +251,8 @@ export default function TermsPage() {
             <Link href="/terms" className="text-xs text-[#888888] hover:text-[#ECECEC] transition-colors">
               이용약관
             </Link>
-            <a href="mailto:support@krow.kr" className="text-xs text-[#888888] hover:text-[#ECECEC] transition-colors">
-              support@krow.kr
+            <a href="mailto:support@itothread.com" className="text-xs text-[#888888] hover:text-[#ECECEC] transition-colors">
+              support@itothread.com
             </a>
           </div>
         </div>

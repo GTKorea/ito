@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "ito",
     description: "Thread-based task collaboration",
-    url: "https://ito.krow.kr",
+    url: "https://itothread.com",
     siteName: "ito",
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
     type: "website",

@@ -15,7 +15,7 @@ export class EmailService implements OnModuleInit {
     const apiKey = this.configService.get<string>('RESEND_API_KEY');
     this.from =
       this.configService.get<string>('RESEND_FROM') ||
-      'ito <noreply@ito.app>';
+      'ito <noreply@itothread.com>';
 
     if (apiKey) {
       this.resend = new Resend(apiKey);

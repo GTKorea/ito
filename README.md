@@ -336,8 +336,8 @@ cd apps/desktop && pnpm test:e2e
 
 ```
 ┌─ Vercel ──────────────┐      ┌─ EC2 (t3.small) ──────────────┐
-│  ito.krow.kr           │ ──▶ │  Caddy (자동 HTTPS)             │
-│  (Next.js Static)      │      │    └─ api.ito.krow.kr          │
+│  itothread.com          │ ──▶ │  Caddy (자동 HTTPS)             │
+│  (Next.js Static)      │      │    └─ api.itothread.com        │
 └────────────────────────┘      │       └─ ito-api:3011          │
                                 │  PostgreSQL 16                  │
                                 └─────────────────────────────────┘
@@ -357,15 +357,15 @@ cd apps/desktop && pnpm test:e2e
 1. Vercel에서 GitHub 레포 연결
 2. Root Directory: `apps/desktop`
 3. Framework Preset: `Other` (Static Export)
-4. Environment Variables: `NEXT_PUBLIC_API_URL=https://api.ito.krow.kr`
-5. Domains → `ito.krow.kr` 추가
+4. Environment Variables: `NEXT_PUBLIC_API_URL=https://api.itothread.com`
+5. Domains → `itothread.com` 추가
 
 ### DNS (Route53)
 
 | 타입 | 이름 | 값 |
 |------|------|-----|
-| A | `*.krow.kr` | EC2 Elastic IP (와일드카드) |
-| CNAME | `ito.krow.kr` | `cname.vercel-dns.com` (Vercel) |
+| A | `api.itothread.com` | EC2 Elastic IP |
+| CNAME | `itothread.com` | `cname.vercel-dns.com` (Vercel) |
 
 ---
 

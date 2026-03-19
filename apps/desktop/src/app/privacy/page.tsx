@@ -39,7 +39,7 @@ export default function PrivacyPage() {
           {/* Intro */}
           <section>
             <p>
-              Krow(이하 "회사")는 ito(糸) 서비스(이하 "서비스", https://ito.krow.kr)를 운영함에 있어 이용자의 개인정보를 소중히 여기며,
+              Krow Inc(이하 "회사")는 ito(糸) 서비스(이하 "서비스", https://itothread.com)를 운영함에 있어 이용자의 개인정보를 소중히 여기며,
               「개인정보 보호법」 및 관련 법령을 준수합니다. 본 방침은 회사가 수집하는 개인정보의 항목, 이용 목적, 보관 기간 및 이용자의 권리에 관하여 규정합니다.
             </p>
           </section>
@@ -319,15 +319,15 @@ export default function PrivacyPage() {
               <div className="rounded-lg border border-[#2A2A2A] bg-[#1A1A1A] p-5 space-y-2.5">
                 <div className="flex gap-3">
                   <span className="w-24 shrink-0 text-[#888888] text-xs">회사명</span>
-                  <span className="text-[#ECECEC] text-xs">Krow</span>
+                  <span className="text-[#ECECEC] text-xs">Krow Inc</span>
                 </div>
                 <div className="flex gap-3">
                   <span className="w-24 shrink-0 text-[#888888] text-xs">서비스 URL</span>
-                  <a href="https://ito.krow.kr" className="text-[#ECECEC] text-xs hover:underline">https://ito.krow.kr</a>
+                  <a href="https://itothread.com" className="text-[#ECECEC] text-xs hover:underline">https://itothread.com</a>
                 </div>
                 <div className="flex gap-3">
                   <span className="w-24 shrink-0 text-[#888888] text-xs">개인정보 문의</span>
-                  <a href="mailto:support@krow.kr" className="text-[#ECECEC] text-xs hover:underline">support@krow.kr</a>
+                  <a href="mailto:support@itothread.com" className="text-[#ECECEC] text-xs hover:underline">support@itothread.com</a>
                 </div>
                 <div className="flex gap-3">
                   <span className="w-24 shrink-0 text-[#888888] text-xs">처리 기간</span>
@@ -358,7 +358,7 @@ export default function PrivacyPage() {
       {/* Footer */}
       <footer className="border-t border-[#2A2A2A] mt-16">
         <div className="mx-auto max-w-3xl px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-[#888888]">© 2025 Krow. All rights reserved.</p>
+          <p className="text-xs text-[#888888]">© 2025 Krow Inc. All rights reserved.</p>
           <div className="flex items-center gap-5">
             <Link href="/privacy" className="text-xs text-[#888888] hover:text-[#ECECEC] transition-colors">
               개인정보처리방침
@@ -366,8 +366,8 @@ export default function PrivacyPage() {
             <Link href="/terms-of-service" className="text-xs text-[#888888] hover:text-[#ECECEC] transition-colors">
               이용약관
             </Link>
-            <a href="mailto:support@krow.kr" className="text-xs text-[#888888] hover:text-[#ECECEC] transition-colors">
-              support@krow.kr
+            <a href="mailto:support@itothread.com" className="text-xs text-[#888888] hover:text-[#ECECEC] transition-colors">
+              support@itothread.com
             </a>
           </div>
         </div>

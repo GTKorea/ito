@@ -156,7 +156,7 @@ NEXT_PUBLIC_API_URL=http://localhost:3011
 
 ### 프로덕션 환경변수
 - EC2: `~/krow-infra/.env.production` (krow-infra 레포의 env-template 참고)
-- Vercel: `NEXT_PUBLIC_API_URL=https://api.ito.krow.kr`
+- Vercel: `NEXT_PUBLIC_API_URL=https://api.itothread.com`
 - GitHub Secrets: `EC2_HOST`, `EC2_SSH_KEY`
 
 ## 배포
@@ -164,10 +164,10 @@ NEXT_PUBLIC_API_URL=http://localhost:3011
 ### 전체 아키텍처
 
 ```
-사용자 → ito.krow.kr (Vercel, 프론트엔드)
+사용자 → itothread.com (Vercel, 프론트엔드)
               │ API 호출
               ▼
-         api.ito.krow.kr (EC2)
+         api.itothread.com (EC2)
               │
          ┌────┴────┐
          │  Caddy   │ ← 자동 HTTPS
@@ -200,9 +200,9 @@ NEXT_PUBLIC_API_URL=http://localhost:3011
 1. `apps/api/` 코드 push → GitHub Actions → GHCR에 Docker 이미지 빌드 → EC2에 SSH 접속 → 이미지 pull & 재시작
 2. `apps/desktop/` 코드 push → Vercel 자동 빌드 (GitHub 연동)
 
-### DNS (Route53)
-- `*.krow.kr` → EC2 Elastic IP `15.164.197.165` (A 레코드, 와일드카드)
-- `ito.krow.kr` → `cname.vercel-dns.com` (CNAME, 와일드카드보다 우선)
+### DNS
+- `api.itothread.com` → EC2 Elastic IP `15.164.197.165` (A 레코드)
+- `itothread.com` → `cname.vercel-dns.com` (CNAME, Vercel)
 
 ### 배포 가이드
 상세한 단계별 배포 가이드는 **krow-infra** 레포의 `DEPLOY_GUIDE.md` 참조
