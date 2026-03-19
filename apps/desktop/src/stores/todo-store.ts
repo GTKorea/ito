@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import { api } from '@/lib/api-client';
+import { trackEvent } from '@/lib/analytics';
 
 interface User {
   id: string;
@@ -127,6 +128,7 @@ export const useTodoStore = create<TodoState>((set) => ({
       dueDate,
     });
     set((state) => ({ todos: [data, ...state.todos] }));
+    trackEvent('task_created', { workspaceId });
     return data;
   },
 
@@ -155,10 +157,12 @@ export const useTodoStore = create<TodoState>((set) => ({
     await api.post(`/todos/${todoId}/connect`, { toUserId, message });
     // Remove the todo from local state (it's now assigned to someone else)
     set((state) => ({ todos: state.todos.filter((t) => t.id !== todoId) }));
+    trackEvent('thread_connected');
   },
 
   resolveThread: async (threadLinkId) => {
     await api.post(`/thread-links/${threadLinkId}/resolve`);
+    trackEvent('thread_resolved');
     // Remove the resolved todo from local state (it snapped back to sender)
     set((state) => ({
       todos: state.todos.map((t) => ({

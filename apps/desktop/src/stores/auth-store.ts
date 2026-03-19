@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import { api } from '@/lib/api-client';
 import { connectWs, disconnectWs } from '@/lib/ws-client';
 import { requestNotificationPermission } from '@/lib/desktop-notify';
+import { identifyUser, resetUser, trackEvent } from '@/lib/analytics';
 
 interface User {
   id: string;
@@ -36,6 +37,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     connectWs(data.accessToken);
     const { data: user } = await api.get('/users/me');
     set({ user, isAuthenticated: true, isLoading: false });
+    identifyUser(user.id, { email: user.email, name: user.name });
     requestNotificationPermission();
   },
 
@@ -46,6 +48,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     connectWs(data.accessToken);
     const { data: user } = await api.get('/users/me');
     set({ user, isAuthenticated: true, isLoading: false });
+    identifyUser(user.id, { email: user.email, name: user.name });
+    trackEvent('user_registered');
     requestNotificationPermission();
   },
 
@@ -86,6 +90,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     disconnectWs();
+    resetUser();
     set({ user: null, isAuthenticated: false });
   },
 }));
