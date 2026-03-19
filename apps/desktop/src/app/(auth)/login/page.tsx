@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { isTauri } from '@/lib/platform';
 import { useAuthStore } from '@/stores/auth-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,8 +17,13 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuthStore();
   const router = useRouter();
+  const [isDesktop, setIsDesktop] = useState(false);
   const t = useTranslations('auth');
   const tc = useTranslations('common');
+
+  useEffect(() => {
+    setIsDesktop(isTauri());
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,36 +55,40 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* OAuth */}
-        <div className="space-y-2">
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => {
-              window.location.href = `${API_URL}/auth/google/init?from=${encodeURIComponent(window.location.origin)}`;
-            }}
-          >
-            {t('continueWithGoogle')}
-          </Button>
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => {
-              window.location.href = `${API_URL}/auth/github/init?from=${encodeURIComponent(window.location.origin)}`;
-            }}
-          >
-            {t('continueWithGithub')}
-          </Button>
-        </div>
+        {/* OAuth — hidden in Tauri desktop app */}
+        {!isDesktop && (
+          <>
+            <div className="space-y-2">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  window.location.href = `${API_URL}/auth/google/init?from=${encodeURIComponent(window.location.origin)}`;
+                }}
+              >
+                {t('continueWithGoogle')}
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  window.location.href = `${API_URL}/auth/github/init?from=${encodeURIComponent(window.location.origin)}`;
+                }}
+              >
+                {t('continueWithGithub')}
+              </Button>
+            </div>
 
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-border" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">{tc('or')}</span>
-          </div>
-        </div>
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">{tc('or')}</span>
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Email form */}
         <form onSubmit={handleSubmit} className="space-y-3">
