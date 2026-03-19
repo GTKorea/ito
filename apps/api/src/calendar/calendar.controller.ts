@@ -2,8 +2,10 @@ import {
   Controller,
   Get,
   Delete,
+  Patch,
   Param,
   Query,
+  Body,
   Res,
   UseGuards,
   BadRequestException,
@@ -16,6 +18,7 @@ import type { Response } from 'express';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { CalendarService } from './calendar.service';
+import { CalendarSyncDto } from './dto/calendar-sync.dto';
 
 @ApiTags('calendar')
 @Controller('calendar')
@@ -121,6 +124,16 @@ export class CalendarController {
     return res.redirect(`${frontendUrl}/settings?calendar=outlook&connected=true`);
   }
 
+  // ── Google Calendars ─────────────────────────
+
+  @Get('google/calendars')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'List accessible Google Calendars for the user' })
+  listGoogleCalendars(@CurrentUser('id') userId: string) {
+    return this.calendarService.listGoogleCalendars(userId);
+  }
+
   // ── Events ───────────────────────────────────
 
   @Get('events')
@@ -161,6 +174,18 @@ export class CalendarController {
   @ApiOperation({ summary: 'List user calendar integrations' })
   getIntegrations(@CurrentUser('id') userId: string) {
     return this.calendarService.getIntegrations(userId);
+  }
+
+  @Patch('integrations/:id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update a calendar integration (calendarId, syncEnabled)' })
+  updateIntegration(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+    @Body() dto: CalendarSyncDto,
+  ) {
+    return this.calendarService.updateIntegration(id, userId, dto);
   }
 
   @Delete('integrations/:id')

@@ -1,4 +1,10 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma/prisma.service';
 
@@ -56,7 +62,7 @@ export class CalendarService implements OnModuleInit {
 
   getGoogleAuthUrl(redirectUri: string, userId: string): string {
     const scopes = encodeURIComponent(
-      'https://www.googleapis.com/auth/calendar.events',
+      'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly',
     );
     const state = Buffer.from(JSON.stringify({ userId })).toString('base64url');
     return (
@@ -179,6 +185,78 @@ export class CalendarService implements OnModuleInit {
     });
   }
 
+  async listGoogleCalendars(userId: string) {
+    const integration = await this.prisma.calendarIntegration.findUnique({
+      where: { userId_provider: { userId, provider: 'google' } },
+    });
+    if (!integration) {
+      throw new NotFoundException('Google Calendar integration not found');
+    }
+    if (!this.googleEnabled) {
+      throw new NotFoundException('Google Calendar integration is not configured');
+    }
+
+    const { google } = await import('googleapis');
+    const oauth2Client = new google.auth.OAuth2(
+      this.googleClientId,
+      this.googleClientSecret,
+    );
+    oauth2Client.setCredentials({
+      access_token: integration.accessToken,
+      refresh_token: integration.refreshToken,
+    });
+
+    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+    const response = await calendar.calendarList.list();
+
+    // Persist refreshed token if needed
+    const newCredentials = oauth2Client.credentials;
+    if (
+      newCredentials.access_token &&
+      newCredentials.access_token !== integration.accessToken
+    ) {
+      await this.prisma.calendarIntegration.update({
+        where: { userId_provider: { userId, provider: 'google' } },
+        data: { accessToken: newCredentials.access_token },
+      });
+    }
+
+    return (response.data.items || []).map((cal) => ({
+      id: cal.id || '',
+      summary: cal.summary || '',
+      backgroundColor: cal.backgroundColor || '',
+      primary: cal.primary || false,
+    }));
+  }
+
+  async updateIntegration(
+    id: string,
+    userId: string,
+    data: { calendarId?: string; syncEnabled?: boolean },
+  ) {
+    const integration = await this.prisma.calendarIntegration.findUnique({
+      where: { id },
+    });
+    if (!integration) {
+      throw new NotFoundException('Calendar integration not found');
+    }
+    if (integration.userId !== userId) {
+      throw new ForbiddenException('You do not own this integration');
+    }
+
+    return this.prisma.calendarIntegration.update({
+      where: { id },
+      data,
+      select: {
+        id: true,
+        provider: true,
+        syncEnabled: true,
+        calendarId: true,
+        createdAt: true,
+      },
+    });
+  }
+
   async createEvent(
     userId: string,
     todo: { title: string; description?: string; dueDate: Date },
@@ -228,7 +306,7 @@ export class CalendarService implements OnModuleInit {
 
       const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
       const response = await calendar.events.list({
-        calendarId: 'primary',
+        calendarId: integration.calendarId || 'primary',
         timeMin,
         timeMax,
         singleEvents: true,
@@ -306,7 +384,11 @@ export class CalendarService implements OnModuleInit {
   }
 
   private async createGoogleEvent(
-    integration: { accessToken: string; refreshToken: string },
+    integration: {
+      accessToken: string;
+      refreshToken: string;
+      calendarId?: string | null;
+    },
     todo: { title: string; description?: string; dueDate: Date },
   ) {
     if (!this.googleEnabled) return;
@@ -323,7 +405,7 @@ export class CalendarService implements OnModuleInit {
 
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
     await calendar.events.insert({
-      calendarId: 'primary',
+      calendarId: integration.calendarId || 'primary',
       requestBody: {
         summary: todo.title,
         description: todo.description || '',
