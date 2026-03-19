@@ -18,7 +18,7 @@ vi.mock('@/lib/api-client', () => ({
 import { api } from '@/lib/api-client';
 import { connectWs, disconnectWs } from '@/lib/ws-client';
 
-const mockedApi = vi.mocked(api);
+const mockedApi = vi.mocked(api, true);
 const mockedConnectWs = vi.mocked(connectWs);
 const mockedDisconnectWs = vi.mocked(disconnectWs);
 

@@ -37,7 +37,7 @@ export function FileList({ todoId, refreshKey }: FileListProps) {
     api
       .get(`/files/todo/${todoId}`)
       .then(({ data }) => setFiles(data))
-      .catch(() => {})
+      .catch((e) => console.error('Failed to load files:', e))
       .finally(() => setIsLoading(false));
   }, [todoId, refreshKey]);
 
@@ -45,8 +45,8 @@ export function FileList({ todoId, refreshKey }: FileListProps) {
     try {
       await api.delete(`/files/${id}`);
       setFiles((prev) => prev.filter((f) => f.id !== id));
-    } catch {
-      // handle
+    } catch (error) {
+      console.error('Failed to delete file:', error);
     }
   };
 

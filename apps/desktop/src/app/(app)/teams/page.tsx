@@ -62,8 +62,8 @@ export default function TeamsPage() {
     try {
       const { data } = await api.get(`/workspaces/${currentWorkspace.id}/teams`);
       setTeams(data);
-    } catch {
-      // handle error
+    } catch (error) {
+      console.error('Failed to load teams:', error);
     } finally {
       setIsLoading(false);
     }
@@ -102,8 +102,8 @@ export default function TeamsPage() {
         prev.map((t) => (t.id === teamId ? { ...t, members: data.members } : t)),
       );
       setExpandedTeam(teamId);
-    } catch {
-      // handle
+    } catch (error) {
+      console.error('Failed to load team details:', error);
     }
   };
 
@@ -119,8 +119,8 @@ export default function TeamsPage() {
         setAddMemberTeamId(null);
         handleExpand(addMemberTeamId);
       }
-    } catch {
-      // handle
+    } catch (error) {
+      console.error('Failed to add team member:', error);
     }
   };
 

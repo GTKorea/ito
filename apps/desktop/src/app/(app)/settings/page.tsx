@@ -66,8 +66,8 @@ export default function SettingsPage() {
       await api.patch('/users/me', { name });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
-    } catch {
-      // handle
+    } catch (error) {
+      console.error('Failed to save settings:', error);
     } finally {
       setIsSaving(false);
     }
@@ -84,8 +84,8 @@ export default function SettingsPage() {
     try {
       await api.delete(`/calendar/integrations/${integrationId}`);
       setCalendarIntegrations((prev) => prev.filter((c) => c.id !== integrationId));
-    } catch {
-      // handle
+    } catch (error) {
+      console.error('Failed to disconnect calendar:', error);
     } finally {
       setDisconnecting(null);
     }

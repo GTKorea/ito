@@ -155,8 +155,8 @@ export default function ThreadsPage() {
         params: { workspaceId: currentWorkspace.id },
       });
       setThreads(data);
-    } catch {
-      // handle error
+    } catch (error) {
+      console.error('Failed to load threads:', error);
     } finally {
       setIsLoading(false);
     }

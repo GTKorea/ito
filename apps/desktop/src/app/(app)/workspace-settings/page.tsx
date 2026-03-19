@@ -81,8 +81,8 @@ export default function WorkspaceSettingsPage() {
       setMembers(data.members || []);
       const me = data.members?.find((m: WorkspaceMember) => m.user.id === user?.id);
       setMyRole(me?.role || 'MEMBER');
-    } catch {
-      // handle
+    } catch (error) {
+      console.error('Failed to load workspace settings:', error);
     } finally {
       setMembersLoading(false);
     }
@@ -101,8 +101,8 @@ export default function WorkspaceSettingsPage() {
         role: newRole,
       });
       fetchMembers();
-    } catch {
-      // handle
+    } catch (error) {
+      console.error('Failed to update member role:', error);
     }
   };
 
@@ -111,8 +111,8 @@ export default function WorkspaceSettingsPage() {
     try {
       await api.delete(`/workspaces/${currentWorkspace.id}/members/${userId}`);
       fetchMembers();
-    } catch {
-      // handle
+    } catch (error) {
+      console.error('Failed to remove member:', error);
     }
   };
 
@@ -127,8 +127,8 @@ export default function WorkspaceSettingsPage() {
       if (data.inviteLink) {
         setInviteLink(data.inviteLink);
       }
-    } catch {
-      // handle
+    } catch (error) {
+      console.error('Failed to update workspace:', error);
     }
   };
 

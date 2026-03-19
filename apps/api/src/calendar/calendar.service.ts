@@ -135,6 +135,12 @@ export class CalendarService implements OnModuleInit {
         }),
       },
     );
+    if (!response.ok) {
+      const errorBody = await response.text();
+      throw new Error(
+        `Outlook token exchange failed (${response.status}): ${errorBody}`,
+      );
+    }
     const tokens = await response.json();
 
     await this.prisma.calendarIntegration.upsert({
@@ -254,6 +260,47 @@ export class CalendarService implements OnModuleInit {
       }));
     } catch (error) {
       this.logger.error('Failed to fetch Google Calendar events', error);
+      return [];
+    }
+  }
+
+  async fetchOutlookEvents(
+    userId: string,
+    timeMin: string,
+    timeMax: string,
+  ) {
+    const integration = await this.prisma.calendarIntegration.findUnique({
+      where: { userId_provider: { userId, provider: 'outlook' } },
+    });
+    if (!integration || !integration.syncEnabled) return [];
+    if (!this.outlookEnabled) return [];
+
+    try {
+      const url =
+        `https://graph.microsoft.com/v1.0/me/calendarview` +
+        `?startDateTime=${encodeURIComponent(timeMin)}` +
+        `&endDateTime=${encodeURIComponent(timeMax)}` +
+        `&$top=100&$orderby=start/dateTime`;
+
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${integration.accessToken}` },
+      });
+
+      if (!response.ok) return [];
+
+      const data = await response.json();
+      return ((data.value as any[]) || []).map((event) => ({
+        id: event.id,
+        title: event.subject || '',
+        description: event.bodyPreview || '',
+        start: event.start?.dateTime || '',
+        end: event.end?.dateTime || '',
+        isAllDay: event.isAllDay || false,
+        htmlLink: event.webLink || '',
+        source: 'outlook' as const,
+      }));
+    } catch (error) {
+      this.logger.error('Failed to fetch Outlook Calendar events', error);
       return [];
     }
   }

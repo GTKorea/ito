@@ -132,35 +132,36 @@ export class ThreadsService {
       throw new BadRequestException('This link is not pending');
     }
 
-    // Mark this link as completed
-    await this.prisma.threadLink.update({
-      where: { id: link.id },
-      data: { status: 'COMPLETED', resolvedAt: new Date() },
-    });
-
-    // Determine who gets the task back
     const previousUser = link.fromUserId;
 
-    // Check if the previous user's link should be updated back to PENDING
     const previousLink = link.todo.threadLinks.find(
       (l) => l.toUserId === previousUser && l.status === 'FORWARDED',
     );
 
-    if (previousLink) {
-      // Snap back: previous person's link becomes PENDING again
-      await this.prisma.threadLink.update({
-        where: { id: previousLink.id },
-        data: { status: 'PENDING' },
+    // Wrap all state mutations in a transaction for consistency
+    await this.prisma.$transaction(async (tx) => {
+      // Mark this link as completed
+      await tx.threadLink.update({
+        where: { id: link.id },
+        data: { status: 'COMPLETED', resolvedAt: new Date() },
       });
-    }
 
-    // Update todo assignee to the previous user
-    await this.prisma.todo.update({
-      where: { id: link.todoId },
-      data: {
-        assigneeId: previousUser,
-        status: 'IN_PROGRESS',
-      },
+      if (previousLink) {
+        // Snap back: previous person's link becomes PENDING again
+        await tx.threadLink.update({
+          where: { id: previousLink.id },
+          data: { status: 'PENDING' },
+        });
+      }
+
+      // Update todo assignee to the previous user
+      await tx.todo.update({
+        where: { id: link.todoId },
+        data: {
+          assigneeId: previousUser,
+          status: 'IN_PROGRESS',
+        },
+      });
     });
 
     // Notify the previous user
@@ -353,9 +354,9 @@ export class ThreadsService {
   ) {
     const statusCondition =
       scope === 'active'
-        ? { status: { in: ['OPEN', 'IN_PROGRESS', 'BLOCKED'] as any[] } }
+        ? { status: { in: ['OPEN', 'IN_PROGRESS', 'BLOCKED'] as const } }
         : scope === 'completed'
-          ? { status: 'COMPLETED' as any }
+          ? { status: 'COMPLETED' as const }
           : {};
 
     const extraFilters: any = {};

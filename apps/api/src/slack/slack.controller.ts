@@ -26,7 +26,7 @@ export class SlackController {
       return res.status(HttpStatus.OK).json({ challenge: body.challenge });
     }
 
-    const rawBody = (req as any).rawBody;
+    const rawBody = (req as Request & { rawBody?: Buffer }).rawBody;
     if (!rawBody) {
       this.logger.warn('Raw body not available for Slack event');
       return res.status(HttpStatus.BAD_REQUEST).json({ error: 'Missing body' });
@@ -50,7 +50,7 @@ export class SlackController {
 
   @Post('commands')
   async handleCommand(@Req() req: Request, @Res() res: Response) {
-    const rawBody = (req as any).rawBody;
+    const rawBody = (req as Request & { rawBody?: Buffer }).rawBody;
     if (!rawBody) {
       this.logger.warn('Raw body not available for Slack command');
       return res.status(HttpStatus.BAD_REQUEST).json({ error: 'Missing body' });

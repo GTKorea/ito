@@ -80,8 +80,8 @@ export function ConnectDialog({ todoId, onClose }: ConnectDialogProps) {
       await connectThread(todoId, selected.id, message || undefined);
       await fetchTodos(currentWorkspace.id);
       onClose();
-    } catch {
-      // Handle error
+    } catch (error) {
+      console.error('Failed to connect thread:', error);
     } finally {
       setIsLoading(false);
     }

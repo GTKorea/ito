@@ -6,11 +6,11 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { WorkspaceRole } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { ActivityService } from '../activity/activity.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { EmailService } from '../email/email.service';
-import { WorkspaceRole } from '@prisma/client';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 
 @Injectable()
@@ -215,7 +215,7 @@ export class WorkspacesService {
   async updateMemberRole(
     workspaceId: string,
     targetUserId: string,
-    newRole: string,
+    newRole: WorkspaceRole,
     requestingUserId: string,
   ) {
     const requester = await this.prisma.workspaceMember.findUnique({
@@ -246,7 +246,7 @@ export class WorkspacesService {
 
     await this.prisma.workspaceMember.updateMany({
       where: { userId: targetUserId, workspaceId },
-      data: { role: newRole as any },
+      data: { role: newRole },
     });
 
     await this.activityService.log({

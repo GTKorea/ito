@@ -11,6 +11,14 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { randomBytes } from 'crypto';
 
+export interface OAuthProfile {
+  googleId?: string;
+  githubId?: string;
+  email: string;
+  name: string;
+  avatarUrl?: string;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -55,18 +63,10 @@ export class AuthService {
     return this.generateTokens(user.id, user.email);
   }
 
-  async handleOAuthUser(profile: {
-    googleId?: string;
-    githubId?: string;
-    email: string;
-    name: string;
-    avatarUrl?: string;
-  }) {
-    const where = profile.googleId
-      ? { googleId: profile.googleId }
-      : { githubId: profile.githubId };
-
-    let user = await this.prisma.user.findUnique({ where: where as any });
+  async handleOAuthUser(profile: OAuthProfile) {
+    let user = profile.googleId
+      ? await this.prisma.user.findUnique({ where: { googleId: profile.googleId } })
+      : await this.prisma.user.findUnique({ where: { githubId: profile.githubId! } });
 
     if (!user) {
       // Check if email already exists
