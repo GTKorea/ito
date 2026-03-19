@@ -5,6 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useTodoStore } from '@/stores/todo-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
+import { useOnboardingStore } from '@/stores/onboarding-store';
+import { OnboardingWizard } from '@/components/onboarding/onboarding-wizard';
 import { TodoList } from '@/components/todos/todo-list';
 import { CreateTodo } from '@/components/todos/create-todo';
 import { TodoDetail } from '@/components/todos/todo-detail';
@@ -82,6 +84,7 @@ function CreateWorkspacePrompt() {
 export default function WorkspacePage() {
   const { currentWorkspace, isLoading: wsLoading } = useWorkspaceStore();
   const { todos, isLoading, fetchTodos } = useTodoStore();
+  const { checkAndStartWizard } = useOnboardingStore();
   const [showCreate, setShowCreate] = useState(false);
   const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null);
   const searchParams = useSearchParams();
@@ -90,6 +93,13 @@ export default function WorkspacePage() {
   useEffect(() => {
     if (currentWorkspace) fetchTodos(currentWorkspace.id);
   }, [currentWorkspace, fetchTodos]);
+
+  // Trigger onboarding wizard on first workspace visit
+  useEffect(() => {
+    if (currentWorkspace) {
+      checkAndStartWizard();
+    }
+  }, [currentWorkspace, checkAndStartWizard]);
 
   // Auto-select todo from query param (e.g. from notification click)
   useEffect(() => {
@@ -167,6 +177,9 @@ export default function WorkspacePage() {
           />
         )}
       </div>
+
+      {/* Onboarding Wizard */}
+      <OnboardingWizard />
     </div>
   );
 }

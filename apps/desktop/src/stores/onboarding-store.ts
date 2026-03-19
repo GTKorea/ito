@@ -40,8 +40,10 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
 ];
 
 const STORAGE_KEY = 'ito_onboarding_done';
+const WIZARD_STORAGE_KEY = 'ito_onboarding_wizard_done';
 
 interface OnboardingState {
+  // Tooltip tour state
   steps: OnboardingStep[];
   currentStep: number;
   isActive: boolean;
@@ -50,9 +52,28 @@ interface OnboardingState {
   skipOnboarding: () => void;
   completeOnboarding: () => void;
   checkAndStart: () => void;
+
+  // Wizard state
+  showWizard: boolean;
+  wizardStep: number;
+  wizardCompleted: boolean;
+  isSeedingData: boolean;
+  seedingError: string | null;
+  openWizard: () => void;
+  closeWizard: () => void;
+  setWizardStep: (step: number) => void;
+  nextWizardStep: () => void;
+  prevWizardStep: () => void;
+  skipWizard: () => void;
+  completeWizard: () => void;
+  setSeedingState: (loading: boolean, error?: string | null) => void;
+  checkAndStartWizard: () => boolean;
 }
 
+const WIZARD_TOTAL_STEPS = 5;
+
 export const useOnboardingStore = create<OnboardingState>((set, get) => ({
+  // Tooltip tour
   steps: ONBOARDING_STEPS,
   currentStep: 0,
   isActive: false,
@@ -87,12 +108,86 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
   checkAndStart: () => {
     try {
       const done = localStorage.getItem(STORAGE_KEY);
-      if (!done) {
-        // Small delay so the DOM is ready
+      const wizardDone = localStorage.getItem(WIZARD_STORAGE_KEY);
+      // Only start tooltip tour if wizard is already done but tour hasn't been done
+      if (!done && wizardDone) {
         setTimeout(() => {
           set({ isActive: true, currentStep: 0 });
         }, 1000);
       }
     } catch {}
+  },
+
+  // Wizard state
+  showWizard: false,
+  wizardStep: 0,
+  wizardCompleted: false,
+  isSeedingData: false,
+  seedingError: null,
+
+  openWizard: () => {
+    set({ showWizard: true, wizardStep: 0 });
+  },
+
+  closeWizard: () => {
+    set({ showWizard: false });
+  },
+
+  setWizardStep: (step: number) => {
+    set({ wizardStep: Math.max(0, Math.min(step, WIZARD_TOTAL_STEPS - 1)) });
+  },
+
+  nextWizardStep: () => {
+    const { wizardStep } = get();
+    if (wizardStep < WIZARD_TOTAL_STEPS - 1) {
+      set({ wizardStep: wizardStep + 1 });
+    } else {
+      get().completeWizard();
+    }
+  },
+
+  prevWizardStep: () => {
+    const { wizardStep } = get();
+    if (wizardStep > 0) {
+      set({ wizardStep: wizardStep - 1 });
+    }
+  },
+
+  skipWizard: () => {
+    set({ showWizard: false, wizardStep: 0, wizardCompleted: true });
+    try {
+      localStorage.setItem(WIZARD_STORAGE_KEY, 'true');
+    } catch {}
+  },
+
+  completeWizard: () => {
+    set({ showWizard: false, wizardStep: 0, wizardCompleted: true });
+    try {
+      localStorage.setItem(WIZARD_STORAGE_KEY, 'true');
+      // After wizard, optionally start the tooltip tour
+      const tourDone = localStorage.getItem(STORAGE_KEY);
+      if (!tourDone) {
+        setTimeout(() => {
+          set({ isActive: true, currentStep: 0 });
+        }, 500);
+      }
+    } catch {}
+  },
+
+  setSeedingState: (loading: boolean, error: string | null = null) => {
+    set({ isSeedingData: loading, seedingError: error });
+  },
+
+  checkAndStartWizard: () => {
+    try {
+      const wizardDone = localStorage.getItem(WIZARD_STORAGE_KEY);
+      if (!wizardDone) {
+        set({ showWizard: true, wizardStep: 0 });
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    }
   },
 }));

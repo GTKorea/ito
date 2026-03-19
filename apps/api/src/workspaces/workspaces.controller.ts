@@ -112,6 +112,15 @@ export class WorkspacesController {
     );
   }
 
+  @Post(':id/seed-sample-data')
+  @ApiOperation({ summary: 'Seed sample data for onboarding (owner only, empty workspace only)' })
+  seedSampleData(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.workspacesService.seedSampleData(id, userId);
+  }
+
   @Get(':workspaceId/members/:userId/summary')
   @ApiOperation({ summary: 'Get member summary with stats' })
   getMemberSummary(

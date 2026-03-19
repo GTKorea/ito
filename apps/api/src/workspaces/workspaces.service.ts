@@ -318,6 +318,100 @@ export class WorkspacesService {
     return { message: 'Member removed' };
   }
 
+  async seedSampleData(workspaceId: string, userId: string) {
+    // Verify workspace exists
+    const workspace = await this.prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      include: {
+        members: { where: { userId } },
+        _count: { select: { todos: true } },
+      },
+    });
+    if (!workspace) throw new NotFoundException('Workspace not found');
+
+    // Only workspace owner can seed
+    const member = workspace.members[0];
+    if (!member || member.role !== 'OWNER') {
+      throw new ForbiddenException('Only the workspace owner can seed sample data');
+    }
+
+    // Idempotent: only if workspace has 0 existing todos
+    if (workspace._count.todos > 0) {
+      return { message: 'Sample data already exists', seeded: false };
+    }
+
+    // Create sample todos
+    const now = new Date();
+    const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
+    const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+    const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+    const todos = await this.prisma.$transaction([
+      // 1. Completed task
+      this.prisma.todo.create({
+        data: {
+          title: '프로젝트 킥오프 미팅 준비',
+          description: '프로젝트 목표, 일정, 팀 역할을 정리하고 킥오프 미팅을 진행합니다.',
+          status: 'COMPLETED',
+          priority: 'HIGH',
+          creatorId: userId,
+          assigneeId: userId,
+          workspaceId,
+          completedAt: twoDaysAgo,
+        },
+      }),
+      // 2. In-progress task (demonstrating thread concept)
+      this.prisma.todo.create({
+        data: {
+          title: '디자인 시안 검토',
+          description: '메인 페이지 디자인 시안을 검토하고 피드백을 정리합니다. 실(Thread)을 연결하여 팀원에게 작업을 넘길 수 있습니다.',
+          status: 'IN_PROGRESS',
+          priority: 'MEDIUM',
+          creatorId: userId,
+          assigneeId: userId,
+          workspaceId,
+          dueDate: threeDaysFromNow,
+        },
+      }),
+      // 3. Open task
+      this.prisma.todo.create({
+        data: {
+          title: 'API 문서 작성',
+          description: 'REST API 엔드포인트 문서를 작성합니다.',
+          status: 'OPEN',
+          priority: 'LOW',
+          creatorId: userId,
+          assigneeId: userId,
+          workspaceId,
+          dueDate: oneWeekFromNow,
+        },
+      }),
+      // 4. Open task
+      this.prisma.todo.create({
+        data: {
+          title: '사용자 피드백 분석',
+          description: '베타 테스터의 피드백을 수집하고 우선순위를 정합니다.',
+          status: 'OPEN',
+          priority: 'MEDIUM',
+          creatorId: userId,
+          assigneeId: userId,
+          workspaceId,
+        },
+      }),
+    ]);
+
+    await this.activityService.log({
+      workspaceId,
+      userId,
+      action: 'SEEDED',
+      entityType: 'Workspace',
+      entityId: workspaceId,
+      metadata: { todoCount: todos.length },
+    });
+
+    return { message: 'Sample data created', seeded: true, todos };
+  }
+
   async getMemberSummary(workspaceId: string, targetUserId: string) {
     const member = await this.prisma.workspaceMember.findUnique({
       where: {
