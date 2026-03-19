@@ -10,8 +10,8 @@ const STEPS = 6;
 const STEP_INTERVAL = 2500;
 
 const VB_W = 580;
-const VB_H = 200;
-const NODE_Y = 70;
+const VB_H = 260;
+const NODE_Y = 75;
 const NODE_R = 25;
 
 const NODES = [
@@ -22,7 +22,7 @@ const NODES = [
 
 function DemoVisual({ step }: { step: number }) {
   return (
-    <div className="relative h-[240px] w-full sm:h-[280px]">
+    <div className="relative w-full" style={{ aspectRatio: `${VB_W} / ${VB_H}` }}>
       <svg viewBox={`0 0 ${VB_W} ${VB_H}`} fill="none" className="h-full w-full">
         <defs>
           <linearGradient id="demo-line" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -103,58 +103,34 @@ function DemoVisual({ step }: { step: number }) {
         )}
 
         {/* Snap-back: Charlie → Bob (step 4) */}
-        {step === 4 && (
-          <g opacity="0.6">
-            <line
-              x1={NODES[2].x - NODE_R}
-              y1={NODE_Y + 18}
-              x2={NODES[1].x + NODE_R}
-              y2={NODE_Y + 18}
-              stroke="#f59e0b"
-              strokeWidth="1.5"
-              strokeDasharray="4 4"
-            >
-              <animate
-                attributeName="stroke-dashoffset"
-                from="0"
-                to="16"
-                dur="0.6s"
-                repeatCount="indefinite"
-              />
-            </line>
-            <polygon
-              points={`${NODES[1].x + NODE_R},${NODE_Y + 14} ${NODES[1].x + NODE_R},${NODE_Y + 22} ${NODES[1].x + NODE_R - 10},${NODE_Y + 18}`}
-              fill="#f59e0b"
-            />
-          </g>
-        )}
+        {step === 4 && (() => {
+          const mid = (NODES[1].x + NODES[2].x) / 2;
+          const half = 36;
+          const y = NODE_Y + 15;
+          return (
+            <g opacity="0.6">
+              <line x1={mid + half} y1={y} x2={mid - half} y2={y} stroke="#f59e0b" strokeWidth="1.5" strokeDasharray="4 4">
+                <animate attributeName="stroke-dashoffset" from="0" to="16" dur="0.6s" repeatCount="indefinite" />
+              </line>
+              <polygon points={`${mid - half},${y - 4} ${mid - half},${y + 4} ${mid - half - 10},${y}`} fill="#f59e0b" />
+            </g>
+          );
+        })()}
 
         {/* Snap-back: Bob → Alice (step 5) */}
-        {step === 5 && (
-          <g opacity="0.6">
-            <line
-              x1={NODES[1].x - NODE_R}
-              y1={NODE_Y + 18}
-              x2={NODES[0].x + NODE_R}
-              y2={NODE_Y + 18}
-              stroke="#f59e0b"
-              strokeWidth="1.5"
-              strokeDasharray="4 4"
-            >
-              <animate
-                attributeName="stroke-dashoffset"
-                from="0"
-                to="16"
-                dur="0.6s"
-                repeatCount="indefinite"
-              />
-            </line>
-            <polygon
-              points={`${NODES[0].x + NODE_R},${NODE_Y + 14} ${NODES[0].x + NODE_R},${NODE_Y + 22} ${NODES[0].x + NODE_R - 10},${NODE_Y + 18}`}
-              fill="#f59e0b"
-            />
-          </g>
-        )}
+        {step === 5 && (() => {
+          const mid = (NODES[0].x + NODES[1].x) / 2;
+          const half = 36;
+          const y = NODE_Y + 15;
+          return (
+            <g opacity="0.6">
+              <line x1={mid + half} y1={y} x2={mid - half} y2={y} stroke="#f59e0b" strokeWidth="1.5" strokeDasharray="4 4">
+                <animate attributeName="stroke-dashoffset" from="0" to="16" dur="0.6s" repeatCount="indefinite" />
+              </line>
+              <polygon points={`${mid - half},${y - 4} ${mid - half},${y + 4} ${mid - half - 10},${y}`} fill="#f59e0b" />
+            </g>
+          );
+        })()}
       </svg>
 
       {/* Animated nodes */}
@@ -191,7 +167,7 @@ function DemoVisual({ step }: { step: number }) {
               transition={{ type: 'spring', stiffness: 300, damping: 15 }}
             >
               <div
-                className={`flex h-10 w-10 items-center justify-center rounded-full border-2 text-xs font-semibold transition-all duration-500 sm:h-12 sm:w-12 sm:text-sm ${
+                className={`flex h-9 w-9 items-center justify-center rounded-full border-2 text-xs font-semibold transition-all duration-500 sm:h-10 sm:w-10 md:h-12 md:w-12 md:text-sm ${
                   isCompleted
                     ? 'border-green-500 bg-green-500/20 text-green-400'
                     : isActive
@@ -199,9 +175,9 @@ function DemoVisual({ step }: { step: number }) {
                       : 'border-border bg-card text-muted-foreground'
                 }`}
               >
-                {isCompleted ? <Check size={16} /> : node.label[0]}
+                {isCompleted ? <Check className="h-3 w-3 sm:h-4 sm:w-4" /> : node.label[0]}
               </div>
-              <span className="text-[10px] text-muted-foreground sm:text-xs">{node.label}</span>
+              <span className="text-xs text-muted-foreground">{node.label}</span>
             </motion.div>
           </div>
         );
@@ -210,7 +186,7 @@ function DemoVisual({ step }: { step: number }) {
       {/* Task card */}
       {step >= 1 && (
         <motion.div
-          className="absolute left-1/2 top-[75%] -translate-x-1/2 rounded-lg border border-border bg-card/80 px-3 py-1.5 text-[10px] text-muted-foreground backdrop-blur-sm sm:text-xs"
+          className="absolute left-1/2 top-[80%] -translate-x-1/2 whitespace-nowrap rounded-lg border border-border bg-card/80 px-3 py-1.5 text-xs text-muted-foreground backdrop-blur-sm sm:text-sm"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
         >
@@ -322,7 +298,7 @@ export function ThreadDemoSection() {
           </div>
 
           {/* Visual */}
-          <div className="rounded-2xl border border-border bg-card/50 p-6">
+          <div className="overflow-hidden rounded-2xl border border-border bg-card/50 p-6">
             <DemoVisual step={step} />
           </div>
         </div>
