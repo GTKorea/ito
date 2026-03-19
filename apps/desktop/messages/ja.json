@@ -205,6 +205,7 @@
     "nav": {
       "features": "機能",
       "integrations": "連携",
+      "pricing": "料金",
       "login": "ログイン",
       "getStarted": "始める"
     },
@@ -279,6 +280,74 @@
       "realtime": { "value": "リアルタイム", "label": "同期" },
       "crossPlatform": { "value": "3", "label": "プラットフォーム" },
       "openArch": { "value": "オープン", "label": "アーキテクチャ" }
+    },
+    "pricing": {
+      "title": "シンプルで透明な料金",
+      "subtitle": "無料で始めて、成長に合わせて拡張。隠れた費用はありません。",
+      "earlyAccess": "早期アクセス — 現在すべての機能が無料です",
+      "popular": "最も人気",
+      "perUserMonth": "/ユーザー/月",
+      "limits": {
+        "workspaces": "ワークスペース",
+        "members": "メンバー",
+        "teams": "チーム",
+        "fileUpload": "ファイルアップロード"
+      },
+      "features": {
+        "unlimitedTasks": "無制限のタスク",
+        "unlimitedChain": "無制限のチェーン深度",
+        "calendarSync": "カレンダー同期",
+        "slackIntegration": "Slack連携",
+        "teamDashboard": "チームダッシュボード",
+        "guestRole": "ゲストロール",
+        "activityLog": "アクティビティログ",
+        "prioritySupport": "優先サポート",
+        "ssoSaml": "SSO / SAML",
+        "dedicatedManager": "専任マネージャー",
+        "slaGuarantee": "SLA保証"
+      },
+      "plans": {
+        "free": {
+          "name": "Free",
+          "price": "$0",
+          "description": "始めたばかりの個人や小規模チーム向け。",
+          "workspaces": "1",
+          "members": "20",
+          "teams": "2",
+          "fileUpload": "100 MB",
+          "cta": "始める"
+        },
+        "pro": {
+          "name": "Pro",
+          "price": "$12",
+          "description": "より多くの機能が必要な成長中のチーム向け。",
+          "workspaces": "5",
+          "members": "無制限",
+          "teams": "10",
+          "fileUpload": "1 GB",
+          "cta": "無料トライアルを開始"
+        },
+        "team": {
+          "name": "Team",
+          "price": "$24",
+          "description": "完全な管理が必要な組織向け。",
+          "workspaces": "無制限",
+          "members": "無制限",
+          "teams": "無制限",
+          "fileUpload": "10 GB",
+          "cta": "無料トライアルを開始"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "price": "カスタム",
+          "description": "高度なニーズを持つ大規模組織向け。",
+          "workspaces": "無制限",
+          "members": "無制限",
+          "teams": "無制限",
+          "fileUpload": "無制限",
+          "cta": "営業に問い合わせ"
+        }
+      }
     },
     "cta": {
       "title": "ワークフローを紡ぎ始めよう",

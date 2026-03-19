@@ -205,6 +205,7 @@
     "nav": {
       "features": "功能",
       "integrations": "集成",
+      "pricing": "定价",
       "login": "登录",
       "getStarted": "开始使用"
     },
@@ -279,6 +280,74 @@
       "realtime": { "value": "实时", "label": "同步" },
       "crossPlatform": { "value": "3", "label": "个平台" },
       "openArch": { "value": "开放", "label": "架构" }
+    },
+    "pricing": {
+      "title": "简单透明的定价",
+      "subtitle": "免费开始，随需扩展。没有隐藏费用。",
+      "earlyAccess": "抢先体验 — 目前所有功能均免费",
+      "popular": "最受欢迎",
+      "perUserMonth": "/用户/月",
+      "limits": {
+        "workspaces": "工作区",
+        "members": "成员",
+        "teams": "团队",
+        "fileUpload": "文件上传"
+      },
+      "features": {
+        "unlimitedTasks": "无限任务",
+        "unlimitedChain": "无限链深度",
+        "calendarSync": "日历同步",
+        "slackIntegration": "Slack 集成",
+        "teamDashboard": "团队仪表板",
+        "guestRole": "访客角色",
+        "activityLog": "活动日志",
+        "prioritySupport": "优先支持",
+        "ssoSaml": "SSO / SAML",
+        "dedicatedManager": "专属客户经理",
+        "slaGuarantee": "SLA 保证"
+      },
+      "plans": {
+        "free": {
+          "name": "Free",
+          "price": "$0",
+          "description": "适合刚起步的个人和小型团队。",
+          "workspaces": "1",
+          "members": "20",
+          "teams": "2",
+          "fileUpload": "100 MB",
+          "cta": "开始使用"
+        },
+        "pro": {
+          "name": "Pro",
+          "price": "$12",
+          "description": "适合需要更多功能的成长型团队。",
+          "workspaces": "5",
+          "members": "无限",
+          "teams": "10",
+          "fileUpload": "1 GB",
+          "cta": "开始免费试用"
+        },
+        "team": {
+          "name": "Team",
+          "price": "$24",
+          "description": "适合需要完全控制的组织。",
+          "workspaces": "无限",
+          "members": "无限",
+          "teams": "无限",
+          "fileUpload": "10 GB",
+          "cta": "开始免费试用"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "price": "定制",
+          "description": "适合有高级需求的大型组织。",
+          "workspaces": "无限",
+          "members": "无限",
+          "teams": "无限",
+          "fileUpload": "无限",
+          "cta": "联系销售"
+        }
+      }
     },
     "cta": {
       "title": "开始编织你的工作流",
