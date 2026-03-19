@@ -5,9 +5,11 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { WinstonModule } from 'nest-winston';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
+import { createLoggerConfig } from './common/logger/logger.config';
 
 function isPortFree(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -28,8 +30,11 @@ async function findFreePort(start: number): Promise<number> {
 }
 
 async function bootstrap() {
+  const logger = WinstonModule.createLogger(createLoggerConfig());
+
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     rawBody: true,
+    logger,
   });
 
   const configService = app.get(ConfigService);
@@ -74,7 +79,7 @@ async function bootstrap() {
   await app.listen(port);
 
   const url = await app.getUrl();
-  console.log(`\n  🧵 ito API running at ${url}`);
-  console.log(`  📖 Swagger docs at ${url}/api/docs\n`);
+  logger.log(`ito API running at ${url}`);
+  logger.log(`Swagger docs at ${url}/api/docs`);
 }
 bootstrap();

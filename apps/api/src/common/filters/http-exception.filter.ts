@@ -4,14 +4,18 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
+  private readonly logger = new Logger('ExceptionFilter');
+
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
+    const request = ctx.getRequest<Request>();
 
     const status =
       exception instanceof HttpException
@@ -22,6 +26,24 @@ export class AllExceptionsFilter implements ExceptionFilter {
       exception instanceof HttpException
         ? exception.getResponse()
         : 'Internal server error';
+
+    const logPayload = {
+      statusCode: status,
+      method: request.method,
+      path: request.url,
+      message: typeof message === 'string' ? message : (message as Record<string, unknown>).message ?? message,
+    };
+
+    if (status >= 500) {
+      this.logger.error(
+        `${request.method} ${request.url} ${status} - ${logPayload.message}`,
+        exception instanceof Error ? exception.stack : undefined,
+      );
+    } else {
+      this.logger.warn(
+        `${request.method} ${request.url} ${status}`,
+      );
+    }
 
     response.status(status).json({
       statusCode: status,
