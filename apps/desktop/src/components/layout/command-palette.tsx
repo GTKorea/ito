@@ -49,7 +49,17 @@ export function CommandPalette() {
       <CommandList>
         <CommandEmpty>{tc('noResults')}</CommandEmpty>
         <CommandGroup heading={t('actions')}>
-          <CommandItem onSelect={() => navigate('/workspace')}>
+          <CommandItem onSelect={() => {
+            navigate('/workspace');
+            setOpen(false);
+            // Focus the quick input after navigation
+            setTimeout(() => {
+              const quickInput = document.querySelector<HTMLInputElement>(
+                '[data-quick-input]',
+              );
+              quickInput?.focus();
+            }, 100);
+          }}>
             <Plus className="mr-2 h-4 w-4" />
             {t('createNewTask')}
           </CommandItem>

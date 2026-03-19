@@ -191,6 +191,33 @@ export function QuickInput() {
     }
   };
 
+  // Global keyboard shortcut: Cmd/Ctrl+N or just "/" to focus input
+  useEffect(() => {
+    const handleGlobalKey = (e: KeyboardEvent) => {
+      // Cmd/Ctrl+N
+      if (e.key === 'n' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        inputRef.current?.focus();
+        return;
+      }
+      // "/" key — only when not already focused on an input/textarea
+      if (
+        e.key === '/' &&
+        !e.metaKey &&
+        !e.ctrlKey &&
+        !e.altKey &&
+        document.activeElement?.tagName !== 'INPUT' &&
+        document.activeElement?.tagName !== 'TEXTAREA' &&
+        !document.activeElement?.getAttribute('contenteditable')
+      ) {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', handleGlobalKey);
+    return () => document.removeEventListener('keydown', handleGlobalKey);
+  }, []);
+
   // Clean up debounce on unmount
   useEffect(() => {
     return () => {
@@ -244,6 +271,7 @@ export function QuickInput() {
       )}>
         <input
           ref={inputRef}
+          data-quick-input
           type="text"
           value={input}
           onChange={(e) => handleInputChange(e.target.value)}
