@@ -5,13 +5,15 @@
       "name": "api",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@ito/api", "start:dev"],
-      "port": 3011
+      "port": 3011,
+      "autoPort": false
     },
     {
       "name": "desktop",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@ito/desktop", "dev"],
-      "port": 3010
+      "port": 3010,
+      "autoPort": false
     }
   ]
 }

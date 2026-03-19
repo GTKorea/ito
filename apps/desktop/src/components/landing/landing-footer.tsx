@@ -30,13 +30,13 @@ export function LandingFooter() {
             GitHub
           </a>
           <Link
-            href="#"
+            href="/privacy"
             className="text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             {t('footer.privacy')}
           </Link>
           <Link
-            href="#"
+            href="/terms-of-service"
             className="text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             {t('footer.terms')}

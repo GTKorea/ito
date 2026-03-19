@@ -37,3 +37,10 @@ coverage/
 
 # Storybook
 storybook-static/
+
+# Uploads
+uploads/
+
+# Claude Code
+.claude/settings.local.json
+.claude/worktrees/
