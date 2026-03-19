@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useTodoStore } from '@/stores/todo-store';
 import { ThreadChain } from '@/components/threads/thread-chain';
 import { ConnectDialog } from '@/components/threads/connect-dialog';
@@ -39,22 +40,6 @@ const statusIcons: Record<string, React.ReactNode> = {
   COMPLETED: <Check className="h-4 w-4 text-green-500" />,
 };
 
-function getDueDateInfo(dueDate?: string) {
-  if (!dueDate) return null;
-  const due = new Date(dueDate);
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
-  due.setHours(0, 0, 0, 0);
-  const diff = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-  if (diff < 0) return { text: 'Overdue', color: 'text-red-500' };
-  if (diff === 0) return { text: 'Due today', color: 'text-yellow-500' };
-  if (diff === 1) return { text: 'Due tomorrow', color: 'text-yellow-500' };
-  return {
-    text: due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-    color: 'text-muted-foreground',
-  };
-}
-
 interface TodoItemProps {
   todo: {
     id: string;
@@ -82,6 +67,8 @@ export function TodoItem({ todo, onSelect }: TodoItemProps) {
   const [expanded, setExpanded] = useState(false);
   const [isResolving, setIsResolving] = useState(false);
   const { updateTodo, deleteTodo, resolveThread } = useTodoStore();
+  const t = useTranslations('todos');
+  const tc = useTranslations('common');
 
   const handleResolve = async (linkId: string) => {
     if (isResolving) return;
@@ -92,6 +79,22 @@ export function TodoItem({ todo, onSelect }: TodoItemProps) {
       setIsResolving(false);
     }
   };
+
+  function getDueDateInfo(dueDate?: string) {
+    if (!dueDate) return null;
+    const due = new Date(dueDate);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    due.setHours(0, 0, 0, 0);
+    const diff = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    if (diff < 0) return { text: t('overdue'), color: 'text-red-500' };
+    if (diff === 0) return { text: t('dueToday'), color: 'text-yellow-500' };
+    if (diff === 1) return { text: t('dueTomorrow'), color: 'text-yellow-500' };
+    return {
+      text: due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      color: 'text-muted-foreground',
+    };
+  }
 
   const hasThreads = todo.threadLinks.length > 0;
   const dueDateInfo = getDueDateInfo(todo.dueDate);
@@ -171,7 +174,7 @@ export function TodoItem({ todo, onSelect }: TodoItemProps) {
               onClick={() => handleResolve(pendingLink.id)}
             >
               <Check className="h-3.5 w-3.5 mr-1" />
-              {isResolving ? 'Resolving...' : 'Done'}
+              {isResolving ? t('resolving') : tc('done')}
             </Button>
           )}
           <Button
@@ -181,7 +184,7 @@ export function TodoItem({ todo, onSelect }: TodoItemProps) {
             onClick={() => setShowConnect(true)}
           >
             <Link2 className="h-3.5 w-3.5 mr-1" />
-            Connect
+            {t('connect')}
           </Button>
 
           <DropdownMenu>
@@ -196,7 +199,7 @@ export function TodoItem({ todo, onSelect }: TodoItemProps) {
                 onClick={() => deleteTodo(todo.id)}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
-                Delete
+                {tc('delete')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

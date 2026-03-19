@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { useAuthStore } from '@/stores/auth-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +17,7 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { register } = useAuthStore();
   const router = useRouter();
+  const t = useTranslations('auth');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +27,7 @@ export default function RegisterPage() {
       await register(email, password, name);
       router.push('/workspace');
     } catch {
-      setError('Registration failed. Email may already be in use.');
+      setError(t('registrationFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -38,40 +40,40 @@ export default function RegisterPage() {
           <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-lg font-bold text-primary-foreground">
             糸
           </div>
-          <h1 className="text-xl font-semibold">Create your account</h1>
+          <h1 className="text-xl font-semibold">{t('createAccountTitle')}</h1>
           <p className="text-sm text-muted-foreground">
-            Start collaborating with ito
+            {t('createAccountSubtitle')}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <div className="space-y-1.5">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">{t('nameLabel')}</Label>
             <Input
               id="name"
-              placeholder="Your name"
+              placeholder={t('namePlaceholder')}
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('emailLabel')}</Label>
             <Input
               id="email"
               type="email"
-              placeholder="you@example.com"
+              placeholder={t('emailPlaceholder')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t('passwordLabel')}</Label>
             <Input
               id="password"
               type="password"
-              placeholder="At least 8 characters"
+              placeholder={t('passwordMinLength')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -82,14 +84,14 @@ export default function RegisterPage() {
           {error && <p className="text-sm text-destructive">{error}</p>}
 
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Creating account...' : 'Create account'}
+            {isLoading ? t('creatingAccount') : t('createAccount')}
           </Button>
         </form>
 
         <p className="text-center text-sm text-muted-foreground">
-          Already have an account?{' '}
+          {t('alreadyHaveAccount')}{' '}
           <Link href="/login" className="text-primary hover:underline">
-            Sign in
+            {t('signInLink')}
           </Link>
         </p>
       </div>

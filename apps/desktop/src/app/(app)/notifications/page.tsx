@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useNotificationStore } from '@/stores/notification-store';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,24 +33,36 @@ export default function NotificationsPage() {
     markAsRead,
     markAllAsRead,
   } = useNotificationStore();
+  const t = useTranslations('notifications');
 
   useEffect(() => {
     fetchNotifications();
   }, [fetchNotifications]);
 
+  const formatRelativeTime = (dateStr: string): string => {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const minutes = Math.floor(diff / 60000);
+    if (minutes < 1) return t('justNow');
+    if (minutes < 60) return t('minutesAgo', { count: minutes });
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return t('hoursAgo', { count: hours });
+    const days = Math.floor(hours / 24);
+    return t('daysAgo', { count: days });
+  };
+
   return (
     <div className="h-full">
       <div className="flex items-center justify-between border-b border-border px-6 py-3">
         <div>
-          <h1 className="text-lg font-semibold">Notifications</h1>
+          <h1 className="text-lg font-semibold">{t('title')}</h1>
           <p className="text-xs text-muted-foreground">
-            {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
+            {unreadCount > 0 ? t('unread', { count: unreadCount }) : t('allCaughtUp')}
           </p>
         </div>
         {unreadCount > 0 && (
           <Button size="sm" variant="outline" onClick={markAllAsRead}>
             <CheckCheck className="mr-1 h-4 w-4" />
-            Mark all read
+            {t('markAllRead')}
           </Button>
         )}
       </div>
@@ -58,7 +71,7 @@ export default function NotificationsPage() {
         {notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
             <BellOff className="h-8 w-8 mb-3 opacity-40" />
-            <p className="text-sm">No notifications yet</p>
+            <p className="text-sm">{t('noNotifications')}</p>
           </div>
         ) : (
           notifications.map((n) => (
@@ -102,15 +115,4 @@ export default function NotificationsPage() {
       </div>
     </div>
   );
-}
-
-function formatRelativeTime(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const minutes = Math.floor(diff / 60000);
-  if (minutes < 1) return 'just now';
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
 }

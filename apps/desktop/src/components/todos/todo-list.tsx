@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { TodoItem } from './todo-item';
 
 interface User {
@@ -35,11 +36,13 @@ interface TodoListProps {
 }
 
 export function TodoList({ todos, onSelectTodo }: TodoListProps) {
+  const t = useTranslations('todos');
+
   if (todos.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-        <p className="text-sm">No tasks yet</p>
-        <p className="text-xs mt-1">Create a new task to get started</p>
+        <p className="text-sm">{t('noTasksYet')}</p>
+        <p className="text-xs mt-1">{t('createNewToStart')}</p>
       </div>
     );
   }
@@ -62,7 +65,7 @@ export function TodoList({ todos, onSelectTodo }: TodoListProps) {
       {grouped.completed.length > 0 && (
         <div>
           <p className="text-xs text-muted-foreground mb-2 px-2">
-            Completed ({grouped.completed.length})
+            {t('completed')} ({grouped.completed.length})
           </p>
           <div className="space-y-1 opacity-60">
             {grouped.completed.map((todo) => (

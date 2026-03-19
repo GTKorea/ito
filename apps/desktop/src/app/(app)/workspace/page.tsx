@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useTodoStore } from '@/stores/todo-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 import { TodoList } from '@/components/todos/todo-list';
@@ -22,6 +23,8 @@ function CreateWorkspacePrompt() {
   const { createWorkspace } = useWorkspaceStore();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
+  const t = useTranslations('workspace');
+  const tc = useTranslations('common');
 
   const handleCreate = async () => {
     if (!name.trim()) return;
@@ -36,27 +39,27 @@ function CreateWorkspacePrompt() {
         <Building2 className="h-7 w-7 text-muted-foreground" />
       </div>
       <div className="text-center">
-        <p className="text-sm font-medium">No workspace yet</p>
+        <p className="text-sm font-medium">{t('noWorkspaceYet')}</p>
         <p className="text-xs text-muted-foreground mt-1">
-          Create a workspace to start managing your tasks
+          {t('createWorkspaceToStart')}
         </p>
       </div>
       <Button onClick={() => setOpen(true)}>
         <Plus className="mr-1 h-4 w-4" />
-        Create Workspace
+        {t('createWorkspace')}
       </Button>
 
       {open && (
         <Dialog open onOpenChange={() => setOpen(false)}>
           <DialogContent className="sm:max-w-sm">
             <DialogHeader>
-              <DialogTitle>Create Workspace</DialogTitle>
+              <DialogTitle>{t('createWorkspace')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <Label>Workspace Name</Label>
+                <Label>{t('workspaceName')}</Label>
                 <Input
-                  placeholder="e.g. My Team"
+                  placeholder={t('workspaceNamePlaceholder')}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
@@ -64,7 +67,7 @@ function CreateWorkspacePrompt() {
                 />
               </div>
               <Button onClick={handleCreate} className="w-full" disabled={!name.trim()}>
-                Create
+                {tc('create')}
               </Button>
             </div>
           </DialogContent>
@@ -79,6 +82,7 @@ export default function WorkspacePage() {
   const { todos, isLoading, fetchTodos } = useTodoStore();
   const [showCreate, setShowCreate] = useState(false);
   const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null);
+  const t = useTranslations('workspace');
 
   useEffect(() => {
     if (currentWorkspace) fetchTodos(currentWorkspace.id);
@@ -101,18 +105,18 @@ export default function WorkspacePage() {
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-6 py-3">
         <div>
-          <h1 className="text-lg font-semibold">My Tasks</h1>
+          <h1 className="text-lg font-semibold">{t('myTasks')}</h1>
           <p className="text-xs text-muted-foreground">
-            Tasks assigned to you
+            {t('tasksAssignedToYou')}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <kbd className="hidden sm:inline-flex h-5 items-center gap-0.5 rounded border border-border bg-muted px-1.5 text-[10px] text-muted-foreground">
-            <span className="text-xs">⌘</span>K
+            <span className="text-xs">&#8984;</span>K
           </kbd>
           <Button size="sm" onClick={() => setShowCreate(true)}>
             <Plus className="mr-1 h-4 w-4" />
-            New Task
+            {t('newTask')}
           </Button>
         </div>
       </div>

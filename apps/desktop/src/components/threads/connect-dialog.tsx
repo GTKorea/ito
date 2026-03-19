@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { useTodoStore } from '@/stores/todo-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 import { useAuthStore } from '@/stores/auth-store';
@@ -37,6 +38,8 @@ export function ConnectDialog({ todoId, onClose }: ConnectDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { connectThread, fetchTodos } = useTodoStore();
   const { currentWorkspace } = useWorkspaceStore();
+  const t = useTranslations('threads');
+  const tc = useTranslations('common');
 
   // Load workspace members on mount
   useEffect(() => {
@@ -90,7 +93,7 @@ export function ConnectDialog({ todoId, onClose }: ConnectDialogProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Link2 className="h-4 w-4" />
-            Connect Thread
+            {t('connectThread')}
           </DialogTitle>
         </DialogHeader>
 
@@ -98,7 +101,7 @@ export function ConnectDialog({ todoId, onClose }: ConnectDialogProps) {
           {!selected ? (
             <>
               <Input
-                placeholder="Search by name or email..."
+                placeholder={t('searchByNameOrEmail')}
                 value={search}
                 onChange={(e) => handleSearch(e.target.value)}
                 autoFocus
@@ -123,7 +126,7 @@ export function ConnectDialog({ todoId, onClose }: ConnectDialogProps) {
                 ))}
                 {members.length === 0 && (
                   <p className="text-sm text-muted-foreground text-center py-4">
-                    No members found
+                    {t('noMembersFound')}
                   </p>
                 )}
               </div>
@@ -148,12 +151,12 @@ export function ConnectDialog({ todoId, onClose }: ConnectDialogProps) {
                   className="ml-auto text-xs"
                   onClick={() => setSelected(null)}
                 >
-                  Change
+                  {tc('change')}
                 </Button>
               </div>
 
               <Textarea
-                placeholder="Add a message (optional): e.g., 'Please review this'"
+                placeholder={t('addMessage')}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows={2}
@@ -165,7 +168,7 @@ export function ConnectDialog({ todoId, onClose }: ConnectDialogProps) {
                 className="w-full"
               >
                 <Link2 className="mr-2 h-4 w-4" />
-                {isLoading ? 'Connecting...' : 'Connect Thread'}
+                {isLoading ? t('connecting') : t('connectThread')}
               </Button>
             </>
           )}

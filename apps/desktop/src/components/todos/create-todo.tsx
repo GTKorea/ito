@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useTodoStore } from '@/stores/todo-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,19 +12,21 @@ interface CreateTodoProps {
   onClose: () => void;
 }
 
-const priorities = [
-  { value: 'URGENT', label: 'Urgent', color: 'text-red-500' },
-  { value: 'HIGH', label: 'High', color: 'text-orange-500' },
-  { value: 'MEDIUM', label: 'Medium', color: 'text-yellow-500' },
-  { value: 'LOW', label: 'Low', color: 'text-blue-500' },
-];
-
 export function CreateTodo({ workspaceId, onClose }: CreateTodoProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState('MEDIUM');
   const [dueDate, setDueDate] = useState('');
   const { createTodo } = useTodoStore();
+  const t = useTranslations('todos');
+  const tc = useTranslations('common');
+
+  const priorities = [
+    { value: 'URGENT', label: t('urgent'), color: 'text-red-500' },
+    { value: 'HIGH', label: t('high'), color: 'text-orange-500' },
+    { value: 'MEDIUM', label: t('medium'), color: 'text-yellow-500' },
+    { value: 'LOW', label: t('low'), color: 'text-blue-500' },
+  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,13 +47,13 @@ export function CreateTodo({ workspaceId, onClose }: CreateTodoProps) {
       className="mb-4 rounded-lg border border-border bg-card p-4 space-y-3"
     >
       <Input
-        placeholder="Task title"
+        placeholder={t('taskTitle')}
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         autoFocus
       />
       <Textarea
-        placeholder="Description (optional)"
+        placeholder={t('descriptionOptional')}
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         rows={2}
@@ -72,15 +75,15 @@ export function CreateTodo({ workspaceId, onClose }: CreateTodoProps) {
           value={dueDate}
           onChange={(e) => setDueDate(e.target.value)}
           className="w-auto"
-          placeholder="Due date"
+          placeholder={t('dueDate')}
         />
       </div>
       <div className="flex gap-2 justify-end">
         <Button type="button" variant="ghost" size="sm" onClick={onClose}>
-          Cancel
+          {tc('cancel')}
         </Button>
         <Button type="submit" size="sm" disabled={!title.trim()}>
-          Create
+          {tc('create')}
         </Button>
       </div>
     </form>

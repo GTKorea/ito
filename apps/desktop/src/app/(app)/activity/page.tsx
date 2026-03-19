@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { api } from '@/lib/api-client';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -34,32 +35,33 @@ const actionIcons: Record<string, React.ReactNode> = {
   JOINED: <UserPlus className="h-3.5 w-3.5 text-blue-500" />,
 };
 
-function describeActivity(a: Activity): string {
-  const entity = a.entityType.toLowerCase();
-  const name = a.metadata?.name || a.metadata?.title || entity;
-
-  switch (a.action) {
-    case 'CREATED':
-      return `created ${entity} "${name}"`;
-    case 'UPDATED':
-      return `updated ${entity} "${name}"`;
-    case 'DELETED':
-      return `deleted ${entity} "${name}"`;
-    case 'CONNECTED':
-      return `connected a thread on "${name}"`;
-    case 'RESOLVED':
-      return `resolved a thread on "${name}"`;
-    case 'JOINED':
-      return `joined ${entity} "${name}"`;
-    default:
-      return `${a.action.toLowerCase()} ${entity}`;
-  }
-}
-
 export default function ActivityPage() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { currentWorkspace } = useWorkspaceStore();
+  const t = useTranslations('activity');
+
+  function describeActivity(a: Activity): string {
+    const entity = a.entityType.toLowerCase();
+    const name = a.metadata?.name || a.metadata?.title || entity;
+
+    switch (a.action) {
+      case 'CREATED':
+        return t('created', { entity, name });
+      case 'UPDATED':
+        return t('updated', { entity, name });
+      case 'DELETED':
+        return t('deleted', { entity, name });
+      case 'CONNECTED':
+        return t('connected', { name });
+      case 'RESOLVED':
+        return t('resolved', { name });
+      case 'JOINED':
+        return t('joined', { entity, name });
+      default:
+        return `${a.action.toLowerCase()} ${entity}`;
+    }
+  }
 
   useEffect(() => {
     if (!currentWorkspace) {
@@ -90,9 +92,9 @@ export default function ActivityPage() {
     <div className="h-full">
       <div className="flex items-center justify-between border-b border-border px-6 py-3">
         <div>
-          <h1 className="text-lg font-semibold">Activity</h1>
+          <h1 className="text-lg font-semibold">{t('title')}</h1>
           <p className="text-xs text-muted-foreground">
-            Workspace activity log
+            {t('subtitle')}
           </p>
         </div>
       </div>
@@ -105,7 +107,7 @@ export default function ActivityPage() {
         ) : activities.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
             <ActivityIcon className="h-8 w-8 mb-3 opacity-40" />
-            <p className="text-sm">No activity yet</p>
+            <p className="text-sm">{t('noActivity')}</p>
           </div>
         ) : (
           Object.entries(grouped).map(([date, items]) => (
