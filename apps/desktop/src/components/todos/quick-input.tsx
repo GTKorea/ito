@@ -201,10 +201,10 @@ export function QuickInput() {
   if (!currentWorkspace) return null;
 
   return (
-    <div className="relative px-4 pb-4 pt-2">
+    <div className="relative px-5 pb-5 pt-3">
       {/* Autocomplete dropdown — positioned above the input */}
       {showAutocomplete && autocompleteResults.length > 0 && (
-        <div className="absolute bottom-full left-4 right-4 mb-2 max-h-48 overflow-y-auto rounded-xl border border-border bg-card/95 backdrop-blur-sm shadow-2xl">
+        <div className="absolute bottom-full left-5 right-5 mb-3 max-h-48 overflow-y-auto rounded-xl border border-cyan-500/20 bg-card/95 backdrop-blur-md shadow-[0_-8px_30px_rgba(0,200,255,0.08)]">
           {autocompleteResults.map((user, index) => (
             <button
               key={user.id}
@@ -232,8 +232,16 @@ export function QuickInput() {
         </div>
       )}
 
-      {/* Floating rounded input */}
-      <div className="flex items-center gap-2 rounded-2xl border border-border bg-card/80 backdrop-blur-sm px-4 py-2 shadow-lg transition-all focus-within:border-ring focus-within:shadow-xl focus-within:shadow-ring/5">
+      {/* Floating neon input */}
+      <div className={cn(
+        'flex items-center gap-2 rounded-2xl px-4 py-2.5',
+        'bg-card/60 backdrop-blur-md',
+        'border border-cyan-500/15',
+        'shadow-[0_4px_24px_rgba(0,200,255,0.06),0_8px_40px_rgba(0,0,0,0.3)]',
+        'transition-all duration-300',
+        'focus-within:border-cyan-400/40',
+        'focus-within:shadow-[0_4px_24px_rgba(0,200,255,0.15),0_0px_60px_rgba(0,200,255,0.05),0_8px_40px_rgba(0,0,0,0.3)]',
+      )}>
         <input
           ref={inputRef}
           type="text"
@@ -242,12 +250,18 @@ export function QuickInput() {
           onKeyDown={handleKeyDown}
           placeholder="새 태스크... ( > @유저 로 바로 연결)"
           disabled={isSubmitting}
-          className="h-8 flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none disabled:opacity-50"
+          className="h-8 flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none disabled:opacity-50"
         />
         <button
           onClick={handleSubmit}
           disabled={!input.trim() || isSubmitting}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-all hover:bg-primary/90 hover:scale-105 disabled:opacity-30 disabled:hover:scale-100 disabled:cursor-not-allowed"
+          className={cn(
+            'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
+            'bg-cyan-500/90 text-white',
+            'transition-all duration-200',
+            'hover:bg-cyan-400 hover:scale-105 hover:shadow-[0_0_12px_rgba(0,200,255,0.4)]',
+            'disabled:opacity-20 disabled:hover:scale-100 disabled:hover:shadow-none disabled:cursor-not-allowed',
+          )}
         >
           {isSubmitting ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
