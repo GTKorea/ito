@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { WorkspaceMemberGuard } from '../common/guards/workspace-member.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ThreadsService } from './threads.service';
 import { ConnectThreadDto } from './dto/connect-thread.dto';
@@ -59,6 +60,27 @@ export class ThreadsController {
   @ApiOperation({ summary: 'Get the thread chain for a todo' })
   getChain(@Param('todoId') todoId: string) {
     return this.threadsService.getChain(todoId);
+  }
+
+  @Get('workspaces/:workspaceId/task-graph')
+  @UseGuards(WorkspaceMemberGuard)
+  @ApiOperation({ summary: 'Get task graph data for the current user' })
+  getTaskGraph(
+    @Param('workspaceId') workspaceId: string,
+    @CurrentUser('id') userId: string,
+    @Query('scope') scope?: string,
+    @Query('status') status?: string,
+    @Query('priority') priority?: string,
+  ) {
+    const statusFilter = status ? status.split(',') : undefined;
+    const priorityFilter = priority ? priority.split(',') : undefined;
+    return this.threadsService.getTaskGraph(
+      userId,
+      workspaceId,
+      scope,
+      statusFilter,
+      priorityFilter,
+    );
   }
 
   @Get('threads/mine')

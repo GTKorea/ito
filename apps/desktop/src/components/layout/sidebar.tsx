@@ -11,6 +11,7 @@ import {
   Settings,
   ActivityIcon,
   CalendarDays,
+  Network,
   LogOut,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -25,6 +26,7 @@ import { ThemeToggle } from '@/components/layout/theme-toggle';
 const navItems = [
   { href: '/workspace', icon: CheckSquare, labelKey: 'myTasks' as const },
   { href: '/threads', icon: Link2, labelKey: 'threads' as const },
+  { href: '/graph', icon: Network, labelKey: 'graph' as const },
   { href: '/teams', icon: Users, labelKey: 'teams' as const },
   { href: '/activity', icon: ActivityIcon, labelKey: 'activity' as const },
   { href: '/calendar', icon: CalendarDays, labelKey: 'calendar' as const },
