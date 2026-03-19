@@ -199,5 +199,94 @@
     "uploading": "アップロード中...",
     "dropFileHere": "ここにファイルをドロップするか",
     "chooseFile": "ファイルを選択"
+  },
+  "landing": {
+    "nav": {
+      "features": "機能",
+      "integrations": "連携",
+      "login": "ログイン",
+      "getStarted": "始める"
+    },
+    "hero": {
+      "headline": "糸のように流れるタスク",
+      "subtext": "人をつなぎ、仕事を委任し、自動的に戻ってくる。itoは自己管理する責任チェーンを紡ぎます。",
+      "cta": "無料で始める",
+      "ctaSecondary": "仕組みを見る"
+    },
+    "threadDemo": {
+      "title": "スレッドチェーン",
+      "subtitle": "仕事は人を通じて流れます。誰かが完了すると、自動的にスナップバックします。",
+      "step1": "タスクを作成すると、あなたのものになります",
+      "step2": "他の人に接続します",
+      "step3": "その人もさらに転送できます",
+      "step4": "完了すると、スナップバックします",
+      "step5": "全員が完了するまで"
+    },
+    "quickInput": {
+      "title": "入力して。つないで。完了。",
+      "subtitle": "タスクの作成とチェーンの構築を一行で。タスクを入力し、> で人をつなげます。"
+    },
+    "graph": {
+      "title": "全体像を把握",
+      "subtitle": "すべてのスレッド、すべての接続をリアルタイムで可視化。チームのワークフローを一目で理解。"
+    },
+    "features": {
+      "title": "必要なものすべて",
+      "subtitle": "チームコラボレーションを楽にする強力な機能。",
+      "calendar": {
+        "title": "カレンダー同期",
+        "description": "Google CalendarやOutlookと期限を自動同期。"
+      },
+      "teams": {
+        "title": "チームダッシュボード",
+        "description": "ワークロード配分とチーム統計を一目で確認。"
+      },
+      "notifications": {
+        "title": "リアルタイム通知",
+        "description": "デスクトップ通知、アプリ内アラート、Slack通知。"
+      },
+      "slack": {
+        "title": "Slackコマンド",
+        "description": "/itoでSlackを離れずにタスクを作成・管理。"
+      },
+      "i18n": {
+        "title": "9言語対応",
+        "description": "完全な国際化サポートでグローバルチーム向けに構築。"
+      },
+      "desktop": {
+        "title": "デスクトップアプリ",
+        "description": "Tauriによる macOS、Windows、Linux対応ネイティブアプリ。"
+      }
+    },
+    "integrations": {
+      "title": "あなたの働く場所で機能する",
+      "calendar": {
+        "title": "タスクとカレンダー",
+        "description": "期限がGoogle CalendarとOutlookに自動同期。締め切りを見逃しません。"
+      },
+      "slack": {
+        "title": "Slackからスレッドを管理",
+        "description": "タスクの作成、状態確認、通知受信 — すべて /ito で。"
+      },
+      "desktop": {
+        "title": "ネイティブで高速",
+        "description": "Tauriで構築されたネイティブ体験。軽量、高速、クロスプラットフォーム。"
+      }
+    },
+    "stats": {
+      "languages": { "value": "9", "label": "言語" },
+      "realtime": { "value": "リアルタイム", "label": "同期" },
+      "crossPlatform": { "value": "3", "label": "プラットフォーム" },
+      "openArch": { "value": "オープン", "label": "アーキテクチャ" }
+    },
+    "cta": {
+      "title": "ワークフローを紡ぎ始めよう",
+      "subtitle": "無料で開始。クレジットカード不要。",
+      "button": "始める"
+    },
+    "footer": {
+      "privacy": "プライバシー",
+      "terms": "利用規約"
+    }
   }
 }

@@ -199,5 +199,94 @@
     "uploading": "Hochladen...",
     "dropFileHere": "Datei hier ablegen oder",
     "chooseFile": "Datei auswählen"
+  },
+  "landing": {
+    "nav": {
+      "features": "Funktionen",
+      "integrations": "Integrationen",
+      "login": "Anmelden",
+      "getStarted": "Loslegen"
+    },
+    "hero": {
+      "headline": "Aufgaben, die wie Fäden fließen",
+      "subtext": "Verbinde Menschen, delegiere Arbeit und sieh zu, wie sie automatisch zurückkommt. ito webt Verantwortungsketten, die sich selbst verwalten.",
+      "cta": "Kostenlos starten",
+      "ctaSecondary": "So funktioniert es"
+    },
+    "threadDemo": {
+      "title": "Die Thread-Kette",
+      "subtitle": "Arbeit fließt durch Menschen, nicht nur zu ihnen. Wenn jemand fertig ist, springt sie automatisch zurück.",
+      "step1": "Erstelle eine Aufgabe und sie gehört dir",
+      "step2": "Verbinde sie mit jemand anderem",
+      "step3": "Der kann sie auch weiterleiten",
+      "step4": "Wenn erledigt, springt sie zurück",
+      "step5": "Bis alle fertig sind"
+    },
+    "quickInput": {
+      "title": "Tippen. Verketten. Fertig.",
+      "subtitle": "Erstelle Aufgaben und baue Ketten in einer Zeile. Tippe eine Aufgabe, dann > um Personen zu verbinden."
+    },
+    "graph": {
+      "title": "Das große Ganze sehen",
+      "subtitle": "Jeder Thread, jede Verbindung, in Echtzeit visualisiert. Verstehe den Workflow deines Teams auf einen Blick."
+    },
+    "features": {
+      "title": "Alles, was du brauchst",
+      "subtitle": "Leistungsstarke Funktionen, die Teamzusammenarbeit mühelos machen.",
+      "calendar": {
+        "title": "Kalender-Synchronisation",
+        "description": "Synchronisiere Fälligkeitsdaten automatisch mit Google Calendar und Outlook."
+      },
+      "teams": {
+        "title": "Team-Dashboards",
+        "description": "Sieh Arbeitsverteilung und Teamstatistiken auf einen Blick."
+      },
+      "notifications": {
+        "title": "Echtzeit-Benachrichtigungen",
+        "description": "Desktop-Benachrichtigungen, In-App-Alarme und Slack-Pings."
+      },
+      "slack": {
+        "title": "Slack-Befehle",
+        "description": "Erstelle und verwalte Aufgaben, ohne Slack zu verlassen, mit /ito."
+      },
+      "i18n": {
+        "title": "9 Sprachen",
+        "description": "Für globale Teams entwickelt mit vollständiger Internationalisierungsunterstützung."
+      },
+      "desktop": {
+        "title": "Desktop-App",
+        "description": "Native App für macOS, Windows und Linux über Tauri."
+      }
+    },
+    "integrations": {
+      "title": "Funktioniert, wo du arbeitest",
+      "calendar": {
+        "title": "Deine Aufgaben, dein Kalender",
+        "description": "Fälligkeitsdaten synchronisieren sich automatisch mit Google Calendar und Outlook. Verpasse nie eine Frist."
+      },
+      "slack": {
+        "title": "Threads von Slack aus verwalten",
+        "description": "Erstelle Aufgaben, prüfe den Status und werde benachrichtigt — alles mit /ito."
+      },
+      "desktop": {
+        "title": "Nativ und schnell",
+        "description": "Mit Tauri für eine native Erfahrung gebaut. Leicht, schnell, plattformübergreifend."
+      }
+    },
+    "stats": {
+      "languages": { "value": "9", "label": "Sprachen" },
+      "realtime": { "value": "Echtzeit", "label": "Synchronisation" },
+      "crossPlatform": { "value": "3", "label": "Plattformen" },
+      "openArch": { "value": "Offen", "label": "Architektur" }
+    },
+    "cta": {
+      "title": "Beginne deinen Workflow zu weben",
+      "subtitle": "Kostenlos starten. Keine Kreditkarte erforderlich.",
+      "button": "Loslegen"
+    },
+    "footer": {
+      "privacy": "Datenschutz",
+      "terms": "Nutzungsbedingungen"
+    }
   }
 }

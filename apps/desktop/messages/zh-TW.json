@@ -199,5 +199,94 @@
     "uploading": "上傳中...",
     "dropFileHere": "將檔案拖放到此處或",
     "chooseFile": "選擇檔案"
+  },
+  "landing": {
+    "nav": {
+      "features": "功能",
+      "integrations": "整合",
+      "login": "登入",
+      "getStarted": "開始使用"
+    },
+    "hero": {
+      "headline": "如絲線般流轉的任務",
+      "subtext": "連結人員，委派工作，自動回彈。ito編織自我管理的責任鏈。",
+      "cta": "免費開始",
+      "ctaSecondary": "瞭解運作方式"
+    },
+    "threadDemo": {
+      "title": "執行緒鏈",
+      "subtitle": "工作透過人員流轉，而不僅僅是到達。當有人完成時，它會自動回彈。",
+      "step1": "建立任務，它屬於你",
+      "step2": "將它連接給其他人",
+      "step3": "他們也可以繼續傳遞",
+      "step4": "完成後，自動回彈",
+      "step5": "直到所有人完成"
+    },
+    "quickInput": {
+      "title": "輸入。連接。完成。",
+      "subtitle": "一行建立任務並構建鏈條。輸入任務，然後用 > 連接人員。"
+    },
+    "graph": {
+      "title": "縱觀全局",
+      "subtitle": "每條執行緒、每個連接，即時視覺化。一目了然地瞭解團隊工作流。"
+    },
+    "features": {
+      "title": "你需要的一切",
+      "subtitle": "讓團隊協作輕鬆自如的強大功能。",
+      "calendar": {
+        "title": "行事曆同步",
+        "description": "自動將截止日期同步到 Google Calendar 和 Outlook。"
+      },
+      "teams": {
+        "title": "團隊儀表板",
+        "description": "一目了然地檢視工作量分配和團隊統計。"
+      },
+      "notifications": {
+        "title": "即時提醒",
+        "description": "桌面通知、應用程式內提醒和 Slack 推送。"
+      },
+      "slack": {
+        "title": "Slack 指令",
+        "description": "使用 /ito 無需離開 Slack 即可建立和管理任務。"
+      },
+      "i18n": {
+        "title": "9種語言",
+        "description": "為全球團隊打造，完整的國際化支援。"
+      },
+      "desktop": {
+        "title": "桌面應用程式",
+        "description": "透過 Tauri 建構的 macOS、Windows 和 Linux 原生應用程式。"
+      }
+    },
+    "integrations": {
+      "title": "在你工作的地方運作",
+      "calendar": {
+        "title": "你的任務，你的行事曆",
+        "description": "截止日期自動同步到 Google Calendar 和 Outlook。不再錯過任何截止日期。"
+      },
+      "slack": {
+        "title": "從 Slack 管理執行緒",
+        "description": "建立任務、查看狀態、接收通知 — 全部使用 /ito。"
+      },
+      "desktop": {
+        "title": "原生且快速",
+        "description": "使用 Tauri 建構的原生體驗。輕量、快速、跨平台。"
+      }
+    },
+    "stats": {
+      "languages": { "value": "9", "label": "種語言" },
+      "realtime": { "value": "即時", "label": "同步" },
+      "crossPlatform": { "value": "3", "label": "個平台" },
+      "openArch": { "value": "開放", "label": "架構" }
+    },
+    "cta": {
+      "title": "開始編織你的工作流",
+      "subtitle": "免費開始。無需信用卡。",
+      "button": "開始使用"
+    },
+    "footer": {
+      "privacy": "隱私權政策",
+      "terms": "服務條款"
+    }
   }
 }

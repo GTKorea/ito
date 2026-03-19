@@ -199,5 +199,94 @@
     "uploading": "업로드 중...",
     "dropFileHere": "여기에 파일을 끌어놓거나",
     "chooseFile": "파일 선택"
+  },
+  "landing": {
+    "nav": {
+      "features": "기능",
+      "integrations": "연동",
+      "login": "로그인",
+      "getStarted": "시작하기"
+    },
+    "hero": {
+      "headline": "실처럼 흐르는 태스크",
+      "subtext": "사람을 연결하고, 업무를 넘기고, 완료되면 자동으로 돌아옵니다. ito가 스스로 관리되는 책임 체인을 엮어냅니다.",
+      "cta": "무료로 시작하기",
+      "ctaSecondary": "작동 방식 보기"
+    },
+    "threadDemo": {
+      "title": "실 체인",
+      "subtitle": "업무가 사람을 '거쳐' 흐릅니다. 누군가 완료하면, 자동으로 되돌아옵니다.",
+      "step1": "태스크를 만들면 당신의 것",
+      "step2": "다른 사람에게 연결하세요",
+      "step3": "그 사람도 또 넘길 수 있어요",
+      "step4": "완료하면 자동으로 돌아옵니다",
+      "step5": "모든 사람이 완료할 때까지"
+    },
+    "quickInput": {
+      "title": "입력하고. 연결하고. 끝.",
+      "subtitle": "한 줄로 태스크를 만들고 체인을 구성하세요. 태스크를 입력하고 >로 사람을 연결합니다."
+    },
+    "graph": {
+      "title": "전체 그림을 보세요",
+      "subtitle": "모든 실, 모든 연결을 실시간으로 시각화합니다. 팀의 워크플로를 한눈에 파악하세요."
+    },
+    "features": {
+      "title": "필요한 모든 것",
+      "subtitle": "팀 협업을 쉽게 만드는 강력한 기능들.",
+      "calendar": {
+        "title": "캘린더 동기화",
+        "description": "Google Calendar, Outlook과 마감일을 자동으로 동기화합니다."
+      },
+      "teams": {
+        "title": "팀 대시보드",
+        "description": "업무 분배와 팀 통계를 한눈에 확인하세요."
+      },
+      "notifications": {
+        "title": "실시간 알림",
+        "description": "데스크톱 알림, 인앱 알림, Slack 알림을 지원합니다."
+      },
+      "slack": {
+        "title": "Slack 커맨드",
+        "description": "/ito 명령어로 Slack에서 바로 태스크를 관리하세요."
+      },
+      "i18n": {
+        "title": "9개 언어 지원",
+        "description": "글로벌 팀을 위한 완전한 다국어 지원."
+      },
+      "desktop": {
+        "title": "데스크톱 앱",
+        "description": "Tauri 기반 macOS, Windows, Linux 네이티브 앱."
+      }
+    },
+    "integrations": {
+      "title": "당신이 일하는 곳에서 작동합니다",
+      "calendar": {
+        "title": "당신의 태스크, 당신의 캘린더",
+        "description": "마감일이 Google Calendar, Outlook에 자동으로 동기화됩니다. 마감일을 놓치지 마세요."
+      },
+      "slack": {
+        "title": "Slack에서 실 관리",
+        "description": "/ito 명령어로 태스크 생성, 상태 확인, 알림 수신 — 모두 Slack에서."
+      },
+      "desktop": {
+        "title": "네이티브, 그리고 빠르게",
+        "description": "Tauri 기반 네이티브 경험. 가볍고, 빠르고, 크로스 플랫폼."
+      }
+    },
+    "stats": {
+      "languages": { "value": "9", "label": "개 언어" },
+      "realtime": { "value": "실시간", "label": "동기화" },
+      "crossPlatform": { "value": "3", "label": "개 플랫폼" },
+      "openArch": { "value": "개방형", "label": "아키텍처" }
+    },
+    "cta": {
+      "title": "워크플로를 엮어보세요",
+      "subtitle": "무료로 시작하세요. 신용카드 필요 없음.",
+      "button": "시작하기"
+    },
+    "footer": {
+      "privacy": "개인정보처리방침",
+      "terms": "이용약관"
+    }
   }
 }

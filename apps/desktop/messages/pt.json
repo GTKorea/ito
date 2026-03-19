@@ -199,5 +199,94 @@
     "uploading": "Enviando...",
     "dropFileHere": "Arraste um arquivo aqui ou",
     "chooseFile": "Escolher Arquivo"
+  },
+  "landing": {
+    "nav": {
+      "features": "Funcionalidades",
+      "integrations": "Integrações",
+      "login": "Entrar",
+      "getStarted": "Começar"
+    },
+    "hero": {
+      "headline": "Tarefas que fluem como fios",
+      "subtext": "Conecte pessoas, delegue trabalho e veja ele voltar automaticamente. ito tece cadeias de responsabilidade que se gerenciam sozinhas.",
+      "cta": "Comece de graça",
+      "ctaSecondary": "Veja como funciona"
+    },
+    "threadDemo": {
+      "title": "A cadeia de threads",
+      "subtitle": "O trabalho flui através das pessoas, não apenas para elas. Quando alguém termina, ele volta automaticamente.",
+      "step1": "Crie uma tarefa e ela é sua",
+      "step2": "Conecte-a a outra pessoa",
+      "step3": "Ela também pode passar adiante",
+      "step4": "Ao terminar, volta automaticamente",
+      "step5": "Até que todos terminem"
+    },
+    "quickInput": {
+      "title": "Digite. Encadeie. Pronto.",
+      "subtitle": "Crie tarefas e construa cadeias em uma linha. Digite uma tarefa, depois > para conectar pessoas."
+    },
+    "graph": {
+      "title": "Veja o panorama completo",
+      "subtitle": "Cada thread, cada conexão, visualizada em tempo real. Entenda o fluxo de trabalho da sua equipe de relance."
+    },
+    "features": {
+      "title": "Tudo o que você precisa",
+      "subtitle": "Funcionalidades poderosas que tornam a colaboração em equipe fácil.",
+      "calendar": {
+        "title": "Sincronização de Calendário",
+        "description": "Sincronize datas de vencimento com Google Calendar e Outlook automaticamente."
+      },
+      "teams": {
+        "title": "Painéis de Equipe",
+        "description": "Veja a distribuição de trabalho e estatísticas da equipe de relance."
+      },
+      "notifications": {
+        "title": "Alertas em Tempo Real",
+        "description": "Notificações no desktop, alertas no app e pings do Slack."
+      },
+      "slack": {
+        "title": "Comandos do Slack",
+        "description": "Crie e gerencie tarefas sem sair do Slack com /ito."
+      },
+      "i18n": {
+        "title": "9 Idiomas",
+        "description": "Construído para equipes globais com suporte completo à internacionalização."
+      },
+      "desktop": {
+        "title": "App Desktop",
+        "description": "App nativo para macOS, Windows e Linux via Tauri."
+      }
+    },
+    "integrations": {
+      "title": "Funciona onde você trabalha",
+      "calendar": {
+        "title": "Suas tarefas, seu calendário",
+        "description": "Datas de vencimento sincronizam automaticamente com Google Calendar e Outlook. Nunca perca um prazo."
+      },
+      "slack": {
+        "title": "Gerencie threads pelo Slack",
+        "description": "Crie tarefas, verifique o status e receba notificações — tudo com /ito."
+      },
+      "desktop": {
+        "title": "Nativo e rápido",
+        "description": "Construído com Tauri para uma experiência nativa. Leve, rápido, multiplataforma."
+      }
+    },
+    "stats": {
+      "languages": { "value": "9", "label": "Idiomas" },
+      "realtime": { "value": "Tempo real", "label": "Sincronização" },
+      "crossPlatform": { "value": "3", "label": "Plataformas" },
+      "openArch": { "value": "Aberta", "label": "Arquitetura" }
+    },
+    "cta": {
+      "title": "Comece a tecer seu fluxo de trabalho",
+      "subtitle": "Grátis para começar. Sem cartão de crédito.",
+      "button": "Começar"
+    },
+    "footer": {
+      "privacy": "Privacidade",
+      "terms": "Termos"
+    }
   }
 }

@@ -199,5 +199,94 @@
     "uploading": "Subiendo...",
     "dropFileHere": "Arrastra un archivo aquí o",
     "chooseFile": "Elegir Archivo"
+  },
+  "landing": {
+    "nav": {
+      "features": "Funciones",
+      "integrations": "Integraciones",
+      "login": "Iniciar sesión",
+      "getStarted": "Comenzar"
+    },
+    "hero": {
+      "headline": "Tareas que fluyen como hilos",
+      "subtext": "Conecta personas, delega trabajo y míralo regresar automáticamente. ito teje cadenas de responsabilidad que se gestionan solas.",
+      "cta": "Comienza gratis",
+      "ctaSecondary": "Descubre cómo funciona"
+    },
+    "threadDemo": {
+      "title": "La cadena de hilos",
+      "subtitle": "El trabajo fluye a través de las personas, no solo hacia ellas. Cuando alguien termina, regresa automáticamente.",
+      "step1": "Crea una tarea y es tuya",
+      "step2": "Conéctala a otra persona",
+      "step3": "Ellos también pueden pasarla",
+      "step4": "Al terminar, regresa automáticamente",
+      "step5": "Hasta que todos terminen"
+    },
+    "quickInput": {
+      "title": "Escríbelo. Encadénalo. Listo.",
+      "subtitle": "Crea tareas y construye cadenas en una línea. Escribe una tarea, luego > para conectar personas."
+    },
+    "graph": {
+      "title": "Mira el panorama completo",
+      "subtitle": "Cada hilo, cada conexión, visualizado en tiempo real. Comprende el flujo de trabajo de tu equipo de un vistazo."
+    },
+    "features": {
+      "title": "Todo lo que necesitas",
+      "subtitle": "Funciones potentes que hacen la colaboración en equipo sin esfuerzo.",
+      "calendar": {
+        "title": "Sincronización de Calendario",
+        "description": "Sincroniza fechas límite con Google Calendar y Outlook automáticamente."
+      },
+      "teams": {
+        "title": "Paneles de Equipo",
+        "description": "Visualiza la distribución de trabajo y estadísticas del equipo de un vistazo."
+      },
+      "notifications": {
+        "title": "Alertas en Tiempo Real",
+        "description": "Notificaciones de escritorio, alertas en la app y pings de Slack."
+      },
+      "slack": {
+        "title": "Comandos de Slack",
+        "description": "Crea y gestiona tareas sin salir de Slack con /ito."
+      },
+      "i18n": {
+        "title": "9 Idiomas",
+        "description": "Diseñado para equipos globales con soporte completo de internacionalización."
+      },
+      "desktop": {
+        "title": "App de Escritorio",
+        "description": "App nativa para macOS, Windows y Linux con Tauri."
+      }
+    },
+    "integrations": {
+      "title": "Funciona donde tú trabajas",
+      "calendar": {
+        "title": "Tus tareas, tu calendario",
+        "description": "Las fechas límite se sincronizan automáticamente con Google Calendar y Outlook. Nunca te pierdas una fecha de entrega."
+      },
+      "slack": {
+        "title": "Gestiona hilos desde Slack",
+        "description": "Crea tareas, consulta el estado y recibe notificaciones — todo con /ito."
+      },
+      "desktop": {
+        "title": "Nativo y rápido",
+        "description": "Construido con Tauri para una experiencia nativa. Ligero, rápido, multiplataforma."
+      }
+    },
+    "stats": {
+      "languages": { "value": "9", "label": "Idiomas" },
+      "realtime": { "value": "Tiempo real", "label": "Sincronización" },
+      "crossPlatform": { "value": "3", "label": "Plataformas" },
+      "openArch": { "value": "Abierta", "label": "Arquitectura" }
+    },
+    "cta": {
+      "title": "Comienza a tejer tu flujo de trabajo",
+      "subtitle": "Gratis para empezar. Sin tarjeta de crédito.",
+      "button": "Comenzar"
+    },
+    "footer": {
+      "privacy": "Privacidad",
+      "terms": "Términos"
+    }
   }
 }
