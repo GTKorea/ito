@@ -54,10 +54,11 @@ export class CalendarService implements OnModuleInit {
     return this.outlookEnabled;
   }
 
-  getGoogleAuthUrl(redirectUri: string): string {
+  getGoogleAuthUrl(redirectUri: string, userId: string): string {
     const scopes = encodeURIComponent(
       'https://www.googleapis.com/auth/calendar.events',
     );
+    const state = Buffer.from(JSON.stringify({ userId })).toString('base64url');
     return (
       `https://accounts.google.com/o/oauth2/v2/auth` +
       `?client_id=${this.googleClientId}` +
@@ -65,7 +66,8 @@ export class CalendarService implements OnModuleInit {
       `&response_type=code` +
       `&scope=${scopes}` +
       `&access_type=offline` +
-      `&prompt=consent`
+      `&prompt=consent` +
+      `&state=${state}`
     );
   }
 
@@ -100,14 +102,16 @@ export class CalendarService implements OnModuleInit {
     return { success: true, provider: 'google' };
   }
 
-  getOutlookAuthUrl(redirectUri: string): string {
+  getOutlookAuthUrl(redirectUri: string, userId: string): string {
     const scopes = encodeURIComponent('Calendars.ReadWrite offline_access');
+    const state = Buffer.from(JSON.stringify({ userId })).toString('base64url');
     return (
       `https://login.microsoftonline.com/common/oauth2/v2.0/authorize` +
       `?client_id=${this.outlookClientId}` +
       `&redirect_uri=${encodeURIComponent(redirectUri)}` +
       `&response_type=code` +
-      `&scope=${scopes}`
+      `&scope=${scopes}` +
+      `&state=${state}`
     );
   }
 
