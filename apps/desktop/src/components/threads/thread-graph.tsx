@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useCallback } from 'react';
+import { useMemo } from 'react';
 import {
   ReactFlow,
   Background,
@@ -190,8 +190,6 @@ export function ThreadGraph({ links, creator }: ThreadGraphProps) {
     return { initialNodes: layouted.nodes, initialEdges: layouted.edges };
   }, [links, creator]);
 
-  const onInit = useCallback(() => {}, []);
-
   if (!links || links.length === 0) return null;
 
   return (
@@ -200,7 +198,6 @@ export function ThreadGraph({ links, creator }: ThreadGraphProps) {
         nodes={initialNodes}
         edges={initialEdges}
         nodeTypes={nodeTypes}
-        onInit={onInit}
         fitView
         fitViewOptions={{ padding: 0.3 }}
         proOptions={{ hideAttribution: true }}

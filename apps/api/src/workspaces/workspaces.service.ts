@@ -9,6 +9,7 @@ import { PrismaService } from '../common/prisma/prisma.service';
 import { ActivityService } from '../activity/activity.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { EmailService } from '../email/email.service';
+import { WorkspaceRole } from '@prisma/client';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 
 @Injectable()
@@ -132,12 +133,12 @@ export class WorkspacesService {
     return updated;
   }
 
-  async invite(workspaceId: string, email: string, inviterUserId: string, role: 'MEMBER' | 'GUEST' = 'MEMBER') {
+  async invite(workspaceId: string, email: string, inviterUserId: string, role: WorkspaceRole = WorkspaceRole.MEMBER) {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
     const invite = await this.prisma.workspaceInvite.create({
-      data: { workspaceId, email, expiresAt, role: role as any },
+      data: { workspaceId, email, expiresAt, role },
     });
 
     const [inviter, workspace] = await Promise.all([

@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useAuthStore } from '@/stores/auth-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
-import { useLocaleStore, SUPPORTED_LOCALES, type Locale } from '@/stores/locale-store';
+import { useLocaleStore, SUPPORTED_LOCALES } from '@/stores/locale-store';
 import { api } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,8 +18,45 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { User, Building2, UserPlus, Check, Camera, Copy, Link, Globe } from 'lucide-react';
-import { useRef } from 'react';
+import {
+  User,
+  Building2,
+  UserPlus,
+  Check,
+  Camera,
+  Copy,
+  Globe,
+  Calendar,
+  Users,
+  Unlink,
+  Loader2,
+} from 'lucide-react';
+
+interface WorkspaceMember {
+  id: string;
+  role: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    avatarUrl?: string;
+  };
+}
+
+interface CalendarIntegration {
+  id: string;
+  provider: string;
+  syncEnabled: boolean;
+  calendarId?: string;
+  createdAt: string;
+}
+
+const ROLE_BADGE_VARIANT: Record<string, 'default' | 'secondary' | 'outline'> = {
+  OWNER: 'default',
+  ADMIN: 'secondary',
+  MEMBER: 'outline',
+  GUEST: 'outline',
+};
 
 export default function SettingsPage() {
   const { user, uploadAvatar } = useAuthStore();
@@ -40,9 +77,55 @@ export default function SettingsPage() {
 
   const [showInvite, setShowInvite] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState<'MEMBER' | 'GUEST'>('MEMBER');
   const [inviteSent, setInviteSent] = useState(false);
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // Members state
+  const [members, setMembers] = useState<WorkspaceMember[]>([]);
+  const [membersLoading, setMembersLoading] = useState(false);
+
+  // Calendar integrations state
+  const [calendarIntegrations, setCalendarIntegrations] = useState<CalendarIntegration[]>([]);
+  const [calendarLoading, setCalendarLoading] = useState(false);
+  const [disconnecting, setDisconnecting] = useState<string | null>(null);
+
+  // Fetch members when workspace changes
+  useEffect(() => {
+    if (!currentWorkspace) {
+      setMembers([]);
+      return;
+    }
+    const fetchMembers = async () => {
+      setMembersLoading(true);
+      try {
+        const { data } = await api.get(`/workspaces/${currentWorkspace.id}`);
+        setMembers(data.members || []);
+      } catch {
+        // ignore
+      } finally {
+        setMembersLoading(false);
+      }
+    };
+    fetchMembers();
+  }, [currentWorkspace?.id]);
+
+  // Fetch calendar integrations
+  useEffect(() => {
+    const fetchCalendar = async () => {
+      setCalendarLoading(true);
+      try {
+        const { data } = await api.get('/calendar/integrations');
+        setCalendarIntegrations(data);
+      } catch {
+        // Calendar API may not be available
+      } finally {
+        setCalendarLoading(false);
+      }
+    };
+    fetchCalendar();
+  }, []);
 
   const handleSaveProfile = async () => {
     setIsSaving(true);
@@ -71,6 +154,7 @@ export default function SettingsPage() {
     try {
       const res = await api.post(`/workspaces/${currentWorkspace.id}/invite`, {
         email: inviteEmail,
+        role: inviteRole,
       });
       setInviteSent(true);
       setInviteLink(res.data.inviteLink);
@@ -90,12 +174,37 @@ export default function SettingsPage() {
     setShowInvite(false);
     setInviteSent(false);
     setInviteEmail('');
+    setInviteRole('MEMBER');
     setInviteLink(null);
     setCopied(false);
   };
 
+  const handleConnectCalendar = (provider: 'google' | 'outlook') => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3011';
+    const token = localStorage.getItem('accessToken');
+    window.location.href = `${apiUrl}/calendar/${provider}/connect?token=${token}`;
+  };
+
+  const handleDisconnectCalendar = async (integrationId: string) => {
+    setDisconnecting(integrationId);
+    try {
+      await api.delete(`/calendar/integrations/${integrationId}`);
+      setCalendarIntegrations((prev) => prev.filter((c) => c.id !== integrationId));
+    } catch {
+      // handle
+    } finally {
+      setDisconnecting(null);
+    }
+  };
+
+  const isCalendarConnected = (provider: string) =>
+    calendarIntegrations.some((c) => c.provider === provider);
+
+  const getCalendarIntegration = (provider: string) =>
+    calendarIntegrations.find((c) => c.provider === provider);
+
   return (
-    <div className="h-full">
+    <div className="h-full overflow-y-auto">
       <div className="flex items-center justify-between border-b border-border px-6 py-3">
         <div>
           <h1 className="text-lg font-semibold">{t('title')}</h1>
@@ -118,7 +227,7 @@ export default function SettingsPage() {
               <Avatar className="h-14 w-14">
                 {user?.avatarUrl && (
                   <AvatarImage
-                    src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}${user.avatarUrl}`}
+                    src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3011'}${user.avatarUrl}`}
                     alt={user.name}
                   />
                 )}
@@ -200,6 +309,111 @@ export default function SettingsPage() {
 
         <Separator />
 
+        {/* Calendar Integrations */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <h2 className="text-sm font-semibold">{t('calendarIntegrations')}</h2>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {t('calendarDescription')}
+          </p>
+
+          {calendarLoading ? (
+            <div className="flex justify-center py-4">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {/* Google Calendar */}
+              <div className="flex items-center justify-between rounded-md border border-border px-3 py-2.5">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded bg-red-500/10">
+                    <Calendar className="h-4 w-4 text-red-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{t('googleCalendar')}</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {isCalendarConnected('google') ? t('connected') : t('notConnected')}
+                    </p>
+                  </div>
+                </div>
+                {isCalendarConnected('google') ? (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => {
+                      const integration = getCalendarIntegration('google');
+                      if (integration) handleDisconnectCalendar(integration.id);
+                    }}
+                    disabled={disconnecting === getCalendarIntegration('google')?.id}
+                  >
+                    {disconnecting === getCalendarIntegration('google')?.id ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Unlink className="mr-1 h-3.5 w-3.5" />
+                    )}
+                    {t('disconnect')}
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleConnectCalendar('google')}
+                  >
+                    {t('connectCalendar')}
+                  </Button>
+                )}
+              </div>
+
+              {/* Outlook Calendar */}
+              <div className="flex items-center justify-between rounded-md border border-border px-3 py-2.5">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded bg-blue-500/10">
+                    <Calendar className="h-4 w-4 text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{t('outlookCalendar')}</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {isCalendarConnected('outlook') ? t('connected') : t('notConnected')}
+                    </p>
+                  </div>
+                </div>
+                {isCalendarConnected('outlook') ? (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => {
+                      const integration = getCalendarIntegration('outlook');
+                      if (integration) handleDisconnectCalendar(integration.id);
+                    }}
+                    disabled={disconnecting === getCalendarIntegration('outlook')?.id}
+                  >
+                    {disconnecting === getCalendarIntegration('outlook')?.id ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Unlink className="mr-1 h-3.5 w-3.5" />
+                    )}
+                    {t('disconnect')}
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleConnectCalendar('outlook')}
+                  >
+                    {t('connectCalendar')}
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+        </section>
+
+        <Separator />
+
         {/* Workspace */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
@@ -252,6 +466,74 @@ export default function SettingsPage() {
             </Button>
           )}
         </section>
+
+        <Separator />
+
+        {/* Members */}
+        {currentWorkspace && (
+          <section className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-muted-foreground" />
+              <h2 className="text-sm font-semibold">{t('members')}</h2>
+              {members.length > 0 && (
+                <Badge variant="secondary" className="text-[10px]">
+                  {members.length}
+                </Badge>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {t('membersDescription', { name: currentWorkspace.name })}
+            </p>
+
+            {membersLoading ? (
+              <div className="flex justify-center py-4">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {members.map((member) => (
+                  <div
+                    key={member.id}
+                    className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-accent/30 transition-colors"
+                  >
+                    <Avatar className="h-7 w-7">
+                      {member.user.avatarUrl && (
+                        <AvatarImage
+                          src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3011'}${member.user.avatarUrl}`}
+                          alt={member.user.name}
+                        />
+                      )}
+                      <AvatarFallback className="text-[10px] bg-secondary">
+                        {member.user.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium truncate">
+                          {member.user.name}
+                        </span>
+                        {member.user.id === user?.id && (
+                          <span className="text-[10px] text-muted-foreground">
+                            ({t('you')})
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-muted-foreground truncate">
+                        {member.user.email}
+                      </p>
+                    </div>
+                    <Badge
+                      variant={ROLE_BADGE_VARIANT[member.role] || 'outline'}
+                      className="text-[10px] shrink-0"
+                    >
+                      {t(`role_${member.role}`)}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
       </div>
 
       {/* Create Workspace Dialog */}
@@ -263,9 +545,9 @@ export default function SettingsPage() {
             </DialogHeader>
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <Label>{t('workspaces')}</Label>
+                <Label>{t('workspaceName')}</Label>
                 <Input
-                  placeholder="My Team"
+                  placeholder={t('workspaceNamePlaceholder')}
                   value={wsName}
                   onChange={(e) => {
                     setWsName(e.target.value);
@@ -307,6 +589,36 @@ export default function SettingsPage() {
                   onKeyDown={(e) => e.key === 'Enter' && handleInvite()}
                   autoFocus
                 />
+
+                {/* Role selector */}
+                <div className="space-y-1.5">
+                  <Label>{t('inviteRole')}</Label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setInviteRole('MEMBER')}
+                      className={`flex-1 rounded-md border px-3 py-2 text-sm transition-colors ${
+                        inviteRole === 'MEMBER'
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-border hover:bg-accent/50'
+                      }`}
+                    >
+                      <p className="font-medium">{t('role_MEMBER')}</p>
+                      <p className="text-[10px] text-muted-foreground">{t('roleMemberDesc')}</p>
+                    </button>
+                    <button
+                      onClick={() => setInviteRole('GUEST')}
+                      className={`flex-1 rounded-md border px-3 py-2 text-sm transition-colors ${
+                        inviteRole === 'GUEST'
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-border hover:bg-accent/50'
+                      }`}
+                    >
+                      <p className="font-medium">{t('role_GUEST')}</p>
+                      <p className="text-[10px] text-muted-foreground">{t('roleGuestDesc')}</p>
+                    </button>
+                  </div>
+                </div>
+
                 <Button
                   onClick={handleInvite}
                   className="w-full"

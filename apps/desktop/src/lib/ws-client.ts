@@ -13,11 +13,11 @@ export function connectWs(token: string): Socket {
   });
 
   socket.on('connect', () => {
-    console.log('[ws] connected');
+    // connection established
   });
 
   socket.on('disconnect', () => {
-    console.log('[ws] disconnected');
+    // connection lost
   });
 
   return socket;

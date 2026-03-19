@@ -1,5 +1,6 @@
 import { IsString, IsOptional, IsEnum, MinLength, Matches } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { WorkspaceRole } from '@prisma/client';
 
 export class CreateWorkspaceDto {
   @ApiProperty({ example: 'My Team' })
@@ -37,8 +38,8 @@ export class InviteMemberDto {
   @IsString()
   email: string;
 
-  @ApiPropertyOptional({ enum: ['MEMBER', 'GUEST'], default: 'MEMBER' })
+  @ApiPropertyOptional({ enum: [WorkspaceRole.MEMBER, WorkspaceRole.GUEST], default: WorkspaceRole.MEMBER })
   @IsOptional()
-  @IsEnum(['MEMBER', 'GUEST'])
-  role?: 'MEMBER' | 'GUEST';
+  @IsEnum(WorkspaceRole)
+  role?: WorkspaceRole;
 }
