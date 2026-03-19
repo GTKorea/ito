@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { useTodoStore } from '@/stores/todo-store';
 import { api } from '@/lib/api-client';
 import { ThreadChain } from '@/components/threads/thread-chain';
@@ -32,6 +33,7 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
   const [dueDate, setDueDate] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [fileRefreshKey, setFileRefreshKey] = useState(0);
+  const t = useTranslations('todos');
 
   useEffect(() => {
     setIsLoading(true);
@@ -81,7 +83,7 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
     <div className="fixed right-0 top-0 z-50 flex h-full w-[420px] flex-col border-l border-border bg-[#1A1A1A] animate-in slide-in-from-right duration-200">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
-        <h2 className="text-sm font-semibold text-[#ECECEC]">Task Detail</h2>
+        <h2 className="text-sm font-semibold text-[#ECECEC]">{t('taskDetail')}</h2>
         <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={onClose}>
           <X className="h-4 w-4" />
         </Button>
@@ -94,7 +96,7 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           className="text-base font-semibold bg-transparent border-none px-0 focus-visible:ring-0"
-          placeholder="Title"
+          placeholder={t('title')}
         />
 
         {/* Description */}
@@ -102,7 +104,7 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="bg-transparent border-border min-h-[80px] text-sm"
-          placeholder="Add a description..."
+          placeholder={t('addDescription')}
           rows={3}
         />
 
@@ -110,7 +112,7 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
             <label className="text-[10px] font-medium uppercase text-muted-foreground">
-              Status
+              {t('status')}
             </label>
             <select
               value={status}
@@ -126,7 +128,7 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
           </div>
           <div className="space-y-1">
             <label className="text-[10px] font-medium uppercase text-muted-foreground">
-              Priority
+              {t('priority')}
             </label>
             <select
               value={priority}
@@ -142,7 +144,7 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
           </div>
           <div className="space-y-1">
             <label className="text-[10px] font-medium uppercase text-muted-foreground">
-              Due Date
+              {t('dueDate')}
             </label>
             <Input
               type="date"
@@ -153,7 +155,7 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
           </div>
           <div className="space-y-1">
             <label className="text-[10px] font-medium uppercase text-muted-foreground">
-              Assignee
+              {t('assignee')}
             </label>
             <div className="flex items-center gap-2 h-8">
               <Avatar className="h-5 w-5">
@@ -162,7 +164,7 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
                 </AvatarFallback>
               </Avatar>
               <span className="text-xs text-foreground truncate">
-                {todo.assignee?.name || 'Unassigned'}
+                {todo.assignee?.name || t('unassigned')}
               </span>
             </div>
           </div>
@@ -171,7 +173,7 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
         {/* Save button */}
         <Button size="sm" onClick={handleSave} disabled={isSaving} className="w-full">
           <Save className="mr-1 h-3.5 w-3.5" />
-          {isSaving ? 'Saving...' : 'Save Changes'}
+          {isSaving ? t('saving') : t('saveChanges')}
         </Button>
 
         {/* Thread Chain */}
@@ -179,7 +181,7 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
           <div className="space-y-2">
             <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
               <Link2 className="h-3.5 w-3.5" />
-              Thread Chain ({todo.threadLinks.length})
+              {t('threadChain')} ({todo.threadLinks.length})
             </div>
             <ThreadChain links={todo.threadLinks} creator={todo.creator} />
           </div>
@@ -189,7 +191,7 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
         <div className="space-y-2">
           <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
             <Paperclip className="h-3.5 w-3.5" />
-            Attachments
+            {t('attachments')}
           </div>
           <FileList todoId={todoId} refreshKey={fileRefreshKey} />
           <FileUpload

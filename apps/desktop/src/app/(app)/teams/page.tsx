@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { api } from '@/lib/api-client';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 import { Button } from '@/components/ui/button';
@@ -50,6 +51,8 @@ export default function TeamsPage() {
   const [addMemberEmail, setAddMemberEmail] = useState('');
   const [addMemberTeamId, setAddMemberTeamId] = useState<string | null>(null);
   const { currentWorkspace } = useWorkspaceStore();
+  const t = useTranslations('teams');
+  const tc = useTranslations('common');
 
   const fetchTeams = async () => {
     if (!currentWorkspace) return;
@@ -126,14 +129,14 @@ export default function TeamsPage() {
     <div className="h-full">
       <div className="flex items-center justify-between border-b border-border px-6 py-3">
         <div>
-          <h1 className="text-lg font-semibold">Teams</h1>
+          <h1 className="text-lg font-semibold">{t('title')}</h1>
           <p className="text-xs text-muted-foreground">
-            Manage your workspace teams
+            {t('subtitle')}
           </p>
         </div>
         <Button size="sm" onClick={() => setShowCreate(true)}>
           <Plus className="mr-1 h-4 w-4" />
-          New Team
+          {t('newTeam')}
         </Button>
       </div>
 
@@ -145,14 +148,14 @@ export default function TeamsPage() {
         ) : teams.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
             <Users className="h-8 w-8 mb-3 opacity-40" />
-            <p className="text-sm">No teams yet</p>
+            <p className="text-sm">{t('noTeamsYet')}</p>
             <Button
               size="sm"
               variant="outline"
               className="mt-3"
               onClick={() => setShowCreate(true)}
             >
-              Create your first team
+              {t('createFirstTeam')}
             </Button>
           </div>
         ) : (
@@ -168,7 +171,7 @@ export default function TeamsPage() {
                 <div className="flex-1">
                   <p className="text-sm font-medium">{team.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {team._count?.members || 0} members
+                    {team._count?.members || 0} {t('members')}
                   </p>
                 </div>
                 <ChevronRight
@@ -192,14 +195,14 @@ export default function TeamsPage() {
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => setAddMemberTeamId(team.id)}>
                       <UserPlus className="mr-2 h-4 w-4" />
-                      Add Member
+                      {t('addMember')}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="text-destructive"
                       onClick={() => handleDelete(team.id)}
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
-                      Delete Team
+                      {t('deleteTeam')}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -249,18 +252,18 @@ export default function TeamsPage() {
         <Dialog open onOpenChange={() => setShowCreate(false)}>
           <DialogContent className="sm:max-w-sm">
             <DialogHeader>
-              <DialogTitle>Create Team</DialogTitle>
+              <DialogTitle>{t('createTeam')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-3">
               <Input
-                placeholder="Team name"
+                placeholder={t('teamName')}
                 value={newTeamName}
                 onChange={(e) => setNewTeamName(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
                 autoFocus
               />
               <Button onClick={handleCreate} className="w-full" disabled={!newTeamName.trim()}>
-                Create
+                {tc('create')}
               </Button>
             </div>
           </DialogContent>
@@ -272,11 +275,11 @@ export default function TeamsPage() {
         <Dialog open onOpenChange={() => setAddMemberTeamId(null)}>
           <DialogContent className="sm:max-w-sm">
             <DialogHeader>
-              <DialogTitle>Add Member</DialogTitle>
+              <DialogTitle>{t('addMember')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-3">
               <Input
-                placeholder="Search by email..."
+                placeholder={t('searchByEmail')}
                 value={addMemberEmail}
                 onChange={(e) => setAddMemberEmail(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAddMember()}
@@ -284,7 +287,7 @@ export default function TeamsPage() {
               />
               <Button onClick={handleAddMember} className="w-full" disabled={!addMemberEmail.trim()}>
                 <UserPlus className="mr-2 h-4 w-4" />
-                Add
+                {tc('add')}
               </Button>
             </div>
           </DialogContent>

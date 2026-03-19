@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { api } from '@/lib/api-client';
 import { useTodoStore } from '@/stores/todo-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
@@ -47,6 +48,7 @@ export default function ThreadsPage() {
   const [tab, setTab] = useState<'incoming' | 'outgoing'>('incoming');
   const { resolveThread } = useTodoStore();
   const { currentWorkspace } = useWorkspaceStore();
+  const t = useTranslations('threads');
 
   const fetchThreads = async () => {
     if (!currentWorkspace) return;
@@ -81,9 +83,9 @@ export default function ThreadsPage() {
     <div className="h-full">
       <div className="flex items-center justify-between border-b border-border px-6 py-3">
         <div>
-          <h1 className="text-lg font-semibold">Threads</h1>
+          <h1 className="text-lg font-semibold">{t('title')}</h1>
           <p className="text-xs text-muted-foreground">
-            Track tasks connected to you
+            {t('subtitle')}
           </p>
         </div>
       </div>
@@ -100,7 +102,7 @@ export default function ThreadsPage() {
           )}
         >
           <ArrowDownLeft className="h-3.5 w-3.5" />
-          Incoming
+          {t('incoming')}
           {threads.incoming.length > 0 && (
             <Badge variant="secondary" className="h-5 min-w-5 px-1 text-[10px]">
               {threads.incoming.length}
@@ -117,7 +119,7 @@ export default function ThreadsPage() {
           )}
         >
           <ArrowUpRight className="h-3.5 w-3.5" />
-          Outgoing
+          {t('outgoing')}
           {threads.outgoing.length > 0 && (
             <Badge variant="secondary" className="h-5 min-w-5 px-1 text-[10px]">
               {threads.outgoing.length}
@@ -137,8 +139,8 @@ export default function ThreadsPage() {
             <Link2 className="h-8 w-8 mb-3 opacity-40" />
             <p className="text-sm">
               {tab === 'incoming'
-                ? 'No threads waiting for you'
-                : 'No threads you\'ve sent out'}
+                ? t('noIncoming')
+                : t('noOutgoing')}
             </p>
           </div>
         ) : (
@@ -161,7 +163,7 @@ export default function ThreadsPage() {
                       {tab === 'incoming' ? link.fromUser?.name : link.toUser?.name}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {tab === 'incoming' ? 'asked you to handle' : 'is handling your request'}
+                      {tab === 'incoming' ? t('askedYouToHandle') : t('isHandlingYourRequest')}
                     </p>
                   </div>
                 </div>
@@ -198,7 +200,7 @@ export default function ThreadsPage() {
                     onClick={() => handleResolve(link.id)}
                   >
                     <Check className="h-3.5 w-3.5 mr-1" />
-                    Mark Done
+                    {t('markDone')}
                   </Button>
                 </div>
               )}

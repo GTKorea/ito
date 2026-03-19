@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   CheckSquare,
   Link2,
@@ -20,10 +21,10 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
 const navItems = [
-  { href: '/workspace', icon: CheckSquare, label: 'My Tasks' },
-  { href: '/threads', icon: Link2, label: 'Threads' },
-  { href: '/teams', icon: Users, label: 'Teams' },
-  { href: '/activity', icon: ActivityIcon, label: 'Activity' },
+  { href: '/workspace', icon: CheckSquare, labelKey: 'myTasks' as const },
+  { href: '/threads', icon: Link2, labelKey: 'threads' as const },
+  { href: '/teams', icon: Users, labelKey: 'teams' as const },
+  { href: '/activity', icon: ActivityIcon, labelKey: 'activity' as const },
 ];
 
 export function Sidebar() {
@@ -31,6 +32,7 @@ export function Sidebar() {
   const { user, logout } = useAuthStore();
   const { currentWorkspace } = useWorkspaceStore();
   const { unreadCount } = useNotificationStore();
+  const t = useTranslations('sidebar');
 
   return (
     <aside className="flex h-screen w-56 flex-col border-r border-border bg-card">
@@ -51,7 +53,7 @@ export function Sidebar() {
 
           return (
             <Link
-              key={item.label}
+              key={item.labelKey}
               href={item.href}
               className={cn(
                 'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
@@ -61,7 +63,7 @@ export function Sidebar() {
               )}
             >
               <item.icon className="h-4 w-4" />
-              {item.label}
+              {t(item.labelKey)}
             </Link>
           );
         })}
@@ -78,7 +80,7 @@ export function Sidebar() {
           )}
         >
           <Bell className="h-4 w-4" />
-          Notifications
+          {t('notifications')}
           {unreadCount > 0 && (
             <Badge variant="destructive" className="ml-auto h-5 min-w-5 px-1 text-[10px]">
               {unreadCount}
@@ -96,7 +98,7 @@ export function Sidebar() {
           )}
         >
           <Settings className="h-4 w-4" />
-          Settings
+          {t('settings')}
         </Link>
       </nav>
 

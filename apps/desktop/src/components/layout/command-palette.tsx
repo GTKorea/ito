@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   CommandDialog,
   CommandEmpty,
@@ -22,6 +23,9 @@ import {
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const t = useTranslations('commandPalette');
+  const tc = useTranslations('common');
+  const ts = useTranslations('sidebar');
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -41,35 +45,35 @@ export function CommandPalette() {
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
-      <CommandInput placeholder="Type a command or search..." />
+      <CommandInput placeholder={t('placeholder')} />
       <CommandList>
-        <CommandEmpty>No results found.</CommandEmpty>
-        <CommandGroup heading="Actions">
+        <CommandEmpty>{tc('noResults')}</CommandEmpty>
+        <CommandGroup heading={t('actions')}>
           <CommandItem onSelect={() => navigate('/workspace')}>
             <Plus className="mr-2 h-4 w-4" />
-            Create new task
+            {t('createNewTask')}
           </CommandItem>
         </CommandGroup>
-        <CommandGroup heading="Navigation">
+        <CommandGroup heading={t('navigation')}>
           <CommandItem onSelect={() => navigate('/workspace')}>
             <CheckSquare className="mr-2 h-4 w-4" />
-            My Tasks
+            {ts('myTasks')}
           </CommandItem>
           <CommandItem onSelect={() => navigate('/threads')}>
             <Link2 className="mr-2 h-4 w-4" />
-            Threads
+            {ts('threads')}
           </CommandItem>
           <CommandItem onSelect={() => navigate('/teams')}>
             <Users className="mr-2 h-4 w-4" />
-            Teams
+            {ts('teams')}
           </CommandItem>
           <CommandItem onSelect={() => navigate('/notifications')}>
             <Bell className="mr-2 h-4 w-4" />
-            Notifications
+            {ts('notifications')}
           </CommandItem>
           <CommandItem onSelect={() => navigate('/settings')}>
             <Settings className="mr-2 h-4 w-4" />
-            Settings
+            {ts('settings')}
           </CommandItem>
         </CommandGroup>
       </CommandList>

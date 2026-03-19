@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { api } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Upload, Loader2 } from 'lucide-react';
@@ -14,6 +15,7 @@ export function FileUpload({ todoId, onUploadComplete }: FileUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const t = useTranslations('files');
 
   const uploadFile = async (file: File) => {
     setIsUploading(true);
@@ -62,12 +64,12 @@ export function FileUpload({ todoId, onUploadComplete }: FileUploadProps) {
       {isUploading ? (
         <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
-          Uploading...
+          {t('uploading')}
         </div>
       ) : (
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground">
-            Drop a file here or
+            {t('dropFileHere')}
           </p>
           <Button
             size="sm"
@@ -75,7 +77,7 @@ export function FileUpload({ todoId, onUploadComplete }: FileUploadProps) {
             onClick={() => inputRef.current?.click()}
           >
             <Upload className="mr-1 h-3.5 w-3.5" />
-            Choose File
+            {t('chooseFile')}
           </Button>
         </div>
       )}

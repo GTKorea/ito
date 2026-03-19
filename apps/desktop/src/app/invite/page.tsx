@@ -3,6 +3,7 @@
 import { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { api } from '@/lib/api-client';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,7 @@ function InviteContent() {
   const router = useRouter();
   const token = searchParams.get('token');
   const { fetchWorkspaces } = useWorkspaceStore();
+  const t = useTranslations('invite');
 
   const [inviteInfo, setInviteInfo] = useState<InviteInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -27,7 +29,7 @@ function InviteContent() {
 
   useEffect(() => {
     if (!token) {
-      setError('No invite token provided.');
+      setError(t('noToken'));
       setIsLoading(false);
       return;
     }
@@ -37,14 +39,14 @@ function InviteContent() {
         const { data } = await api.get(`/workspaces/invites/${token}`);
         setInviteInfo(data);
       } catch {
-        setError('This invite link is invalid or has expired.');
+        setError(t('expiredOrInvalid'));
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchInviteInfo();
-  }, [token]);
+  }, [token, t]);
 
   const handleAccept = async () => {
     if (!token) return;
@@ -56,7 +58,7 @@ function InviteContent() {
       await fetchWorkspaces();
       setTimeout(() => router.push('/workspace'), 1500);
     } catch {
-      setError('Failed to join workspace. The invite may have expired.');
+      setError(t('failedToJoin'));
     } finally {
       setIsJoining(false);
     }
@@ -68,7 +70,7 @@ function InviteContent() {
         {isLoading ? (
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="h-8 w-8 animate-spin text-[#888888]" />
-            <p className="text-sm text-[#888888]">Loading invite...</p>
+            <p className="text-sm text-[#888888]">{t('loadingInvite')}</p>
           </div>
         ) : error && !inviteInfo ? (
           <div className="flex flex-col items-center gap-4">
@@ -76,7 +78,7 @@ function InviteContent() {
               <AlertCircle className="h-7 w-7 text-red-500" />
             </div>
             <div className="text-center">
-              <p className="text-sm font-medium text-[#ECECEC]">Invalid Invite</p>
+              <p className="text-sm font-medium text-[#ECECEC]">{t('invalidInvite')}</p>
               <p className="mt-1 text-xs text-[#888888]">{error}</p>
             </div>
             <Button
@@ -84,7 +86,7 @@ function InviteContent() {
               className="mt-2 w-full"
               onClick={() => router.push('/workspace')}
             >
-              Go to Workspace
+              {t('goToWorkspace')}
             </Button>
           </div>
         ) : joined ? (
@@ -93,9 +95,9 @@ function InviteContent() {
               <CheckCircle2 className="h-7 w-7 text-green-500" />
             </div>
             <div className="text-center">
-              <p className="text-sm font-medium text-[#ECECEC]">Joined!</p>
+              <p className="text-sm font-medium text-[#ECECEC]">{t('joined')}</p>
               <p className="mt-1 text-xs text-[#888888]">
-                Redirecting to workspace...
+                {t('redirecting')}
               </p>
             </div>
           </div>
@@ -106,14 +108,14 @@ function InviteContent() {
             </div>
             <div className="text-center">
               <p className="text-sm font-medium text-[#ECECEC]">
-                You&apos;ve been invited to join
+                {t('youveBeenInvited')}
               </p>
               <p className="mt-1 text-lg font-semibold text-[#ECECEC]">
                 {inviteInfo?.workspaceName}
               </p>
               {inviteInfo?.inviterName && (
                 <p className="mt-1 text-xs text-[#888888]">
-                  Invited by {inviteInfo.inviterName}
+                  {t('invitedBy', { name: inviteInfo.inviterName })}
                 </p>
               )}
             </div>
@@ -128,10 +130,10 @@ function InviteContent() {
               {isJoining ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Joining...
+                  {t('joining')}
                 </>
               ) : (
-                'Accept Invite'
+                t('acceptInvite')
               )}
             </Button>
             <Button
@@ -139,7 +141,7 @@ function InviteContent() {
               className="w-full text-[#888888]"
               onClick={() => router.push('/workspace')}
             >
-              Cancel
+              {t('goToWorkspace')}
             </Button>
           </div>
         )}

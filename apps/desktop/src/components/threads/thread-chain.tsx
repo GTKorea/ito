@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 
@@ -38,10 +39,12 @@ const lineColor: Record<string, string> = {
 };
 
 export function ThreadChain({ links, creator }: ThreadChainProps) {
+  const t = useTranslations('threads');
+
   return (
     <div className="flex items-center gap-0 overflow-x-auto pb-2">
       {/* Creator node */}
-      <ChainNode user={creator} label="Creator" />
+      <ChainNode user={creator} label={t('creator')} />
 
       {links.map((link) => (
         <div key={link.id} className="flex items-center">

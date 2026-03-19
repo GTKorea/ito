@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { useAuthStore } from '@/stores/auth-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +16,8 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuthStore();
   const router = useRouter();
+  const t = useTranslations('auth');
+  const tc = useTranslations('common');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +27,7 @@ export default function LoginPage() {
       await login(email, password);
       router.push('/workspace');
     } catch {
-      setError('Invalid email or password');
+      setError(t('invalidCredentials'));
     } finally {
       setIsLoading(false);
     }
@@ -40,9 +43,9 @@ export default function LoginPage() {
           <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-lg font-bold text-primary-foreground">
             糸
           </div>
-          <h1 className="text-xl font-semibold">Sign in to ito</h1>
+          <h1 className="text-xl font-semibold">{t('signInTitle')}</h1>
           <p className="text-sm text-muted-foreground">
-            Thread-based task collaboration
+            {t('signInSubtitle')}
           </p>
         </div>
 
@@ -55,7 +58,7 @@ export default function LoginPage() {
               window.location.href = `${API_URL}/auth/google/init?from=${encodeURIComponent(window.location.origin)}`;
             }}
           >
-            Continue with Google
+            {t('continueWithGoogle')}
           </Button>
           <Button
             variant="outline"
@@ -64,7 +67,7 @@ export default function LoginPage() {
               window.location.href = `${API_URL}/auth/github/init?from=${encodeURIComponent(window.location.origin)}`;
             }}
           >
-            Continue with GitHub
+            {t('continueWithGithub')}
           </Button>
         </div>
 
@@ -73,29 +76,29 @@ export default function LoginPage() {
             <span className="w-full border-t border-border" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">or</span>
+            <span className="bg-background px-2 text-muted-foreground">{tc('or')}</span>
           </div>
         </div>
 
         {/* Email form */}
         <form onSubmit={handleSubmit} className="space-y-3">
           <div className="space-y-1.5">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('emailLabel')}</Label>
             <Input
               id="email"
               type="email"
-              placeholder="you@example.com"
+              placeholder={t('emailPlaceholder')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t('passwordLabel')}</Label>
             <Input
               id="password"
               type="password"
-              placeholder="••••••••"
+              placeholder={t('passwordPlaceholder')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -107,14 +110,14 @@ export default function LoginPage() {
           )}
 
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Signing in...' : 'Sign in'}
+            {isLoading ? t('signingIn') : t('signIn')}
           </Button>
         </form>
 
         <p className="text-center text-sm text-muted-foreground">
-          Don&apos;t have an account?{' '}
+          {t('noAccount')}{' '}
           <Link href="/register" className="text-primary hover:underline">
-            Sign up
+            {t('signUp')}
           </Link>
         </p>
       </div>
