@@ -97,7 +97,7 @@ export default function TeamsPage() {
       return;
     }
     try {
-      const { data } = await api.get(`/workspaces/${currentWorkspace.id}/teams/${teamId}`);
+      const { data } = await api.get(`/workspaces/${currentWorkspace!.id}/teams/${teamId}`);
       setTeams((prev) =>
         prev.map((t) => (t.id === teamId ? { ...t, members: data.members } : t)),
       );
