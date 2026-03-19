@@ -231,7 +231,7 @@ export function QuickInput() {
     <div className="relative px-8 pb-6 pt-4">
       {/* Autocomplete dropdown — positioned above the input */}
       {showAutocomplete && autocompleteResults.length > 0 && (
-        <div className="absolute bottom-full left-8 right-8 mb-3 max-h-48 overflow-y-auto rounded-2xl border border-lime-400/10 bg-card/95 backdrop-blur-md shadow-[0_-4px_20px_rgba(160,220,0,0.04)]">
+        <div className="absolute bottom-full left-8 right-8 mb-3 max-h-48 overflow-y-auto rounded-2xl border border-border bg-card/95 backdrop-blur-md shadow-2xl">
           {autocompleteResults.map((user, index) => (
             <button
               key={user.id}
@@ -263,12 +263,12 @@ export function QuickInput() {
       <div className={cn(
         'flex items-center gap-2 rounded-full px-5 py-2.5',
         'bg-card/40 backdrop-blur-md',
-        'border border-lime-400/8',
-        'shadow-[0_4px_20px_rgba(0,0,0,0.25)]',
+        'border border-border/50',
+        'shadow-lg',
         'transition-all duration-300',
         'focus-within:bg-card/80',
-        'focus-within:border-lime-400/30',
-        'focus-within:shadow-[0_4px_20px_rgba(160,220,0,0.08),0_8px_32px_rgba(0,0,0,0.3)]',
+        'focus-within:border-border',
+        'focus-within:shadow-xl',
       )}>
         <input
           ref={inputRef}
@@ -286,10 +286,10 @@ export function QuickInput() {
           disabled={!input.trim() || isSubmitting}
           className={cn(
             'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
-            'bg-lime-500/80 text-white',
+            'bg-primary text-primary-foreground',
             'transition-all duration-200',
-            'hover:bg-lime-400/90 hover:scale-105 hover:shadow-[0_0_8px_rgba(160,220,0,0.25)]',
-            'disabled:opacity-20 disabled:hover:scale-100 disabled:hover:shadow-none disabled:cursor-not-allowed',
+            'hover:bg-primary/90 hover:scale-105',
+            'disabled:opacity-20 disabled:hover:scale-100 disabled:cursor-not-allowed',
           )}
         >
           {isSubmitting ? (
