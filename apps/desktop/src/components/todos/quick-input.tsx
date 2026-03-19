@@ -201,10 +201,10 @@ export function QuickInput() {
   if (!currentWorkspace) return null;
 
   return (
-    <div className="relative px-5 pb-5 pt-3">
+    <div className="relative px-8 pb-6 pt-4">
       {/* Autocomplete dropdown — positioned above the input */}
       {showAutocomplete && autocompleteResults.length > 0 && (
-        <div className="absolute bottom-full left-5 right-5 mb-3 max-h-48 overflow-y-auto rounded-xl border border-cyan-500/20 bg-card/95 backdrop-blur-md shadow-[0_-8px_30px_rgba(0,200,255,0.08)]">
+        <div className="absolute bottom-full left-8 right-8 mb-3 max-h-48 overflow-y-auto rounded-xl border border-cyan-500/20 bg-card/95 backdrop-blur-md shadow-[0_-8px_30px_rgba(0,200,255,0.08)]">
           {autocompleteResults.map((user, index) => (
             <button
               key={user.id}
