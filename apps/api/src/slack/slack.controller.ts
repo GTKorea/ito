@@ -19,24 +19,24 @@ export class SlackController {
 
   @Post('events')
   async handleEvent(@Req() req: Request, @Res() res: Response) {
+    const body: SlackEventDto = req.body;
+
+    // Handle URL verification challenge FIRST (before signature check)
+    if (body.type === 'url_verification') {
+      return res.status(HttpStatus.OK).json({ challenge: body.challenge });
+    }
+
     const rawBody = (req as any).rawBody;
     if (!rawBody) {
       this.logger.warn('Raw body not available for Slack event');
       return res.status(HttpStatus.BAD_REQUEST).json({ error: 'Missing body' });
     }
 
-    // Verify Slack signature
+    // Verify Slack signature for all other events
     const headers = req.headers as Record<string, string>;
     if (!this.slackService.verifyRequest(headers, rawBody.toString('utf8'))) {
       this.logger.warn('Invalid Slack signature for events endpoint');
       return res.status(HttpStatus.UNAUTHORIZED).json({ error: 'Invalid signature' });
-    }
-
-    const body: SlackEventDto = req.body;
-
-    // Handle URL verification challenge
-    if (body.type === 'url_verification') {
-      return res.status(HttpStatus.OK).json({ challenge: body.challenge });
     }
 
     // Handle events asynchronously
