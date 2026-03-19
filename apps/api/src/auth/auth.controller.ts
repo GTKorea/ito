@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
-import { AuthService } from './auth.service';
+import { AuthService, OAuthProfile } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { ConfigService } from '@nestjs/config';
@@ -70,7 +70,7 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(GoogleOAuthGuard)
   async googleCallback(@Req() req: Request, @Res() res: Response) {
-    const tokens = await this.authService.handleOAuthUser(req.user as any);
+    const tokens = await this.authService.handleOAuthUser(req.user as OAuthProfile);
     const frontendUrl = this.resolveFrontendUrl(req);
     res.clearCookie('oauth_redirect');
     res.redirect(
@@ -102,7 +102,7 @@ export class AuthController {
   @Get('github/callback')
   @UseGuards(GitHubOAuthGuard)
   async githubCallback(@Req() req: Request, @Res() res: Response) {
-    const tokens = await this.authService.handleOAuthUser(req.user as any);
+    const tokens = await this.authService.handleOAuthUser(req.user as OAuthProfile);
     const frontendUrl = this.resolveFrontendUrl(req);
     res.clearCookie('oauth_redirect');
     res.redirect(

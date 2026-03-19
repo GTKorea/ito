@@ -15,7 +15,7 @@ vi.mock('@/lib/ws-client', () => ({
 import { api } from '@/lib/api-client';
 import { getSocket } from '@/lib/ws-client';
 
-const mockedApi = vi.mocked(api);
+const mockedApi = vi.mocked(api, true);
 const mockedGetSocket = vi.mocked(getSocket);
 
 const mockNotifications = [

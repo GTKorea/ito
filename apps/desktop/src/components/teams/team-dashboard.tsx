@@ -60,8 +60,8 @@ export function TeamDashboard({ teamId, workspaceId }: TeamDashboardProps) {
         ]);
         setDashboard(dashRes.data);
         setTodos(todosRes.data);
-      } catch {
-        // handle error
+      } catch (error) {
+        console.error('Failed to load team data:', error);
       } finally {
         setIsLoading(false);
         setTodosLoading(false);

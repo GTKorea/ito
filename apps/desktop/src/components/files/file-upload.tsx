@@ -27,8 +27,8 @@ export function FileUpload({ todoId, onUploadComplete }: FileUploadProps) {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       onUploadComplete();
-    } catch {
-      // handle error
+    } catch (error) {
+      console.error('Failed to upload file:', error);
     } finally {
       setIsUploading(false);
     }

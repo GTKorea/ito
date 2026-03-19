@@ -53,5 +53,5 @@ export class InviteMemberDto {
 export class UpdateMemberRoleDto {
   @ApiProperty({ enum: ['OWNER', 'ADMIN', 'MEMBER', 'GUEST'] })
   @IsEnum(WorkspaceRole)
-  role: string;
+  role: WorkspaceRole;
 }

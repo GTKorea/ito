@@ -86,7 +86,7 @@ export function MemberDetailPanel({ userId, onClose }: MemberDetailPanelProps) {
     api
       .get(`/workspaces/${currentWorkspace.id}/members/${userId}/summary`)
       .then(({ data }) => setData(data))
-      .catch(() => {})
+      .catch((e) => console.error('Failed to load member details:', e))
       .finally(() => setIsLoading(false));
   }, [currentWorkspace, userId]);
 

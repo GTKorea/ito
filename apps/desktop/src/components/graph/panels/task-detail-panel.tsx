@@ -56,8 +56,8 @@ export function TaskDetailPanel() {
     try {
       await resolveThread(myPendingLink.id);
       await fetchGraphData(currentWorkspace.id);
-    } catch {
-      // ignore
+    } catch (error) {
+      console.error('Failed to update task:', error);
     }
   };
 
@@ -66,8 +66,8 @@ export function TaskDetailPanel() {
     try {
       await updateTodo(todo.id, { status: newStatus } as any);
       await fetchGraphData(currentWorkspace.id);
-    } catch {
-      // ignore
+    } catch (error) {
+      console.error('Failed to connect thread:', error);
     }
   };
 

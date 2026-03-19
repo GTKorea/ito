@@ -72,7 +72,7 @@ export default function ActivityPage() {
     api
       .get(`/workspaces/${currentWorkspace.id}/activity`)
       .then(({ data }) => setActivities(data))
-      .catch(() => {})
+      .catch((e) => console.error('Failed to load activities:', e))
       .finally(() => setIsLoading(false));
   }, [currentWorkspace]);
 

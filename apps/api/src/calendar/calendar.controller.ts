@@ -134,7 +134,13 @@ export class CalendarController {
     @Query('start') start: string,
     @Query('end') end: string,
   ) {
-    return this.calendarService.fetchGoogleEvents(userId, start, end);
+    const [google, outlook] = await Promise.all([
+      this.calendarService.fetchGoogleEvents(userId, start, end),
+      this.calendarService.fetchOutlookEvents(userId, start, end),
+    ]);
+    return [...google, ...outlook].sort(
+      (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime(),
+    );
   }
 
   // ── Helper ─────────────────────────────────

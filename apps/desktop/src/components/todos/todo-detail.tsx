@@ -49,7 +49,7 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
         setPriority(data.priority);
         setDueDate(data.dueDate ? data.dueDate.slice(0, 10) : '');
       })
-      .catch(() => {})
+      .catch((e) => console.error('Failed to load todo:', e))
       .finally(() => setIsLoading(false));
   }, [todoId]);
 
@@ -66,8 +66,8 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
       // Refetch to get updated data
       const { data } = await api.get(`/todos/${todoId}`);
       setTodo(data);
-    } catch {
-      // handle
+    } catch (error) {
+      console.error('Failed to update todo:', error);
     } finally {
       setIsSaving(false);
     }

@@ -15,7 +15,7 @@ export class TodosService {
       data: {
         title: dto.title,
         description: dto.description,
-        priority: dto.priority as any,
+        priority: dto.priority,
         dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
         creatorId: userId,
         assigneeId: userId,

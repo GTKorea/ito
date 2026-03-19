@@ -10,7 +10,7 @@ vi.mock('@/lib/api-client', () => ({
 
 import { api } from '@/lib/api-client';
 
-const mockedApi = vi.mocked(api);
+const mockedApi = vi.mocked(api, true);
 
 const mockWorkspace = {
   id: 'ws1',
