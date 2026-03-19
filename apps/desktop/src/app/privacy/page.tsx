@@ -19,7 +19,7 @@ export default function PrivacyPage() {
             <span className="text-sm font-semibold">ito</span>
           </Link>
           <Link
-            href="/terms"
+            href="/terms-of-service"
             className="text-xs text-[#888888] hover:text-[#ECECEC] transition-colors"
           >
             이용약관
@@ -363,7 +363,7 @@ export default function PrivacyPage() {
             <Link href="/privacy" className="text-xs text-[#888888] hover:text-[#ECECEC] transition-colors">
               개인정보처리방침
             </Link>
-            <Link href="/terms" className="text-xs text-[#888888] hover:text-[#ECECEC] transition-colors">
+            <Link href="/terms-of-service" className="text-xs text-[#888888] hover:text-[#ECECEC] transition-colors">
               이용약관
             </Link>
             <a href="mailto:support@krow.kr" className="text-xs text-[#888888] hover:text-[#ECECEC] transition-colors">
