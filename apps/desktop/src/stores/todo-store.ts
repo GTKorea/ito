@@ -163,44 +163,61 @@ export const useTodoStore = create<TodoState>((set) => ({
 
   connectChain: async (todoId: string, userIds: string[]) => {
     const res = await api.post(`/todos/${todoId}/connect-chain`, { userIds });
-    // Remove the todo from local state (assignee changed)
-    set((state) => ({
-      todos: state.todos.filter((t) => t.id !== todoId),
-    }));
+    // Move from my tasks to connected tasks
+    set((state) => {
+      const todo = state.todos.find((t) => t.id === todoId);
+      return {
+        todos: state.todos.filter((t) => t.id !== todoId),
+        connectedTodos: todo ? [...state.connectedTodos, { ...todo, ...res.data }] : state.connectedTodos,
+      };
+    });
     return res.data;
   },
 
   connectThread: async (todoId, toUserId, message) => {
-    await api.post(`/todos/${todoId}/connect`, { toUserId, message });
-    // Remove the todo from local state (it's now assigned to someone else)
-    set((state) => ({ todos: state.todos.filter((t) => t.id !== todoId) }));
+    const { data } = await api.post(`/todos/${todoId}/connect`, { toUserId, message });
+    // Move from my tasks to connected tasks
+    set((state) => {
+      const todo = state.todos.find((t) => t.id === todoId);
+      const updatedTodo = data.todo || data;
+      return {
+        todos: state.todos.filter((t) => t.id !== todoId),
+        connectedTodos: todo ? [...state.connectedTodos, { ...todo, ...updatedTodo }] : state.connectedTodos,
+      };
+    });
     trackEvent('thread_connected');
   },
 
   connectMultiThread: async (todoId, toUserIds, message) => {
-    await api.post(`/todos/${todoId}/connect`, { toUserIds, message });
-    // For multi-connect, the assignee stays the same (sender waits for all)
-    // but we still refresh to reflect new thread links
-    set((state) => ({
-      todos: toUserIds.length === 1
-        ? state.todos.filter((t) => t.id !== todoId)
-        : state.todos,
-    }));
+    const { data } = await api.post(`/todos/${todoId}/connect`, { toUserIds, message });
+    const updatedTodo = data.todo || data;
+    set((state) => {
+      if (toUserIds.length === 1) {
+        // Single connect: move to connected tasks
+        const todo = state.todos.find((t) => t.id === todoId);
+        return {
+          todos: state.todos.filter((t) => t.id !== todoId),
+          connectedTodos: todo ? [...state.connectedTodos, { ...todo, ...updatedTodo }] : state.connectedTodos,
+        };
+      }
+      // Multi-connect: update in place
+      return {
+        todos: state.todos.map((t) => t.id === todoId ? { ...t, ...updatedTodo } : t),
+      };
+    });
     trackEvent('thread_connected');
   },
 
   resolveThread: async (threadLinkId) => {
     await api.post(`/thread-links/${threadLinkId}/resolve`);
     trackEvent('thread_resolved');
-    // Remove the resolved todo from local state (it snapped back to sender)
     set((state) => ({
-      todos: state.todos.map((t) => ({
-        ...t,
-        threadLinks: t.threadLinks.map((l) =>
-          l.id === threadLinkId ? { ...l, status: 'COMPLETED' } : l,
-        ),
-      })).filter((t) => {
-        // Remove if the resolved link belonged to this todo and we're no longer assignee
+      todos: state.todos.filter((t) => {
+        const resolvedLink = t.threadLinks.find((l) => l.id === threadLinkId);
+        return !resolvedLink;
+      }),
+      // Also remove from connectedTodos if the task snapped back
+      connectedTodos: state.connectedTodos.filter((t) => {
         const resolvedLink = t.threadLinks.find((l) => l.id === threadLinkId);
         return !resolvedLink;
       }),
@@ -210,14 +227,12 @@ export const useTodoStore = create<TodoState>((set) => ({
   declineThread: async (threadLinkId, reason) => {
     await api.post(`/thread-links/${threadLinkId}/decline`, { reason });
     trackEvent('thread_declined');
-    // Remove the declined todo from local state (it snapped back to sender)
     set((state) => ({
-      todos: state.todos.map((t) => ({
-        ...t,
-        threadLinks: t.threadLinks.map((l) =>
-          l.id === threadLinkId ? { ...l, status: 'CANCELLED' } : l,
-        ),
-      })).filter((t) => {
+      todos: state.todos.filter((t) => {
+        const declinedLink = t.threadLinks.find((l) => l.id === threadLinkId);
+        return !declinedLink;
+      }),
+      connectedTodos: state.connectedTodos.filter((t) => {
         const declinedLink = t.threadLinks.find((l) => l.id === threadLinkId);
         return !declinedLink;
       }),
