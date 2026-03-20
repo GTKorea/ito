@@ -9,7 +9,11 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
   const messages = getMessages(locale);
 
   return (
-    <NextIntlClientProvider locale={locale} messages={messages}>
+    <NextIntlClientProvider
+      locale={locale}
+      messages={messages}
+      timeZone={Intl.DateTimeFormat().resolvedOptions().timeZone}
+    >
       {children}
     </NextIntlClientProvider>
   );
