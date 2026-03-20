@@ -32,6 +32,7 @@ import {
   Ban,
   Calendar,
   X,
+  MessageCircle,
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
@@ -81,6 +82,7 @@ interface TodoItemProps {
       message?: string;
       status: string;
       chainIndex: number;
+      groupId?: string;
     }>;
   };
   onSelect?: (id: string) => void;
@@ -244,6 +246,21 @@ export function TodoItem({ todo, onSelect }: TodoItemProps) {
               </Button>
             </>
           )}
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 w-7 p-0"
+                  onClick={() => onSelect?.(todo.id)}
+                />
+              }
+            >
+              <MessageCircle className="h-3.5 w-3.5" />
+            </TooltipTrigger>
+            <TooltipContent>{t('chat')}</TooltipContent>
+          </Tooltip>
           <Button
             size="sm"
             variant="ghost"

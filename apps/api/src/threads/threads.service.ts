@@ -19,18 +19,34 @@ export class ThreadsService {
   ) {}
 
   /**
-   * Connect a todo to another user via a thread link.
-   * The todo's assignee changes to the target user.
+   * Connect a todo to one or more users via thread links.
+   * Single user: behaves as before (A → B).
+   * Multiple users: creates parallel branches with a shared groupId (A → B, A → C).
    */
   async connect(
     todoId: string,
     fromUserId: string,
-    toUserId: string,
+    toUserIds: string[],
     message?: string,
   ) {
+    if (toUserIds.length === 0) {
+      throw new BadRequestException('At least one target user is required');
+    }
+    if (toUserIds.length > 10) {
+      throw new BadRequestException('Cannot connect to more than 10 users at once');
+    }
+
+    // Check for duplicates in toUserIds
+    const uniqueIds = new Set(toUserIds);
+    if (uniqueIds.size !== toUserIds.length) {
+      throw new BadRequestException('Duplicate user IDs in the connection list');
+    }
+
     // Prevent self-connection
-    if (fromUserId === toUserId) {
-      throw new BadRequestException('Cannot connect a thread to yourself');
+    for (const toUserId of toUserIds) {
+      if (fromUserId === toUserId) {
+        throw new BadRequestException('Cannot connect a thread to yourself');
+      }
     }
 
     const todo = await this.prisma.todo.findUnique({
@@ -49,10 +65,29 @@ export class ThreadsService {
 
     // Check max depth
     const nextIndex = todo.threadLinks.length;
-    if (nextIndex >= MAX_CHAIN_DEPTH) {
+    if (nextIndex + toUserIds.length > MAX_CHAIN_DEPTH) {
       throw new BadRequestException(
         `Thread chain cannot exceed ${MAX_CHAIN_DEPTH} connections`,
       );
+    }
+
+    // Check for circular references — no user in toUserIds should be in the active chain
+    const usersInActiveChain = new Set<string>();
+    for (const link of todo.threadLinks) {
+      if (link.status === 'PENDING' || link.status === 'FORWARDED') {
+        usersInActiveChain.add(link.fromUserId);
+        usersInActiveChain.add(link.toUserId);
+      }
+    }
+    // Also add the todo creator if they are still part of the active chain
+    usersInActiveChain.add(todo.creatorId);
+
+    for (const toUserId of toUserIds) {
+      if (usersInActiveChain.has(toUserId)) {
+        throw new BadRequestException(
+          'Cannot connect to a user who is already in the active thread chain',
+        );
+      }
     }
 
     // Mark current user's status as FORWARDED if they have a pending link
@@ -60,61 +95,83 @@ export class ThreadsService {
       (l) => l.toUserId === fromUserId && l.status === 'PENDING',
     );
 
-    const [threadLink] = await this.prisma.$transaction([
-      // Create new link
-      this.prisma.threadLink.create({
-        data: {
-          todoId,
-          fromUserId,
-          toUserId,
-          message,
-          chainIndex: nextIndex,
-        },
-        include: {
-          fromUser: { select: { id: true, name: true } },
-          toUser: { select: { id: true, name: true } },
-        },
-      }),
-      // Update todo assignee and status
-      this.prisma.todo.update({
-        where: { id: todoId },
-        data: { assigneeId: toUserId, status: 'IN_PROGRESS' },
-      }),
-      // Mark current link as forwarded
-      ...(currentLink
-        ? [
-            this.prisma.threadLink.update({
-              where: { id: currentLink.id },
-              data: { status: 'FORWARDED' },
-            }),
-          ]
-        : []),
-    ]);
+    const isMulti = toUserIds.length > 1;
 
-    // Notify target user
-    await this.notificationsService.create({
-      userId: toUserId,
-      type: 'THREAD_RECEIVED',
-      title: 'New thread connected to you',
-      body: message || `${threadLink.fromUser.name} connected a task to you`,
-      data: { todoId, threadLinkId: threadLink.id },
+    // Generate a groupId for multi-connect
+    const groupId = isMulti ? this.generateCuid() : null;
+
+    const threadLinks = await this.prisma.$transaction(async (tx) => {
+      // Mark current link as forwarded
+      if (currentLink) {
+        await tx.threadLink.update({
+          where: { id: currentLink.id },
+          data: { status: 'FORWARDED' },
+        });
+      }
+
+      const created = [];
+      for (let i = 0; i < toUserIds.length; i++) {
+        const link = await tx.threadLink.create({
+          data: {
+            todoId,
+            fromUserId,
+            toUserId: toUserIds[i],
+            message,
+            chainIndex: nextIndex + i,
+            groupId,
+          },
+          include: {
+            fromUser: { select: { id: true, name: true } },
+            toUser: { select: { id: true, name: true } },
+          },
+        });
+        created.push(link);
+      }
+
+      // For multi-connect: keep assignee as the sender (they are waiting for all to complete)
+      // For single connect: assign to the target user (original behavior)
+      if (isMulti) {
+        await tx.todo.update({
+          where: { id: todoId },
+          data: { status: 'IN_PROGRESS' },
+        });
+      } else {
+        await tx.todo.update({
+          where: { id: todoId },
+          data: { assigneeId: toUserIds[0], status: 'IN_PROGRESS' },
+        });
+      }
+
+      return created;
     });
+
+    // Notify all target users
+    for (const link of threadLinks) {
+      await this.notificationsService.create({
+        userId: link.toUserId,
+        type: 'THREAD_RECEIVED',
+        title: 'New thread connected to you',
+        body: message || `${link.fromUser.name} connected a task to you`,
+        data: { todoId, threadLinkId: link.id, groupId },
+      });
+    }
 
     await this.activityService.log({
       workspaceId: todo.workspaceId,
       userId: fromUserId,
       action: 'CONNECTED',
       entityType: 'ThreadLink',
-      entityId: threadLink.id,
-      metadata: { todoId, toUserId },
+      entityId: threadLinks[0].id,
+      metadata: { todoId, toUserIds, groupId },
     });
 
-    return threadLink;
+    // Return single link for backward compat, array for multi
+    return isMulti ? threadLinks : threadLinks[0];
   }
 
   /**
    * Resolve the current thread link — snap back to the previous person.
-   * The previous person becomes the new assignee and gets notified.
+   * For grouped (parallel) links: only snap back when ALL links in the group are completed.
    */
   async resolve(threadLinkId: string, userId: string) {
     const link = await this.prisma.threadLink.findUnique({
@@ -134,11 +191,9 @@ export class ThreadsService {
 
     const previousUser = link.fromUserId;
 
-    const previousLink = link.todo.threadLinks.find(
-      (l) => l.toUserId === previousUser && l.status === 'FORWARDED',
-    );
+    // Check if this is part of a group
+    const isGrouped = !!link.groupId;
 
-    // Wrap all state mutations in a transaction for consistency
     await this.prisma.$transaction(async (tx) => {
       // Mark this link as completed
       await tx.threadLink.update({
@@ -146,32 +201,96 @@ export class ThreadsService {
         data: { status: 'COMPLETED', resolvedAt: new Date() },
       });
 
-      if (previousLink) {
-        // Snap back: previous person's link becomes PENDING again
-        await tx.threadLink.update({
-          where: { id: previousLink.id },
-          data: { status: 'PENDING' },
+      if (isGrouped) {
+        // Check if all other links in the group are now completed
+        const groupLinks = await tx.threadLink.findMany({
+          where: { groupId: link.groupId!, id: { not: link.id } },
+        });
+
+        const allCompleted = groupLinks.every((l) => l.status === 'COMPLETED');
+
+        if (allCompleted) {
+          // All parallel branches done — snap back to the sender
+          const previousLink = link.todo.threadLinks.find(
+            (l) => l.toUserId === previousUser && l.status === 'FORWARDED',
+          );
+
+          if (previousLink) {
+            await tx.threadLink.update({
+              where: { id: previousLink.id },
+              data: { status: 'PENDING' },
+            });
+          }
+
+          await tx.todo.update({
+            where: { id: link.todoId },
+            data: {
+              assigneeId: previousUser,
+              status: 'IN_PROGRESS',
+            },
+          });
+        }
+        // If not all completed, just leave the todo as-is — still waiting
+      } else {
+        // Original single-link resolve logic
+        const previousLink = link.todo.threadLinks.find(
+          (l) => l.toUserId === previousUser && l.status === 'FORWARDED',
+        );
+
+        if (previousLink) {
+          await tx.threadLink.update({
+            where: { id: previousLink.id },
+            data: { status: 'PENDING' },
+          });
+        }
+
+        await tx.todo.update({
+          where: { id: link.todoId },
+          data: {
+            assigneeId: previousUser,
+            status: 'IN_PROGRESS',
+          },
         });
       }
+    });
 
-      // Update todo assignee to the previous user
-      await tx.todo.update({
-        where: { id: link.todoId },
-        data: {
-          assigneeId: previousUser,
-          status: 'IN_PROGRESS',
-        },
+    // Determine notification type based on group completion
+    if (isGrouped) {
+      const groupLinks = await this.prisma.threadLink.findMany({
+        where: { groupId: link.groupId! },
       });
-    });
+      const allCompleted = groupLinks.every((l) => l.status === 'COMPLETED');
 
-    // Notify the previous user
-    await this.notificationsService.create({
-      userId: previousUser,
-      type: 'THREAD_SNAPPED',
-      title: 'Thread resolved — your turn',
-      body: 'A dependency was resolved and the task is back to you',
-      data: { todoId: link.todoId, threadLinkId: link.id },
-    });
+      if (allCompleted) {
+        // Notify the sender that all parallel branches are done
+        await this.notificationsService.create({
+          userId: previousUser,
+          type: 'THREAD_SNAPPED',
+          title: 'All parallel threads resolved — your turn',
+          body: 'All parallel dependencies were resolved and the task is back to you',
+          data: { todoId: link.todoId, threadLinkId: link.id, groupId: link.groupId },
+        });
+      } else {
+        // Notify the sender that one branch is done (partial progress)
+        const completedCount = groupLinks.filter((l) => l.status === 'COMPLETED').length;
+        await this.notificationsService.create({
+          userId: previousUser,
+          type: 'THREAD_COMPLETED',
+          title: 'A parallel thread was resolved',
+          body: `${completedCount}/${groupLinks.length} parallel threads completed`,
+          data: { todoId: link.todoId, threadLinkId: link.id, groupId: link.groupId },
+        });
+      }
+    } else {
+      // Original notification
+      await this.notificationsService.create({
+        userId: previousUser,
+        type: 'THREAD_SNAPPED',
+        title: 'Thread resolved — your turn',
+        body: 'A dependency was resolved and the task is back to you',
+        data: { todoId: link.todoId, threadLinkId: link.id },
+      });
+    }
 
     await this.activityService.log({
       workspaceId: link.todo.workspaceId,
@@ -179,10 +298,10 @@ export class ThreadsService {
       action: 'RESOLVED',
       entityType: 'ThreadLink',
       entityId: threadLinkId,
-      metadata: { todoId: link.todoId },
+      metadata: { todoId: link.todoId, groupId: link.groupId },
     });
 
-    return { message: 'Thread link resolved', snapBackTo: previousUser };
+    return { message: 'Thread link resolved', snapBackTo: previousUser, groupId: link.groupId };
   }
 
   /**
@@ -259,6 +378,35 @@ export class ThreadsService {
 
       return { success: true };
     });
+  }
+
+  /**
+   * Get all thread links in a group.
+   */
+  async getGroupLinks(groupId: string) {
+    const links = await this.prisma.threadLink.findMany({
+      where: { groupId },
+      include: {
+        fromUser: { select: { id: true, name: true, avatarUrl: true } },
+        toUser: { select: { id: true, name: true, avatarUrl: true } },
+        todo: { select: { id: true, title: true, status: true } },
+      },
+      orderBy: { chainIndex: 'asc' },
+    });
+
+    if (links.length === 0) {
+      throw new NotFoundException('Group not found');
+    }
+
+    const completedCount = links.filter((l) => l.status === 'COMPLETED').length;
+
+    return {
+      groupId,
+      links,
+      total: links.length,
+      completed: completedCount,
+      allCompleted: completedCount === links.length,
+    };
   }
 
   /**
@@ -515,5 +663,14 @@ export class ThreadsService {
     ]);
 
     return { incoming, outgoing };
+  }
+
+  /**
+   * Generate a simple cuid-like unique identifier for grouping.
+   */
+  private generateCuid(): string {
+    const timestamp = Date.now().toString(36);
+    const random = Math.random().toString(36).substring(2, 10);
+    return `grp_${timestamp}${random}`;
   }
 }

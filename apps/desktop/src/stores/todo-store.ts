@@ -17,6 +17,7 @@ interface ThreadLink {
   message?: string;
   status: string;
   chainIndex: number;
+  groupId?: string;
   createdAt: string;
 }
 
@@ -75,6 +76,7 @@ interface TodoState {
   deleteTodo: (id: string) => Promise<void>;
   connectChain: (todoId: string, userIds: string[]) => Promise<any>;
   connectThread: (todoId: string, toUserId: string, message?: string) => Promise<void>;
+  connectMultiThread: (todoId: string, toUserIds: string[], message?: string) => Promise<void>;
   resolveThread: (threadLinkId: string) => Promise<void>;
   declineThread: (threadLinkId: string, reason?: string) => Promise<void>;
 }
@@ -158,6 +160,18 @@ export const useTodoStore = create<TodoState>((set) => ({
     await api.post(`/todos/${todoId}/connect`, { toUserId, message });
     // Remove the todo from local state (it's now assigned to someone else)
     set((state) => ({ todos: state.todos.filter((t) => t.id !== todoId) }));
+    trackEvent('thread_connected');
+  },
+
+  connectMultiThread: async (todoId, toUserIds, message) => {
+    await api.post(`/todos/${todoId}/connect`, { toUserIds, message });
+    // For multi-connect, the assignee stays the same (sender waits for all)
+    // but we still refresh to reflect new thread links
+    set((state) => ({
+      todos: toUserIds.length === 1
+        ? state.todos.filter((t) => t.id !== todoId)
+        : state.todos,
+    }));
     trackEvent('thread_connected');
   },
 

@@ -23,16 +23,18 @@ export class ThreadsController {
   constructor(private threadsService: ThreadsService) {}
 
   @Post('todos/:todoId/connect')
-  @ApiOperation({ summary: 'Connect a todo to another user via thread' })
+  @ApiOperation({ summary: 'Connect a todo to one or more users via thread' })
   connect(
     @Param('todoId') todoId: string,
     @Body() dto: ConnectThreadDto,
     @CurrentUser('id') userId: string,
   ) {
+    // Normalize: support both toUserId (single) and toUserIds (array)
+    const toUserIds = dto.toUserIds || (dto.toUserId ? [dto.toUserId] : []);
     return this.threadsService.connect(
       todoId,
       userId,
-      dto.toUserId,
+      toUserIds,
       dto.message,
     );
   }
@@ -70,6 +72,12 @@ export class ThreadsController {
   @ApiOperation({ summary: 'Get the thread chain for a todo' })
   getChain(@Param('todoId') todoId: string) {
     return this.threadsService.getChain(todoId);
+  }
+
+  @Get('thread-links/group/:groupId')
+  @ApiOperation({ summary: 'Get all thread links in a group' })
+  getGroup(@Param('groupId') groupId: string) {
+    return this.threadsService.getGroupLinks(groupId);
   }
 
   @Get('workspaces/:workspaceId/task-graph')

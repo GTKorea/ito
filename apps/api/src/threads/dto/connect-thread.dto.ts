@@ -1,10 +1,17 @@
-import { IsString, IsOptional } from 'class-validator';
+import { IsString, IsOptional, IsArray } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class ConnectThreadDto {
-  @ApiProperty({ description: 'User ID to connect the thread to' })
+  @ApiPropertyOptional({ description: 'User ID to connect the thread to (single user)' })
+  @IsOptional()
   @IsString()
-  toUserId: string;
+  toUserId?: string;
+
+  @ApiPropertyOptional({ description: 'Array of user IDs to connect the thread to (multi-user parallel connect)' })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  toUserIds?: string[];
 
   @ApiPropertyOptional({ description: 'Optional message for the recipient' })
   @IsOptional()

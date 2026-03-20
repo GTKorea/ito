@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useTodoStore } from '@/stores/todo-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
-import { useAuthStore } from '@/stores/auth-store';
 import { api } from '@/lib/api-client';
 import {
   Dialog,
@@ -16,7 +15,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Link2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Link2, X, Users } from 'lucide-react';
 
 interface User {
   id: string;
@@ -33,10 +33,10 @@ interface ConnectDialogProps {
 export function ConnectDialog({ todoId, onClose }: ConnectDialogProps) {
   const [search, setSearch] = useState('');
   const [members, setMembers] = useState<User[]>([]);
-  const [selected, setSelected] = useState<User | null>(null);
+  const [selected, setSelected] = useState<User[]>([]);
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { connectThread, fetchTodos } = useTodoStore();
+  const { connectThread, connectMultiThread, fetchTodos } = useTodoStore();
   const { currentWorkspace } = useWorkspaceStore();
   const t = useTranslations('threads');
   const tc = useTranslations('common');
@@ -73,11 +73,36 @@ export function ConnectDialog({ todoId, onClose }: ConnectDialogProps) {
     }
   };
 
+  const toggleUser = (user: User) => {
+    setSelected((prev) => {
+      const exists = prev.find((u) => u.id === user.id);
+      if (exists) {
+        return prev.filter((u) => u.id !== user.id);
+      }
+      if (prev.length >= 10) return prev; // max 10
+      return [...prev, user];
+    });
+  };
+
+  const removeUser = (userId: string) => {
+    setSelected((prev) => prev.filter((u) => u.id !== userId));
+  };
+
   const handleConnect = async () => {
-    if (!selected || !currentWorkspace) return;
+    if (selected.length === 0 || !currentWorkspace) return;
     setIsLoading(true);
     try {
-      await connectThread(todoId, selected.id, message || undefined);
+      if (selected.length === 1) {
+        // Single connect — backward compatible
+        await connectThread(todoId, selected[0].id, message || undefined);
+      } else {
+        // Multi-connect
+        await connectMultiThread(
+          todoId,
+          selected.map((u) => u.id),
+          message || undefined,
+        );
+      }
       await fetchTodos(currentWorkspace.id);
       onClose();
     } catch (error) {
@@ -86,6 +111,10 @@ export function ConnectDialog({ todoId, onClose }: ConnectDialogProps) {
       setIsLoading(false);
     }
   };
+
+  const filteredMembers = members.filter(
+    (m) => !selected.find((s) => s.id === m.id),
+  );
 
   return (
     <Dialog open onOpenChange={() => onClose()}>
@@ -98,63 +127,73 @@ export function ConnectDialog({ todoId, onClose }: ConnectDialogProps) {
         </DialogHeader>
 
         <div className="space-y-4">
-          {!selected ? (
-            <>
-              <Input
-                placeholder={t('searchByNameOrEmail')}
-                value={search}
-                onChange={(e) => handleSearch(e.target.value)}
-                autoFocus
-              />
-              <div className="max-h-48 overflow-y-auto space-y-1">
-                {members.map((user) => (
+          {/* Selected users as chips */}
+          {selected.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {selected.map((user) => (
+                <Badge
+                  key={user.id}
+                  variant="secondary"
+                  className="flex items-center gap-1 pl-1 pr-1 py-1"
+                >
+                  <Avatar className="h-4 w-4">
+                    <AvatarFallback className="text-[7px] bg-secondary">
+                      {user.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-xs">{user.name}</span>
                   <button
-                    key={user.id}
-                    onClick={() => setSelected(user)}
-                    className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm hover:bg-accent transition-colors"
+                    onClick={() => removeUser(user.id)}
+                    className="ml-0.5 rounded-sm hover:bg-accent p-0.5"
                   >
-                    <Avatar className="h-6 w-6">
-                      <AvatarFallback className="text-[9px] bg-secondary">
-                        {user.name.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="text-left">
-                      <p className="font-medium">{user.name}</p>
-                      <p className="text-xs text-muted-foreground">{user.email}</p>
-                    </div>
+                    <X className="h-3 w-3" />
                   </button>
-                ))}
-                {members.length === 0 && (
-                  <p className="text-sm text-muted-foreground text-center py-4">
-                    {t('noMembersFound')}
-                  </p>
-                )}
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="flex items-center gap-2 rounded-md bg-accent p-2">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-secondary">
-                    {selected.name.charAt(0).toUpperCase()}
+                </Badge>
+              ))}
+              {selected.length > 1 && (
+                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                  <Users className="h-3 w-3" />
+                  {t('parallelConnect', { count: selected.length })}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Search and member list */}
+          <Input
+            placeholder={t('searchByNameOrEmail')}
+            value={search}
+            onChange={(e) => handleSearch(e.target.value)}
+            autoFocus
+          />
+          <div className="max-h-48 overflow-y-auto space-y-1">
+            {filteredMembers.map((user) => (
+              <button
+                key={user.id}
+                onClick={() => toggleUser(user)}
+                className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm hover:bg-accent transition-colors"
+              >
+                <Avatar className="h-6 w-6">
+                  <AvatarFallback className="text-[9px] bg-secondary">
+                    {user.name.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <div>
-                  <p className="text-sm font-medium">{selected.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {selected.email}
-                  </p>
+                <div className="text-left">
+                  <p className="font-medium">{user.name}</p>
+                  <p className="text-xs text-muted-foreground">{user.email}</p>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="ml-auto text-xs"
-                  onClick={() => setSelected(null)}
-                >
-                  {tc('change')}
-                </Button>
-              </div>
+              </button>
+            ))}
+            {filteredMembers.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                {t('noMembersFound')}
+              </p>
+            )}
+          </div>
 
+          {/* Message and connect button */}
+          {selected.length > 0 && (
+            <>
               <Textarea
                 placeholder={t('addMessage')}
                 value={message}
@@ -168,7 +207,11 @@ export function ConnectDialog({ todoId, onClose }: ConnectDialogProps) {
                 className="w-full"
               >
                 <Link2 className="mr-2 h-4 w-4" />
-                {isLoading ? t('connecting') : t('connectThread')}
+                {isLoading
+                  ? t('connecting')
+                  : selected.length > 1
+                    ? t('connectMultiple', { count: selected.length })
+                    : t('connectThread')}
               </Button>
             </>
           )}
