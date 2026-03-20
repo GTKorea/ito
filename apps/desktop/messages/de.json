@@ -567,6 +567,8 @@
         }
       }
     },
+    "progress": "{count}/{total} abgeschlossen",
+    "allComplete": "Alle Schritte abgeschlossen!",
     "shortcuts": {
       "title": "Tastaturkürzel",
       "commandPalette": "Befehlspalette öffnen",

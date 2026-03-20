@@ -567,6 +567,8 @@
         }
       }
     },
+    "progress": "{count}/{total} concluídos",
+    "allComplete": "Todos os passos concluídos!",
     "shortcuts": {
       "title": "Atalhos de teclado",
       "commandPalette": "Abrir paleta de comandos",

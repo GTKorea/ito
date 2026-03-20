@@ -567,6 +567,8 @@
         }
       }
     },
+    "progress": "{count}/{total} 완료",
+    "allComplete": "모든 단계를 완료했어요!",
     "shortcuts": {
       "title": "키보드 단축키",
       "commandPalette": "커맨드 팔레트 열기",

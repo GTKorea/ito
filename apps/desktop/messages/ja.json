@@ -567,6 +567,8 @@
         }
       }
     },
+    "progress": "{count}/{total} 完了",
+    "allComplete": "すべてのステップを完了しました！",
     "shortcuts": {
       "title": "キーボードショートカット",
       "commandPalette": "コマンドパレットを開く",

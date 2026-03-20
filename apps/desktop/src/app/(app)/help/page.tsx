@@ -17,6 +17,17 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
+import { useHelpProgressStore } from '@/stores/help-progress-store';
+
+function SectionProgressBadge({ sectionPrefix }: { sectionPrefix: string }) {
+  const { done, total } = useHelpProgressStore((s) => s.sectionProgress(sectionPrefix));
+  if (done === 0) return null;
+  return (
+    <span className="ml-2 inline-flex items-center rounded-full bg-green-500/10 px-2 py-0.5 text-[10px] font-medium text-green-400">
+      {done}/{total}
+    </span>
+  );
+}
 
 interface SectionProps {
   id: string;
@@ -24,9 +35,10 @@ interface SectionProps {
   title: string;
   children: React.ReactNode;
   defaultOpen?: boolean;
+  trackable?: boolean;
 }
 
-function Section({ id, icon, title, children, defaultOpen = false }: SectionProps) {
+function Section({ id, icon, title, children, defaultOpen = false, trackable = false }: SectionProps) {
   const [open, setOpen] = useState(defaultOpen);
 
   return (
@@ -38,7 +50,10 @@ function Section({ id, icon, title, children, defaultOpen = false }: SectionProp
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10">
           {icon}
         </div>
-        <span className="flex-1 text-sm font-semibold">{title}</span>
+        <span className="flex-1 text-sm font-semibold">
+          {title}
+          {trackable && <SectionProgressBadge sectionPrefix={id} />}
+        </span>
         <ChevronDown
           className={cn(
             'h-4 w-4 text-muted-foreground transition-transform duration-200',
@@ -149,13 +164,90 @@ function StatusBadge({ color, label }: { color: string; label: string }) {
   );
 }
 
-function StepItem({ number, children }: { number: number; children: React.ReactNode }) {
+function StepItem({ number, stepId, children }: { number: number; stepId?: string; children: React.ReactNode }) {
+  const completed = useHelpProgressStore((s) => stepId ? !!s.completed[stepId] : false);
+  const toggleStep = useHelpProgressStore((s) => s.toggleStep);
+
   return (
     <div className="flex gap-3">
-      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary text-xs font-bold">
-        {number}
+      {stepId ? (
+        <button
+          onClick={() => toggleStep(stepId)}
+          className="shrink-0 mt-0.5 transition-colors"
+          type="button"
+        >
+          {completed ? (
+            <CheckCircle2 className="h-5 w-5 text-green-500" />
+          ) : (
+            <Circle className="h-5 w-5 text-zinc-600 hover:text-zinc-400" />
+          )}
+        </button>
+      ) : (
+        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary text-xs font-bold">
+          {number}
+        </div>
+      )}
+      <p className={cn(
+        'text-sm leading-relaxed pt-0.5',
+        stepId && completed ? 'text-muted-foreground/50' : 'text-muted-foreground',
+      )}>
+        {children}
+      </p>
+    </div>
+  );
+}
+
+function SnapbackStepItem({ step, stepId }: { step: number; stepId: string }) {
+  const t = useTranslations('help');
+  const completed = useHelpProgressStore((s) => !!s.completed[stepId]);
+  const toggleStep = useHelpProgressStore((s) => s.toggleStep);
+
+  return (
+    <div className="flex items-start gap-3 rounded-md border border-border bg-background/50 px-3 py-2.5">
+      <button
+        onClick={() => toggleStep(stepId)}
+        className="shrink-0 mt-0.5 transition-colors"
+        type="button"
+      >
+        {completed ? (
+          <CheckCircle2 className="h-5 w-5 text-green-500" />
+        ) : (
+          <Circle className="h-5 w-5 text-zinc-600 hover:text-zinc-400" />
+        )}
+      </button>
+      <p className={cn(
+        'text-xs leading-relaxed',
+        completed ? 'text-muted-foreground/50' : 'text-muted-foreground',
+      )}>
+        {t(`snapback.example${step}`)}
+      </p>
+    </div>
+  );
+}
+
+function ProgressBar() {
+  const t = useTranslations('help');
+  const completedCount = useHelpProgressStore((s) => s.completedCount());
+  const totalSteps = useHelpProgressStore((s) => s.totalSteps);
+  const pct = totalSteps > 0 ? Math.round((completedCount / totalSteps) * 100) : 0;
+  const allDone = completedCount === totalSteps;
+
+  return (
+    <div className="rounded-lg border border-border bg-card/50 px-5 py-4">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs font-medium text-muted-foreground">
+          {allDone
+            ? t('allComplete')
+            : t('progress', { count: completedCount, total: totalSteps })}
+        </span>
+        <span className="text-xs font-medium text-muted-foreground">{pct}%</span>
       </div>
-      <p className="text-sm text-muted-foreground leading-relaxed pt-0.5">{children}</p>
+      <div className="h-2 w-full rounded-full bg-zinc-800">
+        <div
+          className="h-2 rounded-full bg-green-500 transition-all duration-300"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
     </div>
   );
 }
@@ -193,12 +285,16 @@ export default function HelpPage() {
       </div>
 
       <div className="max-w-2xl p-6 space-y-3">
+        {/* Progress Bar */}
+        <ProgressBar />
+
         {/* Getting Started */}
         <Section
           id="getting-started"
           icon={<Rocket className="h-4 w-4 text-primary" />}
           title={t('gettingStarted.title')}
           defaultOpen
+          trackable
         >
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground leading-relaxed">
@@ -210,9 +306,9 @@ export default function HelpPage() {
                 {t('gettingStarted.createWorkspaceTitle')}
               </h3>
               <div className="space-y-2.5">
-                <StepItem number={1}>{t('gettingStarted.step1')}</StepItem>
-                <StepItem number={2}>{t('gettingStarted.step2')}</StepItem>
-                <StepItem number={3}>{t('gettingStarted.step3')}</StepItem>
+                <StepItem number={1} stepId="getting-started.ws-step1">{t('gettingStarted.step1')}</StepItem>
+                <StepItem number={2} stepId="getting-started.ws-step2">{t('gettingStarted.step2')}</StepItem>
+                <StepItem number={3} stepId="getting-started.ws-step3">{t('gettingStarted.step3')}</StepItem>
               </div>
             </div>
 
@@ -223,9 +319,9 @@ export default function HelpPage() {
                 {t('gettingStarted.inviteTitle')}
               </h3>
               <div className="space-y-2.5">
-                <StepItem number={1}>{t('gettingStarted.inviteStep1')}</StepItem>
-                <StepItem number={2}>{t('gettingStarted.inviteStep2')}</StepItem>
-                <StepItem number={3}>{t('gettingStarted.inviteStep3')}</StepItem>
+                <StepItem number={1} stepId="getting-started.invite-step1">{t('gettingStarted.inviteStep1')}</StepItem>
+                <StepItem number={2} stepId="getting-started.invite-step2">{t('gettingStarted.inviteStep2')}</StepItem>
+                <StepItem number={3} stepId="getting-started.invite-step3">{t('gettingStarted.inviteStep3')}</StepItem>
               </div>
             </div>
           </div>
@@ -236,6 +332,7 @@ export default function HelpPage() {
           id="task-management"
           icon={<ListTodo className="h-4 w-4 text-primary" />}
           title={t('taskManagement.title')}
+          trackable
         >
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground leading-relaxed">
@@ -276,9 +373,9 @@ export default function HelpPage() {
                 {t('taskManagement.createTaskTitle')}
               </h3>
               <div className="space-y-2.5">
-                <StepItem number={1}>{t('taskManagement.createStep1')}</StepItem>
-                <StepItem number={2}>{t('taskManagement.createStep2')}</StepItem>
-                <StepItem number={3}>{t('taskManagement.createStep3')}</StepItem>
+                <StepItem number={1} stepId="task-management.step1">{t('taskManagement.createStep1')}</StepItem>
+                <StepItem number={2} stepId="task-management.step2">{t('taskManagement.createStep2')}</StepItem>
+                <StepItem number={3} stepId="task-management.step3">{t('taskManagement.createStep3')}</StepItem>
               </div>
             </div>
           </div>
@@ -289,6 +386,7 @@ export default function HelpPage() {
           id="thread-connection"
           icon={<Link2 className="h-4 w-4 text-primary" />}
           title={t('threadConnection.title')}
+          trackable
         >
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground leading-relaxed">
@@ -300,10 +398,10 @@ export default function HelpPage() {
                 {t('threadConnection.howItWorksTitle')}
               </h3>
               <div className="space-y-2.5">
-                <StepItem number={1}>{t('threadConnection.step1')}</StepItem>
-                <StepItem number={2}>{t('threadConnection.step2')}</StepItem>
-                <StepItem number={3}>{t('threadConnection.step3')}</StepItem>
-                <StepItem number={4}>{t('threadConnection.step4')}</StepItem>
+                <StepItem number={1} stepId="thread-connection.step1">{t('threadConnection.step1')}</StepItem>
+                <StepItem number={2} stepId="thread-connection.step2">{t('threadConnection.step2')}</StepItem>
+                <StepItem number={3} stepId="thread-connection.step3">{t('threadConnection.step3')}</StepItem>
+                <StepItem number={4} stepId="thread-connection.step4">{t('threadConnection.step4')}</StepItem>
               </div>
             </div>
 
@@ -338,6 +436,7 @@ export default function HelpPage() {
           id="snapback"
           icon={<RotateCcw className="h-4 w-4 text-primary" />}
           title={t('snapback.title')}
+          trackable
         >
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground leading-relaxed">
@@ -351,16 +450,11 @@ export default function HelpPage() {
 
               {/* Step-by-step snap-back example */}
               <div className="space-y-2">
-                {[1, 2, 3, 4, 5].map((step) => (
-                  <div key={step} className="flex items-start gap-3 rounded-md border border-border bg-background/50 px-3 py-2.5">
-                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary text-[10px] font-bold mt-0.5">
-                      {step}
-                    </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      {t(`snapback.example${step}`)}
-                    </p>
-                  </div>
-                ))}
+                <SnapbackStepItem step={1} stepId="snapback.step1" />
+                <SnapbackStepItem step={2} stepId="snapback.step2" />
+                <SnapbackStepItem step={3} stepId="snapback.step3" />
+                <SnapbackStepItem step={4} stepId="snapback.step4" />
+                <SnapbackStepItem step={5} stepId="snapback.step5" />
               </div>
             </div>
 

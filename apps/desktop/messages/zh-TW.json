@@ -567,6 +567,8 @@
         }
       }
     },
+    "progress": "{count}/{total} 已完成",
+    "allComplete": "所有步驟已完成！",
     "shortcuts": {
       "title": "鍵盤快捷鍵",
       "commandPalette": "開啟命令面板",
