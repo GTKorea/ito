@@ -469,7 +469,9 @@
       "THREAD_COMPLETED": "Thread concluída",
       "WORKSPACE_INVITE": "Convite de workspace",
       "TODO_ASSIGNED": "Tarefa atribuída",
-      "TODO_COMPLETED": "Tarefa concluída"
+      "TODO_COMPLETED": "Tarefa concluída",
+      "THREAD_DECLINED": "Thread recusado",
+      "SHARED_SPACE_INVITE": "Convite de espaço compartilhado"
     }
   },
   "help": {

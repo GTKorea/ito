@@ -469,7 +469,9 @@
       "THREAD_COMPLETED": "線程完成",
       "WORKSPACE_INVITE": "工作區邀請",
       "TODO_ASSIGNED": "任務指派",
-      "TODO_COMPLETED": "任務完成"
+      "TODO_COMPLETED": "任務完成",
+      "THREAD_DECLINED": "線程拒絕",
+      "SHARED_SPACE_INVITE": "共享空間邀請"
     }
   },
   "help": {

@@ -469,7 +469,9 @@
       "THREAD_COMPLETED": "스레드 완료",
       "WORKSPACE_INVITE": "워크스페이스 초대",
       "TODO_ASSIGNED": "태스크 배정",
-      "TODO_COMPLETED": "태스크 완료"
+      "TODO_COMPLETED": "태스크 완료",
+      "THREAD_DECLINED": "스레드 거절",
+      "SHARED_SPACE_INVITE": "공유 스페이스 초대"
     }
   },
   "help": {

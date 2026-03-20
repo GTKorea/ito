@@ -469,7 +469,9 @@
       "THREAD_COMPLETED": "Thread Completed",
       "WORKSPACE_INVITE": "Workspace Invite",
       "TODO_ASSIGNED": "Task Assigned",
-      "TODO_COMPLETED": "Task Completed"
+      "TODO_COMPLETED": "Task Completed",
+      "THREAD_DECLINED": "Thread Declined",
+      "SHARED_SPACE_INVITE": "Shared Space Invite"
     }
   },
   "help": {

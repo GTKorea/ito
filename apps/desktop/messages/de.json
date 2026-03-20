@@ -469,7 +469,9 @@
       "THREAD_COMPLETED": "Thread abgeschlossen",
       "WORKSPACE_INVITE": "Workspace-Einladung",
       "TODO_ASSIGNED": "Aufgabe zugewiesen",
-      "TODO_COMPLETED": "Aufgabe abgeschlossen"
+      "TODO_COMPLETED": "Aufgabe abgeschlossen",
+      "THREAD_DECLINED": "Thread abgelehnt",
+      "SHARED_SPACE_INVITE": "Gemeinsamer Bereich Einladung"
     }
   },
   "help": {

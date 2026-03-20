@@ -469,7 +469,9 @@
       "THREAD_COMPLETED": "スレッド完了",
       "WORKSPACE_INVITE": "ワークスペース招待",
       "TODO_ASSIGNED": "タスク割り当て",
-      "TODO_COMPLETED": "タスク完了"
+      "TODO_COMPLETED": "タスク完了",
+      "THREAD_DECLINED": "スレッド拒否",
+      "SHARED_SPACE_INVITE": "共有スペース招待"
     }
   },
   "help": {

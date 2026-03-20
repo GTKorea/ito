@@ -469,7 +469,9 @@
       "THREAD_COMPLETED": "Hilo completado",
       "WORKSPACE_INVITE": "Invitación al workspace",
       "TODO_ASSIGNED": "Tarea asignada",
-      "TODO_COMPLETED": "Tarea completada"
+      "TODO_COMPLETED": "Tarea completada",
+      "THREAD_DECLINED": "Hilo rechazado",
+      "SHARED_SPACE_INVITE": "Invitación a espacio compartido"
     }
   },
   "help": {
