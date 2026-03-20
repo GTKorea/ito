@@ -7,11 +7,15 @@ export const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Attach access token to every request
+// Attach access token and workspace ID to every request
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('accessToken');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  }
+  const workspaceId = localStorage.getItem('ito-workspace-id');
+  if (workspaceId) {
+    config.headers['x-workspace-id'] = workspaceId;
   }
   return config;
 });
