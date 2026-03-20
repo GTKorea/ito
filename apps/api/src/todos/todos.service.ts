@@ -118,6 +118,11 @@ export class TodosService {
       throw new ForbiddenException('Not authorized to update this todo');
     }
 
+    // Only the current assignee can change the status
+    if (dto.status && todo.assigneeId !== userId) {
+      throw new ForbiddenException('Only the current assignee can change task status');
+    }
+
     const data: any = { ...dto };
     if (dto.dueDate) data.dueDate = new Date(dto.dueDate);
     if (dto.status === 'COMPLETED') data.completedAt = new Date();

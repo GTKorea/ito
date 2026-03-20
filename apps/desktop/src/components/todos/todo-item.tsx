@@ -129,6 +129,7 @@ export function TodoItem({ todo, onSelect, isConnected }: TodoItemProps) {
 
   const hasThreads = todo.threadLinks.length > 0;
   const dueDateInfo = getDueDateInfo(todo.dueDate);
+  const isAssignee = user?.id === todo.assignee?.id;
 
   // Only show Done/Decline for pending links where I'm the recipient (not the creator)
   const pendingLink = !isConnected && todo.assignee?.id && user?.id
@@ -145,12 +146,14 @@ export function TodoItem({ todo, onSelect, isConnected }: TodoItemProps) {
           <TooltipTrigger
             render={
               <button
-                onClick={() =>
+                onClick={() => {
+                  if (!isAssignee) return;
                   updateTodo(todo.id, {
                     status: todo.status === 'COMPLETED' ? 'OPEN' : 'COMPLETED',
-                  })
-                }
-                className="shrink-0"
+                  });
+                }}
+                className={cn('shrink-0', !isAssignee && 'cursor-default opacity-50')}
+                disabled={!isAssignee}
               />
             }
           >
