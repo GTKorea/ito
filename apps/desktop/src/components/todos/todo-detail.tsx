@@ -12,8 +12,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { X, Save, Link2, Paperclip, List, Network } from 'lucide-react';
+import { X, Save, Link2, Paperclip, List, Network, MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ChatPanel } from '@/components/chat/chat-panel';
 
 const statuses = ['OPEN', 'IN_PROGRESS', 'BLOCKED', 'COMPLETED', 'CANCELLED'];
 const priorities = ['URGENT', 'HIGH', 'MEDIUM', 'LOW'];
@@ -35,7 +36,9 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [graphView, setGraphView] = useState(false);
   const [fileRefreshKey, setFileRefreshKey] = useState(0);
+  const [showChat, setShowChat] = useState(false);
   const t = useTranslations('todos');
+  const tc = useTranslations('chat');
 
   useEffect(() => {
     setIsLoading(true);
@@ -81,14 +84,33 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
     );
   }
 
+  if (showChat) {
+    return (
+      <div className="flex h-full w-full">
+        <ChatPanel todoId={todoId} onClose={() => setShowChat(false)} />
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-full w-full flex-col border-l border-border bg-[#1A1A1A]">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <h2 className="text-sm font-semibold text-[#ECECEC]">{t('taskDetail')}</h2>
-        <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={onClose}>
-          <X className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 p-0"
+            onClick={() => setShowChat(true)}
+            title={tc('title')}
+          >
+            <MessageCircle className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={onClose}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Body */}

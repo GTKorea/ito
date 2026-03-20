@@ -1,4 +1,5 @@
 import { io, Socket } from 'socket.io-client';
+import { setupChatListeners } from '@/stores/chat-store';
 
 const WS_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3011';
 
@@ -13,7 +14,8 @@ export function connectWs(token: string): Socket {
   });
 
   socket.on('connect', () => {
-    // connection established
+    // Set up chat listeners when connected
+    setupChatListeners();
   });
 
   socket.on('disconnect', () => {
