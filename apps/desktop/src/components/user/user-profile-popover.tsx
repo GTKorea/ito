@@ -17,6 +17,11 @@ import {
   Link,
   Mail,
   Loader2,
+  Instagram,
+  Facebook,
+  Youtube,
+  Dribbble,
+  Figma,
 } from 'lucide-react';
 
 interface UserProfilePopoverProps {
@@ -29,6 +34,12 @@ const platformIcons: Record<string, React.ElementType> = {
   twitter: Twitter,
   x: Twitter,
   linkedin: Linkedin,
+  instagram: Instagram,
+  facebook: Facebook,
+  youtube: Youtube,
+  dribbble: Dribbble,
+  behance: Figma,
+  figma: Figma,
   website: Globe,
 };
 

@@ -3,13 +3,20 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useAuthStore } from '@/stores/auth-store';
-import { useLocaleStore, SUPPORTED_LOCALES } from '@/stores/locale-store';
+import { useLocaleStore, SUPPORTED_LOCALES, type Locale } from '@/stores/locale-store';
 import { api } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   User,
   Check,
@@ -24,8 +31,30 @@ import {
   Link,
   Plus,
   X,
+  Github,
+  Twitter,
+  Linkedin,
+  Facebook,
+  Instagram,
+  Youtube,
+  Dribbble,
+  Figma,
+  type LucideIcon,
 } from 'lucide-react';
 import { NotificationSettings } from '@/components/settings/notification-settings';
+
+const SOCIAL_PLATFORMS: { value: string; label: string; icon: LucideIcon; placeholder: string }[] = [
+  { value: 'github', label: 'GitHub', icon: Github, placeholder: 'https://github.com/username' },
+  { value: 'x', label: 'X (Twitter)', icon: Twitter, placeholder: 'https://x.com/username' },
+  { value: 'linkedin', label: 'LinkedIn', icon: Linkedin, placeholder: 'https://linkedin.com/in/username' },
+  { value: 'instagram', label: 'Instagram', icon: Instagram, placeholder: 'https://instagram.com/username' },
+  { value: 'facebook', label: 'Facebook', icon: Facebook, placeholder: 'https://facebook.com/username' },
+  { value: 'youtube', label: 'YouTube', icon: Youtube, placeholder: 'https://youtube.com/@channel' },
+  { value: 'dribbble', label: 'Dribbble', icon: Dribbble, placeholder: 'https://dribbble.com/username' },
+  { value: 'behance', label: 'Behance', icon: Figma, placeholder: 'https://behance.net/username' },
+  { value: 'figma', label: 'Figma', icon: Figma, placeholder: 'https://figma.com/@username' },
+  { value: 'website', label: 'Website', icon: Globe, placeholder: 'https://example.com' },
+];
 
 interface CalendarIntegration {
   id: string;
@@ -261,30 +290,61 @@ export default function SettingsPage() {
                 {t('addSocialLink')}
               </Button>
             </div>
-            {socialLinks.map((link, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <Input
-                  value={link.platform}
-                  onChange={(e) => updateSocialLink(index, 'platform', e.target.value)}
-                  placeholder={t('platformPlaceholder')}
-                  className="w-28 shrink-0"
-                />
-                <Input
-                  value={link.url}
-                  onChange={(e) => updateSocialLink(index, 'url', e.target.value)}
-                  placeholder={t('urlPlaceholder')}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 shrink-0 text-muted-foreground hover:text-destructive"
-                  onClick={() => removeSocialLink(index)}
-                >
-                  <X className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-            ))}
+            {socialLinks.map((link, index) => {
+              const selectedPlatform = SOCIAL_PLATFORMS.find((p) => p.value === link.platform);
+              const usedPlatforms = socialLinks
+                .filter((_, i) => i !== index)
+                .map((l) => l.platform);
+              return (
+                <div key={index} className="flex items-center gap-2">
+                  <Select
+                    value={link.platform}
+                    onValueChange={(val: string) => updateSocialLink(index, 'platform', val)}
+                  >
+                    <SelectTrigger className="w-36 shrink-0">
+                      <SelectValue placeholder={t('platformPlaceholder')}>
+                        {selectedPlatform ? (
+                          <span className="flex items-center gap-2">
+                            <selectedPlatform.icon className="h-3.5 w-3.5" />
+                            {selectedPlatform.label}
+                          </span>
+                        ) : (
+                          t('platformPlaceholder')
+                        )}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SOCIAL_PLATFORMS.map((platform) => (
+                        <SelectItem
+                          key={platform.value}
+                          value={platform.value}
+                          disabled={usedPlatforms.includes(platform.value)}
+                        >
+                          <span className="flex items-center gap-2">
+                            <platform.icon className="h-3.5 w-3.5" />
+                            {platform.label}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    value={link.url}
+                    onChange={(e) => updateSocialLink(index, 'url', e.target.value)}
+                    placeholder={selectedPlatform?.placeholder || t('urlPlaceholder')}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 shrink-0 text-muted-foreground hover:text-destructive"
+                    onClick={() => removeSocialLink(index)}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              );
+            })}
           </div>
 
           {/* Save button */}
@@ -300,7 +360,7 @@ export default function SettingsPage() {
         <Separator />
 
         {/* Language */}
-        <section className="space-y-4">
+        <section className="space-y-3">
           <div className="flex items-center gap-2">
             <Globe className="h-4 w-4 text-muted-foreground" />
             <h2 className="text-sm font-semibold">{t('language')}</h2>
@@ -308,27 +368,29 @@ export default function SettingsPage() {
           <p className="text-xs text-muted-foreground">
             {t('languageDescription')}
           </p>
-          <div className="grid grid-cols-1 gap-1">
-            {SUPPORTED_LOCALES.map((loc) => (
-              <button
-                key={loc.value}
-                onClick={() => setLocale(loc.value)}
-                className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${
-                  locale === loc.value
-                    ? 'bg-accent text-accent-foreground'
-                    : 'hover:bg-accent/50'
-                }`}
-              >
-                <div className="flex-1 text-left">
-                  <p className="font-medium">{loc.nativeLabel}</p>
-                  <p className="text-[10px] text-muted-foreground">{loc.label}</p>
-                </div>
-                {locale === loc.value && (
-                  <Check className="h-4 w-4 text-primary" />
-                )}
-              </button>
-            ))}
-          </div>
+          <Select
+            value={locale}
+            onValueChange={(val: Locale) => setLocale(val)}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue>
+                {(() => {
+                  const current = SUPPORTED_LOCALES.find((l) => l.value === locale);
+                  return current ? `${current.nativeLabel} — ${current.label}` : locale;
+                })()}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {SUPPORTED_LOCALES.map((loc) => (
+                <SelectItem key={loc.value} value={loc.value}>
+                  <span className="flex items-center gap-2">
+                    <span className="font-medium">{loc.nativeLabel}</span>
+                    <span className="text-muted-foreground text-xs">{loc.label}</span>
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </section>
 
         <Separator />
