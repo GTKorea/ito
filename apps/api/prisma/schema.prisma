@@ -15,6 +15,10 @@ model User {
   passwordHash String?
   name         String
   avatarUrl    String?
+  bio          String?
+  status       String?
+  position     String?
+  socialLinks  Json?
 
   googleId String? @unique
   githubId String? @unique
@@ -234,6 +238,7 @@ enum NotificationType {
   THREAD_RECEIVED
   THREAD_SNAPPED
   THREAD_COMPLETED
+  THREAD_DECLINED
   WORKSPACE_INVITE
   TODO_ASSIGNED
   TODO_COMPLETED

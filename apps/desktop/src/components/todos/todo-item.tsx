@@ -8,12 +8,20 @@ import { ConnectDialog } from '@/components/threads/connect-dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { UserProfilePopover } from '@/components/user/user-profile-popover';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Check,
   Link2,
@@ -23,6 +31,7 @@ import {
   CircleDot,
   Ban,
   Calendar,
+  X,
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
@@ -81,7 +90,10 @@ export function TodoItem({ todo, onSelect }: TodoItemProps) {
   const [showConnect, setShowConnect] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [isResolving, setIsResolving] = useState(false);
-  const { updateTodo, deleteTodo, resolveThread } = useTodoStore();
+  const [showDecline, setShowDecline] = useState(false);
+  const [isDeclining, setIsDeclining] = useState(false);
+  const [declineReason, setDeclineReason] = useState('');
+  const { updateTodo, deleteTodo, resolveThread, declineThread } = useTodoStore();
   const t = useTranslations('todos');
   const tc = useTranslations('common');
 
@@ -92,6 +104,18 @@ export function TodoItem({ todo, onSelect }: TodoItemProps) {
       await resolveThread(linkId);
     } catch {
       setIsResolving(false);
+    }
+  };
+
+  const handleDecline = async (linkId: string) => {
+    if (isDeclining) return;
+    setIsDeclining(true);
+    try {
+      await declineThread(linkId, declineReason || undefined);
+      setShowDecline(false);
+      setDeclineReason('');
+    } catch {
+      setIsDeclining(false);
     }
   };
 
@@ -186,25 +210,39 @@ export function TodoItem({ todo, onSelect }: TodoItemProps) {
         </div>
 
         {/* Assignee */}
-        <Avatar className="h-6 w-6 shrink-0">
-          <AvatarFallback className="text-[9px] bg-secondary">
-            {todo.assignee.name.charAt(0).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+        <UserProfilePopover userId={todo.assignee.id}>
+          <Avatar className="h-6 w-6 shrink-0">
+            <AvatarFallback className="text-[9px] bg-secondary">
+              {todo.assignee.name.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        </UserProfilePopover>
 
         {/* Actions */}
         <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
           {pendingLink && (
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-7 text-xs text-green-500 hover:text-green-400"
-              disabled={isResolving}
-              onClick={() => handleResolve(pendingLink.id)}
-            >
-              <Check className="h-3.5 w-3.5 mr-1" />
-              {isResolving ? t('resolving') : tc('done')}
-            </Button>
+            <>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 text-xs text-green-500 hover:text-green-400"
+                disabled={isResolving}
+                onClick={() => handleResolve(pendingLink.id)}
+              >
+                <Check className="h-3.5 w-3.5 mr-1" />
+                {isResolving ? t('resolving') : tc('done')}
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 text-xs text-red-500 hover:text-red-400"
+                disabled={isDeclining}
+                onClick={() => setShowDecline(true)}
+              >
+                <X className="h-3.5 w-3.5 mr-1" />
+                거절
+              </Button>
+            </>
           )}
           <Button
             size="sm"
@@ -256,6 +294,45 @@ export function TodoItem({ todo, onSelect }: TodoItemProps) {
           todoId={todo.id}
           onClose={() => setShowConnect(false)}
         />
+      )}
+
+      {/* Decline confirmation dialog */}
+      {showDecline && pendingLink && (
+        <Dialog open onOpenChange={() => { setShowDecline(false); setDeclineReason(''); }}>
+          <DialogContent className="sm:max-w-sm">
+            <DialogHeader>
+              <DialogTitle>실 거절</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                이 실을 거절하면 보낸 사람에게 태스크가 돌아갑니다.
+              </p>
+              <Textarea
+                placeholder="거절 사유 (선택)"
+                value={declineReason}
+                onChange={(e) => setDeclineReason(e.target.value)}
+                rows={3}
+              />
+              <div className="flex gap-2 justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => { setShowDecline(false); setDeclineReason(''); }}
+                >
+                  취소
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  disabled={isDeclining}
+                  onClick={() => handleDecline(pendingLink.id)}
+                >
+                  {isDeclining ? '거절 중...' : '거절'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

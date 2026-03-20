@@ -186,6 +186,82 @@ export class ThreadsService {
   }
 
   /**
+   * Decline a thread link — reject the task and snap back to sender.
+   */
+  async decline(threadLinkId: string, userId: string, reason?: string) {
+    const link = await this.prisma.threadLink.findUnique({
+      where: { id: threadLinkId },
+      include: { todo: true },
+    });
+
+    if (!link) throw new NotFoundException('Thread link not found');
+    if (link.toUserId !== userId) {
+      throw new ForbiddenException('Only the recipient can decline');
+    }
+    if (link.status !== 'PENDING') {
+      throw new BadRequestException('Only pending links can be declined');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      // Cancel the current link
+      await tx.threadLink.update({
+        where: { id: threadLinkId },
+        data: { status: 'CANCELLED' },
+      });
+
+      // Find previous forwarded link (same todo, fromUserId of this link as toUserId, status FORWARDED)
+      const prevLink = await tx.threadLink.findFirst({
+        where: {
+          todoId: link.todoId,
+          toUserId: link.fromUserId,
+          status: 'FORWARDED',
+        },
+      });
+
+      if (prevLink) {
+        await tx.threadLink.update({
+          where: { id: prevLink.id },
+          data: { status: 'PENDING' },
+        });
+      }
+
+      // Update todo assignee back to fromUser
+      await tx.todo.update({
+        where: { id: link.todoId },
+        data: { assigneeId: link.fromUserId },
+      });
+
+      // Send notification to the sender
+      await this.notificationsService.create({
+        userId: link.fromUserId,
+        type: 'THREAD_DECLINED',
+        title: 'Thread declined',
+        body: reason
+          ? `Your thread was declined: ${reason}`
+          : 'Your thread was declined',
+        data: {
+          todoId: link.todoId,
+          todoTitle: link.todo.title,
+          declinedBy: userId,
+          reason: reason || null,
+        },
+      });
+
+      // Log activity
+      await this.activityService.log({
+        workspaceId: link.todo.workspaceId,
+        userId,
+        action: 'DECLINED',
+        entityType: 'ThreadLink',
+        entityId: threadLinkId,
+        metadata: { todoId: link.todoId, reason },
+      });
+
+      return { success: true };
+    });
+  }
+
+  /**
    * Connect a chain of users to a todo in a single transaction.
    * Creates links: creator → userIds[0] → userIds[1] → ... → userIds[N-1]
    * The last user in the chain becomes the assignee.

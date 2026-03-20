@@ -76,6 +76,7 @@ interface TodoState {
   connectChain: (todoId: string, userIds: string[]) => Promise<any>;
   connectThread: (todoId: string, toUserId: string, message?: string) => Promise<void>;
   resolveThread: (threadLinkId: string) => Promise<void>;
+  declineThread: (threadLinkId: string, reason?: string) => Promise<void>;
 }
 
 export const useTodoStore = create<TodoState>((set) => ({
@@ -174,6 +175,23 @@ export const useTodoStore = create<TodoState>((set) => ({
         // Remove if the resolved link belonged to this todo and we're no longer assignee
         const resolvedLink = t.threadLinks.find((l) => l.id === threadLinkId);
         return !resolvedLink;
+      }),
+    }));
+  },
+
+  declineThread: async (threadLinkId, reason) => {
+    await api.post(`/thread-links/${threadLinkId}/decline`, { reason });
+    trackEvent('thread_declined');
+    // Remove the declined todo from local state (it snapped back to sender)
+    set((state) => ({
+      todos: state.todos.map((t) => ({
+        ...t,
+        threadLinks: t.threadLinks.map((l) =>
+          l.id === threadLinkId ? { ...l, status: 'CANCELLED' } : l,
+        ),
+      })).filter((t) => {
+        const declinedLink = t.threadLinks.find((l) => l.id === threadLinkId);
+        return !declinedLink;
       }),
     }));
   },

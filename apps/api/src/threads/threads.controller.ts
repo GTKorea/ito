@@ -56,6 +56,16 @@ export class ThreadsController {
     return this.threadsService.resolve(id, userId);
   }
 
+  @Post('thread-links/:id/decline')
+  @ApiOperation({ summary: 'Decline a thread link (reject and snap back to sender)' })
+  decline(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+    @Body() body: { reason?: string },
+  ) {
+    return this.threadsService.decline(id, userId, body?.reason);
+  }
+
   @Get('todos/:todoId/chain')
   @ApiOperation({ summary: 'Get the thread chain for a todo' })
   getChain(@Param('todoId') todoId: string) {
