@@ -41,6 +41,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
 
 const STORAGE_KEY = 'ito_onboarding_done';
 const WIZARD_STORAGE_KEY = 'ito_onboarding_wizard_done';
+const PAGE_ONBOARDING_KEY = 'ito_page_onboarding';
 
 interface OnboardingState {
   // Tooltip tour state
@@ -68,6 +69,11 @@ interface OnboardingState {
   completeWizard: () => void;
   setSeedingState: (loading: boolean, error?: string | null) => void;
   checkAndStartWizard: () => boolean;
+
+  // Per-page onboarding
+  pageOnboarded: Record<string, boolean>;
+  checkPageOnboarding: (pageKey: string) => boolean;
+  dismissPageOnboarding: (pageKey: string) => void;
 }
 
 const WIZARD_TOTAL_STEPS = 5;
@@ -189,5 +195,35 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
     } catch {
       return false;
     }
+  },
+
+  // Per-page onboarding
+  pageOnboarded: (() => {
+    try {
+      const stored = localStorage.getItem(PAGE_ONBOARDING_KEY);
+      return stored ? JSON.parse(stored) : {};
+    } catch {
+      return {};
+    }
+  })(),
+
+  checkPageOnboarding: (pageKey: string) => {
+    try {
+      const stored = localStorage.getItem(PAGE_ONBOARDING_KEY);
+      const data: Record<string, boolean> = stored ? JSON.parse(stored) : {};
+      return !data[pageKey]; // returns true if NOT yet seen
+    } catch {
+      return true;
+    }
+  },
+
+  dismissPageOnboarding: (pageKey: string) => {
+    try {
+      const stored = localStorage.getItem(PAGE_ONBOARDING_KEY);
+      const data: Record<string, boolean> = stored ? JSON.parse(stored) : {};
+      data[pageKey] = true;
+      localStorage.setItem(PAGE_ONBOARDING_KEY, JSON.stringify(data));
+      set({ pageOnboarded: { ...data } });
+    } catch {}
   },
 }));
