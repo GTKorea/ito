@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 const STORAGE_KEY = 'ito_help_progress';
 
-const STEP_IDS = [
+export const STEP_IDS = [
   'getting-started.ws-step1', 'getting-started.ws-step2', 'getting-started.ws-step3',
   'getting-started.invite-step1', 'getting-started.invite-step2', 'getting-started.invite-step3',
   'task-management.step1', 'task-management.step2', 'task-management.step3',

@@ -17,10 +17,13 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
-import { useHelpProgressStore } from '@/stores/help-progress-store';
+import { useHelpProgressStore, STEP_IDS } from '@/stores/help-progress-store';
 
 function SectionProgressBadge({ sectionPrefix }: { sectionPrefix: string }) {
-  const { done, total } = useHelpProgressStore((s) => s.sectionProgress(sectionPrefix));
+  const completed = useHelpProgressStore((s) => s.completed);
+  const allSteps = STEP_IDS.filter((id) => id.startsWith(sectionPrefix + '.'));
+  const done = allSteps.filter((id) => completed[id]).length;
+  const total = allSteps.length;
   if (done === 0) return null;
   return (
     <span className="ml-2 inline-flex items-center rounded-full bg-green-500/10 px-2 py-0.5 text-[10px] font-medium text-green-400">
