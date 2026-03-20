@@ -3,21 +3,16 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { useAdminStore } from '@/stores/admin-store';
-import { useAuthStore } from '@/stores/auth-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-  Shield,
   Search,
   ChevronLeft,
   ChevronRight,
   ArrowUpDown,
-  ArrowLeft,
 } from 'lucide-react';
-import Link from 'next/link';
 
-export default function AdminUsersPage() {
-  const { user } = useAuthStore();
+export default function UsersPage() {
   const { users, isLoading, fetchUsers, updateUser } = useAdminStore();
   const t = useTranslations('admin');
 
@@ -55,34 +50,16 @@ export default function AdminUsersPage() {
     loadUsers();
   };
 
-  if (user?.role !== 'ADMIN') {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-center">
-          <Shield className="h-10 w-10 mx-auto mb-3 text-muted-foreground opacity-40" />
-          <p className="text-sm text-muted-foreground">{t('accessDenied')}</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="h-full overflow-y-auto">
-      {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-6 py-3">
-        <div className="flex items-center gap-3">
-          <Link href="/admin" className="text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-          <div>
-            <h1 className="text-lg font-semibold">{t('users')}</h1>
-            <p className="text-xs text-muted-foreground">{t('manageUsers')}</p>
-          </div>
+        <div>
+          <h1 className="text-lg font-semibold">{t('users')}</h1>
+          <p className="text-xs text-muted-foreground">{t('manageUsers')}</p>
         </div>
       </div>
 
       <div className="p-6 space-y-4">
-        {/* Search & controls */}
         <div className="flex items-center gap-3">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
@@ -107,52 +84,31 @@ export default function AdminUsersPage() {
           </select>
         </div>
 
-        {/* Table */}
         <div className="rounded-lg border border-border overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-accent/30">
                   <th className="px-3 py-2 text-left font-medium text-muted-foreground">
-                    <button
-                      onClick={() => handleSort('name')}
-                      className="flex items-center gap-1 hover:text-foreground"
-                    >
-                      {t('name')}
-                      <ArrowUpDown className="h-3 w-3" />
+                    <button onClick={() => handleSort('name')} className="flex items-center gap-1 hover:text-foreground">
+                      {t('name')} <ArrowUpDown className="h-3 w-3" />
                     </button>
                   </th>
                   <th className="px-3 py-2 text-left font-medium text-muted-foreground">
-                    <button
-                      onClick={() => handleSort('email')}
-                      className="flex items-center gap-1 hover:text-foreground"
-                    >
-                      {t('email')}
-                      <ArrowUpDown className="h-3 w-3" />
+                    <button onClick={() => handleSort('email')} className="flex items-center gap-1 hover:text-foreground">
+                      {t('email')} <ArrowUpDown className="h-3 w-3" />
                     </button>
                   </th>
                   <th className="px-3 py-2 text-left font-medium text-muted-foreground">
-                    <button
-                      onClick={() => handleSort('role')}
-                      className="flex items-center gap-1 hover:text-foreground"
-                    >
-                      {t('role')}
-                      <ArrowUpDown className="h-3 w-3" />
+                    <button onClick={() => handleSort('role')} className="flex items-center gap-1 hover:text-foreground">
+                      {t('role')} <ArrowUpDown className="h-3 w-3" />
                     </button>
                   </th>
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">{t('workspaces')}</th>
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">{t('todos')}</th>
                   <th className="px-3 py-2 text-left font-medium text-muted-foreground">
-                    {t('workspaces')}
-                  </th>
-                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">
-                    {t('todos')}
-                  </th>
-                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">
-                    <button
-                      onClick={() => handleSort('createdAt')}
-                      className="flex items-center gap-1 hover:text-foreground"
-                    >
-                      {t('joined')}
-                      <ArrowUpDown className="h-3 w-3" />
+                    <button onClick={() => handleSort('createdAt')} className="flex items-center gap-1 hover:text-foreground">
+                      {t('joined')} <ArrowUpDown className="h-3 w-3" />
                     </button>
                   </th>
                 </tr>
@@ -177,9 +133,7 @@ export default function AdminUsersPage() {
                           <span className="truncate max-w-[150px]">{u.name}</span>
                         </div>
                       </td>
-                      <td className="px-3 py-2 text-muted-foreground truncate max-w-[200px]">
-                        {u.email}
-                      </td>
+                      <td className="px-3 py-2 text-muted-foreground truncate max-w-[200px]">{u.email}</td>
                       <td className="px-3 py-2">
                         {editingRole === u.id ? (
                           <select
@@ -205,12 +159,8 @@ export default function AdminUsersPage() {
                           </button>
                         )}
                       </td>
-                      <td className="px-3 py-2 text-muted-foreground">
-                        {u._count.workspaceMembers}
-                      </td>
-                      <td className="px-3 py-2 text-muted-foreground">
-                        {u._count.todosAssigned}
-                      </td>
+                      <td className="px-3 py-2 text-muted-foreground">{u._count.workspaceMembers}</td>
+                      <td className="px-3 py-2 text-muted-foreground">{u._count.todosAssigned}</td>
                       <td className="px-3 py-2 text-muted-foreground text-xs">
                         {new Date(u.createdAt).toLocaleDateString()}
                       </td>
@@ -218,9 +168,7 @@ export default function AdminUsersPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="py-8 text-center text-muted-foreground text-sm">
-                      {t('noResults')}
-                    </td>
+                    <td colSpan={6} className="py-8 text-center text-muted-foreground text-sm">{t('noResults')}</td>
                   </tr>
                 )}
               </tbody>
@@ -228,36 +176,17 @@ export default function AdminUsersPage() {
           </div>
         </div>
 
-        {/* Pagination */}
         {users && users.totalPages > 1 && (
           <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground">
-              {t('showing', {
-                from: (page - 1) * limit + 1,
-                to: Math.min(page * limit, users.total),
-                total: users.total,
-              })}
+              {t('showing', { from: (page - 1) * limit + 1, to: Math.min(page * limit, users.total), total: users.total })}
             </p>
             <div className="flex items-center gap-1">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(Math.max(1, page - 1))}
-                disabled={page <= 1}
-                className="h-7 w-7 p-0"
-              >
+              <Button variant="outline" size="sm" onClick={() => setPage(Math.max(1, page - 1))} disabled={page <= 1} className="h-7 w-7 p-0">
                 <ChevronLeft className="h-3.5 w-3.5" />
               </Button>
-              <span className="px-2 text-xs text-muted-foreground">
-                {page} / {users.totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(Math.min(users.totalPages, page + 1))}
-                disabled={page >= users.totalPages}
-                className="h-7 w-7 p-0"
-              >
+              <span className="px-2 text-xs text-muted-foreground">{page} / {users.totalPages}</span>
+              <Button variant="outline" size="sm" onClick={() => setPage(Math.min(users.totalPages, page + 1))} disabled={page >= users.totalPages} className="h-7 w-7 p-0">
                 <ChevronRight className="h-3.5 w-3.5" />
               </Button>
             </div>

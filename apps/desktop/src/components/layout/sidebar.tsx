@@ -16,7 +16,6 @@ import {
   HelpCircle,
   ChevronsLeft,
   ChevronsRight,
-  Shield,
   Globe,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -219,43 +218,6 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
           </Link>
         )}
 
-        {/* Admin (visible only for ADMIN role) */}
-        {user?.role === 'ADMIN' && (
-          <>
-            <Separator className="my-2" />
-            {collapsed ? (
-              <Tooltip>
-                <TooltipTrigger render={<div />}>
-                  <Link
-                    href="/admin"
-                    className={cn(
-                      'flex items-center justify-center rounded-md p-2 transition-colors',
-                      pathname.includes('/admin')
-                        ? 'bg-accent text-accent-foreground'
-                        : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
-                    )}
-                  >
-                    <Shield className="h-4 w-4" />
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right">{t('admin')}</TooltipContent>
-              </Tooltip>
-            ) : (
-              <Link
-                href="/admin"
-                className={cn(
-                  'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
-                  pathname.includes('/admin')
-                    ? 'bg-accent text-accent-foreground'
-                    : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
-                )}
-              >
-                <Shield className="h-4 w-4" />
-                {t('admin')}
-              </Link>
-            )}
-          </>
-        )}
       </nav>
 
       {/* Theme + Collapse toggle */}
