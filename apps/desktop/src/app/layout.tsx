@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LocaleProvider } from "@/components/locale-provider";
 import { PostHogProvider } from "@/components/posthog-provider";
+import { TauriDeepLinkListener } from "@/components/tauri-deep-link-listener";
 import "./globals.css";
 
 const inter = Inter({
@@ -35,6 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${inter.variable} font-sans antialiased`}>
+        <TauriDeepLinkListener />
         <PostHogProvider>
           <LocaleProvider>
             <TooltipProvider>{children}</TooltipProvider>

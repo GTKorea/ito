@@ -14,9 +14,12 @@ export async function setupDeepLinkListener() {
 
     await onOpenUrl((urls) => {
       for (const url of urls) {
-        if (url.startsWith('ito://callback')) {
+        console.log('[tauri-oauth] Deep link received:', url)
+        // Normalize ito:///callback (triple slash) to ito://callback
+        const normalizedUrl = url.replace(/^ito:\/\/\//, 'ito://')
+        if (normalizedUrl.startsWith('ito://callback')) {
           // Replace ito:// with https://placeholder/ so URL parsing works
-          const parsed = new URL(url.replace('ito://', 'https://placeholder/'))
+          const parsed = new URL(normalizedUrl.replace('ito://', 'https://placeholder/'))
           const accessToken = parsed.searchParams.get('accessToken')
           const refreshToken = parsed.searchParams.get('refreshToken')
 

@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { isTauri } from '@/lib/platform';
-import { setupDeepLinkListener } from '@/lib/tauri-oauth';
 import { useAuthStore } from '@/stores/auth-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,11 +22,7 @@ export default function LoginPage() {
   const tc = useTranslations('common');
 
   useEffect(() => {
-    const desktop = isTauri();
-    setIsDesktop(desktop);
-    if (desktop) {
-      setupDeepLinkListener();
-    }
+    setIsDesktop(isTauri());
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
