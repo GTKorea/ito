@@ -132,9 +132,10 @@ export function TodoItem({ todo, onSelect, isConnected }: TodoItemProps) {
   const isAssignee = user?.id === todo.assignee?.id;
 
   // Only show Done/Decline for pending links where I'm the recipient (not the creator)
-  const pendingLink = !isConnected && todo.assignee?.id && user?.id
+  const assigneeId = todo.assignee?.id;
+  const pendingLink = !isConnected && assigneeId && user?.id
     ? todo.threadLinks.find(
-        (l) => l.status === 'PENDING' && l.toUser.id === todo.assignee!.id && todo.assignee!.id === user.id,
+        (l) => l.status === 'PENDING' && l.toUser.id === assigneeId && assigneeId === user.id,
       )
     : undefined;
 
