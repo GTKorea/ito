@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useTodoStore } from '@/stores/todo-store';
@@ -20,7 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Plus, Building2 } from 'lucide-react';
+import { Plus, Building2, ArrowUpDown } from 'lucide-react';
 import { QuickInput } from '@/components/todos/quick-input';
 import { cn } from '@/lib/utils';
 
@@ -84,16 +84,22 @@ function CreateWorkspacePrompt() {
 
 export default function WorkspacePage() {
   const { currentWorkspace, isLoading: wsLoading } = useWorkspaceStore();
-  const { todos, isLoading, fetchTodos } = useTodoStore();
+  const { todos, connectedTodos, isLoading, fetchTodos, fetchConnectedTodos } = useTodoStore();
   const { checkAndStartWizard } = useOnboardingStore();
   const [showCreate, setShowCreate] = useState(false);
   const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null);
+  const [openWithChat, setOpenWithChat] = useState(false);
+  const [sortBy, setSortBy] = useState<'priority' | 'dueDate'>('priority');
   const searchParams = useSearchParams();
   const t = useTranslations('workspace');
+  const tt = useTranslations('todos');
 
   useEffect(() => {
-    if (currentWorkspace) fetchTodos(currentWorkspace.id);
-  }, [currentWorkspace, fetchTodos]);
+    if (currentWorkspace) {
+      fetchTodos(currentWorkspace.id);
+      fetchConnectedTodos(currentWorkspace.id);
+    }
+  }, [currentWorkspace, fetchTodos, fetchConnectedTodos]);
 
   // Trigger onboarding wizard on first workspace visit
   useEffect(() => {
@@ -109,6 +115,40 @@ export default function WorkspacePage() {
       setSelectedTodoId(todoId);
     }
   }, [searchParams]);
+
+  const handleSelectTodo = (id: string, openChat?: boolean) => {
+    setSelectedTodoId(id);
+    setOpenWithChat(!!openChat);
+  };
+
+  const handleCloseTodo = () => {
+    setSelectedTodoId(null);
+    setOpenWithChat(false);
+  };
+
+  const sortedTodos = useMemo(() => {
+    if (sortBy === 'dueDate') {
+      return [...todos].sort((a, b) => {
+        if (!a.dueDate && !b.dueDate) return 0;
+        if (!a.dueDate) return 1;
+        if (!b.dueDate) return -1;
+        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+      });
+    }
+    return todos;
+  }, [todos, sortBy]);
+
+  const sortedConnectedTodos = useMemo(() => {
+    if (sortBy === 'dueDate') {
+      return [...connectedTodos].sort((a, b) => {
+        if (!a.dueDate && !b.dueDate) return 0;
+        if (!a.dueDate) return 1;
+        if (!b.dueDate) return -1;
+        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+      });
+    }
+    return connectedTodos;
+  }, [connectedTodos, sortBy]);
 
   if (wsLoading) {
     return (
@@ -133,6 +173,15 @@ export default function WorkspacePage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 text-xs text-muted-foreground"
+            onClick={() => setSortBy(sortBy === 'priority' ? 'dueDate' : 'priority')}
+          >
+            <ArrowUpDown className="mr-1 h-3.5 w-3.5" />
+            {sortBy === 'priority' ? tt('sortByPriority') : tt('sortByDueDate')}
+          </Button>
           <kbd className="hidden sm:inline-flex h-5 items-center gap-0.5 rounded border border-border bg-muted px-1.5 text-[10px] text-muted-foreground">
             <span className="text-xs">&#8984;</span>K
           </kbd>
@@ -157,12 +206,20 @@ export default function WorkspacePage() {
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>
         ) : (
-          <TodoList todos={todos} onSelectTodo={setSelectedTodoId} />
+          <TodoList todos={sortedTodos} connectedTodos={sortedConnectedTodos} onSelectTodo={handleSelectTodo} />
         )}
       </div>
 
       {/* Quick Input */}
       <QuickInput />
+
+      {/* Backdrop */}
+      {selectedTodoId && (
+        <div
+          className="fixed inset-0 z-40 bg-black/30"
+          onClick={handleCloseTodo}
+        />
+      )}
 
       {/* Todo Detail Slide-over */}
       <div
@@ -174,7 +231,8 @@ export default function WorkspacePage() {
         {selectedTodoId && (
           <TodoDetail
             todoId={selectedTodoId}
-            onClose={() => setSelectedTodoId(null)}
+            onClose={handleCloseTodo}
+            initialShowChat={openWithChat}
           />
         )}
       </div>

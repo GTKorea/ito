@@ -258,6 +258,7 @@ enum NotificationType {
   TODO_ASSIGNED
   TODO_COMPLETED
   SHARED_SPACE_INVITE
+  CHAT_MESSAGE
 }
 
 model NotificationPreference {

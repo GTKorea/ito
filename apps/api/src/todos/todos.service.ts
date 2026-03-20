@@ -44,11 +44,26 @@ export class TodosService {
   async findAllInWorkspace(
     workspaceId: string,
     userId: string,
-    filter?: { assignedToMe?: boolean; status?: string; teamId?: string },
+    filter?: {
+      assignedToMe?: boolean;
+      connectedByMe?: boolean;
+      status?: string;
+      teamId?: string;
+    },
   ) {
     const where: any = { workspaceId };
 
-    if (filter?.assignedToMe) {
+    if (filter?.connectedByMe) {
+      // Tasks I created and connected to others (they are currently working on it)
+      where.creatorId = userId;
+      where.assigneeId = { not: userId };
+      where.threadLinks = {
+        some: {
+          fromUserId: userId,
+          status: { in: ['PENDING', 'FORWARDED'] },
+        },
+      };
+    } else if (filter?.assignedToMe) {
       where.assigneeId = userId;
     }
     if (filter?.status) {

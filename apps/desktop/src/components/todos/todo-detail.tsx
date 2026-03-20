@@ -22,9 +22,10 @@ const priorities = ['URGENT', 'HIGH', 'MEDIUM', 'LOW'];
 interface TodoDetailProps {
   todoId: string;
   onClose: () => void;
+  initialShowChat?: boolean;
 }
 
-export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
+export function TodoDetail({ todoId, onClose, initialShowChat }: TodoDetailProps) {
   const { updateTodo } = useTodoStore();
   const [todo, setTodo] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,9 +37,13 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [graphView, setGraphView] = useState(false);
   const [fileRefreshKey, setFileRefreshKey] = useState(0);
-  const [showChat, setShowChat] = useState(false);
+  const [showChat, setShowChat] = useState(initialShowChat ?? false);
   const t = useTranslations('todos');
   const tc = useTranslations('chat');
+
+  useEffect(() => {
+    if (initialShowChat) setShowChat(true);
+  }, [initialShowChat]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -86,7 +91,7 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
 
   if (showChat) {
     return (
-      <div className="flex h-full w-full">
+      <div className="flex h-full w-full bg-[#0F0F0F]">
         <ChatPanel todoId={todoId} onClose={() => setShowChat(false)} />
       </div>
     );
@@ -119,7 +124,7 @@ export function TodoDetail({ todoId, onClose }: TodoDetailProps) {
         <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="text-base font-semibold bg-transparent border-none px-0 focus-visible:ring-0"
+          className="text-base font-semibold bg-transparent border-none px-2 focus-visible:ring-0"
           placeholder={t('title')}
         />
 

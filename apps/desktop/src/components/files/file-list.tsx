@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
-import { FileText, Image, Download, Trash2, Loader2 } from 'lucide-react';
+import { FileText, Image, Download, Trash2, Loader2, Eye } from 'lucide-react';
+import { FilePreviewModal } from './file-preview-modal';
 
 interface FileItem {
   id: string;
@@ -32,6 +33,7 @@ function FileIcon({ mimeType }: { mimeType: string }) {
 export function FileList({ todoId, refreshKey }: FileListProps) {
   const [files, setFiles] = useState<FileItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [previewIndex, setPreviewIndex] = useState<number | null>(null);
 
   useEffect(() => {
     api
@@ -66,35 +68,63 @@ export function FileList({ todoId, refreshKey }: FileListProps) {
   if (files.length === 0) return null;
 
   return (
-    <div className="space-y-1">
-      {files.map((file) => (
-        <div
-          key={file.id}
-          className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm"
-        >
-          <FileIcon mimeType={file.mimeType} />
-          <span className="flex-1 truncate text-xs">{file.filename}</span>
-          <span className="text-[10px] text-muted-foreground shrink-0">
-            {formatSize(file.size)}
-          </span>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-6 w-6 p-0"
-            onClick={() => handleDownload(file)}
+    <>
+      <div className="space-y-1">
+        {files.map((file, index) => (
+          <div
+            key={file.id}
+            className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm group cursor-pointer hover:border-border/80 transition-colors"
+            onClick={() => setPreviewIndex(index)}
           >
-            <Download className="h-3 w-3" />
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-6 w-6 p-0 text-destructive"
-            onClick={() => handleDelete(file.id)}
-          >
-            <Trash2 className="h-3 w-3" />
-          </Button>
-        </div>
-      ))}
-    </div>
+            <FileIcon mimeType={file.mimeType} />
+            <span className="flex-1 truncate text-xs">{file.filename}</span>
+            <span className="text-[10px] text-muted-foreground shrink-0">
+              {formatSize(file.size)}
+            </span>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={(e) => {
+                e.stopPropagation();
+                setPreviewIndex(index);
+              }}
+            >
+              <Eye className="h-3 w-3" />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDownload(file);
+              }}
+            >
+              <Download className="h-3 w-3" />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 w-6 p-0 text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(file.id);
+              }}
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          </div>
+        ))}
+      </div>
+
+      {previewIndex !== null && (
+        <FilePreviewModal
+          files={files}
+          initialIndex={previewIndex}
+          onClose={() => setPreviewIndex(null)}
+        />
+      )}
+    </>
   );
 }

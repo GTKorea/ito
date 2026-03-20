@@ -2,15 +2,22 @@ import {
   Injectable,
   ForbiddenException,
   NotFoundException,
+  Inject,
+  Optional,
+  forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { WsGateway } from '../websocket/ws.gateway';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class ChatService {
   constructor(
     private prisma: PrismaService,
     private wsGateway: WsGateway,
+    @Optional()
+    @Inject(forwardRef(() => NotificationsService))
+    private notificationsService?: NotificationsService,
   ) {}
 
   /**
@@ -89,7 +96,15 @@ export class ChatService {
   async sendMessage(todoId: string, userId: string, content: string) {
     const todo = await this.prisma.todo.findUnique({
       where: { id: todoId },
-      select: { id: true },
+      select: {
+        id: true,
+        title: true,
+        creatorId: true,
+        assigneeId: true,
+        threadLinks: {
+          select: { fromUserId: true, toUserId: true },
+        },
+      },
     });
     if (!todo) throw new NotFoundException('Todo not found');
 
@@ -114,6 +129,41 @@ export class ChatService {
     this.wsGateway.server
       ?.to(`todo-chat:${todoId}`)
       .emit('newMessage', message);
+
+    // Send notifications to other participants
+    if (this.notificationsService) {
+      const participantIds = new Set<string>();
+      if (todo.creatorId) participantIds.add(todo.creatorId);
+      if (todo.assigneeId) participantIds.add(todo.assigneeId);
+      for (const link of todo.threadLinks) {
+        participantIds.add(link.fromUserId);
+        participantIds.add(link.toUserId);
+      }
+      // Remove sender
+      participantIds.delete(userId);
+
+      const senderName = message.sender.name;
+      const preview =
+        content.length > 50 ? content.slice(0, 50) + '...' : content;
+
+      const notifications = Array.from(participantIds).map((recipientId) =>
+        this.notificationsService!.create({
+          userId: recipientId,
+          type: 'CHAT_MESSAGE',
+          title: `${senderName}: ${preview}`,
+          body: `New message in "${todo.title}"`,
+          data: {
+            todoId,
+            todoTitle: todo.title,
+            senderName,
+            senderUserId: userId,
+          },
+        }),
+      );
+
+      // Fire and forget - don't block message sending
+      Promise.allSettled(notifications).catch(() => {});
+    }
 
     return message;
   }

@@ -85,7 +85,7 @@ interface TodoItemProps {
       groupId?: string;
     }>;
   };
-  onSelect?: (id: string) => void;
+  onSelect?: (id: string, openChat?: boolean) => void;
 }
 
 export function TodoItem({ todo, onSelect }: TodoItemProps) {
@@ -253,7 +253,7 @@ export function TodoItem({ todo, onSelect }: TodoItemProps) {
                   size="sm"
                   variant="ghost"
                   className="h-7 w-7 p-0"
-                  onClick={() => onSelect?.(todo.id)}
+                  onClick={() => onSelect?.(todo.id, true)}
                 />
               }
             >

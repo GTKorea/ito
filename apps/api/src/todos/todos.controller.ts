@@ -53,11 +53,13 @@ export class TodosController {
     @Param('workspaceId') workspaceId: string,
     @CurrentUser('id') userId: string,
     @Query('assignedToMe') assignedToMe?: string,
+    @Query('connectedByMe') connectedByMe?: string,
     @Query('status') status?: string,
     @Query('teamId') teamId?: string,
   ) {
     return this.todosService.findAllInWorkspace(workspaceId, userId, {
       assignedToMe: assignedToMe === 'true',
+      connectedByMe: connectedByMe === 'true',
       status,
       teamId,
     });

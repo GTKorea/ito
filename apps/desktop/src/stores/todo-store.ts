@@ -63,12 +63,14 @@ export interface CalendarEvent {
 
 interface TodoState {
   todos: Todo[];
+  connectedTodos: Todo[];
   isLoading: boolean;
   calendarData: CalendarData | null;
   calendarLoading: boolean;
   calendarEvents: CalendarEvent[];
   calendarEventsLoading: boolean;
   fetchTodos: (workspaceId: string, assignedToMe?: boolean) => Promise<void>;
+  fetchConnectedTodos: (workspaceId: string) => Promise<void>;
   fetchCalendarTodos: (workspaceId: string, start: string, end: string) => Promise<void>;
   fetchCalendarEvents: (start: string, end: string) => Promise<void>;
   createTodo: (workspaceId: string, title: string, description?: string, priority?: string, dueDate?: string) => Promise<Todo>;
@@ -83,6 +85,7 @@ interface TodoState {
 
 export const useTodoStore = create<TodoState>((set) => ({
   todos: [],
+  connectedTodos: [],
   isLoading: false,
   calendarData: null,
   calendarLoading: false,
@@ -120,6 +123,17 @@ export const useTodoStore = create<TodoState>((set) => ({
       set({ todos: data, isLoading: false });
     } catch {
       set({ isLoading: false });
+    }
+  },
+
+  fetchConnectedTodos: async (workspaceId) => {
+    try {
+      const { data } = await api.get(`/workspaces/${workspaceId}/todos`, {
+        params: { connectedByMe: 'true' },
+      });
+      set({ connectedTodos: data });
+    } catch {
+      set({ connectedTodos: [] });
     }
   },
 

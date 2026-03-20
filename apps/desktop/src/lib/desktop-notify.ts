@@ -84,6 +84,13 @@ export function formatNotification(notification: NotificationData): {
         title: `Task Complete: ${taskTitle}`,
         body: 'A task has been completed',
       };
+    case 'CHAT_MESSAGE':
+      return {
+        title: data.senderName
+          ? `${data.senderName}`
+          : 'New Message',
+        body: notification.title || `New message in "${taskTitle}"`,
+      };
     default:
       return {
         title: notification.title || 'ito',
