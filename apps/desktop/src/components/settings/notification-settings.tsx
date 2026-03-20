@@ -203,7 +203,7 @@ function ToggleButton({
       onClick={() => onChange(!checked)}
       className={cn(
         'h-5 w-9 rounded-full transition-colors relative shrink-0',
-        checked ? 'bg-zinc-500' : 'bg-zinc-700',
+        checked ? 'bg-zinc-400' : 'bg-zinc-700',
       )}
     >
       <span
