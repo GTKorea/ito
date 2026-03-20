@@ -4,6 +4,7 @@ import {
   Post,
   Patch,
   Body,
+  Param,
   UseGuards,
   UseInterceptors,
   UploadedFile,
@@ -15,6 +16,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { UsersService } from './users.service';
 import { FilesService } from '../files/files.service';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @ApiTags('users')
 @ApiBearerAuth()
@@ -36,7 +38,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Update current user profile' })
   updateMe(
     @CurrentUser('id') userId: string,
-    @Body() data: { name?: string; avatarUrl?: string },
+    @Body() data: UpdateProfileDto,
   ) {
     return this.usersService.updateProfile(userId, data);
   }
@@ -60,5 +62,14 @@ export class UsersController {
     @Query('query') query?: string,
   ) {
     return this.usersService.searchMembers(workspaceId, userId, query);
+  }
+
+  @Get(':id/profile')
+  @ApiOperation({ summary: 'Get public user profile (must share a workspace)' })
+  getPublicProfile(
+    @Param('id') userId: string,
+    @CurrentUser('id') requestingUserId: string,
+  ) {
+    return this.usersService.findPublicProfile(userId, requestingUserId);
   }
 }

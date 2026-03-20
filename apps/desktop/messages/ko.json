@@ -55,7 +55,8 @@
     "create": "생성",
     "cancel": "취소",
     "logout": "로그아웃",
-    "help": "도움말"
+    "help": "도움말",
+    "more": "더보기"
   },
   "workspace": {
     "myTasks": "내 태스크",
@@ -193,7 +194,25 @@
     "roleMemberDesc": "워크스페이스 전체 접근",
     "roleGuestDesc": "제한된 보기 접근",
     "workspaceName": "워크스페이스 이름",
-    "workspaceNamePlaceholder": "우리 팀"
+    "workspaceNamePlaceholder": "우리 팀",
+    "status": "상태",
+    "statusPlaceholder": "회의 중, 집중 모드...",
+    "bio": "소개",
+    "bioPlaceholder": "자신에 대해 소개해주세요 (최대 200자)",
+    "bioCharCount": "{count}/200",
+    "position": "포지션",
+    "positionPlaceholder": "프론트엔드 개발자, UI/UX 디자이너...",
+    "socialLinks": "소셜 링크",
+    "addSocialLink": "링크 추가",
+    "platformPlaceholder": "플랫폼",
+    "urlPlaceholder": "URL",
+    "removeSocialLink": "삭제"
+  },
+  "userProfile": {
+    "loading": "프로필 로딩 중...",
+    "email": "이메일",
+    "noStatus": "상태 미설정",
+    "noBio": "소개 미설정"
   },
   "invite": {
     "loadingInvite": "초대 로딩 중...",
@@ -296,10 +315,22 @@
       }
     },
     "stats": {
-      "languages": { "value": "9", "label": "개 언어" },
-      "realtime": { "value": "실시간", "label": "동기화" },
-      "crossPlatform": { "value": "3", "label": "개 플랫폼" },
-      "openArch": { "value": "개방형", "label": "아키텍처" }
+      "languages": {
+        "value": "9",
+        "label": "개 언어"
+      },
+      "realtime": {
+        "value": "실시간",
+        "label": "동기화"
+      },
+      "crossPlatform": {
+        "value": "3",
+        "label": "개 플랫폼"
+      },
+      "openArch": {
+        "value": "개방형",
+        "label": "아키텍처"
+      }
     },
     "pricing": {
       "title": "심플하고 투명한 요금제",
@@ -469,7 +500,7 @@
       "howItWorksTitle": "작동 방식",
       "step1": "태스크를 생성하면 — 본인이 담당자입니다.",
       "step2": "\"연결\"을 클릭하여 팀원에게 넘기세요. 그 사람이 새로운 담당자가 됩니다.",
-      "step3": "그 사람도 다시 연결하여 체인을 확장할 수 있습니다 (A \u2192 B \u2192 C).",
+      "step3": "그 사람도 다시 연결하여 체인을 확장할 수 있습니다 (A → B → C).",
       "step4": "마지막 사람이 처리를 완료하면, 체인을 따라 자동으로 되돌아옵니다.",
       "rulesTitle": "규칙",
       "rule1": "자기 자신에게는 실을 연결할 수 없습니다.",
@@ -488,9 +519,9 @@
     "snapback": {
       "title": "Snap-back 시스템",
       "description": "누군가 자신의 스레드 링크를 해결하면, 태스크가 자동으로 체인의 이전 사람에게 되돌아갑니다. 이 과정은 원래 생성자에게 도달할 때까지 계속됩니다.",
-      "exampleTitle": "예시: A \u2192 B \u2192 C 체인",
+      "exampleTitle": "예시: A → B → C 체인",
       "example1": "A가 태스크를 만들고 B에게 연결합니다.",
-      "example2": "B가 C에게 연결합니다. 이제 체인은 A \u2192 B \u2192 C입니다.",
+      "example2": "B가 C에게 연결합니다. 이제 체인은 A → B → C입니다.",
       "example3": "C가 작업을 완료하고 해결합니다. 태스크가 B에게 되돌아갑니다.",
       "example4": "B가 검토하고 해결합니다. 태스크가 A에게 되돌아갑니다.",
       "example5": "A가 태스크를 COMPLETED로 변경합니다. 워크플로가 완료됩니다.",

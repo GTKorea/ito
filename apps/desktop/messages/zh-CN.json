@@ -55,7 +55,8 @@
     "create": "Create",
     "cancel": "Cancel",
     "logout": "退出登录",
-    "help": "帮助"
+    "help": "帮助",
+    "more": "更多"
   },
   "workspace": {
     "myTasks": "我的任务",
@@ -193,7 +194,25 @@
     "roleMemberDesc": "工作区完全访问权限",
     "roleGuestDesc": "有限的查看权限",
     "workspaceName": "工作区名称",
-    "workspaceNamePlaceholder": "我的团队"
+    "workspaceNamePlaceholder": "我的团队",
+    "status": "状态",
+    "statusPlaceholder": "会议中、专注模式...",
+    "bio": "简介",
+    "bioPlaceholder": "介绍一下自己（最多200个字符）",
+    "bioCharCount": "{count}/200",
+    "position": "职位",
+    "positionPlaceholder": "前端开发者、UI/UX设计师...",
+    "socialLinks": "社交链接",
+    "addSocialLink": "添加链接",
+    "platformPlaceholder": "平台",
+    "urlPlaceholder": "URL",
+    "removeSocialLink": "删除"
+  },
+  "userProfile": {
+    "loading": "加载资料中...",
+    "email": "邮箱",
+    "noStatus": "未设置状态",
+    "noBio": "未设置简介"
   },
   "invite": {
     "loadingInvite": "加载邀请中...",

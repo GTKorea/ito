@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { UserProfilePopover } from '@/components/user/user-profile-popover';
 import { cn } from '@/lib/utils';
 
 interface User {
@@ -81,13 +82,15 @@ function ChainNode({
 }) {
   return (
     <div className="flex flex-col items-center gap-1">
-      <div className={cn('rounded-full border p-0.5', statusClass || 'border-border')}>
-        <Avatar className="h-7 w-7">
-          <AvatarFallback className="text-[10px] bg-secondary">
-            {user.name.charAt(0).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-      </div>
+      <UserProfilePopover userId={user.id}>
+        <div className={cn('rounded-full border p-0.5', statusClass || 'border-border')}>
+          <Avatar className="h-7 w-7">
+            <AvatarFallback className="text-[10px] bg-secondary">
+              {user.name.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        </div>
+      </UserProfilePopover>
       <span className="text-[10px] text-muted-foreground max-w-14 truncate">
         {user.name}
       </span>

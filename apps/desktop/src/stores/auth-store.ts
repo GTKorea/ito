@@ -11,6 +11,10 @@ interface User {
   email: string;
   name: string;
   avatarUrl?: string;
+  bio?: string;
+  status?: string;
+  position?: string;
+  socialLinks?: { platform: string; url: string }[];
 }
 
 interface AuthState {

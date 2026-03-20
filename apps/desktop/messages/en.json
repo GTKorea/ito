@@ -55,7 +55,8 @@
     "create": "Create",
     "cancel": "Cancel",
     "logout": "Log out",
-    "help": "Help"
+    "help": "Help",
+    "more": "More"
   },
   "workspace": {
     "myTasks": "My Tasks",
@@ -193,7 +194,25 @@
     "roleMemberDesc": "Full access to workspace",
     "roleGuestDesc": "Limited view access",
     "workspaceName": "Workspace Name",
-    "workspaceNamePlaceholder": "My Team"
+    "workspaceNamePlaceholder": "My Team",
+    "status": "Status",
+    "statusPlaceholder": "In a meeting, Focus mode...",
+    "bio": "Bio",
+    "bioPlaceholder": "Tell others about yourself (max 200 characters)",
+    "bioCharCount": "{count}/200",
+    "position": "Position",
+    "positionPlaceholder": "Frontend Developer, UI/UX Designer...",
+    "socialLinks": "Social Links",
+    "addSocialLink": "Add Link",
+    "platformPlaceholder": "Platform",
+    "urlPlaceholder": "URL",
+    "removeSocialLink": "Remove"
+  },
+  "userProfile": {
+    "loading": "Loading profile...",
+    "email": "Email",
+    "noStatus": "No status set",
+    "noBio": "No bio set"
   },
   "invite": {
     "loadingInvite": "Loading invite...",
@@ -296,10 +315,22 @@
       }
     },
     "stats": {
-      "languages": { "value": "9", "label": "Languages" },
-      "realtime": { "value": "Real-time", "label": "Sync" },
-      "crossPlatform": { "value": "3", "label": "Platforms" },
-      "openArch": { "value": "Open", "label": "Architecture" }
+      "languages": {
+        "value": "9",
+        "label": "Languages"
+      },
+      "realtime": {
+        "value": "Real-time",
+        "label": "Sync"
+      },
+      "crossPlatform": {
+        "value": "3",
+        "label": "Platforms"
+      },
+      "openArch": {
+        "value": "Open",
+        "label": "Architecture"
+      }
     },
     "pricing": {
       "title": "Simple, transparent pricing",
@@ -469,7 +500,7 @@
       "howItWorksTitle": "How It Works",
       "step1": "You create a task — you are the assignee.",
       "step2": "Click \"Connect\" to pass it to a team member. They become the new assignee.",
-      "step3": "That person can connect it further, building a chain (A \u2192 B \u2192 C).",
+      "step3": "That person can connect it further, building a chain (A → B → C).",
       "step4": "When the last person resolves their part, it snaps back through the chain.",
       "rulesTitle": "Rules",
       "rule1": "You cannot connect a thread to yourself.",
@@ -488,9 +519,9 @@
     "snapback": {
       "title": "Snap-back System",
       "description": "When someone resolves their thread link, the task automatically returns to the previous person in the chain. This continues until it reaches the original creator.",
-      "exampleTitle": "Example: A \u2192 B \u2192 C Chain",
+      "exampleTitle": "Example: A → B → C Chain",
       "example1": "A creates a task and connects it to B.",
-      "example2": "B connects it to C. Now the chain is A \u2192 B \u2192 C.",
+      "example2": "B connects it to C. Now the chain is A → B → C.",
       "example3": "C finishes and resolves. The task snaps back to B.",
       "example4": "B reviews and resolves. The task snaps back to A.",
       "example5": "A marks the task as COMPLETED. The workflow is done.",

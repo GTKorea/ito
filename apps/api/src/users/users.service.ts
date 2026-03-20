@@ -1,5 +1,18 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+
+const USER_PROFILE_SELECT = {
+  id: true,
+  email: true,
+  name: true,
+  avatarUrl: true,
+  bio: true,
+  status: true,
+  position: true,
+  socialLinks: true,
+  createdAt: true,
+};
 
 @Injectable()
 export class UsersService {
@@ -8,29 +21,49 @@ export class UsersService {
   async findById(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        avatarUrl: true,
-        createdAt: true,
-      },
+      select: USER_PROFILE_SELECT,
     });
     if (!user) throw new NotFoundException('User not found');
     return user;
   }
 
-  async updateProfile(id: string, data: { name?: string; avatarUrl?: string }) {
+  async updateProfile(id: string, data: UpdateProfileDto) {
+    const { socialLinks, ...rest } = data;
     return this.prisma.user.update({
       where: { id },
-      data,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        avatarUrl: true,
+      data: {
+        ...rest,
+        ...(socialLinks !== undefined && {
+          socialLinks: socialLinks as any,
+        }),
+      },
+      select: USER_PROFILE_SELECT,
+    });
+  }
+
+  async findPublicProfile(userId: string, requestingUserId: string) {
+    // Check that both users share at least one workspace
+    const sharedWorkspace = await this.prisma.workspaceMember.findFirst({
+      where: {
+        userId,
+        workspace: {
+          members: {
+            some: { userId: requestingUserId },
+          },
+        },
       },
     });
+
+    if (!sharedWorkspace && userId !== requestingUserId) {
+      throw new ForbiddenException('You can only view profiles of users in your workspaces');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: USER_PROFILE_SELECT,
+    });
+    if (!user) throw new NotFoundException('User not found');
+    return user;
   }
 
   async searchMembers(

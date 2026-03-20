@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN "bio" TEXT;
+ALTER TABLE "User" ADD COLUMN "status" TEXT;
+ALTER TABLE "User" ADD COLUMN "position" TEXT;
+ALTER TABLE "User" ADD COLUMN "socialLinks" JSONB;

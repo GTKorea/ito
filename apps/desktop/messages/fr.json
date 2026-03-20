@@ -55,7 +55,8 @@
     "create": "Create",
     "cancel": "Cancel",
     "logout": "Se déconnecter",
-    "help": "Aide"
+    "help": "Aide",
+    "more": "Plus"
   },
   "workspace": {
     "myTasks": "Mes Tâches",
@@ -193,7 +194,25 @@
     "roleMemberDesc": "Accès complet à l'espace de travail",
     "roleGuestDesc": "Accès en lecture seule limité",
     "workspaceName": "Nom de l'Espace de Travail",
-    "workspaceNamePlaceholder": "Mon Équipe"
+    "workspaceNamePlaceholder": "Mon Équipe",
+    "status": "Statut",
+    "statusPlaceholder": "En réunion, Mode concentration...",
+    "bio": "Bio",
+    "bioPlaceholder": "Présentez-vous (max 200 caractères)",
+    "bioCharCount": "{count}/200",
+    "position": "Poste",
+    "positionPlaceholder": "Développeur Frontend, Designer UI/UX...",
+    "socialLinks": "Liens Sociaux",
+    "addSocialLink": "Ajouter un Lien",
+    "platformPlaceholder": "Plateforme",
+    "urlPlaceholder": "URL",
+    "removeSocialLink": "Supprimer"
+  },
+  "userProfile": {
+    "loading": "Chargement du profil...",
+    "email": "Email",
+    "noStatus": "Aucun statut",
+    "noBio": "Aucune bio"
   },
   "invite": {
     "loadingInvite": "Chargement de l'invitation...",

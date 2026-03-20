@@ -55,7 +55,8 @@
     "create": "Create",
     "cancel": "Cancel",
     "logout": "登出",
-    "help": "說明"
+    "help": "說明",
+    "more": "更多"
   },
   "workspace": {
     "myTasks": "我的任務",
@@ -193,7 +194,25 @@
     "roleMemberDesc": "工作區完整存取權限",
     "roleGuestDesc": "有限的檢視權限",
     "workspaceName": "工作區名稱",
-    "workspaceNamePlaceholder": "我的團隊"
+    "workspaceNamePlaceholder": "我的團隊",
+    "status": "狀態",
+    "statusPlaceholder": "會議中、專注模式...",
+    "bio": "簡介",
+    "bioPlaceholder": "介紹一下自己（最多200個字元）",
+    "bioCharCount": "{count}/200",
+    "position": "職位",
+    "positionPlaceholder": "前端開發者、UI/UX設計師...",
+    "socialLinks": "社群連結",
+    "addSocialLink": "新增連結",
+    "platformPlaceholder": "平台",
+    "urlPlaceholder": "URL",
+    "removeSocialLink": "刪除"
+  },
+  "userProfile": {
+    "loading": "載入資料中...",
+    "email": "電子郵件",
+    "noStatus": "未設定狀態",
+    "noBio": "未設定簡介"
   },
   "invite": {
     "loadingInvite": "載入邀請中...",
