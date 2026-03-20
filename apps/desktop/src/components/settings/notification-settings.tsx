@@ -198,16 +198,18 @@ function ToggleButton({
   return (
     <button
       type="button"
+      role="switch"
+      aria-checked={checked}
       onClick={() => onChange(!checked)}
       className={cn(
-        'h-5 w-9 rounded-full transition-colors relative',
-        checked ? 'bg-primary' : 'bg-muted',
+        'h-5 w-9 rounded-full transition-colors relative shrink-0',
+        checked ? 'bg-blue-600' : 'bg-zinc-700',
       )}
     >
       <span
         className={cn(
-          'absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform',
-          checked ? 'translate-x-4' : 'translate-x-0.5',
+          'absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform',
+          checked ? 'translate-x-4' : 'translate-x-0',
         )}
       />
     </button>
