@@ -1,0 +1,8 @@
+{
+  "framework": null,
+  "buildCommand": "pnpm build",
+  "outputDirectory": "out",
+  "installCommand": "pnpm install",
+  "cleanUrls": true,
+  "trailingSlash": false
+}

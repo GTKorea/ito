@@ -4,9 +4,7 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useAdminStore } from '@/stores/admin-store';
-import { useAuthStore } from '@/stores/auth-store';
 import {
-  Shield,
   Users,
   Building2,
   CheckSquare,
@@ -54,8 +52,7 @@ function StatCard({
   return content;
 }
 
-export default function AdminDashboardPage() {
-  const { user } = useAuthStore();
+export default function DashboardPage() {
   const { stats, activities, isLoading, fetchStats, fetchActivities } = useAdminStore();
   const t = useTranslations('admin');
 
@@ -63,17 +60,6 @@ export default function AdminDashboardPage() {
     fetchStats();
     fetchActivities({ limit: 10 });
   }, [fetchStats, fetchActivities]);
-
-  if (user?.role !== 'ADMIN') {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-center">
-          <Shield className="h-10 w-10 mx-auto mb-3 text-muted-foreground opacity-40" />
-          <p className="text-sm text-muted-foreground">{t('accessDenied')}</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="h-full overflow-y-auto">
@@ -98,19 +84,19 @@ export default function AdminDashboardPage() {
               value={stats.totalUsers}
               icon={Users}
               trend={`${stats.activeUsers} ${t('activeThisWeek')}`}
-              href="/admin/users"
+              href="/users"
             />
             <StatCard
               label={t('totalWorkspaces')}
               value={stats.totalWorkspaces}
               icon={Building2}
-              href="/admin/workspaces"
+              href="/workspaces"
             />
             <StatCard
               label={t('totalTodos')}
               value={stats.totalTodos}
               icon={CheckSquare}
-              href="/admin/todos"
+              href="/todos"
             />
             <StatCard
               label={t('totalThreads')}
@@ -182,9 +168,9 @@ export default function AdminDashboardPage() {
         {/* Quick links */}
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           {[
-            { href: '/admin/users', label: t('manageUsers'), icon: Users },
-            { href: '/admin/workspaces', label: t('manageWorkspaces'), icon: Building2 },
-            { href: '/admin/todos', label: t('manageTodos'), icon: CheckSquare },
+            { href: '/users', label: t('manageUsers'), icon: Users },
+            { href: '/workspaces', label: t('manageWorkspaces'), icon: Building2 },
+            { href: '/todos', label: t('manageTodos'), icon: CheckSquare },
           ].map((link) => (
             <Link
               key={link.href}

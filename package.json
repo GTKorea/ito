@@ -6,6 +6,7 @@
   "scripts": {
     "dev:api": "turbo run dev --filter=@ito/api",
     "dev:desktop": "turbo run dev --filter=@ito/desktop",
+    "dev:admin": "turbo run dev --filter=@ito/admin",
     "dev": "turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
