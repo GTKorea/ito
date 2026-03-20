@@ -77,6 +77,8 @@
     "connectedTasks": "Tâches connectées ({count})",
     "sortByPriority": "Priorité",
     "sortByDueDate": "Date d'échéance",
+    "show": "Afficher",
+    "hide": "Masquer",
     "taskTitle": "Titre de la tâche",
     "descriptionOptional": "Description (optionnel)",
     "urgent": "Urgent",

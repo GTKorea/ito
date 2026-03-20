@@ -88,6 +88,7 @@ export default function WorkspacePage() {
   const { checkAndStartWizard } = useOnboardingStore();
   const [showCreate, setShowCreate] = useState(false);
   const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null);
+  const [drawerVisible, setDrawerVisible] = useState(false);
   const [openWithChat, setOpenWithChat] = useState(false);
   const [sortBy, setSortBy] = useState<'priority' | 'dueDate'>('priority');
   const searchParams = useSearchParams();
@@ -118,12 +119,15 @@ export default function WorkspacePage() {
 
   const handleSelectTodo = (id: string, openChat?: boolean) => {
     setSelectedTodoId(id);
+    setDrawerVisible(true);
     setOpenWithChat(!!openChat);
   };
 
   const handleCloseTodo = () => {
-    setSelectedTodoId(null);
+    setDrawerVisible(false);
     setOpenWithChat(false);
+    // Wait for slide-out animation to finish before unmounting
+    setTimeout(() => setSelectedTodoId(null), 200);
   };
 
   const sortedTodos = useMemo(() => {
@@ -216,7 +220,10 @@ export default function WorkspacePage() {
       {/* Backdrop */}
       {selectedTodoId && (
         <div
-          className="fixed inset-0 z-40 bg-black/30"
+          className={cn(
+            'fixed inset-0 z-40 transition-opacity duration-200',
+            drawerVisible ? 'bg-black/30 opacity-100' : 'opacity-0 pointer-events-none',
+          )}
           onClick={handleCloseTodo}
         />
       )}
@@ -225,7 +232,8 @@ export default function WorkspacePage() {
       <div
         className={cn(
           'fixed right-0 top-0 z-50 h-full w-full md:w-[420px] transition-transform duration-200 ease-out',
-          selectedTodoId ? 'translate-x-0' : 'translate-x-full pointer-events-none',
+          drawerVisible ? 'translate-x-0' : 'translate-x-full',
+          !selectedTodoId && 'pointer-events-none',
         )}
       >
         {selectedTodoId && (

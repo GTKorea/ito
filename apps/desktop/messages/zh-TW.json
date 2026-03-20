@@ -77,6 +77,8 @@
     "connectedTasks": "已連結的任務 ({count})",
     "sortByPriority": "優先順序",
     "sortByDueDate": "截止日期",
+    "show": "顯示",
+    "hide": "隱藏",
     "taskTitle": "任務標題",
     "descriptionOptional": "描述（選填）",
     "urgent": "緊急",

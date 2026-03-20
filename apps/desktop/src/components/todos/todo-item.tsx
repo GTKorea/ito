@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useTodoStore } from '@/stores/todo-store';
+import { useAuthStore } from '@/stores/auth-store';
 import { ThreadChain } from '@/components/threads/thread-chain';
 import { ConnectDialog } from '@/components/threads/connect-dialog';
 import { Button } from '@/components/ui/button';
@@ -33,29 +34,16 @@ import {
   Calendar,
   X,
   MessageCircle,
+  User,
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-
-const priorityNames: Record<string, string> = {
-  URGENT: 'Urgent',
-  HIGH: 'High',
-  MEDIUM: 'Medium',
-  LOW: 'Low',
-};
 
 const statusNames: Record<string, string> = {
   OPEN: 'Open',
   IN_PROGRESS: 'In Progress',
   BLOCKED: 'Blocked',
   COMPLETED: 'Completed',
-};
-
-const priorityColors: Record<string, string> = {
-  URGENT: 'text-red-500',
-  HIGH: 'text-orange-500',
-  MEDIUM: 'text-yellow-500',
-  LOW: 'text-blue-500',
 };
 
 const statusIcons: Record<string, React.ReactNode> = {
@@ -74,7 +62,7 @@ interface TodoItemProps {
     priority: string;
     dueDate?: string;
     creator: { id: string; name: string; avatarUrl?: string };
-    assignee: { id: string; name: string; avatarUrl?: string };
+    assignee?: { id: string; name: string; avatarUrl?: string };
     threadLinks: Array<{
       id: string;
       fromUser: { id: string; name: string; avatarUrl?: string };
@@ -86,9 +74,10 @@ interface TodoItemProps {
     }>;
   };
   onSelect?: (id: string, openChat?: boolean) => void;
+  isConnected?: boolean;
 }
 
-export function TodoItem({ todo, onSelect }: TodoItemProps) {
+export function TodoItem({ todo, onSelect, isConnected }: TodoItemProps) {
   const [showConnect, setShowConnect] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [isResolving, setIsResolving] = useState(false);
@@ -96,6 +85,7 @@ export function TodoItem({ todo, onSelect }: TodoItemProps) {
   const [isDeclining, setIsDeclining] = useState(false);
   const [declineReason, setDeclineReason] = useState('');
   const { updateTodo, deleteTodo, resolveThread, declineThread } = useTodoStore();
+  const { user } = useAuthStore();
   const t = useTranslations('todos');
   const tc = useTranslations('common');
 
@@ -139,9 +129,13 @@ export function TodoItem({ todo, onSelect }: TodoItemProps) {
 
   const hasThreads = todo.threadLinks.length > 0;
   const dueDateInfo = getDueDateInfo(todo.dueDate);
-  const pendingLink = todo.threadLinks.find(
-    (l) => l.status === 'PENDING' && l.toUser.id === todo.assignee.id,
-  );
+
+  // Only show Done/Decline for pending links where I'm the recipient (not the creator)
+  const pendingLink = !isConnected && todo.assignee?.id && user?.id
+    ? todo.threadLinks.find(
+        (l) => l.status === 'PENDING' && l.toUser.id === todo.assignee!.id && todo.assignee!.id === user.id,
+      )
+    : undefined;
 
   return (
     <div className="group rounded-lg border border-border bg-card p-3 hover:border-border/80 transition-colors">
@@ -176,16 +170,6 @@ export function TodoItem({ todo, onSelect }: TodoItemProps) {
             >
               {todo.title}
             </span>
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <span className={cn('text-xs cursor-default', priorityColors[todo.priority])} />
-                }
-              >
-                {todo.priority[0]}
-              </TooltipTrigger>
-              <TooltipContent>{priorityNames[todo.priority] || todo.priority}</TooltipContent>
-            </Tooltip>
             {hasThreads && (
               <Badge
                 variant="outline"
@@ -197,6 +181,16 @@ export function TodoItem({ todo, onSelect }: TodoItemProps) {
               </Badge>
             )}
           </div>
+
+          {/* Connected task: show current worker inline */}
+          {isConnected && todo.assignee && (
+            <div className="flex items-center gap-1 mt-1">
+              <User className="h-3 w-3 text-blue-400" />
+              <span className="text-[10px] text-blue-400">
+                {todo.assignee.name}
+              </span>
+            </div>
+          )}
 
           {todo.description && (
             <p className="text-xs text-muted-foreground mt-0.5 truncate">
@@ -211,14 +205,16 @@ export function TodoItem({ todo, onSelect }: TodoItemProps) {
           )}
         </div>
 
-        {/* Assignee */}
-        <UserProfilePopover userId={todo.assignee.id}>
-          <Avatar className="h-6 w-6 shrink-0">
-            <AvatarFallback className="text-[9px] bg-secondary">
-              {todo.assignee.name.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-        </UserProfilePopover>
+        {/* Assignee avatar */}
+        {todo.assignee && (
+          <UserProfilePopover userId={todo.assignee.id}>
+            <Avatar className="h-6 w-6 shrink-0">
+              <AvatarFallback className="text-[9px] bg-secondary">
+                {todo.assignee.name.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </UserProfilePopover>
+        )}
 
         {/* Actions */}
         <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
@@ -261,16 +257,18 @@ export function TodoItem({ todo, onSelect }: TodoItemProps) {
             </TooltipTrigger>
             <TooltipContent>{t('chat')}</TooltipContent>
           </Tooltip>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-7 text-xs"
-            onClick={() => setShowConnect(true)}
-            data-onboarding="connect-thread"
-          >
-            <Link2 className="h-3.5 w-3.5 mr-1" />
-            {t('connect')}
-          </Button>
+          {!isConnected && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 text-xs"
+              onClick={() => setShowConnect(true)}
+              data-onboarding="connect-thread"
+            >
+              <Link2 className="h-3.5 w-3.5 mr-1" />
+              {t('connect')}
+            </Button>
+          )}
 
           <DropdownMenu>
             <Tooltip>

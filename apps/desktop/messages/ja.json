@@ -77,6 +77,8 @@
     "connectedTasks": "接続したタスク ({count})",
     "sortByPriority": "優先度",
     "sortByDueDate": "期限",
+    "show": "表示",
+    "hide": "非表示",
     "taskTitle": "タスクタイトル",
     "descriptionOptional": "説明（任意）",
     "urgent": "緊急",

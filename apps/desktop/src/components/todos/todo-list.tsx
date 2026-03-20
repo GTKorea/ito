@@ -3,9 +3,8 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { TodoItem } from './todo-item';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { ChevronDown, ChevronRight, Link2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { ChevronDown, ChevronRight, Link2, Eye, EyeOff } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface User {
   id: string;
@@ -45,6 +44,7 @@ interface TodoListProps {
 export function TodoList({ todos, connectedTodos, onSelectTodo }: TodoListProps) {
   const t = useTranslations('todos');
   const [connectedExpanded, setConnectedExpanded] = useState(true);
+  const [showCompleted, setShowCompleted] = useState(false);
 
   if (todos.length === 0 && (!connectedTodos || connectedTodos.length === 0)) {
     return (
@@ -62,6 +62,7 @@ export function TodoList({ todos, connectedTodos, onSelectTodo }: TodoListProps)
 
   return (
     <div className="space-y-6">
+      {/* Section 1: My active tasks (assigned to me) */}
       {grouped.active.length > 0 && (
         <div className="space-y-1">
           {grouped.active.map((todo) => (
@@ -70,7 +71,7 @@ export function TodoList({ todos, connectedTodos, onSelectTodo }: TodoListProps)
         </div>
       )}
 
-      {/* Connected Todos - tasks I connected to others */}
+      {/* Section 2: Connected tasks - delegated to others, will come back to me */}
       {connectedTodos && connectedTodos.length > 0 && (
         <div>
           <button
@@ -88,38 +89,40 @@ export function TodoList({ todos, connectedTodos, onSelectTodo }: TodoListProps)
           {connectedExpanded && (
             <div className="space-y-1">
               {connectedTodos.map((todo) => (
-                <div key={todo.id}>
-                  <TodoItem todo={todo} onSelect={onSelectTodo} />
-                  {/* Current worker badge - below the item */}
-                  <div className="flex items-center gap-1.5 ml-10 -mt-1.5 mb-1.5">
-                    <div className="flex items-center gap-1 bg-blue-500/10 border border-blue-500/20 rounded-full px-2 py-0.5">
-                      <Avatar className="h-3.5 w-3.5">
-                        <AvatarFallback className="text-[6px] bg-blue-500/20 text-blue-400">
-                          {todo.assignee?.name?.charAt(0).toUpperCase() || '?'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-[10px] text-blue-400">
-                        {todo.assignee?.name}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                <TodoItem key={todo.id} todo={todo} onSelect={onSelectTodo} isConnected />
               ))}
             </div>
           )}
         </div>
       )}
 
+      {/* Section 3: Completed tasks (toggleable) */}
       {grouped.completed.length > 0 && (
         <div>
-          <p className="text-xs text-muted-foreground mb-2 px-2">
-            {t('completed')} ({grouped.completed.length})
-          </p>
-          <div className="space-y-1 opacity-60">
-            {grouped.completed.map((todo) => (
-              <TodoItem key={todo.id} todo={todo} onSelect={onSelectTodo} />
-            ))}
+          <div className="flex items-center justify-between px-2 mb-2">
+            <p className="text-xs text-muted-foreground">
+              {t('completed')} ({grouped.completed.length})
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2 text-[10px] text-muted-foreground"
+              onClick={() => setShowCompleted(!showCompleted)}
+            >
+              {showCompleted ? (
+                <><EyeOff className="h-3 w-3 mr-1" />{t('hide')}</>
+              ) : (
+                <><Eye className="h-3 w-3 mr-1" />{t('show')}</>
+              )}
+            </Button>
           </div>
+          {showCompleted && (
+            <div className="space-y-1 opacity-60">
+              {grouped.completed.map((todo) => (
+                <TodoItem key={todo.id} todo={todo} onSelect={onSelectTodo} />
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

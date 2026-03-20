@@ -77,6 +77,8 @@
     "connectedTasks": "Verknüpfte Aufgaben ({count})",
     "sortByPriority": "Priorität",
     "sortByDueDate": "Fälligkeitsdatum",
+    "show": "Anzeigen",
+    "hide": "Ausblenden",
     "taskTitle": "Aufgabentitel",
     "descriptionOptional": "Beschreibung (optional)",
     "urgent": "Dringend",
