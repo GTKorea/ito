@@ -15,6 +15,7 @@ import {
   Users,
   UserPlus,
 } from 'lucide-react';
+import { PageTooltip } from '@/components/onboarding/page-tooltip';
 
 interface Activity {
   id: string;
@@ -90,7 +91,7 @@ export default function ActivityPage() {
 
   return (
     <div className="h-full">
-      <div className="flex items-center justify-between border-b border-border px-6 py-3">
+      <div className="flex items-center justify-between border-b border-border px-4 md:px-6 py-3">
         <div>
           <h1 className="text-lg font-semibold">{t('title')}</h1>
           <p className="text-xs text-muted-foreground">
@@ -149,6 +150,12 @@ export default function ActivityPage() {
           ))
         )}
       </div>
+
+      <PageTooltip
+        pageKey="activity"
+        title="활동 내역"
+        description="워크스페이스의 모든 활동을 추적합니다"
+      />
     </div>
   );
 }

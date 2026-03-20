@@ -7,6 +7,7 @@ import { useTodoStore } from '@/stores/todo-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 import { useOnboardingStore } from '@/stores/onboarding-store';
 import { OnboardingWizard } from '@/components/onboarding/onboarding-wizard';
+import { PageTooltip } from '@/components/onboarding/page-tooltip';
 import { TodoList } from '@/components/todos/todo-list';
 import { CreateTodo } from '@/components/todos/create-todo';
 import { TodoDetail } from '@/components/todos/todo-detail';
@@ -124,9 +125,9 @@ export default function WorkspacePage() {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border px-6 py-3">
+      <div className="flex items-center justify-between border-b border-border px-4 md:px-6 py-3">
         <div>
-          <h1 className="text-lg font-semibold">{t('myTasks')}</h1>
+          <h1 className="text-lg md:text-xl font-semibold">{t('myTasks')}</h1>
           <p className="text-xs text-muted-foreground">
             {t('tasksAssignedToYou')}
           </p>
@@ -143,7 +144,7 @@ export default function WorkspacePage() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6 pb-2">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-2">
         {showCreate && (
           <CreateTodo
             workspaceId={currentWorkspace.id}
@@ -166,7 +167,7 @@ export default function WorkspacePage() {
       {/* Todo Detail Slide-over */}
       <div
         className={cn(
-          'fixed right-0 top-0 z-50 h-full w-[420px] transition-transform duration-200 ease-out',
+          'fixed right-0 top-0 z-50 h-full w-full md:w-[420px] transition-transform duration-200 ease-out',
           selectedTodoId ? 'translate-x-0' : 'translate-x-full pointer-events-none',
         )}
       >
@@ -180,6 +181,12 @@ export default function WorkspacePage() {
 
       {/* Onboarding Wizard */}
       <OnboardingWizard />
+
+      <PageTooltip
+        pageKey="workspace"
+        title="내 태스크"
+        description="태스크를 만들고 팀원에게 실을 연결해보세요"
+      />
     </div>
   );
 }

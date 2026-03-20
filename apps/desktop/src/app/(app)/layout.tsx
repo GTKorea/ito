@@ -1,19 +1,24 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/auth-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 import { useNotificationStore } from '@/stores/notification-store';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { Sidebar } from '@/components/layout/sidebar';
+import { BottomNav } from '@/components/layout/bottom-nav';
 import { CommandPalette } from '@/components/layout/command-palette';
 import { OnboardingOverlay } from '@/components/onboarding/onboarding-overlay';
+import { cn } from '@/lib/utils';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading, fetchUser } = useAuthStore();
   const { fetchWorkspaces } = useWorkspaceStore();
   const { fetchNotifications, listenToWs } = useNotificationStore();
   const router = useRouter();
+  const { isMobile, isTablet } = useMediaQuery();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
 
   useEffect(() => {
     // Only fetch if not already authenticated (avoid overriding login() state on mount)
@@ -46,8 +51,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <Sidebar />
-      <main className="flex-1 overflow-auto">{children}</main>
+      {!isMobile && (
+        <Sidebar
+          collapsed={isTablet && sidebarCollapsed}
+          onToggleCollapse={isTablet ? () => setSidebarCollapsed((prev) => !prev) : undefined}
+        />
+      )}
+      <main className={cn('flex-1 overflow-auto', isMobile && 'pb-16')}>
+        {children}
+      </main>
+      {isMobile && <BottomNav />}
       <CommandPalette />
       <OnboardingOverlay />
     </div>

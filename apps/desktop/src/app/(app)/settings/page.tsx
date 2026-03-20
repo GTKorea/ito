@@ -19,6 +19,11 @@ import {
   Bell,
   Unlink,
   Loader2,
+  MessageSquare,
+  Briefcase,
+  Link,
+  Plus,
+  X,
 } from 'lucide-react';
 import { NotificationSettings } from '@/components/settings/notification-settings';
 
@@ -38,6 +43,12 @@ export default function SettingsPage() {
   const tc = useTranslations('common');
 
   const [name, setName] = useState(user?.name || '');
+  const [status, setStatus] = useState(user?.status || '');
+  const [bio, setBio] = useState(user?.bio || '');
+  const [position, setPosition] = useState(user?.position || '');
+  const [socialLinks, setSocialLinks] = useState<{ platform: string; url: string }[]>(
+    user?.socialLinks || [],
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -65,7 +76,14 @@ export default function SettingsPage() {
   const handleSaveProfile = async () => {
     setIsSaving(true);
     try {
-      await api.patch('/users/me', { name });
+      const validLinks = socialLinks.filter((l) => l.platform && l.url);
+      await api.patch('/users/me', {
+        name,
+        status: status || null,
+        bio: bio || null,
+        position: position || null,
+        socialLinks: validLinks.length > 0 ? validLinks : null,
+      });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (error) {
@@ -73,6 +91,20 @@ export default function SettingsPage() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const addSocialLink = () => {
+    setSocialLinks([...socialLinks, { platform: '', url: '' }]);
+  };
+
+  const removeSocialLink = (index: number) => {
+    setSocialLinks(socialLinks.filter((_, i) => i !== index));
+  };
+
+  const updateSocialLink = (index: number, field: 'platform' | 'url', value: string) => {
+    const updated = [...socialLinks];
+    updated[index] = { ...updated[index], [field]: value };
+    setSocialLinks(updated);
   };
 
   const handleConnectCalendar = (provider: 'google' | 'outlook') => {
@@ -101,7 +133,7 @@ export default function SettingsPage() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="flex items-center justify-between border-b border-border px-6 py-3">
+      <div className="flex items-center justify-between border-b border-border px-4 md:px-6 py-3">
         <div>
           <h1 className="text-lg font-semibold">{t('title')}</h1>
           <p className="text-xs text-muted-foreground">
@@ -159,14 +191,110 @@ export default function SettingsPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
-              <Button
-                onClick={handleSaveProfile}
-                disabled={isSaving || name === user?.name}
-              >
-                {saved ? <Check className="h-4 w-4" /> : isSaving ? t('savingProfile') : tc('save')}
-              </Button>
             </div>
           </div>
+
+          {/* Status */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
+              <Label htmlFor="status">{t('status')}</Label>
+            </div>
+            <Input
+              id="status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              placeholder={t('statusPlaceholder')}
+              maxLength={50}
+            />
+          </div>
+
+          {/* Bio */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="bio">{t('bio')}</Label>
+              <span className="text-[10px] text-muted-foreground">
+                {t('bioCharCount', { count: bio.length })}
+              </span>
+            </div>
+            <textarea
+              id="bio"
+              value={bio}
+              onChange={(e) => setBio(e.target.value.slice(0, 200))}
+              placeholder={t('bioPlaceholder')}
+              maxLength={200}
+              rows={3}
+              className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
+            />
+          </div>
+
+          {/* Position */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Briefcase className="h-3.5 w-3.5 text-muted-foreground" />
+              <Label htmlFor="position">{t('position')}</Label>
+            </div>
+            <Input
+              id="position"
+              value={position}
+              onChange={(e) => setPosition(e.target.value)}
+              placeholder={t('positionPlaceholder')}
+              maxLength={100}
+            />
+          </div>
+
+          {/* Social Links */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Link className="h-3.5 w-3.5 text-muted-foreground" />
+                <Label>{t('socialLinks')}</Label>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs"
+                onClick={addSocialLink}
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                {t('addSocialLink')}
+              </Button>
+            </div>
+            {socialLinks.map((link, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <Input
+                  value={link.platform}
+                  onChange={(e) => updateSocialLink(index, 'platform', e.target.value)}
+                  placeholder={t('platformPlaceholder')}
+                  className="w-28 shrink-0"
+                />
+                <Input
+                  value={link.url}
+                  onChange={(e) => updateSocialLink(index, 'url', e.target.value)}
+                  placeholder={t('urlPlaceholder')}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 shrink-0 text-muted-foreground hover:text-destructive"
+                  onClick={() => removeSocialLink(index)}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            ))}
+          </div>
+
+          {/* Save button */}
+          <Button
+            onClick={handleSaveProfile}
+            disabled={isSaving}
+          >
+            {saved ? <Check className="h-4 w-4 mr-1" /> : null}
+            {saved ? tc('save') : isSaving ? t('savingProfile') : tc('save')}
+          </Button>
         </section>
 
         <Separator />

@@ -14,13 +14,16 @@ import {
   Link2,
   ArrowLeftRight,
   UserPlus,
+  XCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { PageTooltip } from '@/components/onboarding/page-tooltip';
 
 const typeIcons: Record<string, React.ReactNode> = {
   THREAD_RECEIVED: <Link2 className="h-4 w-4 text-blue-500" />,
   THREAD_SNAPPED: <ArrowLeftRight className="h-4 w-4 text-green-500" />,
   THREAD_COMPLETED: <CheckCheck className="h-4 w-4 text-green-500" />,
+  THREAD_DECLINED: <XCircle className="h-4 w-4 text-red-500" />,
   TODO_COMPLETED: <Check className="h-4 w-4 text-green-500" />,
   TODO_ASSIGNED: <UserPlus className="h-4 w-4 text-blue-500" />,
   WORKSPACE_INVITE: <UserPlus className="h-4 w-4 text-purple-500" />,
@@ -54,7 +57,7 @@ export default function NotificationsPage() {
 
   return (
     <div className="h-full">
-      <div className="flex items-center justify-between border-b border-border px-6 py-3">
+      <div className="flex items-center justify-between border-b border-border px-4 md:px-6 py-3">
         <div>
           <h1 className="text-lg font-semibold">{t('title')}</h1>
           <p className="text-xs text-muted-foreground">
@@ -118,6 +121,12 @@ export default function NotificationsPage() {
           ))
         )}
       </div>
+
+      <PageTooltip
+        pageKey="notifications"
+        title="알림"
+        description="실 활동과 워크스페이스 초대 알림이 여기에 옵니다"
+      />
     </div>
   );
 }

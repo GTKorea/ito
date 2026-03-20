@@ -6,6 +6,7 @@ import { useWorkspaceStore } from '@/stores/workspace-store';
 import { CalendarView } from '@/components/calendar/calendar-view';
 import { QuickCreateTodoDialog } from '@/components/calendar/quick-create-todo-dialog';
 import { CalendarDays } from 'lucide-react';
+import { PageTooltip } from '@/components/onboarding/page-tooltip';
 
 export default function CalendarPage() {
   const { currentWorkspace } = useWorkspaceStore();
@@ -40,7 +41,7 @@ export default function CalendarPage() {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border px-6 py-3">
+      <div className="flex items-center justify-between border-b border-border px-4 md:px-6 py-3">
         <div>
           <h1 className="text-lg font-semibold">Calendar</h1>
           <p className="text-xs text-muted-foreground">
@@ -69,6 +70,12 @@ export default function CalendarPage() {
           />
         )}
       </div>
+
+      <PageTooltip
+        pageKey="calendar"
+        title="캘린더"
+        description="태스크 마감일이 캘린더에 표시됩니다"
+      />
 
       {createDate && (
         <QuickCreateTodoDialog

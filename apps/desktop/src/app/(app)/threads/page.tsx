@@ -10,14 +10,23 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import {
   Check,
   Link2,
   ArrowDownLeft,
   ArrowUpRight,
   Network,
   List,
+  X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { PageTooltip } from '@/components/onboarding/page-tooltip';
 import {
   ReactFlow,
   Background,
@@ -143,7 +152,10 @@ export default function ThreadsPage() {
   const [threads, setThreads] = useState<MyThreads>({ incoming: [], outgoing: [] });
   const [isLoading, setIsLoading] = useState(true);
   const [view, setView] = useState<'incoming' | 'outgoing' | 'graph'>('incoming');
-  const { resolveThread } = useTodoStore();
+  const [showDecline, setShowDecline] = useState<string | null>(null);
+  const [declineReason, setDeclineReason] = useState('');
+  const [isDeclining, setIsDeclining] = useState(false);
+  const { resolveThread, declineThread } = useTodoStore();
   const { currentWorkspace } = useWorkspaceStore();
   const { user } = useAuthStore();
   const t = useTranslations('threads');
@@ -173,6 +185,21 @@ export default function ThreadsPage() {
   const handleResolve = async (id: string) => {
     await resolveThread(id);
     fetchThreads();
+  };
+
+  const handleDecline = async (id: string) => {
+    if (isDeclining) return;
+    setIsDeclining(true);
+    try {
+      await declineThread(id, declineReason || undefined);
+      setShowDecline(null);
+      setDeclineReason('');
+      fetchThreads();
+    } catch {
+      // ignore
+    } finally {
+      setIsDeclining(false);
+    }
   };
 
   // ── Build overview graph from all threads ──
@@ -248,7 +275,7 @@ export default function ThreadsPage() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-border px-6 py-3">
+      <div className="flex items-center justify-between border-b border-border px-4 md:px-6 py-3">
         <div>
           <h1 className="text-lg font-semibold">{t('title')}</h1>
           <p className="text-xs text-muted-foreground">{t('subtitle')}</p>
@@ -350,7 +377,7 @@ export default function ThreadsPage() {
           )}
         </div>
       ) : (
-        <div className="flex-1 overflow-y-auto p-6 space-y-3">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-3">
           {isLoading ? (
             <div className="flex justify-center py-12">
               <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -419,6 +446,15 @@ export default function ThreadsPage() {
                       <Check className="h-3.5 w-3.5 mr-1" />
                       {t('markDone')}
                     </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-xs text-red-500 border-red-500/30 hover:bg-red-500/10"
+                      onClick={() => setShowDecline(link.id)}
+                    >
+                      <X className="h-3.5 w-3.5 mr-1" />
+                      거절
+                    </Button>
                   </div>
                 )}
               </div>
@@ -426,6 +462,51 @@ export default function ThreadsPage() {
           )}
         </div>
       )}
+
+      {/* Decline confirmation dialog */}
+      {showDecline && (
+        <Dialog open onOpenChange={() => { setShowDecline(null); setDeclineReason(''); }}>
+          <DialogContent className="sm:max-w-sm">
+            <DialogHeader>
+              <DialogTitle>실 거절</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                이 실을 거절하면 보낸 사람에게 태스크가 돌아갑니다.
+              </p>
+              <Textarea
+                placeholder="거절 사유 (선택)"
+                value={declineReason}
+                onChange={(e) => setDeclineReason(e.target.value)}
+                rows={3}
+              />
+              <div className="flex gap-2 justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => { setShowDecline(null); setDeclineReason(''); }}
+                >
+                  취소
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  disabled={isDeclining}
+                  onClick={() => handleDecline(showDecline)}
+                >
+                  {isDeclining ? '거절 중...' : '거절'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      <PageTooltip
+        pageKey="threads"
+        title="스레드"
+        description="받은 실과 보낸 실이 여기에 표시됩니다"
+      />
     </div>
   );
 }
