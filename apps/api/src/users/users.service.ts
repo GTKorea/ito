@@ -11,6 +11,7 @@ const USER_PROFILE_SELECT = {
   status: true,
   position: true,
   socialLinks: true,
+  role: true,
   createdAt: true,
 };
 

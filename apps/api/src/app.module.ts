@@ -15,6 +15,9 @@ import { FilesModule } from './files/files.module';
 import { EmailModule } from './email/email.module';
 import { SlackModule } from './slack/slack.module';
 import { CalendarModule } from './calendar/calendar.module';
+import { AdminModule } from './admin/admin.module';
+import { ChatModule } from './chat/chat.module';
+import { SharedSpacesModule } from './shared-spaces/shared-spaces.module';
 
 @Module({
   imports: [
@@ -34,6 +37,9 @@ import { CalendarModule } from './calendar/calendar.module';
     EmailModule,
     SlackModule,
     CalendarModule,
+    AdminModule,
+    ChatModule,
+    SharedSpacesModule,
   ],
 })
 export class AppModule {}

@@ -19,6 +19,7 @@ model User {
   status       String?
   position     String?
   socialLinks  Json?
+  role         SystemRole @default(USER)
 
   googleId String? @unique
   githubId String? @unique
@@ -39,6 +40,8 @@ model User {
   filesUploaded        File[]
   slackUsers           SlackUser[]
   calendarIntegrations CalendarIntegration[]
+  chatMessages         ChatMessage[]
+  sharedSpacesCreated  SharedSpace[]
 }
 
 model RefreshToken {
@@ -63,12 +66,13 @@ model Workspace {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  members         WorkspaceMember[]
-  teams           Team[]
-  todos           Todo[]
-  invites         WorkspaceInvite[]
-  activities      Activity[]
-  slackWorkspaces SlackWorkspace[]
+  members                WorkspaceMember[]
+  teams                  Team[]
+  todos                  Todo[]
+  invites                WorkspaceInvite[]
+  activities             Activity[]
+  slackWorkspaces        SlackWorkspace[]
+  sharedSpaceParticipants SharedSpaceParticipant[]
 }
 
 model WorkspaceMember {
@@ -140,6 +144,11 @@ enum TeamRole {
   MEMBER
 }
 
+enum SystemRole {
+  USER
+  ADMIN
+}
+
 // ──────────────────── Todo & Thread System ────────────────────
 
 model Todo {
@@ -150,27 +159,31 @@ model Todo {
   priority    Priority   @default(MEDIUM)
   dueDate     DateTime?
 
-  creatorId   String
-  assigneeId  String
-  workspaceId String
-  teamId      String?
+  creatorId     String
+  assigneeId    String
+  workspaceId   String
+  teamId        String?
+  sharedSpaceId String?
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   completedAt DateTime?
 
-  creator   User      @relation("TodoCreator", fields: [creatorId], references: [id])
-  assignee  User      @relation("TodoAssignee", fields: [assigneeId], references: [id])
-  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  team      Team?     @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  creator     User         @relation("TodoCreator", fields: [creatorId], references: [id])
+  assignee    User         @relation("TodoAssignee", fields: [assigneeId], references: [id])
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  team        Team?        @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  sharedSpace SharedSpace? @relation(fields: [sharedSpaceId], references: [id], onDelete: SetNull)
 
-  threadLinks ThreadLink[]
-  files       File[]
+  threadLinks   ThreadLink[]
+  files         File[]
+  chatMessages  ChatMessage[]
 
   @@index([assigneeId])
   @@index([creatorId])
   @@index([workspaceId])
   @@index([teamId])
+  @@index([sharedSpaceId])
 }
 
 enum TodoStatus {
@@ -196,6 +209,7 @@ model ThreadLink {
   message    String?
   status     ThreadLinkStatus @default(PENDING)
   chainIndex Int
+  groupId    String?
 
   createdAt  DateTime  @default(now())
   resolvedAt DateTime?
@@ -208,6 +222,7 @@ model ThreadLink {
   @@index([todoId, chainIndex])
   @@index([toUserId, status])
   @@index([fromUserId])
+  @@index([groupId])
 }
 
 enum ThreadLinkStatus {
@@ -242,6 +257,7 @@ enum NotificationType {
   WORKSPACE_INVITE
   TODO_ASSIGNED
   TODO_COMPLETED
+  SHARED_SPACE_INVITE
 }
 
 model NotificationPreference {
@@ -330,6 +346,72 @@ model SlackUser {
 
   @@unique([slackUserId, slackWorkspaceId])
   @@index([userId])
+}
+
+// ──────────────────── Chat Messages ────────────────────
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  content   String
+  todoId    String
+  todo      Todo     @relation(fields: [todoId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([todoId, createdAt])
+  @@index([senderId])
+}
+
+// ──────────────────── Shared Spaces (Cross-Workspace Collaboration) ────────────────────
+
+model SharedSpace {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  participants SharedSpaceParticipant[]
+  todos        Todo[]
+  invites      SharedSpaceInvite[]
+
+  @@index([createdById])
+}
+
+model SharedSpaceParticipant {
+  id            String          @id @default(cuid())
+  sharedSpaceId String
+  sharedSpace   SharedSpace     @relation(fields: [sharedSpaceId], references: [id], onDelete: Cascade)
+  workspaceId   String
+  workspace     Workspace       @relation(fields: [workspaceId], references: [id])
+  role          SharedSpaceRole @default(MEMBER)
+  joinedAt      DateTime        @default(now())
+
+  @@unique([sharedSpaceId, workspaceId])
+  @@index([workspaceId])
+}
+
+enum SharedSpaceRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+model SharedSpaceInvite {
+  id            String   @id @default(cuid())
+  sharedSpaceId String
+  sharedSpace   SharedSpace @relation(fields: [sharedSpaceId], references: [id], onDelete: Cascade)
+  workspaceSlug String
+  token         String   @unique @default(cuid())
+  expiresAt     DateTime
+  createdAt     DateTime @default(now())
+
+  @@index([sharedSpaceId])
+  @@index([workspaceSlug])
 }
 
 // ──────────────────── Calendar Integration ────────────────────

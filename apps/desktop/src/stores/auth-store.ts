@@ -15,6 +15,7 @@ interface User {
   status?: string;
   position?: string;
   socialLinks?: { platform: string; url: string }[];
+  role?: 'USER' | 'ADMIN';
 }
 
 interface AuthState {
