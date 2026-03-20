@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { isTauri } from '@/lib/platform';
+import { setupDeepLinkListener } from '@/lib/tauri-oauth';
 import { useAuthStore } from '@/stores/auth-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,14 +16,18 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
   const { login } = useAuthStore();
   const router = useRouter();
-  const [isDesktop, setIsDesktop] = useState(false);
   const t = useTranslations('auth');
   const tc = useTranslations('common');
 
   useEffect(() => {
-    setIsDesktop(isTauri());
+    const desktop = isTauri();
+    setIsDesktop(desktop);
+    if (desktop) {
+      setupDeepLinkListener();
+    }
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,6 +46,23 @@ export default function LoginPage() {
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
+  const handleOAuth = async (provider: 'google' | 'github') => {
+    const from = isDesktop ? 'ito://' : window.location.origin;
+    const url = `${API_URL}/auth/${provider}/init?from=${encodeURIComponent(from)}`;
+
+    if (isDesktop) {
+      try {
+        const { open } = await import('@tauri-apps/plugin-shell');
+        await open(url);
+      } catch {
+        // Fallback: open in webview if shell plugin fails
+        window.location.href = url;
+      }
+    } else {
+      window.location.href = url;
+    }
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="w-full max-w-sm space-y-6 px-4">
@@ -55,40 +77,32 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* OAuth — hidden in Tauri desktop app */}
-        {!isDesktop && (
-          <>
-            <div className="space-y-2">
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => {
-                  window.location.href = `${API_URL}/auth/google/init?from=${encodeURIComponent(window.location.origin)}`;
-                }}
-              >
-                {t('continueWithGoogle')}
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => {
-                  window.location.href = `${API_URL}/auth/github/init?from=${encodeURIComponent(window.location.origin)}`;
-                }}
-              >
-                {t('continueWithGithub')}
-              </Button>
-            </div>
+        {/* OAuth */}
+        <div className="space-y-2">
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => handleOAuth('google')}
+          >
+            {t('continueWithGoogle')}
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => handleOAuth('github')}
+          >
+            {t('continueWithGithub')}
+          </Button>
+        </div>
 
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">{tc('or')}</span>
-              </div>
-            </div>
-          </>
-        )}
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-border" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">{tc('or')}</span>
+          </div>
+        </div>
 
         {/* Email form */}
         <form onSubmit={handleSubmit} className="space-y-3">

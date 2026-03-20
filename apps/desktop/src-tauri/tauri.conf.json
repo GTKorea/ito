@@ -15,7 +15,7 @@
         "title": "ito",
         "width": 1280,
         "height": 860,
-        "minWidth": 960,
+        "minWidth": 640,
         "minHeight": 600,
         "resizable": true,
         "fullscreen": false
@@ -23,6 +23,14 @@
     ],
     "security": {
       "csp": null
+    }
+  },
+  "plugins": {
+    "deep-link": {
+      "mobile": [],
+      "desktop": {
+        "schemes": ["ito"]
+      }
     }
   },
   "bundle": {
