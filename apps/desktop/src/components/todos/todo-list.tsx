@@ -88,18 +88,20 @@ export function TodoList({ todos, connectedTodos, onSelectTodo }: TodoListProps)
           {connectedExpanded && (
             <div className="space-y-1">
               {connectedTodos.map((todo) => (
-                <div key={todo.id} className="relative">
+                <div key={todo.id}>
                   <TodoItem todo={todo} onSelect={onSelectTodo} />
-                  {/* Current worker badge */}
-                  <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-blue-500/10 border border-blue-500/20 rounded-full px-2 py-0.5">
-                    <Avatar className="h-4 w-4">
-                      <AvatarFallback className="text-[7px] bg-blue-500/20 text-blue-400">
-                        {todo.assignee?.name?.charAt(0).toUpperCase() || '?'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-[10px] text-blue-400 font-medium">
-                      {todo.assignee?.name}
-                    </span>
+                  {/* Current worker badge - below the item */}
+                  <div className="flex items-center gap-1.5 ml-10 -mt-1.5 mb-1.5">
+                    <div className="flex items-center gap-1 bg-blue-500/10 border border-blue-500/20 rounded-full px-2 py-0.5">
+                      <Avatar className="h-3.5 w-3.5">
+                        <AvatarFallback className="text-[6px] bg-blue-500/20 text-blue-400">
+                          {todo.assignee?.name?.charAt(0).toUpperCase() || '?'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-[10px] text-blue-400">
+                        {todo.assignee?.name}
+                      </span>
+                    </div>
                   </div>
                 </div>
               ))}
