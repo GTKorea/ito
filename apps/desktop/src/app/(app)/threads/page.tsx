@@ -26,7 +26,7 @@ import {
   X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { PageTooltip } from '@/components/onboarding/page-tooltip';
+
 import {
   ReactFlow,
   Background,
@@ -502,11 +502,7 @@ export default function ThreadsPage() {
         </Dialog>
       )}
 
-      <PageTooltip
-        pageKey="threads"
-        title="스레드"
-        description="받은 실과 보낸 실이 여기에 표시됩니다"
-      />
+
     </div>
   );
 }

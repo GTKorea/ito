@@ -17,7 +17,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { PageTooltip } from '@/components/onboarding/page-tooltip';
+
 
 const typeIcons: Record<string, React.ReactNode> = {
   THREAD_RECEIVED: <Link2 className="h-4 w-4 text-blue-500" />,
@@ -122,11 +122,7 @@ export default function NotificationsPage() {
         )}
       </div>
 
-      <PageTooltip
-        pageKey="notifications"
-        title="알림"
-        description="실 활동과 워크스페이스 초대 알림이 여기에 옵니다"
-      />
+
     </div>
   );
 }

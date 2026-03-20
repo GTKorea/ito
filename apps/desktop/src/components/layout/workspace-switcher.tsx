@@ -24,8 +24,10 @@ export function WorkspaceSwitcher() {
     const slug = newName
       .toLowerCase()
       .replace(/\s+/g, '-')
-      .replace(/[^a-z0-9-]/g, '');
-    await createWorkspace(newName, slug);
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/^-+|-+$/g, '');
+    const finalSlug = slug || `ws-${Date.now().toString(36)}`;
+    await createWorkspace(newName, finalSlug);
     setNewName('');
     setCreating(false);
     setOpen(false);

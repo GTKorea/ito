@@ -6,7 +6,7 @@ import { useWorkspaceStore } from '@/stores/workspace-store';
 import { CalendarView } from '@/components/calendar/calendar-view';
 import { QuickCreateTodoDialog } from '@/components/calendar/quick-create-todo-dialog';
 import { CalendarDays } from 'lucide-react';
-import { PageTooltip } from '@/components/onboarding/page-tooltip';
+
 
 export default function CalendarPage() {
   const { currentWorkspace } = useWorkspaceStore();
@@ -71,11 +71,6 @@ export default function CalendarPage() {
         )}
       </div>
 
-      <PageTooltip
-        pageKey="calendar"
-        title="캘린더"
-        description="태스크 마감일이 캘린더에 표시됩니다"
-      />
 
       {createDate && (
         <QuickCreateTodoDialog

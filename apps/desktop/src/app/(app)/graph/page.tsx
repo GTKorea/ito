@@ -2,7 +2,7 @@
 
 import { useWorkspaceStore } from '@/stores/workspace-store';
 import { TaskGraphView } from '@/components/graph/task-graph-view';
-import { PageTooltip } from '@/components/onboarding/page-tooltip';
+
 
 export default function GraphPage() {
   const { currentWorkspace, isLoading } = useWorkspaceStore();
@@ -29,11 +29,7 @@ export default function GraphPage() {
     <div className="flex h-full flex-col">
       <TaskGraphView workspaceId={currentWorkspace.id} />
 
-      <PageTooltip
-        pageKey="graph"
-        title="태스크 그래프"
-        description="태스크의 흐름을 시각적으로 확인할 수 있어요"
-      />
+
     </div>
   );
 }

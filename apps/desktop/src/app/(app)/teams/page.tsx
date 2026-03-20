@@ -30,7 +30,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MemberDetailPanel } from '@/components/teams/member-detail-panel';
-import { PageTooltip } from '@/components/onboarding/page-tooltip';
+
 
 interface TeamMember {
   id: string;
@@ -292,11 +292,6 @@ export default function TeamsPage() {
         )}
       </div>
 
-      <PageTooltip
-        pageKey="teams"
-        title="팀 관리"
-        description="팀을 만들어 멤버를 구성하세요"
-      />
 
       {/* Add Member Dialog */}
       {addMemberTeamId && (

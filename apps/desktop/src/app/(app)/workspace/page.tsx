@@ -7,7 +7,7 @@ import { useTodoStore } from '@/stores/todo-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 import { useOnboardingStore } from '@/stores/onboarding-store';
 import { OnboardingWizard } from '@/components/onboarding/onboarding-wizard';
-import { PageTooltip } from '@/components/onboarding/page-tooltip';
+
 import { TodoList } from '@/components/todos/todo-list';
 import { CreateTodo } from '@/components/todos/create-todo';
 import { TodoDetail } from '@/components/todos/todo-detail';
@@ -182,11 +182,7 @@ export default function WorkspacePage() {
       {/* Onboarding Wizard */}
       <OnboardingWizard />
 
-      <PageTooltip
-        pageKey="workspace"
-        title="내 태스크"
-        description="태스크를 만들고 팀원에게 실을 연결해보세요"
-      />
+
     </div>
   );
 }
