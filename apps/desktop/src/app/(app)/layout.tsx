@@ -9,6 +9,7 @@ import { useMediaQuery } from '@/hooks/use-media-query';
 import { Sidebar } from '@/components/layout/sidebar';
 import { BottomNav } from '@/components/layout/bottom-nav';
 import { CommandPalette } from '@/components/layout/command-palette';
+import { TopHeader } from '@/components/layout/top-header';
 import { OnboardingOverlay } from '@/components/onboarding/onboarding-overlay';
 import { cn } from '@/lib/utils';
 
@@ -57,8 +58,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           onToggleCollapse={isTablet ? () => setSidebarCollapsed((prev) => !prev) : undefined}
         />
       )}
-      <main className={cn('flex-1 overflow-auto', isMobile && 'pb-16')}>
-        {children}
+      <main className={cn('flex-1 flex flex-col overflow-hidden', isMobile && 'pb-16')}>
+        {!isMobile && <TopHeader />}
+        <div className="flex-1 overflow-auto">
+          {children}
+        </div>
       </main>
       {isMobile && <BottomNav />}
       <CommandPalette />

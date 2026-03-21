@@ -307,14 +307,18 @@ model File {
   taskId       String?
   threadLinkId String?
 
+  chatMessageId String?
+
   createdAt DateTime @default(now())
 
-  uploader   User        @relation(fields: [uploaderId], references: [id])
-  task       Task?       @relation(fields: [taskId], references: [id], onDelete: SetNull)
-  threadLink ThreadLink? @relation(fields: [threadLinkId], references: [id], onDelete: SetNull)
+  uploader    User         @relation(fields: [uploaderId], references: [id])
+  task        Task?        @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  threadLink  ThreadLink?  @relation(fields: [threadLinkId], references: [id], onDelete: SetNull)
+  chatMessage ChatMessage? @relation("ChatMessageFiles", fields: [chatMessageId], references: [id], onDelete: SetNull)
 
   @@index([taskId])
   @@index([threadLinkId])
+  @@index([chatMessageId])
 }
 
 // ──────────────────── Slack Integration ────────────────────
@@ -352,17 +356,23 @@ model SlackUser {
 // ──────────────────── Chat Messages ────────────────────
 
 model ChatMessage {
-  id        String   @id @default(cuid())
-  content   String
-  taskId    String
-  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  senderId  String
-  sender    User     @relation(fields: [senderId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(cuid())
+  content    String
+  taskId     String
+  task       Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  senderId   String
+  sender     User     @relation(fields: [senderId], references: [id])
+  parentId   String?
+  parent     ChatMessage?  @relation("ChatThread", fields: [parentId], references: [id], onDelete: SetNull)
+  replies    ChatMessage[] @relation("ChatThread")
+  replyCount Int           @default(0)
+  files      File[]        @relation("ChatMessageFiles")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@index([taskId, createdAt])
   @@index([senderId])
+  @@index([parentId])
 }
 
 // ──────────────────── Shared Spaces (Cross-Workspace Collaboration) ────────────────────

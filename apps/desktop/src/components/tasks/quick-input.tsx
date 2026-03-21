@@ -6,7 +6,7 @@ import { useWorkspaceStore } from '@/stores/workspace-store';
 import { api } from '@/lib/api-client';
 import { parseQuickInput } from '@/lib/quick-input-parser';
 import { useTranslations } from 'next-intl';
-import { Send, Loader2 } from 'lucide-react';
+import { Send, Loader2, AtSign, ChevronRight, Flag, CalendarDays } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 
@@ -16,6 +16,13 @@ interface UserResult {
   email: string;
   avatarUrl?: string;
 }
+
+const PRIORITY_OPTIONS = [
+  { value: 'URGENT', label: 'Urgent', color: 'text-red-400', bg: 'bg-red-500/15', dot: 'bg-red-400' },
+  { value: 'HIGH', label: 'High', color: 'text-orange-400', bg: 'bg-orange-500/15', dot: 'bg-orange-400' },
+  { value: 'MEDIUM', label: 'Medium', color: 'text-yellow-400', bg: 'bg-yellow-500/15', dot: 'bg-yellow-400' },
+  { value: 'LOW', label: 'Low', color: 'text-blue-400', bg: 'bg-blue-500/15', dot: 'bg-blue-400' },
+] as const;
 
 export function QuickInput() {
   const t = useTranslations('tasks');
@@ -27,11 +34,18 @@ export function QuickInput() {
   const [mentionQuery, setMentionQuery] = useState('');
   const [mentionStartPos, setMentionStartPos] = useState(-1);
 
+  const [isFocused, setIsFocused] = useState(false);
+  const [priority, setPriority] = useState<string | null>(null);
+  const [dueDate, setDueDate] = useState<string | null>(null);
+  const [showPriorityMenu, setShowPriorityMenu] = useState(false);
+
   // Map of display name -> user ID for resolved mentions
   const resolvedUsersRef = useRef<Map<string, string>>(new Map());
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const dateInputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const blurTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { createTask, connectChain, fetchCategorizedTasks } = useTaskStore();
   const { currentWorkspace } = useWorkspaceStore();
@@ -156,7 +170,13 @@ export function QuickInput() {
 
     setIsSubmitting(true);
     try {
-      const task = await createTask(currentWorkspace.id, parsed.title);
+      const task = await createTask(
+        currentWorkspace.id,
+        parsed.title,
+        undefined,
+        priority ?? undefined,
+        dueDate ?? undefined,
+      );
 
       if (parsed.chain.length > 0) {
         // Resolve display names to user IDs
@@ -185,12 +205,54 @@ export function QuickInput() {
       // Refresh the task list
       await fetchCategorizedTasks(currentWorkspace.id);
       setInput('');
+      setPriority(null);
+      setDueDate(null);
       resolvedUsersRef.current.clear();
     } catch {
       // Error handled silently — could add toast notification here
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const insertAtCursor = (text: string) => {
+    const el = inputRef.current;
+    if (!el) return;
+
+    const start = el.selectionStart ?? input.length;
+    const end = el.selectionEnd ?? input.length;
+    const newValue = input.substring(0, start) + text + input.substring(end);
+    setInput(newValue);
+
+    // Set cursor position after inserted text
+    const newPos = start + text.length;
+    setTimeout(() => {
+      el.focus();
+      el.setSelectionRange(newPos, newPos);
+      // Trigger autocomplete detection for @ insertions
+      handleInputChange(newValue);
+    }, 0);
+  };
+
+  const handleFocus = () => {
+    if (blurTimeoutRef.current) {
+      clearTimeout(blurTimeoutRef.current);
+      blurTimeoutRef.current = null;
+    }
+    setIsFocused(true);
+  };
+
+  const handleBlur = () => {
+    // Delay blur to allow toolbar button clicks to register
+    blurTimeoutRef.current = setTimeout(() => {
+      setIsFocused(false);
+      setShowPriorityMenu(false);
+    }, 200);
+  };
+
+  const handleToolbarMouseDown = (e: React.MouseEvent) => {
+    // Prevent input blur when clicking toolbar
+    e.preventDefault();
   };
 
   // Global keyboard shortcut: Cmd/Ctrl+N or just "/" to focus input
@@ -220,12 +282,23 @@ export function QuickInput() {
     return () => document.removeEventListener('keydown', handleGlobalKey);
   }, []);
 
-  // Clean up debounce on unmount
+  // Clean up timeouts on unmount
   useEffect(() => {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
     };
   }, []);
+
+  // Close priority menu when clicking outside
+  useEffect(() => {
+    if (!showPriorityMenu) return;
+    const handleClick = () => setShowPriorityMenu(false);
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, [showPriorityMenu]);
+
+  const selectedPriority = PRIORITY_OPTIONS.find((p) => p.value === priority);
 
   if (!currentWorkspace) return null;
 
@@ -261,45 +334,196 @@ export function QuickInput() {
         </div>
       )}
 
-      {/* Floating neon input */}
+      {/* Card-style input with toolbar */}
       <div className={cn(
-        'flex items-center gap-2 rounded-full px-5 py-2.5',
+        'rounded-xl overflow-hidden',
         'bg-card/40 backdrop-blur-md',
         'border border-border/50',
         'shadow-lg',
         'transition-all duration-300',
-        'focus-within:bg-card/80',
-        'focus-within:border-border',
-        'focus-within:shadow-xl',
+        isFocused && 'bg-card/80 border-border shadow-xl',
       )}>
-        <input
-          ref={inputRef}
-          data-quick-input
-          type="text"
-          value={input}
-          onChange={(e) => handleInputChange(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={t('quickInputPlaceholder')}
-          disabled={isSubmitting}
-          className="h-8 flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none disabled:opacity-50"
-        />
-        <button
-          onClick={handleSubmit}
-          disabled={!input.trim() || isSubmitting}
+        {/* Toolbar — slides in when focused */}
+        <div
           className={cn(
-            'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
-            'bg-primary text-primary-foreground',
-            'transition-all duration-200',
-            'hover:bg-primary/90 hover:scale-105',
-            'disabled:opacity-20 disabled:hover:scale-100 disabled:cursor-not-allowed',
+            'grid transition-all duration-200 ease-out',
+            isFocused ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0',
           )}
+          onMouseDown={handleToolbarMouseDown}
         >
-          {isSubmitting ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          ) : (
-            <Send className="h-3.5 w-3.5" />
-          )}
-        </button>
+          <div className="overflow-hidden">
+            <div className="flex items-center gap-0.5 px-3 py-1.5 border-b border-border/30">
+              {/* @ Mention button */}
+              <button
+                type="button"
+                onClick={() => insertAtCursor('@')}
+                title="Mention (@)"
+                className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+              >
+                <AtSign className="h-3.5 w-3.5" />
+              </button>
+
+              {/* Chain button */}
+              <button
+                type="button"
+                onClick={() => insertAtCursor(' > @')}
+                title="Chain (>)"
+                className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+              >
+                <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+
+              {/* Priority button */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowPriorityMenu((prev) => !prev);
+                  }}
+                  title="Priority"
+                  className={cn(
+                    'flex h-7 w-7 items-center justify-center rounded-md transition-colors',
+                    priority
+                      ? `${selectedPriority?.color}`
+                      : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
+                  )}
+                >
+                  <Flag className="h-3.5 w-3.5" />
+                </button>
+
+                {/* Priority dropdown */}
+                {showPriorityMenu && (
+                  <div
+                    className="absolute bottom-full left-0 mb-1.5 w-36 rounded-lg border border-border bg-card shadow-xl overflow-hidden z-50"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {PRIORITY_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => {
+                          setPriority(priority === opt.value ? null : opt.value);
+                          setShowPriorityMenu(false);
+                          inputRef.current?.focus();
+                        }}
+                        className={cn(
+                          'flex w-full items-center gap-2 px-3 py-2 text-xs transition-colors hover:bg-accent/50',
+                          priority === opt.value && 'bg-accent/30',
+                        )}
+                      >
+                        <span className={cn('h-2 w-2 rounded-full', opt.dot)} />
+                        <span className={opt.color}>{opt.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Due date button */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => dateInputRef.current?.showPicker()}
+                  title="Due date"
+                  className={cn(
+                    'flex h-7 w-7 items-center justify-center rounded-md transition-colors',
+                    dueDate
+                      ? 'text-blue-400'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
+                  )}
+                >
+                  <CalendarDays className="h-3.5 w-3.5" />
+                </button>
+                <input
+                  ref={dateInputRef}
+                  type="date"
+                  value={dueDate ?? ''}
+                  onChange={(e) => {
+                    setDueDate(e.target.value || null);
+                    inputRef.current?.focus();
+                  }}
+                  className="absolute inset-0 opacity-0 w-7 h-7 cursor-pointer"
+                  tabIndex={-1}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Badges row — shows selected priority/due date */}
+        {(selectedPriority || dueDate) && (
+          <div className="flex items-center gap-1.5 px-4 pt-2">
+            {selectedPriority && (
+              <span
+                className={cn(
+                  'inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium',
+                  selectedPriority.bg,
+                  selectedPriority.color,
+                )}
+              >
+                <span className={cn('h-1.5 w-1.5 rounded-full', selectedPriority.dot)} />
+                {selectedPriority.label}
+                <button
+                  type="button"
+                  onClick={() => setPriority(null)}
+                  onMouseDown={handleToolbarMouseDown}
+                  className="ml-0.5 hover:opacity-70"
+                >
+                  x
+                </button>
+              </span>
+            )}
+            {dueDate && (
+              <span className="inline-flex items-center gap-1 rounded-md bg-blue-500/15 px-2 py-0.5 text-[11px] font-medium text-blue-400">
+                <CalendarDays className="h-3 w-3" />
+                {dueDate}
+                <button
+                  type="button"
+                  onClick={() => setDueDate(null)}
+                  onMouseDown={handleToolbarMouseDown}
+                  className="ml-0.5 hover:opacity-70"
+                >
+                  x
+                </button>
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Input row */}
+        <div className="flex items-center gap-2 px-4 py-2.5">
+          <input
+            ref={inputRef}
+            data-quick-input
+            type="text"
+            value={input}
+            onChange={(e) => handleInputChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            placeholder={t('quickInputPlaceholder')}
+            disabled={isSubmitting}
+            className="h-8 flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none disabled:opacity-50"
+          />
+          <button
+            onClick={handleSubmit}
+            disabled={!input.trim() || isSubmitting}
+            className={cn(
+              'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
+              'bg-primary text-primary-foreground',
+              'transition-all duration-200',
+              'hover:bg-primary/90 hover:scale-105',
+              'disabled:opacity-20 disabled:hover:scale-100 disabled:cursor-not-allowed',
+            )}
+          >
+            {isSubmitting ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Send className="h-3.5 w-3.5" />
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

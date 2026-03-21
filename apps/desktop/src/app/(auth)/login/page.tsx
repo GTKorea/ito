@@ -15,7 +15,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isOAuthPending, setIsOAuthPending] = useState(false);
+  const [pendingProvider, setPendingProvider] = useState<'google' | 'github' | null>(null);
   const [isDesktop, setIsDesktop] = useState(false);
   const { login } = useAuthStore();
   const router = useRouter();
@@ -60,14 +60,14 @@ export default function LoginPage() {
         return;
       }
 
-      setIsOAuthPending(true);
+      setPendingProvider(provider);
 
       // Poll for OAuth result (cookie-free fallback; works in dev mode too)
       pollRef.current = setInterval(async () => {
         // Stop if already logged in (deep link may have worked)
         if (useAuthStore.getState().isAuthenticated) {
           if (pollRef.current) clearInterval(pollRef.current);
-          setIsOAuthPending(false);
+          setPendingProvider(null);
           return;
         }
         try {
@@ -88,7 +88,7 @@ export default function LoginPage() {
       // Stop polling after 5 minutes
       timeoutRef.current = setTimeout(() => {
         if (pollRef.current) clearInterval(pollRef.current);
-        setIsOAuthPending(false);
+        setPendingProvider(null);
       }, 5 * 60 * 1000);
     } else {
       // Web: navigate directly, callback redirects back to this origin.
@@ -118,17 +118,17 @@ export default function LoginPage() {
             variant="outline"
             className="w-full"
             onClick={() => handleOAuth('google')}
-            disabled={isOAuthPending}
+            disabled={pendingProvider !== null}
           >
-            {isOAuthPending ? t('waitingForAuth') : t('continueWithGoogle')}
+            {pendingProvider === 'google' ? t('waitingForAuth') : t('continueWithGoogle')}
           </Button>
           <Button
             variant="outline"
             className="w-full"
             onClick={() => handleOAuth('github')}
-            disabled={isOAuthPending}
+            disabled={pendingProvider !== null}
           >
-            {t('continueWithGithub')}
+            {pendingProvider === 'github' ? t('waitingForAuth') : t('continueWithGithub')}
           </Button>
         </div>
 

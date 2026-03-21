@@ -6,9 +6,11 @@ import { useWorkspaceStore } from '@/stores/workspace-store';
 import { CalendarView } from '@/components/calendar/calendar-view';
 import { QuickCreateTaskDialog } from '@/components/calendar/quick-create-task-dialog';
 import { CalendarDays } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 
 export default function CalendarPage() {
+  const t = useTranslations('calendar');
   const { currentWorkspace } = useWorkspaceStore();
   const { calendarData, calendarLoading, fetchCalendarTasks, calendarEvents, fetchCalendarEvents } = useTaskStore();
 
@@ -43,9 +45,9 @@ export default function CalendarPage() {
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-4 md:px-6 py-3">
         <div>
-          <h1 className="text-lg font-semibold">Calendar</h1>
+          <h1 className="text-lg font-semibold">{t('title')}</h1>
           <p className="text-xs text-muted-foreground">
-            Track deadlines and completed tasks
+            {t('subtitle')}
           </p>
         </div>
       </div>
@@ -55,7 +57,7 @@ export default function CalendarPage() {
         {!currentWorkspace ? (
           <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
             <CalendarDays className="h-8 w-8 mb-3 opacity-40" />
-            <p className="text-sm">Select a workspace to view calendar</p>
+            <p className="text-sm">{t('noWorkspace')}</p>
           </div>
         ) : (
           <CalendarView

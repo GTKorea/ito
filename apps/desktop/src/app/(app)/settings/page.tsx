@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
+import { isTauri } from '@/lib/platform';
 import { useAuthStore } from '@/stores/auth-store';
 import { useLocaleStore, SUPPORTED_LOCALES, type Locale } from '@/stores/locale-store';
 import { api } from '@/lib/api-client';
@@ -89,6 +90,11 @@ export default function SettingsPage() {
   const [calendarLoading, setCalendarLoading] = useState(false);
   const [disconnecting, setDisconnecting] = useState<string | null>(null);
 
+  // Desktop detection
+  const [isDesktop, setIsDesktop] = useState(false);
+  const calendarPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const calendarTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Slack integration state
   const [slackStatus, setSlackStatus] = useState<{ connected: boolean; teamName?: string } | null>(null);
   const [slackLoading, setSlackLoading] = useState(false);
@@ -107,6 +113,14 @@ export default function SettingsPage() {
       }
     };
     fetchCalendar();
+  }, []);
+
+  useEffect(() => {
+    setIsDesktop(isTauri());
+    return () => {
+      if (calendarPollRef.current) clearInterval(calendarPollRef.current);
+      if (calendarTimeoutRef.current) clearTimeout(calendarTimeoutRef.current);
+    };
   }, []);
 
   useEffect(() => {
@@ -165,10 +179,51 @@ export default function SettingsPage() {
     window.location.href = `${apiUrl}/slack/install?workspaceId=${currentWorkspace.id}`;
   };
 
-  const handleConnectCalendar = (provider: 'google' | 'outlook') => {
+  const handleConnectCalendar = async (provider: 'google' | 'outlook') => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3011';
     const token = localStorage.getItem('accessToken');
-    window.location.href = `${apiUrl}/calendar/${provider}/connect?token=${token}`;
+
+    if (isDesktop) {
+      // Desktop: open external browser + poll for result
+      const state = crypto.randomUUID();
+      try {
+        const res = await fetch(
+          `${apiUrl}/calendar/${provider}/init?token=${token}&state=${state}`,
+        );
+        if (!res.ok) throw new Error('Failed to init calendar OAuth');
+        const { url } = await res.json();
+        const { open } = await import('@tauri-apps/plugin-shell');
+        await open(url);
+
+        // Poll for result
+        calendarPollRef.current = setInterval(async () => {
+          try {
+            const r = await fetch(
+              `${apiUrl}/calendar/oauth-result?state=${state}`,
+            );
+            if (r.ok) {
+              if (calendarPollRef.current)
+                clearInterval(calendarPollRef.current);
+              // Refresh integrations list
+              const intRes = await api.get('/calendar/integrations');
+              setCalendarIntegrations(intRes.data);
+            }
+          } catch {
+            /* not ready yet */
+          }
+        }, 2000);
+
+        // Stop after 5 minutes
+        calendarTimeoutRef.current = setTimeout(() => {
+          if (calendarPollRef.current) clearInterval(calendarPollRef.current);
+        }, 5 * 60 * 1000);
+      } catch {
+        // Fallback to web flow
+        window.location.href = `${apiUrl}/calendar/${provider}/connect?token=${token}`;
+      }
+    } else {
+      window.location.href = `${apiUrl}/calendar/${provider}/connect?token=${token}`;
+    }
   };
 
   const handleDisconnectCalendar = async (integrationId: string) => {

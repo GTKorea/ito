@@ -482,7 +482,8 @@
     "dueDate": "Due Date",
     "creating": "Creating...",
     "create": "Create",
-    "googleEvent": "Google Calendar"
+    "googleEvent": "Google Calendar",
+    "noWorkspace": "カレンダーを表示するにはワークスペースを選択してください"
   },
   "notificationSettings": {
     "description": "各イベントタイプの通知方法を選択してください。",
@@ -655,7 +656,9 @@
     "empty": "会話を始めましょう",
     "placeholder": "メッセージを入力...",
     "loadMore": "以前のメッセージを読み込む",
-    "send": "送信"
+    "send": "送信",
+    "noRepliesYet": "まだ返信がありません",
+    "replyPlaceholder": "返信..."
   },
   "sharedSpaces": {
     "title": "Shared Spaces",

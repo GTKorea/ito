@@ -18,16 +18,31 @@ export class CalendarService implements OnModuleInit {
   private outlookClientId: string;
   private outlookClientSecret: string;
 
+  // Desktop OAuth state management (cookie-free polling)
+  private pendingCalendarOAuth = new Map<
+    string,
+    { userId: string; provider: string; createdAt: number }
+  >();
+  private calendarOAuthResults = new Map<
+    string,
+    { success: boolean; provider: string }
+  >();
+
   constructor(
     private configService: ConfigService,
     private prisma: PrismaService,
   ) {}
 
   onModuleInit() {
+    // Fallback to login OAuth credentials if calendar-specific ones aren't set
     this.googleClientId =
-      this.configService.get<string>('GOOGLE_CALENDAR_CLIENT_ID') || '';
+      this.configService.get<string>('GOOGLE_CALENDAR_CLIENT_ID') ||
+      this.configService.get<string>('GOOGLE_CLIENT_ID') ||
+      '';
     this.googleClientSecret =
-      this.configService.get<string>('GOOGLE_CALENDAR_CLIENT_SECRET') || '';
+      this.configService.get<string>('GOOGLE_CALENDAR_CLIENT_SECRET') ||
+      this.configService.get<string>('GOOGLE_CLIENT_SECRET') ||
+      '';
     this.outlookClientId =
       this.configService.get<string>('OUTLOOK_CLIENT_ID') || '';
     this.outlookClientSecret =
@@ -60,11 +75,64 @@ export class CalendarService implements OnModuleInit {
     return this.outlookEnabled;
   }
 
-  getGoogleAuthUrl(redirectUri: string, userId: string): string {
+  // ── Desktop OAuth state management ──────────────────────
+
+  registerCalendarOAuth(state: string, userId: string, provider: string) {
+    this.cleanupExpiredCalendarOAuth();
+    this.pendingCalendarOAuth.set(state, {
+      userId,
+      provider,
+      createdAt: Date.now(),
+    });
+  }
+
+  resolveCalendarOAuthState(
+    state: string,
+  ): { userId: string; provider: string } | null {
+    const entry = this.pendingCalendarOAuth.get(state);
+    if (!entry) return null;
+    return { userId: entry.userId, provider: entry.provider };
+  }
+
+  storeCalendarOAuthResult(
+    state: string,
+    result: { success: boolean; provider: string },
+  ) {
+    this.pendingCalendarOAuth.delete(state);
+    this.calendarOAuthResults.set(state, result);
+    setTimeout(() => this.calendarOAuthResults.delete(state), 5 * 60 * 1000);
+  }
+
+  consumeCalendarOAuthResult(
+    state: string,
+  ): { success: boolean; provider: string } | null {
+    const result = this.calendarOAuthResults.get(state);
+    if (!result) return null;
+    this.calendarOAuthResults.delete(state);
+    return result;
+  }
+
+  private cleanupExpiredCalendarOAuth() {
+    const fiveMin = 5 * 60 * 1000;
+    const now = Date.now();
+    for (const [key, val] of this.pendingCalendarOAuth) {
+      if (now - val.createdAt > fiveMin) this.pendingCalendarOAuth.delete(key);
+    }
+  }
+
+  getGoogleAuthUrl(
+    redirectUri: string,
+    userId: string,
+    desktopState?: string,
+  ): string {
     const scopes = encodeURIComponent(
       'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly',
     );
-    const state = Buffer.from(JSON.stringify({ userId })).toString('base64url');
+    const statePayload: Record<string, string> = { userId };
+    if (desktopState) statePayload.desktopState = desktopState;
+    const state = Buffer.from(JSON.stringify(statePayload)).toString(
+      'base64url',
+    );
     return (
       `https://accounts.google.com/o/oauth2/v2/auth` +
       `?client_id=${this.googleClientId}` +
@@ -197,9 +265,15 @@ export class CalendarService implements OnModuleInit {
     }
 
     const { google } = await import('googleapis');
+    const apiUrl = this.configService.get(
+      'API_URL',
+      `http://localhost:${this.configService.get('API_PORT', '3011')}`,
+    );
+    const redirectUri = `${apiUrl}/calendar/google/callback`;
     const oauth2Client = new google.auth.OAuth2(
       this.googleClientId,
       this.googleClientSecret,
+      redirectUri,
     );
     oauth2Client.setCredentials({
       access_token: integration.accessToken,
@@ -295,13 +369,35 @@ export class CalendarService implements OnModuleInit {
 
     try {
       const { google } = await import('googleapis');
+      const apiUrl = this.configService.get(
+        'API_URL',
+        `http://localhost:${this.configService.get('API_PORT', '3011')}`,
+      );
+      const redirectUri = `${apiUrl}/calendar/google/callback`;
       const oauth2Client = new google.auth.OAuth2(
         this.googleClientId,
         this.googleClientSecret,
+        redirectUri,
       );
       oauth2Client.setCredentials({
         access_token: integration.accessToken,
         refresh_token: integration.refreshToken,
+      });
+
+      // Register listener to persist refreshed tokens automatically
+      oauth2Client.on('tokens', async (tokens) => {
+        if (tokens.access_token) {
+          this.logger.log(`Google Calendar token refreshed for user ${userId}`);
+          await this.prisma.calendarIntegration.update({
+            where: { userId_provider: { userId, provider: 'google' } },
+            data: {
+              accessToken: tokens.access_token,
+              ...(tokens.refresh_token
+                ? { refreshToken: tokens.refresh_token }
+                : {}),
+            },
+          });
+        }
       });
 
       const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
@@ -314,17 +410,9 @@ export class CalendarService implements OnModuleInit {
         maxResults: 100,
       });
 
-      // If the token was refreshed, persist the new access token
-      const newCredentials = oauth2Client.credentials;
-      if (
-        newCredentials.access_token &&
-        newCredentials.access_token !== integration.accessToken
-      ) {
-        await this.prisma.calendarIntegration.update({
-          where: { userId_provider: { userId, provider: 'google' } },
-          data: { accessToken: newCredentials.access_token },
-        });
-      }
+      this.logger.log(
+        `Fetched ${response.data.items?.length || 0} Google Calendar events for user ${userId}`,
+      );
 
       return (response.data.items || []).map((event) => ({
         id: event.id,
@@ -337,7 +425,17 @@ export class CalendarService implements OnModuleInit {
         source: 'google' as const,
       }));
     } catch (error) {
-      this.logger.error('Failed to fetch Google Calendar events', error);
+      this.logger.error('Failed to fetch Google Calendar events', {
+        userId,
+        googleEnabled: this.googleEnabled,
+        hasAccessToken: !!integration.accessToken,
+        hasRefreshToken: !!integration.refreshToken,
+        calendarId: integration.calendarId || 'primary',
+        error:
+          error instanceof Error
+            ? { message: error.message, stack: error.stack }
+            : error,
+      });
       return [];
     }
   }
@@ -378,7 +476,13 @@ export class CalendarService implements OnModuleInit {
         source: 'outlook' as const,
       }));
     } catch (error) {
-      this.logger.error('Failed to fetch Outlook Calendar events', error);
+      this.logger.error('Failed to fetch Outlook Calendar events', {
+        userId,
+        error:
+          error instanceof Error
+            ? { message: error.message, stack: error.stack }
+            : error,
+      });
       return [];
     }
   }
@@ -394,9 +498,15 @@ export class CalendarService implements OnModuleInit {
     if (!this.googleEnabled) return;
 
     const { google } = await import('googleapis');
+    const apiUrl = this.configService.get(
+      'API_URL',
+      `http://localhost:${this.configService.get('API_PORT', '3011')}`,
+    );
+    const redirectUri = `${apiUrl}/calendar/google/callback`;
     const oauth2Client = new google.auth.OAuth2(
       this.googleClientId,
       this.googleClientSecret,
+      redirectUri,
     );
     oauth2Client.setCredentials({
       access_token: integration.accessToken,

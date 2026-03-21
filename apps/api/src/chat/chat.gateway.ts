@@ -39,10 +39,44 @@ export class ChatGateway {
     return { left: true, taskId: data.taskId };
   }
 
+  @SubscribeMessage('joinThread')
+  async handleJoinThread(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { taskId: string; parentId: string },
+  ) {
+    const userId = client.data.userId;
+    if (!userId || !data.taskId || !data.parentId) return;
+
+    const isAllowed = await this.chatService.isParticipant(
+      data.taskId,
+      userId,
+    );
+    if (!isAllowed) return;
+
+    client.join(`thread:${data.parentId}`);
+    return { joined: true, parentId: data.parentId };
+  }
+
+  @SubscribeMessage('leaveThread')
+  handleLeaveThread(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { parentId: string },
+  ) {
+    if (!data.parentId) return;
+    client.leave(`thread:${data.parentId}`);
+    return { left: true, parentId: data.parentId };
+  }
+
   @SubscribeMessage('sendMessage')
   async handleSendMessage(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { taskId: string; content: string },
+    @MessageBody()
+    data: {
+      taskId: string;
+      content: string;
+      parentId?: string;
+      fileIds?: string[];
+    },
   ) {
     const userId = client.data.userId;
     if (!userId || !data.taskId || !data.content) return;
@@ -52,6 +86,8 @@ export class ChatGateway {
         data.taskId,
         userId,
         data.content,
+        data.parentId,
+        data.fileIds,
       );
       return message;
     } catch {

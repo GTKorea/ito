@@ -482,7 +482,8 @@
     "dueDate": "Due Date",
     "creating": "Creating...",
     "create": "Create",
-    "googleEvent": "Google Calendar"
+    "googleEvent": "Google Calendar",
+    "noWorkspace": "Selecione um espaço de trabalho para ver o calendário"
   },
   "notificationSettings": {
     "description": "Escolha como deseja ser notificado para cada tipo de evento.",
@@ -655,7 +656,9 @@
     "empty": "Inicie uma conversa",
     "placeholder": "Digite uma mensagem...",
     "loadMore": "Carregar mensagens anteriores",
-    "send": "Enviar"
+    "send": "Enviar",
+    "noRepliesYet": "Nenhuma resposta ainda",
+    "replyPlaceholder": "Responder..."
   },
   "sharedSpaces": {
     "title": "Shared Spaces",

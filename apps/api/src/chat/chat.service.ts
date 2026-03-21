@@ -46,7 +46,7 @@ export class ChatService {
   }
 
   /**
-   * Get paginated messages for a task (latest first, cursor-based)
+   * Get paginated top-level messages for a task (latest first, cursor-based)
    */
   async getMessages(
     taskId: string,
@@ -65,7 +65,7 @@ export class ChatService {
       throw new ForbiddenException('Not a participant of this task');
 
     const messages = await this.prisma.chatMessage.findMany({
-      where: { taskId },
+      where: { taskId, parentId: null },
       orderBy: { createdAt: 'desc' },
       take: limit + 1,
       ...(cursor && {
@@ -75,6 +75,77 @@ export class ChatService {
       include: {
         sender: {
           select: { id: true, name: true, avatarUrl: true },
+        },
+        files: {
+          select: {
+            id: true,
+            filename: true,
+            url: true,
+            size: true,
+            mimeType: true,
+          },
+        },
+      },
+    });
+
+    const hasMore = messages.length > limit;
+    const items = hasMore ? messages.slice(0, limit) : messages;
+    const nextCursor = hasMore ? items[items.length - 1]?.id : null;
+
+    return {
+      messages: items,
+      nextCursor,
+      hasMore,
+    };
+  }
+
+  /**
+   * Get paginated thread replies for a parent message
+   */
+  async getThreadReplies(
+    taskId: string,
+    parentId: string,
+    userId: string,
+    cursor?: string,
+    limit = 50,
+  ) {
+    const task = await this.prisma.task.findUnique({
+      where: { id: taskId },
+      select: { id: true },
+    });
+    if (!task) throw new NotFoundException('Task not found');
+
+    const isAllowed = await this.isParticipant(taskId, userId);
+    if (!isAllowed)
+      throw new ForbiddenException('Not a participant of this task');
+
+    const parentMessage = await this.prisma.chatMessage.findUnique({
+      where: { id: parentId },
+      select: { id: true, taskId: true },
+    });
+    if (!parentMessage || parentMessage.taskId !== taskId)
+      throw new NotFoundException('Parent message not found');
+
+    const messages = await this.prisma.chatMessage.findMany({
+      where: { taskId, parentId },
+      orderBy: { createdAt: 'desc' },
+      take: limit + 1,
+      ...(cursor && {
+        cursor: { id: cursor },
+        skip: 1,
+      }),
+      include: {
+        sender: {
+          select: { id: true, name: true, avatarUrl: true },
+        },
+        files: {
+          select: {
+            id: true,
+            filename: true,
+            url: true,
+            size: true,
+            mimeType: true,
+          },
         },
       },
     });
@@ -93,7 +164,13 @@ export class ChatService {
   /**
    * Send a message to a task chat
    */
-  async sendMessage(taskId: string, userId: string, content: string) {
+  async sendMessage(
+    taskId: string,
+    userId: string,
+    content: string,
+    parentId?: string,
+    fileIds?: string[],
+  ) {
     const task = await this.prisma.task.findUnique({
       where: { id: taskId },
       select: {
@@ -112,23 +189,82 @@ export class ChatService {
     if (!isAllowed)
       throw new ForbiddenException('Not a participant of this task');
 
+    // Validate parent message if provided
+    if (parentId) {
+      const parent = await this.prisma.chatMessage.findUnique({
+        where: { id: parentId },
+        select: { id: true, taskId: true },
+      });
+      if (!parent || parent.taskId !== taskId)
+        throw new NotFoundException('Parent message not found');
+    }
+
     const message = await this.prisma.chatMessage.create({
       data: {
         content,
         taskId,
         senderId: userId,
+        ...(parentId ? { parentId } : {}),
       },
       include: {
         sender: {
           select: { id: true, name: true, avatarUrl: true },
         },
+        files: {
+          select: {
+            id: true,
+            filename: true,
+            url: true,
+            size: true,
+            mimeType: true,
+          },
+        },
       },
     });
 
-    // Broadcast to the task chat room via WebSocket
-    this.wsGateway.server
-      ?.to(`task-chat:${taskId}`)
-      .emit('newMessage', message);
+    // Attach files if provided
+    if (fileIds && fileIds.length > 0) {
+      await this.prisma.file.updateMany({
+        where: { id: { in: fileIds } },
+        data: { chatMessageId: message.id },
+      });
+
+      // Refetch files for the response
+      const files = await this.prisma.file.findMany({
+        where: { chatMessageId: message.id },
+        select: {
+          id: true,
+          filename: true,
+          url: true,
+          size: true,
+          mimeType: true,
+        },
+      });
+      (message as any).files = files;
+    }
+
+    // Increment parent's replyCount if this is a thread reply
+    if (parentId) {
+      await this.prisma.chatMessage.update({
+        where: { id: parentId },
+        data: { replyCount: { increment: 1 } },
+      });
+
+      // Broadcast thread reply
+      this.wsGateway.server
+        ?.to(`task-chat:${taskId}`)
+        .emit('newThreadReply', message);
+
+      // Also notify the thread room
+      this.wsGateway.server
+        ?.to(`thread:${parentId}`)
+        .emit('newThreadReply', message);
+    } else {
+      // Broadcast top-level message
+      this.wsGateway.server
+        ?.to(`task-chat:${taskId}`)
+        .emit('newMessage', message);
+    }
 
     // Send notifications to other participants
     if (this.notificationsService) {
@@ -151,12 +287,15 @@ export class ChatService {
           userId: recipientId,
           type: 'CHAT_MESSAGE',
           title: `${senderName}: ${preview}`,
-          body: `New message in "${task.title}"`,
+          body: parentId
+            ? `New reply in thread in "${task.title}"`
+            : `New message in "${task.title}"`,
           data: {
             taskId,
             taskTitle: task.title,
             senderName,
             senderUserId: userId,
+            ...(parentId ? { parentId } : {}),
           },
         }),
       );
@@ -166,5 +305,55 @@ export class ChatService {
     }
 
     return message;
+  }
+
+  /**
+   * Upload a file for chat
+   */
+  async uploadChatFile(
+    file: Express.Multer.File,
+    taskId: string,
+    userId: string,
+  ) {
+    const task = await this.prisma.task.findUnique({
+      where: { id: taskId },
+      select: { id: true },
+    });
+    if (!task) throw new NotFoundException('Task not found');
+
+    const isAllowed = await this.isParticipant(taskId, userId);
+    if (!isAllowed)
+      throw new ForbiddenException('Not a participant of this task');
+
+    const { randomUUID } = await import('crypto');
+    const { writeFile, mkdir } = await import('fs/promises');
+    const { join, extname } = await import('path');
+
+    const UPLOADS_DIR = join(process.cwd(), 'uploads');
+    await mkdir(UPLOADS_DIR, { recursive: true });
+
+    const ext = extname(file.originalname);
+    const filename = `${randomUUID()}${ext}`;
+    const filepath = join(UPLOADS_DIR, filename);
+
+    await writeFile(filepath, file.buffer);
+
+    return this.prisma.file.create({
+      data: {
+        filename: file.originalname,
+        url: `/uploads/${filename}`,
+        size: file.size,
+        mimeType: file.mimetype,
+        uploaderId: userId,
+        taskId,
+      },
+      select: {
+        id: true,
+        filename: true,
+        url: true,
+        size: true,
+        mimeType: true,
+      },
+    });
   }
 }

@@ -482,7 +482,8 @@
     "dueDate": "마감일",
     "creating": "생성 중...",
     "create": "생성",
-    "googleEvent": "Google 캘린더"
+    "googleEvent": "Google 캘린더",
+    "noWorkspace": "캘린더를 보려면 워크스페이스를 선택하세요"
   },
   "notificationSettings": {
     "description": "각 이벤트 유형에 대한 알림 방식을 선택하세요.",
@@ -655,7 +656,9 @@
     "empty": "대화를 시작해보세요",
     "placeholder": "메시지를 입력하세요...",
     "loadMore": "이전 메시지 불러오기",
-    "send": "보내기"
+    "send": "보내기",
+    "noRepliesYet": "아직 답글이 없습니다",
+    "replyPlaceholder": "답글..."
   },
   "sharedSpaces": {
     "title": "공유 스페이스",

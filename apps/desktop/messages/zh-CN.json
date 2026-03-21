@@ -482,7 +482,8 @@
     "dueDate": "Due Date",
     "creating": "Creating...",
     "create": "Create",
-    "googleEvent": "Google Calendar"
+    "googleEvent": "Google Calendar",
+    "noWorkspace": "请选择工作区以查看日历"
   },
   "notificationSettings": {
     "description": "选择每种事件类型的通知方式。",
@@ -655,7 +656,9 @@
     "empty": "开始对话",
     "placeholder": "输入消息...",
     "loadMore": "加载更早的消息",
-    "send": "发送"
+    "send": "发送",
+    "noRepliesYet": "暂无回复",
+    "replyPlaceholder": "回复..."
   },
   "sharedSpaces": {
     "title": "Shared Spaces",
