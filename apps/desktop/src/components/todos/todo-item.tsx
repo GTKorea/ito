@@ -53,6 +53,8 @@ const statusIcons: Record<string, React.ReactNode> = {
   COMPLETED: <Check className="h-4 w-4 text-green-500" />,
 };
 
+type TodoSection = 'actionRequired' | 'waiting' | 'completed';
+
 interface TodoItemProps {
   todo: {
     id: string;
@@ -74,10 +76,10 @@ interface TodoItemProps {
     }>;
   };
   onSelect?: (id: string, openChat?: boolean) => void;
-  isConnected?: boolean;
+  section: TodoSection;
 }
 
-export function TodoItem({ todo, onSelect, isConnected }: TodoItemProps) {
+export function TodoItem({ todo, onSelect, section }: TodoItemProps) {
   const [showConnect, setShowConnect] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [isResolving, setIsResolving] = useState(false);
@@ -131,13 +133,16 @@ export function TodoItem({ todo, onSelect, isConnected }: TodoItemProps) {
   const dueDateInfo = getDueDateInfo(todo.dueDate);
   const isAssignee = user?.id === todo.assignee?.id;
 
-  // Only show Done/Decline for pending links where I'm the recipient (not the creator)
+  // Only show Done/Decline for pending links where I'm the recipient, and only in actionRequired section
   const assigneeId = todo.assignee?.id;
-  const pendingLink = !isConnected && assigneeId && user?.id
+  const pendingLink = section === 'actionRequired' && assigneeId && user?.id
     ? todo.threadLinks.find(
         (l) => l.status === 'PENDING' && l.toUser.id === assigneeId && assigneeId === user.id,
       )
     : undefined;
+
+  // Status toggle: only in actionRequired section, and cannot revert COMPLETED
+  const canToggleStatus = section === 'actionRequired' && isAssignee && todo.status !== 'COMPLETED';
 
   return (
     <div className="group rounded-lg border border-border bg-card p-3 hover:border-border/80 transition-colors">
@@ -148,13 +153,11 @@ export function TodoItem({ todo, onSelect, isConnected }: TodoItemProps) {
             render={
               <button
                 onClick={() => {
-                  if (!isAssignee) return;
-                  updateTodo(todo.id, {
-                    status: todo.status === 'COMPLETED' ? 'OPEN' : 'COMPLETED',
-                  });
+                  if (!canToggleStatus) return;
+                  updateTodo(todo.id, { status: 'COMPLETED' });
                 }}
-                className={cn('shrink-0', !isAssignee && 'cursor-default opacity-50')}
-                disabled={!isAssignee}
+                className={cn('shrink-0', !canToggleStatus && 'cursor-default opacity-50')}
+                disabled={!canToggleStatus}
               />
             }
           >
@@ -186,8 +189,8 @@ export function TodoItem({ todo, onSelect, isConnected }: TodoItemProps) {
             )}
           </div>
 
-          {/* Connected task: show current worker inline */}
-          {isConnected && todo.assignee && (
+          {/* Waiting section: show current worker inline */}
+          {section === 'waiting' && todo.assignee && (
             <div className="flex items-center gap-1 mt-1">
               <User className="h-3 w-3 text-blue-400" />
               <span className="text-[10px] text-blue-400">
@@ -261,7 +264,7 @@ export function TodoItem({ todo, onSelect, isConnected }: TodoItemProps) {
             </TooltipTrigger>
             <TooltipContent>{t('chat')}</TooltipContent>
           </Tooltip>
-          {!isConnected && (
+          {section === 'actionRequired' && (
             <Button
               size="sm"
               variant="ghost"

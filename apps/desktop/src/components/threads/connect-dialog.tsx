@@ -36,7 +36,7 @@ export function ConnectDialog({ todoId, onClose }: ConnectDialogProps) {
   const [selected, setSelected] = useState<User[]>([]);
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { connectThread, connectMultiThread, fetchTodos } = useTodoStore();
+  const { connectThread, connectMultiThread, fetchCategorizedTodos } = useTodoStore();
   const { currentWorkspace } = useWorkspaceStore();
   const t = useTranslations('threads');
   const tc = useTranslations('common');
@@ -103,7 +103,7 @@ export function ConnectDialog({ todoId, onClose }: ConnectDialogProps) {
           message || undefined,
         );
       }
-      await fetchTodos(currentWorkspace.id);
+      await fetchCategorizedTodos(currentWorkspace.id);
       onClose();
     } catch (error) {
       console.error('Failed to connect thread:', error);

@@ -31,7 +31,7 @@ export function QuickInput() {
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { createTodo, connectChain, fetchTodos } = useTodoStore();
+  const { createTodo, connectChain, fetchCategorizedTodos } = useTodoStore();
   const { currentWorkspace } = useWorkspaceStore();
 
   const searchUsers = useCallback(
@@ -181,7 +181,7 @@ export function QuickInput() {
       }
 
       // Refresh the todo list
-      await fetchTodos(currentWorkspace.id);
+      await fetchCategorizedTodos(currentWorkspace.id);
       setInput('');
       resolvedUsersRef.current.clear();
     } catch {

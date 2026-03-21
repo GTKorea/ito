@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 import { api } from '@/lib/api-client';
 import { trackEvent } from '@/lib/analytics';
+import { useWorkspaceStore } from './workspace-store';
 
 interface User {
   id: string;
@@ -62,15 +63,15 @@ export interface CalendarEvent {
 }
 
 interface TodoState {
-  todos: Todo[];
-  connectedTodos: Todo[];
+  actionRequired: Todo[];
+  waiting: Todo[];
+  completed: Todo[];
   isLoading: boolean;
   calendarData: CalendarData | null;
   calendarLoading: boolean;
   calendarEvents: CalendarEvent[];
   calendarEventsLoading: boolean;
-  fetchTodos: (workspaceId: string, assignedToMe?: boolean) => Promise<void>;
-  fetchConnectedTodos: (workspaceId: string) => Promise<void>;
+  fetchCategorizedTodos: (workspaceId: string) => Promise<void>;
   fetchCalendarTodos: (workspaceId: string, start: string, end: string) => Promise<void>;
   fetchCalendarEvents: (start: string, end: string) => Promise<void>;
   createTodo: (workspaceId: string, title: string, description?: string, priority?: string, dueDate?: string) => Promise<Todo>;
@@ -83,9 +84,29 @@ interface TodoState {
   declineThread: (threadLinkId: string, reason?: string) => Promise<void>;
 }
 
+function getWorkspaceId(): string | undefined {
+  return useWorkspaceStore.getState().currentWorkspace?.id;
+}
+
+async function refetchCategorized(set: (partial: Partial<TodoState>) => void) {
+  const workspaceId = getWorkspaceId();
+  if (!workspaceId) return;
+  try {
+    const { data } = await api.get(`/workspaces/${workspaceId}/todos/categorized`);
+    set({
+      actionRequired: data.actionRequired,
+      waiting: data.waiting,
+      completed: data.completed,
+    });
+  } catch {
+    // silent fail on refetch
+  }
+}
+
 export const useTodoStore = create<TodoState>((set) => ({
-  todos: [],
-  connectedTodos: [],
+  actionRequired: [],
+  waiting: [],
+  completed: [],
   isLoading: false,
   calendarData: null,
   calendarLoading: false,
@@ -114,26 +135,18 @@ export const useTodoStore = create<TodoState>((set) => ({
     }
   },
 
-  fetchTodos: async (workspaceId, assignedToMe = true) => {
+  fetchCategorizedTodos: async (workspaceId) => {
     set({ isLoading: true });
     try {
-      const { data } = await api.get(`/workspaces/${workspaceId}/todos`, {
-        params: { assignedToMe: String(assignedToMe) },
+      const { data } = await api.get(`/workspaces/${workspaceId}/todos/categorized`);
+      set({
+        actionRequired: data.actionRequired,
+        waiting: data.waiting,
+        completed: data.completed,
+        isLoading: false,
       });
-      set({ todos: data, isLoading: false });
     } catch {
       set({ isLoading: false });
-    }
-  },
-
-  fetchConnectedTodos: async (workspaceId) => {
-    try {
-      const { data } = await api.get(`/workspaces/${workspaceId}/todos`, {
-        params: { connectedByMe: 'true' },
-      });
-      set({ connectedTodos: data });
-    } catch {
-      set({ connectedTodos: [] });
     }
   },
 
@@ -144,31 +157,49 @@ export const useTodoStore = create<TodoState>((set) => ({
       priority,
       dueDate,
     });
-    set((state) => ({ todos: [data, ...state.todos] }));
+    set((state) => ({ actionRequired: [data, ...state.actionRequired] }));
     trackEvent('task_created', { workspaceId });
     return data;
   },
 
   updateTodo: async (id, updateData) => {
     const { data } = await api.patch(`/todos/${id}`, updateData);
-    set((state) => ({
-      todos: state.todos.map((t) => (t.id === id ? data : t)),
-    }));
+    const updateInList = (list: Todo[]) =>
+      list.map((t) => (t.id === id ? data : t));
+
+    if (updateData.status === 'COMPLETED') {
+      // Move to completed
+      set((state) => ({
+        actionRequired: state.actionRequired.filter((t) => t.id !== id),
+        waiting: state.waiting.filter((t) => t.id !== id),
+        completed: [data, ...state.completed],
+      }));
+    } else {
+      set((state) => ({
+        actionRequired: updateInList(state.actionRequired),
+        waiting: updateInList(state.waiting),
+        completed: updateInList(state.completed),
+      }));
+    }
   },
 
   deleteTodo: async (id) => {
     await api.delete(`/todos/${id}`);
-    set((state) => ({ todos: state.todos.filter((t) => t.id !== id) }));
+    set((state) => ({
+      actionRequired: state.actionRequired.filter((t) => t.id !== id),
+      waiting: state.waiting.filter((t) => t.id !== id),
+      completed: state.completed.filter((t) => t.id !== id),
+    }));
   },
 
   connectChain: async (todoId: string, userIds: string[]) => {
     const res = await api.post(`/todos/${todoId}/connect-chain`, { userIds });
-    // Move from my tasks to connected tasks
+    // Move from actionRequired to waiting
     set((state) => {
-      const todo = state.todos.find((t) => t.id === todoId);
+      const todo = state.actionRequired.find((t) => t.id === todoId);
       return {
-        todos: state.todos.filter((t) => t.id !== todoId),
-        connectedTodos: todo ? [...state.connectedTodos, { ...todo, ...res.data }] : state.connectedTodos,
+        actionRequired: state.actionRequired.filter((t) => t.id !== todoId),
+        waiting: todo ? [...state.waiting, { ...todo, ...res.data }] : state.waiting,
       };
     });
     return res.data;
@@ -176,13 +207,13 @@ export const useTodoStore = create<TodoState>((set) => ({
 
   connectThread: async (todoId, toUserId, message) => {
     const { data } = await api.post(`/todos/${todoId}/connect`, { toUserId, message });
-    // Move from my tasks to connected tasks
+    const updatedTodo = data.todo || data;
+    // Move from actionRequired to waiting
     set((state) => {
-      const todo = state.todos.find((t) => t.id === todoId);
-      const updatedTodo = data.todo || data;
+      const todo = state.actionRequired.find((t) => t.id === todoId);
       return {
-        todos: state.todos.filter((t) => t.id !== todoId),
-        connectedTodos: todo ? [...state.connectedTodos, { ...todo, ...updatedTodo }] : state.connectedTodos,
+        actionRequired: state.actionRequired.filter((t) => t.id !== todoId),
+        waiting: todo ? [...state.waiting, { ...todo, ...updatedTodo }] : state.waiting,
       };
     });
     trackEvent('thread_connected');
@@ -193,49 +224,44 @@ export const useTodoStore = create<TodoState>((set) => ({
     const updatedTodo = data.todo || data;
     set((state) => {
       if (toUserIds.length === 1) {
-        // Single connect: move to connected tasks
-        const todo = state.todos.find((t) => t.id === todoId);
+        // Single connect: move to waiting
+        const todo = state.actionRequired.find((t) => t.id === todoId);
         return {
-          todos: state.todos.filter((t) => t.id !== todoId),
-          connectedTodos: todo ? [...state.connectedTodos, { ...todo, ...updatedTodo }] : state.connectedTodos,
+          actionRequired: state.actionRequired.filter((t) => t.id !== todoId),
+          waiting: todo ? [...state.waiting, { ...todo, ...updatedTodo }] : state.waiting,
         };
       }
-      // Multi-connect: update in place
+      // Multi-connect: update in place (assignee stays with sender for parallel)
       return {
-        todos: state.todos.map((t) => t.id === todoId ? { ...t, ...updatedTodo } : t),
+        actionRequired: state.actionRequired.map((t) => t.id === todoId ? { ...t, ...updatedTodo } : t),
       };
     });
     trackEvent('thread_connected');
   },
 
   resolveThread: async (threadLinkId) => {
+    // Optimistic: remove from actionRequired
+    set((state) => ({
+      actionRequired: state.actionRequired.filter(
+        (t) => !t.threadLinks.some((l) => l.id === threadLinkId),
+      ),
+    }));
     await api.post(`/thread-links/${threadLinkId}/resolve`);
     trackEvent('thread_resolved');
-    set((state) => ({
-      todos: state.todos.filter((t) => {
-        const resolvedLink = t.threadLinks.find((l) => l.id === threadLinkId);
-        return !resolvedLink;
-      }),
-      // Also remove from connectedTodos if the task snapped back
-      connectedTodos: state.connectedTodos.filter((t) => {
-        const resolvedLink = t.threadLinks.find((l) => l.id === threadLinkId);
-        return !resolvedLink;
-      }),
-    }));
+    // Refetch to get authoritative categorization (snap-back changes state for others)
+    await refetchCategorized(set);
   },
 
   declineThread: async (threadLinkId, reason) => {
+    // Optimistic: remove from actionRequired
+    set((state) => ({
+      actionRequired: state.actionRequired.filter(
+        (t) => !t.threadLinks.some((l) => l.id === threadLinkId),
+      ),
+    }));
     await api.post(`/thread-links/${threadLinkId}/decline`, { reason });
     trackEvent('thread_declined');
-    set((state) => ({
-      todos: state.todos.filter((t) => {
-        const declinedLink = t.threadLinks.find((l) => l.id === threadLinkId);
-        return !declinedLink;
-      }),
-      connectedTodos: state.connectedTodos.filter((t) => {
-        const declinedLink = t.threadLinks.find((l) => l.id === threadLinkId);
-        return !declinedLink;
-      }),
-    }));
+    // Refetch to get authoritative categorization
+    await refetchCategorized(set);
   },
 }));

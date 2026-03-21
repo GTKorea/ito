@@ -34,6 +34,16 @@ export class TodosController {
     return this.todosService.create(dto, workspaceId, userId);
   }
 
+  @Get('workspaces/:workspaceId/todos/categorized')
+  @UseGuards(WorkspaceMemberGuard)
+  @ApiOperation({ summary: 'Get todos categorized by action required, waiting, completed' })
+  findCategorized(
+    @Param('workspaceId') workspaceId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.todosService.findCategorized(workspaceId, userId);
+  }
+
   @Get('workspaces/:workspaceId/todos/calendar')
   @UseGuards(WorkspaceMemberGuard)
   @ApiOperation({ summary: 'Get calendar todos (completed + upcoming)' })

@@ -64,7 +64,7 @@ function WelcomeStep() {
 
 function SeedDataStep() {
   const { currentWorkspace } = useWorkspaceStore();
-  const { fetchTodos } = useTodoStore();
+  const { fetchCategorizedTodos } = useTodoStore();
   const { isSeedingData, seedingError, setSeedingState } = useOnboardingStore();
   const [seeded, setSeeded] = useState(false);
 
@@ -74,7 +74,7 @@ function SeedDataStep() {
     try {
       const { data } = await api.post(`/workspaces/${currentWorkspace.id}/seed-sample-data`);
       if (data.seeded) {
-        await fetchTodos(currentWorkspace.id);
+        await fetchCategorizedTodos(currentWorkspace.id);
         setSeeded(true);
       } else {
         // Already has data
@@ -84,7 +84,7 @@ function SeedDataStep() {
     } catch (err: any) {
       setSeedingState(false, err?.response?.data?.message || '샘플 데이터 생성에 실패했습니다.');
     }
-  }, [currentWorkspace, fetchTodos, setSeedingState, seeded]);
+  }, [currentWorkspace, fetchCategorizedTodos, setSeedingState, seeded]);
 
   return (
     <div className="flex flex-col items-center text-center gap-4 py-2">

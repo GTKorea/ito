@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { TodoItem } from './todo-item';
-import { ChevronDown, ChevronRight, Link2, Eye, EyeOff } from 'lucide-react';
+import { ChevronDown, ChevronRight, Clock, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface User {
@@ -36,17 +36,18 @@ interface Todo {
 }
 
 interface TodoListProps {
-  todos: Todo[];
-  connectedTodos?: Todo[];
+  actionRequired: Todo[];
+  waiting: Todo[];
+  completed: Todo[];
   onSelectTodo?: (id: string, openChat?: boolean) => void;
 }
 
-export function TodoList({ todos, connectedTodos, onSelectTodo }: TodoListProps) {
+export function TodoList({ actionRequired, waiting, completed, onSelectTodo }: TodoListProps) {
   const t = useTranslations('todos');
-  const [connectedExpanded, setConnectedExpanded] = useState(true);
+  const [waitingExpanded, setWaitingExpanded] = useState(true);
   const [showCompleted, setShowCompleted] = useState(false);
 
-  if (todos.length === 0 && (!connectedTodos || connectedTodos.length === 0)) {
+  if (actionRequired.length === 0 && waiting.length === 0 && completed.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
         <p className="text-sm">{t('noTasksYet')}</p>
@@ -55,53 +56,48 @@ export function TodoList({ todos, connectedTodos, onSelectTodo }: TodoListProps)
     );
   }
 
-  const grouped = {
-    active: todos.filter((t) => !['COMPLETED', 'CANCELLED'].includes(t.status)),
-    completed: todos.filter((t) => t.status === 'COMPLETED'),
-  };
-
   return (
     <div className="space-y-6">
-      {/* Section 1: My active tasks (assigned to me) */}
-      {grouped.active.length > 0 && (
+      {/* Section 1: Action Required — tasks I need to handle right now */}
+      {actionRequired.length > 0 && (
         <div className="space-y-1">
-          {grouped.active.map((todo) => (
-            <TodoItem key={todo.id} todo={todo} onSelect={onSelectTodo} />
+          {actionRequired.map((todo) => (
+            <TodoItem key={todo.id} todo={todo} onSelect={onSelectTodo} section="actionRequired" />
           ))}
         </div>
       )}
 
-      {/* Section 2: Connected tasks - delegated to others, will come back to me */}
-      {connectedTodos && connectedTodos.length > 0 && (
+      {/* Section 2: Waiting — tasks delegated to others, waiting for them */}
+      {waiting.length > 0 && (
         <div>
           <button
-            onClick={() => setConnectedExpanded(!connectedExpanded)}
+            onClick={() => setWaitingExpanded(!waitingExpanded)}
             className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground mb-2 px-2 hover:text-foreground transition-colors"
           >
-            {connectedExpanded ? (
+            {waitingExpanded ? (
               <ChevronDown className="h-3 w-3" />
             ) : (
               <ChevronRight className="h-3 w-3" />
             )}
-            <Link2 className="h-3 w-3" />
-            {t('connectedTasks', { count: connectedTodos.length })}
+            <Clock className="h-3 w-3" />
+            {t('waitingTasks', { count: waiting.length })}
           </button>
-          {connectedExpanded && (
+          {waitingExpanded && (
             <div className="space-y-1">
-              {connectedTodos.map((todo) => (
-                <TodoItem key={todo.id} todo={todo} onSelect={onSelectTodo} isConnected />
+              {waiting.map((todo) => (
+                <TodoItem key={todo.id} todo={todo} onSelect={onSelectTodo} section="waiting" />
               ))}
             </div>
           )}
         </div>
       )}
 
-      {/* Section 3: Completed tasks (toggleable) */}
-      {grouped.completed.length > 0 && (
+      {/* Section 3: Completed — tasks that left my hands */}
+      {completed.length > 0 && (
         <div>
           <div className="flex items-center justify-between px-2 mb-2">
             <p className="text-xs text-muted-foreground">
-              {t('completed')} ({grouped.completed.length})
+              {t('completedCount', { count: completed.length })}
             </p>
             <Button
               variant="ghost"
@@ -118,8 +114,8 @@ export function TodoList({ todos, connectedTodos, onSelectTodo }: TodoListProps)
           </div>
           {showCompleted && (
             <div className="space-y-1 opacity-60">
-              {grouped.completed.map((todo) => (
-                <TodoItem key={todo.id} todo={todo} onSelect={onSelectTodo} />
+              {completed.map((todo) => (
+                <TodoItem key={todo.id} todo={todo} onSelect={onSelectTodo} section="completed" />
               ))}
             </div>
           )}

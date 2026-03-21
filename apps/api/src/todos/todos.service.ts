@@ -123,6 +123,11 @@ export class TodosService {
       throw new ForbiddenException('Only the current assignee can change task status');
     }
 
+    // Cannot revert a completed task
+    if (todo.status === 'COMPLETED' && dto.status && dto.status !== 'COMPLETED') {
+      throw new ForbiddenException('Cannot revert a completed task');
+    }
+
     const data: any = { ...dto };
     if (dto.dueDate) data.dueDate = new Date(dto.dueDate);
     if (dto.status === 'COMPLETED') data.completedAt = new Date();
@@ -147,6 +152,64 @@ export class TodosService {
     });
 
     return updated;
+  }
+
+  async findCategorized(workspaceId: string, userId: string) {
+    const include = {
+      creator: { select: { id: true, name: true, avatarUrl: true } },
+      assignee: { select: { id: true, name: true, avatarUrl: true } },
+      threadLinks: {
+        include: {
+          fromUser: { select: { id: true, name: true, avatarUrl: true } },
+          toUser: { select: { id: true, name: true, avatarUrl: true } },
+        },
+        orderBy: { chainIndex: 'asc' as const },
+      },
+      _count: { select: { threadLinks: true } },
+    };
+
+    const allTodos = await this.prisma.todo.findMany({
+      where: {
+        workspaceId,
+        OR: [
+          { creatorId: userId },
+          { assigneeId: userId },
+          { threadLinks: { some: { fromUserId: userId } } },
+          { threadLinks: { some: { toUserId: userId } } },
+        ],
+      },
+      include,
+      orderBy: [{ priority: 'asc' }, { createdAt: 'desc' }],
+    });
+
+    const actionRequired: typeof allTodos = [];
+    const waiting: typeof allTodos = [];
+    const completed: typeof allTodos = [];
+
+    for (const todo of allTodos) {
+      const isActive = !['COMPLETED', 'CANCELLED'].includes(todo.status);
+      const isAssignee = todo.assigneeId === userId;
+
+      if (isActive && isAssignee) {
+        actionRequired.push(todo);
+      } else if (isActive && !isAssignee) {
+        const isCreator = todo.creatorId === userId;
+        const hasForwardedLink = todo.threadLinks.some(
+          (l) =>
+            (l.fromUserId === userId || l.toUserId === userId) &&
+            l.status === 'FORWARDED',
+        );
+        if (isCreator || hasForwardedLink) {
+          waiting.push(todo);
+        } else {
+          completed.push(todo);
+        }
+      } else {
+        completed.push(todo);
+      }
+    }
+
+    return { actionRequired, waiting, completed };
   }
 
   async getCalendarTodos(

@@ -84,7 +84,7 @@ function CreateWorkspacePrompt() {
 
 export default function WorkspacePage() {
   const { currentWorkspace, isLoading: wsLoading } = useWorkspaceStore();
-  const { todos, connectedTodos, isLoading, fetchTodos, fetchConnectedTodos } = useTodoStore();
+  const { actionRequired, waiting, completed, isLoading, fetchCategorizedTodos } = useTodoStore();
   const { checkAndStartWizard } = useOnboardingStore();
   const [showCreate, setShowCreate] = useState(false);
   const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null);
@@ -97,10 +97,9 @@ export default function WorkspacePage() {
 
   useEffect(() => {
     if (currentWorkspace) {
-      fetchTodos(currentWorkspace.id);
-      fetchConnectedTodos(currentWorkspace.id);
+      fetchCategorizedTodos(currentWorkspace.id);
     }
-  }, [currentWorkspace, fetchTodos, fetchConnectedTodos]);
+  }, [currentWorkspace, fetchCategorizedTodos]);
 
   // Trigger onboarding wizard on first workspace visit
   useEffect(() => {
@@ -130,29 +129,29 @@ export default function WorkspacePage() {
     setTimeout(() => setSelectedTodoId(null), 200);
   };
 
-  const sortedTodos = useMemo(() => {
+  const sortFn = useMemo(() => {
     if (sortBy === 'dueDate') {
-      return [...todos].sort((a, b) => {
+      return (a: any, b: any) => {
         if (!a.dueDate && !b.dueDate) return 0;
         if (!a.dueDate) return 1;
         if (!b.dueDate) return -1;
         return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
-      });
+      };
     }
-    return todos;
-  }, [todos, sortBy]);
+    return null;
+  }, [sortBy]);
 
-  const sortedConnectedTodos = useMemo(() => {
-    if (sortBy === 'dueDate') {
-      return [...connectedTodos].sort((a, b) => {
-        if (!a.dueDate && !b.dueDate) return 0;
-        if (!a.dueDate) return 1;
-        if (!b.dueDate) return -1;
-        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
-      });
-    }
-    return connectedTodos;
-  }, [connectedTodos, sortBy]);
+  const sortedActionRequired = useMemo(() => {
+    return sortFn ? [...actionRequired].sort(sortFn) : actionRequired;
+  }, [actionRequired, sortFn]);
+
+  const sortedWaiting = useMemo(() => {
+    return sortFn ? [...waiting].sort(sortFn) : waiting;
+  }, [waiting, sortFn]);
+
+  const sortedCompleted = useMemo(() => {
+    return sortFn ? [...completed].sort(sortFn) : completed;
+  }, [completed, sortFn]);
 
   if (wsLoading) {
     return (
@@ -210,7 +209,12 @@ export default function WorkspacePage() {
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>
         ) : (
-          <TodoList todos={sortedTodos} connectedTodos={sortedConnectedTodos} onSelectTodo={handleSelectTodo} />
+          <TodoList
+            actionRequired={sortedActionRequired}
+            waiting={sortedWaiting}
+            completed={sortedCompleted}
+            onSelectTodo={handleSelectTodo}
+          />
         )}
       </div>
 
