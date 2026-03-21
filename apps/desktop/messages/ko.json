@@ -18,6 +18,7 @@
     "signInTitle": "ito에 로그인",
     "signInSubtitle": "실(Thread) 기반 협업 태스크 관리",
     "continueWithGoogle": "Google로 계속하기",
+    "waitingForAuth": "브라우저에서 인증 대기 중...",
     "continueWithGithub": "GitHub로 계속하기",
     "emailLabel": "이메일",
     "emailPlaceholder": "you@example.com",

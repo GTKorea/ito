@@ -18,6 +18,7 @@
     "signInTitle": "登录 ito",
     "signInSubtitle": "基于线程的任务协作",
     "continueWithGoogle": "使用 Google 继续",
+    "waitingForAuth": "等待浏览器认证中...",
     "continueWithGithub": "使用 GitHub 继续",
     "emailLabel": "邮箱",
     "emailPlaceholder": "you@example.com",

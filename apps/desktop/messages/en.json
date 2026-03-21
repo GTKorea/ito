@@ -18,6 +18,7 @@
     "signInTitle": "Sign in to ito",
     "signInSubtitle": "Thread-based task collaboration",
     "continueWithGoogle": "Continue with Google",
+    "waitingForAuth": "Waiting for browser authentication...",
     "continueWithGithub": "Continue with GitHub",
     "emailLabel": "Email",
     "emailPlaceholder": "you@example.com",

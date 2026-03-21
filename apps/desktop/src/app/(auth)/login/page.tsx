@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
@@ -15,14 +15,21 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isOAuthPending, setIsOAuthPending] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const { login } = useAuthStore();
   const router = useRouter();
   const t = useTranslations('auth');
   const tc = useTranslations('common');
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     setIsDesktop(isTauri());
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,18 +50,46 @@ export default function LoginPage() {
 
   const handleOAuth = async (provider: 'google' | 'github') => {
     if (isDesktop) {
-      // Built desktop app: open OAuth in external browser.
-      // Google blocks OAuth in embedded webviews, and the Tauri webview
-      // origin (tauri://localhost) isn't allowed by CORS.
-      // After OAuth, the backend redirects to ito://callback with tokens,
-      // which the deep link listener handles.
-      const url = `${API_URL}/auth/${provider}/init?from=${encodeURIComponent('ito://')}`;
+      const state = crypto.randomUUID();
+      const url = `${API_URL}/auth/${provider}/init?from=${encodeURIComponent('ito://')}&state=${encodeURIComponent(state)}`;
       try {
         const { open } = await import('@tauri-apps/plugin-shell');
         await open(url);
       } catch {
         window.location.href = url;
+        return;
       }
+
+      setIsOAuthPending(true);
+
+      // Poll for OAuth result (cookie-free fallback; works in dev mode too)
+      pollRef.current = setInterval(async () => {
+        // Stop if already logged in (deep link may have worked)
+        if (useAuthStore.getState().isAuthenticated) {
+          if (pollRef.current) clearInterval(pollRef.current);
+          setIsOAuthPending(false);
+          return;
+        }
+        try {
+          const res = await fetch(`${API_URL}/auth/oauth-result?state=${state}`);
+          if (res.ok) {
+            if (pollRef.current) clearInterval(pollRef.current);
+            const { accessToken, refreshToken } = await res.json();
+            const { setTokens, fetchUser } = useAuthStore.getState();
+            setTokens(accessToken, refreshToken);
+            await fetchUser();
+            router.push('/workspace');
+          }
+        } catch {
+          // Not ready yet, keep polling
+        }
+      }, 2000);
+
+      // Stop polling after 5 minutes
+      timeoutRef.current = setTimeout(() => {
+        if (pollRef.current) clearInterval(pollRef.current);
+        setIsOAuthPending(false);
+      }, 5 * 60 * 1000);
     } else {
       // Web: navigate directly, callback redirects back to this origin.
       const from = window.location.origin;
@@ -83,13 +118,15 @@ export default function LoginPage() {
             variant="outline"
             className="w-full"
             onClick={() => handleOAuth('google')}
+            disabled={isOAuthPending}
           >
-            {t('continueWithGoogle')}
+            {isOAuthPending ? t('waitingForAuth') : t('continueWithGoogle')}
           </Button>
           <Button
             variant="outline"
             className="w-full"
             onClick={() => handleOAuth('github')}
+            disabled={isOAuthPending}
           >
             {t('continueWithGithub')}
           </Button>

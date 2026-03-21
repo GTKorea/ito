@@ -18,6 +18,7 @@
     "signInTitle": "登入 ito",
     "signInSubtitle": "以執行緒為基礎的任務協作",
     "continueWithGoogle": "使用 Google 繼續",
+    "waitingForAuth": "等待瀏覽器認證中...",
     "continueWithGithub": "使用 GitHub 繼續",
     "emailLabel": "電子郵件",
     "emailPlaceholder": "you@example.com",

@@ -7,6 +7,7 @@ import {
   UseGuards,
   Req,
   Res,
+  NotFoundException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
@@ -45,20 +46,16 @@ export class AuthController {
     return this.authService.refreshTokens(refreshToken);
   }
 
-  // Save frontend origin in cookie, then redirect to OAuth
+  // Save frontend origin in cookie + register server-side state, then redirect to OAuth
   @Get('google/init')
   @ApiOperation({ summary: 'Initiate Google OAuth with origin tracking' })
   googleInit(
     @Query('from') from: string,
+    @Query('state') state: string,
+    @Req() req: Request,
     @Res() res: Response,
   ) {
-    if (from) {
-      res.cookie('oauth_redirect', from, {
-        httpOnly: true,
-        maxAge: 5 * 60 * 1000,
-        sameSite: 'lax',
-      });
-    }
+    this.oauthInit(from, state, req, res);
     res.redirect('/auth/google');
   }
 
@@ -70,27 +67,18 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(GoogleOAuthGuard)
   async googleCallback(@Req() req: Request, @Res() res: Response) {
-    const tokens = await this.authService.handleOAuthUser(req.user as OAuthProfile);
-    const frontendUrl = this.resolveFrontendUrl(req);
-    res.clearCookie('oauth_redirect');
-    res.redirect(
-      `${frontendUrl}/callback?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
-    );
+    await this.oauthCallback(req, res);
   }
 
   @Get('github/init')
   @ApiOperation({ summary: 'Initiate GitHub OAuth with origin tracking' })
   githubInit(
     @Query('from') from: string,
+    @Query('state') state: string,
+    @Req() req: Request,
     @Res() res: Response,
   ) {
-    if (from) {
-      res.cookie('oauth_redirect', from, {
-        httpOnly: true,
-        maxAge: 5 * 60 * 1000,
-        sameSite: 'lax',
-      });
-    }
+    this.oauthInit(from, state, req, res);
     res.redirect('/auth/github');
   }
 
@@ -102,9 +90,68 @@ export class AuthController {
   @Get('github/callback')
   @UseGuards(GitHubOAuthGuard)
   async githubCallback(@Req() req: Request, @Res() res: Response) {
-    const tokens = await this.authService.handleOAuthUser(req.user as OAuthProfile);
+    await this.oauthCallback(req, res);
+  }
+
+  @Get('oauth-result')
+  @ApiOperation({ summary: 'Poll for OAuth result (desktop app)' })
+  getOAuthResult(@Query('state') state: string) {
+    if (!state) {
+      throw new NotFoundException('State parameter required');
+    }
+    const result = this.authService.consumeOAuthResult(state);
+    if (!result) {
+      throw new NotFoundException('OAuth result not found or expired');
+    }
+    return result;
+  }
+
+  // ── shared helpers ───────────────────────────────────────────
+
+  /** Common init logic for both Google and GitHub */
+  private oauthInit(
+    from: string,
+    state: string,
+    req: Request,
+    res: Response,
+  ) {
+    if (from) {
+      res.cookie('oauth_redirect', from, {
+        httpOnly: true,
+        maxAge: 5 * 60 * 1000,
+        sameSite: 'lax',
+      });
+    }
+    if (state) {
+      res.cookie('oauth_state', state, {
+        httpOnly: true,
+        maxAge: 5 * 60 * 1000,
+        sameSite: 'lax',
+      });
+      const ip = req.ip || req.socket?.remoteAddress || '';
+      this.authService.registerOAuthState(state, from || '', ip);
+    }
+  }
+
+  /** Common callback logic for both Google and GitHub */
+  private async oauthCallback(req: Request, res: Response) {
+    const tokens = await this.authService.handleOAuthUser(
+      req.user as OAuthProfile,
+    );
+
+    // Store tokens for desktop polling (cookie-free fallback)
+    const ip = req.ip || req.socket?.remoteAddress || '';
+    const state = this.authService.resolveOAuthState(
+      req.cookies?.oauth_state,
+      ip,
+    );
+    if (state) {
+      this.authService.storeOAuthResult(state, tokens);
+    }
+
     const frontendUrl = this.resolveFrontendUrl(req);
     res.clearCookie('oauth_redirect');
+    res.clearCookie('oauth_state');
     res.redirect(
       `${frontendUrl}/callback?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
     );

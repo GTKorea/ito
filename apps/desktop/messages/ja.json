@@ -18,6 +18,7 @@
     "signInTitle": "itoにサインイン",
     "signInSubtitle": "スレッドベースのタスクコラボレーション",
     "continueWithGoogle": "Googleで続行",
+    "waitingForAuth": "ブラウザで認証を待っています...",
     "continueWithGithub": "GitHubで続行",
     "emailLabel": "メールアドレス",
     "emailPlaceholder": "you@example.com",

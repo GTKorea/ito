@@ -18,6 +18,7 @@
     "signInTitle": "Se connecter à ito",
     "signInSubtitle": "Collaboration de tâches basée sur les fils",
     "continueWithGoogle": "Continuer avec Google",
+    "waitingForAuth": "En attente de l'authentification...",
     "continueWithGithub": "Continuer avec GitHub",
     "emailLabel": "E-mail",
     "emailPlaceholder": "vous@exemple.com",

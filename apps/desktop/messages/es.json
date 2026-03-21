@@ -18,6 +18,7 @@
     "signInTitle": "Iniciar sesión en ito",
     "signInSubtitle": "Colaboración de tareas basada en hilos",
     "continueWithGoogle": "Continuar con Google",
+    "waitingForAuth": "Esperando autenticación del navegador...",
     "continueWithGithub": "Continuar con GitHub",
     "emailLabel": "Correo electrónico",
     "emailPlaceholder": "tu@ejemplo.com",
