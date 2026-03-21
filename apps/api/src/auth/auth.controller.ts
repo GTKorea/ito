@@ -152,9 +152,72 @@ export class AuthController {
     const frontendUrl = this.resolveFrontendUrl(req);
     res.clearCookie('oauth_redirect');
     res.clearCookie('oauth_state');
+
+    if (frontendUrl.startsWith('ito://')) {
+      return this.sendDesktopCallbackPage(res, frontendUrl, tokens);
+    }
     res.redirect(
       `${frontendUrl}/callback?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
     );
+  }
+
+  private sendDesktopCallbackPage(
+    res: Response,
+    frontendUrl: string,
+    tokens: { accessToken: string; refreshToken: string },
+  ) {
+    const deepLink = `${frontendUrl}/callback?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`;
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ito — Sign-in complete</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+      background: #0A0A0A;
+      color: #E5E5E5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .container { text-align: center; max-width: 400px; padding: 2rem; }
+    .logo {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 48px; height: 48px; border-radius: 12px;
+      background: #FFFFFF; color: #0A0A0A;
+      font-size: 24px; font-weight: 700; margin-bottom: 24px;
+    }
+    h1 { font-size: 20px; font-weight: 600; margin-bottom: 8px; color: #FFFFFF; }
+    p { font-size: 14px; color: #A3A3A3; line-height: 1.6; }
+    .check {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 40px; height: 40px; border-radius: 50%;
+      background: #1A2E1A; margin-bottom: 16px;
+    }
+    .check svg { width: 20px; height: 20px; color: #4ADE80; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">糸</div>
+    <div class="check">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+      </svg>
+    </div>
+    <h1>Sign-in complete</h1>
+    <p>You've been redirected back to the ito app.<br>You can safely close this tab.</p>
+  </div>
+  <iframe src="${deepLink}" style="display:none"></iframe>
+  <script>setTimeout(function() { window.close(); }, 1000);</script>
+</body>
+</html>`;
+    res.setHeader('Content-Type', 'text/html');
+    res.send(html);
   }
 
   private resolveFrontendUrl(req: Request): string {
