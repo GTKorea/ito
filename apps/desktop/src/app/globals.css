@@ -129,7 +129,12 @@
   button:not(:disabled),
   [role="button"]:not(:disabled),
   [role="menuitem"],
+  [role="menuitemcheckbox"],
+  [role="menuitemradio"],
   [role="option"],
+  [role="tab"],
+  [role="switch"],
+  [role="combobox"],
   [type="button"]:not(:disabled),
   [type="submit"]:not(:disabled),
   [type="reset"]:not(:disabled),
@@ -138,7 +143,10 @@
   a[href],
   label[for],
   input[type="checkbox"],
-  input[type="radio"] {
+  input[type="radio"],
+  [data-slot$="-trigger"],
+  [data-slot$="-item"],
+  [data-slot$="-close"] {
     cursor: pointer;
   }
 }
