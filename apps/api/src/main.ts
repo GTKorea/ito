@@ -44,8 +44,11 @@ async function bootstrap() {
   const allowedOrigins = frontendUrl
     ? frontendUrl.split(',').map((u) => u.trim())
     : [];
+  // Tauri 데스크탑 앱의 origin 추가
+  const tauriOrigins = ['tauri://localhost', 'https://tauri.localhost'];
+  const allOrigins = [...new Set([...allowedOrigins, ...tauriOrigins])];
   app.enableCors({
-    origin: allowedOrigins.length > 0 ? allowedOrigins : true,
+    origin: allOrigins.length > 0 ? allOrigins : true,
     credentials: true,
   });
 

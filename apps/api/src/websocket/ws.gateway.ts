@@ -11,7 +11,11 @@ import { ConfigService } from '@nestjs/config';
 @WebSocketGateway({
   cors: {
     origin: process.env.FRONTEND_URL
-      ? process.env.FRONTEND_URL.split(',').map((u) => u.trim())
+      ? [
+          ...process.env.FRONTEND_URL.split(',').map((u) => u.trim()),
+          'tauri://localhost',
+          'https://tauri.localhost',
+        ]
       : true,
     credentials: true,
   },
