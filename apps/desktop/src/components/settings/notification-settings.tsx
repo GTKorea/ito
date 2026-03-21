@@ -19,9 +19,12 @@ const NOTIFICATION_TYPES = [
   'THREAD_RECEIVED',
   'THREAD_SNAPPED',
   'THREAD_COMPLETED',
+  'THREAD_DECLINED',
   'WORKSPACE_INVITE',
   'TASK_ASSIGNED',
   'TASK_COMPLETED',
+  'SHARED_SPACE_INVITE',
+  'CHAT_MESSAGE',
 ] as const;
 
 export function NotificationSettings() {
