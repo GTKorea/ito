@@ -16,6 +16,10 @@ export class GoogleOAuthGuard extends AuthGuard('google') {
     }
     return super.canActivate(context);
   }
+
+  getAuthenticateOptions() {
+    return { session: false };
+  }
 }
 
 @Injectable()
@@ -27,5 +31,9 @@ export class GitHubOAuthGuard extends AuthGuard('github') {
       );
     }
     return super.canActivate(context);
+  }
+
+  getAuthenticateOptions() {
+    return { session: false };
   }
 }

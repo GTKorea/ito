@@ -482,7 +482,8 @@
       "TASK_ASSIGNED": "任務指派",
       "TASK_COMPLETED": "任務完成",
       "THREAD_DECLINED": "線程拒絕",
-      "SHARED_SPACE_INVITE": "共享空間邀請"
+      "SHARED_SPACE_INVITE": "共享空間邀請",
+      "CHAT_MESSAGE": "聊天訊息"
     }
   },
   "help": {

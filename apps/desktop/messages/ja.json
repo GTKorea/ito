@@ -482,7 +482,8 @@
       "TASK_ASSIGNED": "タスク割り当て",
       "TASK_COMPLETED": "タスク完了",
       "THREAD_DECLINED": "スレッド拒否",
-      "SHARED_SPACE_INVITE": "共有スペース招待"
+      "SHARED_SPACE_INVITE": "共有スペース招待",
+      "CHAT_MESSAGE": "チャットメッセージ"
     }
   },
   "help": {

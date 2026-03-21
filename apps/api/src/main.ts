@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import * as net from 'net';
 import { join } from 'path';
 import { NestFactory } from '@nestjs/core';

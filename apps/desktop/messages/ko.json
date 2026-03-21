@@ -482,7 +482,8 @@
       "TASK_ASSIGNED": "태스크 배정",
       "TASK_COMPLETED": "태스크 완료",
       "THREAD_DECLINED": "스레드 거절",
-      "SHARED_SPACE_INVITE": "공유 스페이스 초대"
+      "SHARED_SPACE_INVITE": "공유 스페이스 초대",
+      "CHAT_MESSAGE": "채팅 메시지"
     }
   },
   "help": {

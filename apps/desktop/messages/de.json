@@ -482,7 +482,8 @@
       "TASK_ASSIGNED": "Aufgabe zugewiesen",
       "TASK_COMPLETED": "Aufgabe abgeschlossen",
       "THREAD_DECLINED": "Thread abgelehnt",
-      "SHARED_SPACE_INVITE": "Gemeinsamer Bereich Einladung"
+      "SHARED_SPACE_INVITE": "Gemeinsamer Bereich Einladung",
+      "CHAT_MESSAGE": "Chat-Nachricht"
     }
   },
   "help": {
