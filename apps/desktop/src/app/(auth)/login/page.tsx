@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { isTauri } from '@/lib/platform';
 import { useAuthStore } from '@/stores/auth-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,15 +14,10 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
   const { login } = useAuthStore();
   const router = useRouter();
   const t = useTranslations('auth');
   const tc = useTranslations('common');
-
-  useEffect(() => {
-    setIsDesktop(isTauri());
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,23 +33,16 @@ export default function LoginPage() {
     }
   };
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3011';
 
   const handleOAuth = async (provider: 'google' | 'github') => {
-    const from = isDesktop ? 'ito://' : window.location.origin;
+    // In desktop app, use the webview's own origin so the callback
+    // redirects back to the app's /callback page directly.
+    // Deep links (ito://) only work with a built & installed app,
+    // not during development.
+    const from = window.location.origin;
     const url = `${API_URL}/auth/${provider}/init?from=${encodeURIComponent(from)}`;
-
-    if (isDesktop) {
-      try {
-        const { open } = await import('@tauri-apps/plugin-shell');
-        await open(url);
-      } catch {
-        // Fallback: open in webview if shell plugin fails
-        window.location.href = url;
-      }
-    } else {
-      window.location.href = url;
-    }
+    window.location.href = url;
   };
 
   return (
