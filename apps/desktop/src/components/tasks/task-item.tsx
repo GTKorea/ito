@@ -39,12 +39,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
-const statusNames: Record<string, string> = {
-  OPEN: 'Open',
-  IN_PROGRESS: 'In Progress',
-  BLOCKED: 'Blocked',
-  COMPLETED: 'Completed',
-};
+// Status names are now translated via useTranslations
 
 const statusIcons: Record<string, React.ReactNode> = {
   OPEN: <Circle className="h-4 w-4 text-muted-foreground" />,
@@ -90,6 +85,12 @@ export function TaskItem({ task, onSelect, section }: TaskItemProps) {
   const { user } = useAuthStore();
   const t = useTranslations('tasks');
   const tc = useTranslations('common');
+  const statusNames: Record<string, string> = {
+    OPEN: t('statusOpen'),
+    IN_PROGRESS: t('statusInProgress'),
+    BLOCKED: t('statusBlocked'),
+    COMPLETED: t('statusCompleted'),
+  };
 
   const handleResolve = async (linkId: string) => {
     if (isResolving) return;
@@ -245,7 +246,7 @@ export function TaskItem({ task, onSelect, section }: TaskItemProps) {
                 onClick={() => setShowDecline(true)}
               >
                 <X className="h-3.5 w-3.5 mr-1" />
-                거절
+                {t('decline')}
               </Button>
             </>
           )}
@@ -288,7 +289,7 @@ export function TaskItem({ task, onSelect, section }: TaskItemProps) {
                   </DropdownMenuTrigger>
                 }
               />
-              <TooltipContent>More actions</TooltipContent>
+              <TooltipContent>{t('moreActions')}</TooltipContent>
             </Tooltip>
             <DropdownMenuContent align="end">
               <DropdownMenuItem
@@ -323,14 +324,14 @@ export function TaskItem({ task, onSelect, section }: TaskItemProps) {
         <Dialog open onOpenChange={() => { setShowDecline(false); setDeclineReason(''); }}>
           <DialogContent className="sm:max-w-sm">
             <DialogHeader>
-              <DialogTitle>실 거절</DialogTitle>
+              <DialogTitle>{t('declineTitle')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">
-                이 실을 거절하면 보낸 사람에게 태스크가 돌아갑니다.
+                {t('declineDescription')}
               </p>
               <Textarea
-                placeholder="거절 사유 (선택)"
+                placeholder={t('declineReasonPlaceholder')}
                 value={declineReason}
                 onChange={(e) => setDeclineReason(e.target.value)}
                 rows={3}
@@ -341,7 +342,7 @@ export function TaskItem({ task, onSelect, section }: TaskItemProps) {
                   size="sm"
                   onClick={() => { setShowDecline(false); setDeclineReason(''); }}
                 >
-                  취소
+                  {tc('cancel')}
                 </Button>
                 <Button
                   size="sm"
@@ -349,7 +350,7 @@ export function TaskItem({ task, onSelect, section }: TaskItemProps) {
                   disabled={isDeclining}
                   onClick={() => handleDecline(pendingLink.id)}
                 >
-                  {isDeclining ? '거절 중...' : '거절'}
+                  {isDeclining ? t('declining') : t('decline')}
                 </Button>
               </div>
             </div>

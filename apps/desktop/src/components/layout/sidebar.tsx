@@ -236,7 +236,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
             ) : (
               <>
                 <ChevronsLeft className="h-4 w-4" />
-                <span>Collapse</span>
+                <span>{t('collapse')}</span>
               </>
             )}
           </button>

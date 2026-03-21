@@ -58,7 +58,8 @@
     "help": "說明",
     "more": "更多",
     "admin": "管理員",
-    "sharedSpaces": "Shared Spaces"
+    "sharedSpaces": "Shared Spaces",
+    "collapse": "收合"
   },
   "workspace": {
     "myTasks": "我的任務",
@@ -103,7 +104,18 @@
     "saveChanges": "儲存變更",
     "threadChain": "執行緒鏈",
     "attachments": "附件",
-    "chat": "聊天"
+    "chat": "聊天",
+    "statusOpen": "開放",
+    "statusInProgress": "進行中",
+    "statusBlocked": "已封鎖",
+    "statusCompleted": "已完成",
+    "decline": "拒絕",
+    "declining": "拒絕中...",
+    "declineTitle": "拒絕線程",
+    "declineDescription": "拒絕此線程後，任務將返回給發送者。",
+    "declineReasonPlaceholder": "拒絕原因（選填）",
+    "moreActions": "更多操作",
+    "quickInputPlaceholder": "新任務... ( > @使用者 直接連接)"
   },
   "threads": {
     "title": "執行緒",
@@ -224,7 +236,12 @@
     "addSocialLink": "新增連結",
     "platformPlaceholder": "平台",
     "urlPlaceholder": "URL",
-    "removeSocialLink": "刪除"
+    "removeSocialLink": "刪除",
+    "theme": {
+      "light": "淺色",
+      "dark": "深色",
+      "system": "系統"
+    }
   },
   "userProfile": {
     "loading": "載入資料中...",
@@ -669,5 +686,57 @@
     "taskTitle": "Title",
     "taskTitlePlaceholder": "What needs to be done?",
     "taskDescriptionPlaceholder": "Add details..."
+  },
+  "onboarding": {
+    "skip": "跳過",
+    "previous": "上一步",
+    "next": "下一步",
+    "getStarted": "開始使用",
+    "welcome": {
+      "title": "歡迎使用 ito！",
+      "description": "準備好開始基於線程的協作了嗎？建立任務並將線程連接到團隊，完成的工作會自動返回給您。"
+    },
+    "seedData": {
+      "title": "建立範例資料？",
+      "description": "我們將生成範例任務，以便您立即體驗 ito 的核心功能。",
+      "button": "生成範例資料",
+      "seeding": "生成中...",
+      "success": "範例資料已建立！",
+      "error": "生成範例資料失敗。"
+    },
+    "taskOverview": {
+      "title": "查看您的任務",
+      "description": "生成的任務現在顯示在列表中。每個任務透過狀態和優先順序進行管理。",
+      "example1": {
+        "title": "專案啟動會議準備",
+        "meta": "已完成 · 高"
+      },
+      "example2": {
+        "title": "設計稿審查",
+        "meta": "進行中 · 中"
+      },
+      "example3": {
+        "title": "API 文件撰寫",
+        "meta": "開放 · 低"
+      }
+    },
+    "threadConcept": {
+      "title": "試試連接線程",
+      "description": "線程連接是 ito 的核心。將任務傳遞給團隊成員會建立鏈條，完成後自動回彈。",
+      "me": "我",
+      "create": "建立",
+      "connect": "連接",
+      "work": "工作",
+      "snapback1": "C 完成 → 回彈給 B",
+      "snapback2": "B 完成 → 回彈給我"
+    },
+    "completion": {
+      "title": "準備就緒！",
+      "description": "現在建立您自己的任務，邀請團隊成員，開始連接線程吧。",
+      "nextSteps": "下一步",
+      "step1": "建立新任務",
+      "step2": "邀請團隊成員到工作區",
+      "step3": "為任務連接線程"
+    }
   }
 }

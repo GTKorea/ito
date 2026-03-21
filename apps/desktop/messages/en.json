@@ -58,7 +58,8 @@
     "help": "Help",
     "more": "More",
     "admin": "Admin",
-    "sharedSpaces": "Shared Spaces"
+    "sharedSpaces": "Shared Spaces",
+    "collapse": "Collapse"
   },
   "workspace": {
     "myTasks": "My Tasks",
@@ -103,7 +104,18 @@
     "saveChanges": "Save Changes",
     "threadChain": "Thread Chain",
     "attachments": "Attachments",
-    "chat": "Chat"
+    "chat": "Chat",
+    "statusOpen": "Open",
+    "statusInProgress": "In Progress",
+    "statusBlocked": "Blocked",
+    "statusCompleted": "Completed",
+    "decline": "Decline",
+    "declining": "Declining...",
+    "declineTitle": "Decline Thread",
+    "declineDescription": "Declining this thread will return the task to the sender.",
+    "declineReasonPlaceholder": "Reason for declining (optional)",
+    "moreActions": "More actions",
+    "quickInputPlaceholder": "New task... ( > @user to connect directly)"
   },
   "threads": {
     "title": "Threads",
@@ -224,7 +236,12 @@
     "addSocialLink": "Add Link",
     "platformPlaceholder": "Platform",
     "urlPlaceholder": "URL",
-    "removeSocialLink": "Remove"
+    "removeSocialLink": "Remove",
+    "theme": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    }
   },
   "userProfile": {
     "loading": "Loading profile...",
@@ -669,5 +686,57 @@
     "taskTitle": "Title",
     "taskTitlePlaceholder": "What needs to be done?",
     "taskDescriptionPlaceholder": "Add details..."
+  },
+  "onboarding": {
+    "skip": "Skip",
+    "previous": "Previous",
+    "next": "Next",
+    "getStarted": "Get Started",
+    "welcome": {
+      "title": "Welcome to ito!",
+      "description": "Ready to start thread-based collaboration? Create tasks and connect threads to your team — completed work automatically snaps back to you."
+    },
+    "seedData": {
+      "title": "Create sample data?",
+      "description": "We'll generate example tasks so you can experience ito's core features right away with realistic project tasks.",
+      "button": "Generate Sample Data",
+      "seeding": "Generating...",
+      "success": "Sample data created!",
+      "error": "Failed to generate sample data."
+    },
+    "taskOverview": {
+      "title": "Check your tasks",
+      "description": "The generated tasks are now visible in the list. Each task is managed by status (in progress, completed, etc.) and priority.",
+      "example1": {
+        "title": "Project kickoff meeting prep",
+        "meta": "Completed · High"
+      },
+      "example2": {
+        "title": "Design mockup review",
+        "meta": "In Progress · Medium"
+      },
+      "example3": {
+        "title": "API documentation",
+        "meta": "Open · Low"
+      }
+    },
+    "threadConcept": {
+      "title": "Try connecting threads",
+      "description": "Thread connection is the core of ito. Pass tasks to team members to create chains — completed work snaps back automatically.",
+      "me": "Me",
+      "create": "Create",
+      "connect": "Connect",
+      "work": "Work",
+      "snapback1": "C done → snap-back to B",
+      "snapback2": "B done → snap-back to Me"
+    },
+    "completion": {
+      "title": "All set!",
+      "description": "Now create your own tasks, invite team members, and start connecting threads.",
+      "nextSteps": "Next steps",
+      "step1": "Create a new task",
+      "step2": "Invite team members to your workspace",
+      "step3": "Connect threads to your tasks"
+    }
   }
 }

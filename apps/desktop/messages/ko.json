@@ -58,7 +58,8 @@
     "help": "도움말",
     "more": "더보기",
     "admin": "관리자",
-    "sharedSpaces": "공유 스페이스"
+    "sharedSpaces": "공유 스페이스",
+    "collapse": "접기"
   },
   "workspace": {
     "myTasks": "내 태스크",
@@ -103,7 +104,18 @@
     "saveChanges": "변경사항 저장",
     "threadChain": "스레드 체인",
     "attachments": "첨부 파일",
-    "chat": "채팅"
+    "chat": "채팅",
+    "statusOpen": "열림",
+    "statusInProgress": "진행 중",
+    "statusBlocked": "차단됨",
+    "statusCompleted": "완료됨",
+    "decline": "거절",
+    "declining": "거절 중...",
+    "declineTitle": "실 거절",
+    "declineDescription": "이 실을 거절하면 보낸 사람에게 태스크가 돌아갑니다.",
+    "declineReasonPlaceholder": "거절 사유 (선택)",
+    "moreActions": "더 보기",
+    "quickInputPlaceholder": "새 태스크... ( > @유저 로 바로 연결)"
   },
   "threads": {
     "title": "스레드",
@@ -224,7 +236,12 @@
     "addSocialLink": "링크 추가",
     "platformPlaceholder": "플랫폼",
     "urlPlaceholder": "URL",
-    "removeSocialLink": "삭제"
+    "removeSocialLink": "삭제",
+    "theme": {
+      "light": "라이트",
+      "dark": "다크",
+      "system": "시스템"
+    }
   },
   "userProfile": {
     "loading": "프로필 로딩 중...",
@@ -669,5 +686,57 @@
     "taskTitle": "제목",
     "taskTitlePlaceholder": "무엇을 해야 하나요?",
     "taskDescriptionPlaceholder": "상세 내용 추가..."
+  },
+  "onboarding": {
+    "skip": "건너뛰기",
+    "previous": "이전",
+    "next": "다음",
+    "getStarted": "시작하기",
+    "welcome": {
+      "title": "ito에 오신 것을 환영합니다!",
+      "description": "실(Thread) 기반 협업을 시작해볼까요? 태스크를 만들고 팀원에게 실을 연결하면, 완료 시 자동으로 되돌려받는 스마트 워크플로우를 경험할 수 있습니다."
+    },
+    "seedData": {
+      "title": "샘플 데이터를 만들어 볼까요?",
+      "description": "ito의 핵심 기능을 바로 체험할 수 있도록 예시 태스크를 생성합니다. 실제 프로젝트와 비슷한 태스크들을 미리 만들어 드릴게요.",
+      "button": "샘플 데이터 생성",
+      "seeding": "생성 중...",
+      "success": "샘플 데이터가 생성되었습니다!",
+      "error": "샘플 데이터 생성에 실패했습니다."
+    },
+    "taskOverview": {
+      "title": "태스크를 확인해보세요",
+      "description": "방금 생성된 태스크들이 목록에 보입니다. 각 태스크는 상태(진행 중, 완료 등)와 우선순위로 관리됩니다.",
+      "example1": {
+        "title": "프로젝트 킥오프 미팅 준비",
+        "meta": "완료됨 · 높음"
+      },
+      "example2": {
+        "title": "디자인 시안 검토",
+        "meta": "진행 중 · 보통"
+      },
+      "example3": {
+        "title": "API 문서 작성",
+        "meta": "열림 · 낮음"
+      }
+    },
+    "threadConcept": {
+      "title": "실(Thread)을 연결해보세요",
+      "description": "ito의 핵심은 실(Thread) 연결입니다. 태스크를 팀원에게 넘기면 자동으로 체인이 만들어지고, 완료 시 snap-back으로 되돌아옵니다.",
+      "me": "나",
+      "create": "생성",
+      "connect": "연결",
+      "work": "작업",
+      "snapback1": "C 완료 → B에게 snap-back",
+      "snapback2": "B 완료 → 나에게 snap-back"
+    },
+    "completion": {
+      "title": "준비 완료!",
+      "description": "이제 직접 태스크를 만들고, 팀원을 초대해서 실(Thread)을 연결해보세요.",
+      "nextSteps": "다음 단계",
+      "step1": "새 태스크를 만들어보세요",
+      "step2": "팀원을 워크스페이스에 초대하세요",
+      "step3": "태스크에 실(Thread)을 연결하세요"
+    }
   }
 }

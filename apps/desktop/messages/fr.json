@@ -58,7 +58,8 @@
     "help": "Aide",
     "more": "Plus",
     "admin": "Admin",
-    "sharedSpaces": "Shared Spaces"
+    "sharedSpaces": "Shared Spaces",
+    "collapse": "Réduire"
   },
   "workspace": {
     "myTasks": "Mes Tâches",
@@ -103,7 +104,18 @@
     "saveChanges": "Enregistrer les Modifications",
     "threadChain": "Chaîne de Fils",
     "attachments": "Pièces jointes",
-    "chat": "Chat"
+    "chat": "Chat",
+    "statusOpen": "Ouvert",
+    "statusInProgress": "En cours",
+    "statusBlocked": "Bloqué",
+    "statusCompleted": "Terminé",
+    "decline": "Refuser",
+    "declining": "Refus en cours...",
+    "declineTitle": "Refuser le fil",
+    "declineDescription": "Refuser ce fil renverra la tâche à l'expéditeur.",
+    "declineReasonPlaceholder": "Motif du refus (facultatif)",
+    "moreActions": "Plus d'actions",
+    "quickInputPlaceholder": "Nouvelle tâche... ( > @utilisateur pour connecter)"
   },
   "threads": {
     "title": "Fils",
@@ -224,7 +236,12 @@
     "addSocialLink": "Ajouter un Lien",
     "platformPlaceholder": "Plateforme",
     "urlPlaceholder": "URL",
-    "removeSocialLink": "Supprimer"
+    "removeSocialLink": "Supprimer",
+    "theme": {
+      "light": "Clair",
+      "dark": "Sombre",
+      "system": "Système"
+    }
   },
   "userProfile": {
     "loading": "Chargement du profil...",
@@ -669,5 +686,57 @@
     "taskTitle": "Title",
     "taskTitlePlaceholder": "What needs to be done?",
     "taskDescriptionPlaceholder": "Add details..."
+  },
+  "onboarding": {
+    "skip": "Passer",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "getStarted": "Commencer",
+    "welcome": {
+      "title": "Bienvenue sur ito !",
+      "description": "Prêt à commencer la collaboration par fils ? Créez des tâches et connectez des fils à votre équipe — le travail terminé revient automatiquement."
+    },
+    "seedData": {
+      "title": "Créer des données exemple ?",
+      "description": "Nous générerons des tâches exemples pour découvrir les fonctionnalités principales d'ito.",
+      "button": "Générer des données",
+      "seeding": "Génération...",
+      "success": "Données exemple créées !",
+      "error": "Échec de la génération des données."
+    },
+    "taskOverview": {
+      "title": "Vérifiez vos tâches",
+      "description": "Les tâches générées sont maintenant visibles dans la liste. Chaque tâche est gérée par statut et priorité.",
+      "example1": {
+        "title": "Préparation réunion de lancement",
+        "meta": "Terminé · Élevée"
+      },
+      "example2": {
+        "title": "Revue de maquette",
+        "meta": "En cours · Moyenne"
+      },
+      "example3": {
+        "title": "Documentation API",
+        "meta": "Ouvert · Basse"
+      }
+    },
+    "threadConcept": {
+      "title": "Essayez de connecter des fils",
+      "description": "La connexion de fils est au cœur d'ito. Passez des tâches aux membres de l'équipe pour créer des chaînes — le travail terminé revient automatiquement.",
+      "me": "Moi",
+      "create": "Créer",
+      "connect": "Connecter",
+      "work": "Travail",
+      "snapback1": "C terminé → retour à B",
+      "snapback2": "B terminé → retour à Moi"
+    },
+    "completion": {
+      "title": "Tout est prêt !",
+      "description": "Créez vos propres tâches, invitez des membres et commencez à connecter des fils.",
+      "nextSteps": "Prochaines étapes",
+      "step1": "Créer une nouvelle tâche",
+      "step2": "Inviter des membres dans l'espace de travail",
+      "step3": "Connecter des fils à vos tâches"
+    }
   }
 }

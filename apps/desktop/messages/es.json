@@ -58,7 +58,8 @@
     "help": "Ayuda",
     "more": "Más",
     "admin": "Admin",
-    "sharedSpaces": "Shared Spaces"
+    "sharedSpaces": "Shared Spaces",
+    "collapse": "Contraer"
   },
   "workspace": {
     "myTasks": "Mis Tareas",
@@ -103,7 +104,18 @@
     "saveChanges": "Guardar Cambios",
     "threadChain": "Cadena de Hilos",
     "attachments": "Archivos adjuntos",
-    "chat": "Chat"
+    "chat": "Chat",
+    "statusOpen": "Abierto",
+    "statusInProgress": "En progreso",
+    "statusBlocked": "Bloqueado",
+    "statusCompleted": "Completado",
+    "decline": "Rechazar",
+    "declining": "Rechazando...",
+    "declineTitle": "Rechazar hilo",
+    "declineDescription": "Rechazar este hilo devolverá la tarea al remitente.",
+    "declineReasonPlaceholder": "Motivo del rechazo (opcional)",
+    "moreActions": "Más acciones",
+    "quickInputPlaceholder": "Nueva tarea... ( > @usuario para conectar directamente)"
   },
   "threads": {
     "title": "Hilos",
@@ -224,7 +236,12 @@
     "addSocialLink": "Añadir Enlace",
     "platformPlaceholder": "Plataforma",
     "urlPlaceholder": "URL",
-    "removeSocialLink": "Eliminar"
+    "removeSocialLink": "Eliminar",
+    "theme": {
+      "light": "Claro",
+      "dark": "Oscuro",
+      "system": "Sistema"
+    }
   },
   "userProfile": {
     "loading": "Cargando perfil...",
@@ -669,5 +686,57 @@
     "taskTitle": "Title",
     "taskTitlePlaceholder": "What needs to be done?",
     "taskDescriptionPlaceholder": "Add details..."
+  },
+  "onboarding": {
+    "skip": "Omitir",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "getStarted": "Comenzar",
+    "welcome": {
+      "title": "¡Bienvenido a ito!",
+      "description": "¿Listo para la colaboración basada en hilos? Crea tareas y conecta hilos con tu equipo — el trabajo completado regresa automáticamente."
+    },
+    "seedData": {
+      "title": "¿Crear datos de ejemplo?",
+      "description": "Generaremos tareas de ejemplo para que puedas experimentar las funciones principales de ito.",
+      "button": "Generar datos de ejemplo",
+      "seeding": "Generando...",
+      "success": "¡Datos de ejemplo creados!",
+      "error": "Error al generar datos de ejemplo."
+    },
+    "taskOverview": {
+      "title": "Revisa tus tareas",
+      "description": "Las tareas generadas ahora son visibles en la lista. Cada tarea se gestiona por estado y prioridad.",
+      "example1": {
+        "title": "Preparación reunión de inicio",
+        "meta": "Completado · Alta"
+      },
+      "example2": {
+        "title": "Revisión de maqueta",
+        "meta": "En progreso · Media"
+      },
+      "example3": {
+        "title": "Documentación API",
+        "meta": "Abierto · Baja"
+      }
+    },
+    "threadConcept": {
+      "title": "Intenta conectar hilos",
+      "description": "La conexión de hilos es el corazón de ito. Pasa tareas a miembros del equipo — el trabajo completado regresa automáticamente.",
+      "me": "Yo",
+      "create": "Crear",
+      "connect": "Conectar",
+      "work": "Trabajo",
+      "snapback1": "C completado → snap-back a B",
+      "snapback2": "B completado → snap-back a Yo"
+    },
+    "completion": {
+      "title": "¡Todo listo!",
+      "description": "Ahora crea tus propias tareas, invita a miembros del equipo y comienza a conectar hilos.",
+      "nextSteps": "Próximos pasos",
+      "step1": "Crear una nueva tarea",
+      "step2": "Invitar miembros al espacio de trabajo",
+      "step3": "Conectar hilos a tus tareas"
+    }
   }
 }

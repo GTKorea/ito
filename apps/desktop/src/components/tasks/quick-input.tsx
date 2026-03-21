@@ -5,6 +5,7 @@ import { useTaskStore } from '@/stores/task-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 import { api } from '@/lib/api-client';
 import { parseQuickInput } from '@/lib/quick-input-parser';
+import { useTranslations } from 'next-intl';
 import { Send, Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
@@ -17,6 +18,7 @@ interface UserResult {
 }
 
 export function QuickInput() {
+  const t = useTranslations('tasks');
   const [input, setInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAutocomplete, setShowAutocomplete] = useState(false);
@@ -277,7 +279,7 @@ export function QuickInput() {
           value={input}
           onChange={(e) => handleInputChange(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="새 태스크... ( > @유저 로 바로 연결)"
+          placeholder={t('quickInputPlaceholder')}
           disabled={isSubmitting}
           className="h-8 flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none disabled:opacity-50"
         />

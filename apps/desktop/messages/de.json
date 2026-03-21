@@ -58,7 +58,8 @@
     "help": "Hilfe",
     "more": "Mehr",
     "admin": "Admin",
-    "sharedSpaces": "Shared Spaces"
+    "sharedSpaces": "Shared Spaces",
+    "collapse": "Einklappen"
   },
   "workspace": {
     "myTasks": "Meine Aufgaben",
@@ -103,7 +104,18 @@
     "saveChanges": "Änderungen speichern",
     "threadChain": "Thread-Kette",
     "attachments": "Anhänge",
-    "chat": "Chat"
+    "chat": "Chat",
+    "statusOpen": "Offen",
+    "statusInProgress": "In Bearbeitung",
+    "statusBlocked": "Blockiert",
+    "statusCompleted": "Abgeschlossen",
+    "decline": "Ablehnen",
+    "declining": "Ablehnung...",
+    "declineTitle": "Thread ablehnen",
+    "declineDescription": "Wenn Sie diesen Thread ablehnen, wird die Aufgabe an den Absender zurückgegeben.",
+    "declineReasonPlaceholder": "Ablehnungsgrund (optional)",
+    "moreActions": "Weitere Aktionen",
+    "quickInputPlaceholder": "Neue Aufgabe... ( > @Benutzer zum direkten Verbinden)"
   },
   "threads": {
     "title": "Threads",
@@ -224,7 +236,12 @@
     "addSocialLink": "Link Hinzufügen",
     "platformPlaceholder": "Plattform",
     "urlPlaceholder": "URL",
-    "removeSocialLink": "Entfernen"
+    "removeSocialLink": "Entfernen",
+    "theme": {
+      "light": "Hell",
+      "dark": "Dunkel",
+      "system": "System"
+    }
   },
   "userProfile": {
     "loading": "Profil wird geladen...",
@@ -669,5 +686,57 @@
     "taskTitle": "Title",
     "taskTitlePlaceholder": "What needs to be done?",
     "taskDescriptionPlaceholder": "Add details..."
+  },
+  "onboarding": {
+    "skip": "Überspringen",
+    "previous": "Zurück",
+    "next": "Weiter",
+    "getStarted": "Loslegen",
+    "welcome": {
+      "title": "Willkommen bei ito!",
+      "description": "Bereit für Thread-basierte Zusammenarbeit? Erstellen Sie Aufgaben und verbinden Sie Threads mit Ihrem Team — abgeschlossene Arbeit kehrt automatisch zurück."
+    },
+    "seedData": {
+      "title": "Beispieldaten erstellen?",
+      "description": "Wir generieren Beispielaufgaben, damit Sie die Kernfunktionen von ito sofort erleben können.",
+      "button": "Beispieldaten generieren",
+      "seeding": "Wird generiert...",
+      "success": "Beispieldaten erstellt!",
+      "error": "Fehler beim Generieren der Beispieldaten."
+    },
+    "taskOverview": {
+      "title": "Überprüfen Sie Ihre Aufgaben",
+      "description": "Die generierten Aufgaben sind jetzt in der Liste sichtbar. Jede Aufgabe wird nach Status und Priorität verwaltet.",
+      "example1": {
+        "title": "Projekt-Kickoff-Meeting vorbereiten",
+        "meta": "Abgeschlossen · Hoch"
+      },
+      "example2": {
+        "title": "Design-Mockup-Review",
+        "meta": "In Bearbeitung · Mittel"
+      },
+      "example3": {
+        "title": "API-Dokumentation",
+        "meta": "Offen · Niedrig"
+      }
+    },
+    "threadConcept": {
+      "title": "Versuchen Sie Threads zu verbinden",
+      "description": "Thread-Verbindung ist das Herzstück von ito. Übergeben Sie Aufgaben an Teammitglieder — abgeschlossene Arbeit kehrt automatisch zurück.",
+      "me": "Ich",
+      "create": "Erstellen",
+      "connect": "Verbinden",
+      "work": "Arbeit",
+      "snapback1": "C fertig → Snap-back zu B",
+      "snapback2": "B fertig → Snap-back zu Ich"
+    },
+    "completion": {
+      "title": "Alles bereit!",
+      "description": "Erstellen Sie eigene Aufgaben, laden Sie Teammitglieder ein und verbinden Sie Threads.",
+      "nextSteps": "Nächste Schritte",
+      "step1": "Neue Aufgabe erstellen",
+      "step2": "Teammitglieder in den Workspace einladen",
+      "step3": "Threads mit Aufgaben verbinden"
+    }
   }
 }

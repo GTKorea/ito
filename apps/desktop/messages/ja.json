@@ -58,7 +58,8 @@
     "help": "ヘルプ",
     "more": "その他",
     "admin": "管理者",
-    "sharedSpaces": "Shared Spaces"
+    "sharedSpaces": "Shared Spaces",
+    "collapse": "折りたたむ"
   },
   "workspace": {
     "myTasks": "マイタスク",
@@ -103,7 +104,18 @@
     "saveChanges": "変更を保存",
     "threadChain": "スレッドチェーン",
     "attachments": "添付ファイル",
-    "chat": "チャット"
+    "chat": "チャット",
+    "statusOpen": "オープン",
+    "statusInProgress": "進行中",
+    "statusBlocked": "ブロック中",
+    "statusCompleted": "完了",
+    "decline": "拒否",
+    "declining": "拒否中...",
+    "declineTitle": "スレッド拒否",
+    "declineDescription": "このスレッドを拒否すると、送信者にタスクが戻ります。",
+    "declineReasonPlaceholder": "拒否理由（任意）",
+    "moreActions": "その他",
+    "quickInputPlaceholder": "新しいタスク... ( > @ユーザー で直接接続)"
   },
   "threads": {
     "title": "スレッド",
@@ -224,7 +236,12 @@
     "addSocialLink": "リンク追加",
     "platformPlaceholder": "プラットフォーム",
     "urlPlaceholder": "URL",
-    "removeSocialLink": "削除"
+    "removeSocialLink": "削除",
+    "theme": {
+      "light": "ライト",
+      "dark": "ダーク",
+      "system": "システム"
+    }
   },
   "userProfile": {
     "loading": "プロフィール読み込み中...",
@@ -669,5 +686,57 @@
     "taskTitle": "Title",
     "taskTitlePlaceholder": "What needs to be done?",
     "taskDescriptionPlaceholder": "Add details..."
+  },
+  "onboarding": {
+    "skip": "スキップ",
+    "previous": "前へ",
+    "next": "次へ",
+    "getStarted": "始める",
+    "welcome": {
+      "title": "itoへようこそ！",
+      "description": "スレッドベースのコラボレーションを始めましょう。タスクを作成してチームメンバーにスレッドを接続すれば、完了時に自動的にスナップバックされます。"
+    },
+    "seedData": {
+      "title": "サンプルデータを作成しますか？",
+      "description": "itoのコア機能をすぐに体験できるよう、サンプルタスクを生成します。",
+      "button": "サンプルデータ生成",
+      "seeding": "生成中...",
+      "success": "サンプルデータが作成されました！",
+      "error": "サンプルデータの生成に失敗しました。"
+    },
+    "taskOverview": {
+      "title": "タスクを確認しましょう",
+      "description": "生成されたタスクがリストに表示されます。各タスクはステータスと優先度で管理されます。",
+      "example1": {
+        "title": "プロジェクトキックオフミーティング準備",
+        "meta": "完了 · 高"
+      },
+      "example2": {
+        "title": "デザインモックアップレビュー",
+        "meta": "進行中 · 中"
+      },
+      "example3": {
+        "title": "APIドキュメント作成",
+        "meta": "オープン · 低"
+      }
+    },
+    "threadConcept": {
+      "title": "スレッドを接続してみましょう",
+      "description": "itoの核心はスレッド接続です。タスクをチームメンバーに渡すとチェーンが作成され、完了時にスナップバックで戻ります。",
+      "me": "自分",
+      "create": "作成",
+      "connect": "接続",
+      "work": "作業",
+      "snapback1": "C完了 → Bにスナップバック",
+      "snapback2": "B完了 → 自分にスナップバック"
+    },
+    "completion": {
+      "title": "準備完了！",
+      "description": "タスクを作成し、チームメンバーを招待してスレッドを接続しましょう。",
+      "nextSteps": "次のステップ",
+      "step1": "新しいタスクを作成する",
+      "step2": "チームメンバーをワークスペースに招待する",
+      "step3": "タスクにスレッドを接続する"
+    }
   }
 }
