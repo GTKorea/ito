@@ -131,7 +131,7 @@ export default function WorkspacePage() {
 
   const sortFn = useMemo(() => {
     if (sortBy === 'dueDate') {
-      return (a: any, b: any) => {
+      return (a: { dueDate?: string }, b: { dueDate?: string }) => {
         if (!a.dueDate && !b.dueDate) return 0;
         if (!a.dueDate) return 1;
         if (!b.dueDate) return -1;

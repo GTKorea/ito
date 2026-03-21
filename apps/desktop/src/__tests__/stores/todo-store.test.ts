@@ -181,8 +181,12 @@ describe('todo-store', () => {
 
       await useTodoStore.getState().resolveThread('tl1');
 
-      // After optimistic update (before refetch), todo2 should remain
       // After refetch, authoritative state applies
+      const state = useTodoStore.getState();
+      expect(state.actionRequired).toHaveLength(1);
+      expect(state.actionRequired[0].id).toBe('t2');
+      expect(state.completed).toHaveLength(1);
+      expect(state.completed[0].id).toBe('t1');
     });
   });
 });

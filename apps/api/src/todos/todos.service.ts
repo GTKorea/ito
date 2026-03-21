@@ -3,6 +3,20 @@ import { PrismaService } from '../common/prisma/prisma.service';
 import { ActivityService } from '../activity/activity.service';
 import { CreateTodoDto, UpdateTodoDto } from './dto/create-todo.dto';
 
+/** Shared include for todo queries with full thread link details */
+const TODO_INCLUDE_FULL = {
+  creator: { select: { id: true, name: true, avatarUrl: true } },
+  assignee: { select: { id: true, name: true, avatarUrl: true } },
+  threadLinks: {
+    include: {
+      fromUser: { select: { id: true, name: true, avatarUrl: true } },
+      toUser: { select: { id: true, name: true, avatarUrl: true } },
+    },
+    orderBy: { chainIndex: 'asc' as const },
+  },
+  _count: { select: { threadLinks: true } },
+} as const;
+
 @Injectable()
 export class TodosService {
   constructor(
@@ -75,18 +89,7 @@ export class TodosService {
 
     return this.prisma.todo.findMany({
       where,
-      include: {
-        creator: { select: { id: true, name: true, avatarUrl: true } },
-        assignee: { select: { id: true, name: true, avatarUrl: true } },
-        threadLinks: {
-          include: {
-            fromUser: { select: { id: true, name: true, avatarUrl: true } },
-            toUser: { select: { id: true, name: true, avatarUrl: true } },
-          },
-          orderBy: { chainIndex: 'asc' },
-        },
-        _count: { select: { threadLinks: true } },
-      },
+      include: TODO_INCLUDE_FULL,
       orderBy: [{ priority: 'asc' }, { createdAt: 'desc' }],
     });
   }
@@ -155,19 +158,6 @@ export class TodosService {
   }
 
   async findCategorized(workspaceId: string, userId: string) {
-    const include = {
-      creator: { select: { id: true, name: true, avatarUrl: true } },
-      assignee: { select: { id: true, name: true, avatarUrl: true } },
-      threadLinks: {
-        include: {
-          fromUser: { select: { id: true, name: true, avatarUrl: true } },
-          toUser: { select: { id: true, name: true, avatarUrl: true } },
-        },
-        orderBy: { chainIndex: 'asc' as const },
-      },
-      _count: { select: { threadLinks: true } },
-    };
-
     const allTodos = await this.prisma.todo.findMany({
       where: {
         workspaceId,
@@ -178,7 +168,7 @@ export class TodosService {
           { threadLinks: { some: { toUserId: userId } } },
         ],
       },
-      include,
+      include: TODO_INCLUDE_FULL,
       orderBy: [{ priority: 'asc' }, { createdAt: 'desc' }],
     });
 

@@ -88,6 +88,15 @@ function getWorkspaceId(): string | undefined {
   return useWorkspaceStore.getState().currentWorkspace?.id;
 }
 
+/** Move a todo from actionRequired to waiting (used by connect operations) */
+function moveToWaiting(state: Pick<TodoState, 'actionRequired' | 'waiting'>, todoId: string, updatedData?: Partial<Todo>) {
+  const todo = state.actionRequired.find((t) => t.id === todoId);
+  return {
+    actionRequired: state.actionRequired.filter((t) => t.id !== todoId),
+    waiting: todo ? [...state.waiting, { ...todo, ...updatedData }] : state.waiting,
+  };
+}
+
 async function refetchCategorized(set: (partial: Partial<TodoState>) => void) {
   const workspaceId = getWorkspaceId();
   if (!workspaceId) return;
@@ -194,28 +203,13 @@ export const useTodoStore = create<TodoState>((set) => ({
 
   connectChain: async (todoId: string, userIds: string[]) => {
     const res = await api.post(`/todos/${todoId}/connect-chain`, { userIds });
-    // Move from actionRequired to waiting
-    set((state) => {
-      const todo = state.actionRequired.find((t) => t.id === todoId);
-      return {
-        actionRequired: state.actionRequired.filter((t) => t.id !== todoId),
-        waiting: todo ? [...state.waiting, { ...todo, ...res.data }] : state.waiting,
-      };
-    });
+    set((state) => moveToWaiting(state, todoId, res.data));
     return res.data;
   },
 
   connectThread: async (todoId, toUserId, message) => {
     const { data } = await api.post(`/todos/${todoId}/connect`, { toUserId, message });
-    const updatedTodo = data.todo || data;
-    // Move from actionRequired to waiting
-    set((state) => {
-      const todo = state.actionRequired.find((t) => t.id === todoId);
-      return {
-        actionRequired: state.actionRequired.filter((t) => t.id !== todoId),
-        waiting: todo ? [...state.waiting, { ...todo, ...updatedTodo }] : state.waiting,
-      };
-    });
+    set((state) => moveToWaiting(state, todoId, data.todo || data));
     trackEvent('thread_connected');
   },
 
@@ -224,12 +218,7 @@ export const useTodoStore = create<TodoState>((set) => ({
     const updatedTodo = data.todo || data;
     set((state) => {
       if (toUserIds.length === 1) {
-        // Single connect: move to waiting
-        const todo = state.actionRequired.find((t) => t.id === todoId);
-        return {
-          actionRequired: state.actionRequired.filter((t) => t.id !== todoId),
-          waiting: todo ? [...state.waiting, { ...todo, ...updatedTodo }] : state.waiting,
-        };
+        return moveToWaiting(state, todoId, updatedTodo);
       }
       // Multi-connect: update in place (assignee stays with sender for parallel)
       return {

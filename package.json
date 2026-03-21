@@ -4,12 +4,22 @@
   "private": true,
   "description": "ito - collaborative thread-based task management",
   "scripts": {
+    "dev": "turbo run dev",
     "dev:api": "turbo run dev --filter=@ito/api",
     "dev:desktop": "turbo run dev --filter=@ito/desktop",
     "dev:admin": "turbo run dev --filter=@ito/admin",
-    "dev": "turbo run dev",
+    "start": "pnpm --filter @ito/api start:dev & pnpm --filter @ito/desktop dev",
+    "start:api": "pnpm --filter @ito/api start:dev",
+    "start:desktop": "pnpm --filter @ito/desktop dev",
     "build": "turbo run build",
+    "build:api": "pnpm --filter @ito/api build",
+    "build:desktop": "pnpm --filter @ito/desktop build",
     "lint": "turbo run lint",
+    "test:api": "pnpm --filter @ito/api test:e2e",
+    "test:desktop": "pnpm --filter @ito/desktop test",
+    "db:migrate": "pnpm --filter @ito/api exec prisma migrate dev",
+    "db:generate": "pnpm --filter @ito/api exec prisma generate",
+    "db:studio": "pnpm --filter @ito/api exec prisma studio",
     "release": "git tag v$(node -p \"require('./package.json').version\") && git push origin v$(node -p \"require('./package.json').version\")"
   },
   "devDependencies": {
