@@ -1,6 +1,15 @@
+use tauri::Manager;
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
+    .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+      // When a second instance is launched (e.g. via deep link),
+      // focus the existing window instead of opening a new one.
+      if let Some(window) = app.get_webview_window("main") {
+        let _ = window.set_focus();
+      }
+    }))
     .plugin(tauri_plugin_notification::init())
     .plugin(tauri_plugin_deep_link::init())
     .plugin(tauri_plugin_shell::init())
