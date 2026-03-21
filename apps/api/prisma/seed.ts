@@ -15,22 +15,46 @@ async function main() {
   const password = await bcrypt.hash('password123', 10);
 
   const alice = await prisma.user.create({
-    data: { email: 'alice@itothread.com', name: 'Alice Kim', passwordHash: password },
+    data: {
+      email: 'alice@itothread.com',
+      name: 'Alice Kim',
+      passwordHash: password,
+    },
   });
   const bob = await prisma.user.create({
-    data: { email: 'bob@itothread.com', name: 'Bob Park', passwordHash: password },
+    data: {
+      email: 'bob@itothread.com',
+      name: 'Bob Park',
+      passwordHash: password,
+    },
   });
   const charlie = await prisma.user.create({
-    data: { email: 'charlie@itothread.com', name: 'Charlie Lee', passwordHash: password },
+    data: {
+      email: 'charlie@itothread.com',
+      name: 'Charlie Lee',
+      passwordHash: password,
+    },
   });
   const diana = await prisma.user.create({
-    data: { email: 'diana@itothread.com', name: 'Diana Choi', passwordHash: password },
+    data: {
+      email: 'diana@itothread.com',
+      name: 'Diana Choi',
+      passwordHash: password,
+    },
   });
   const evan = await prisma.user.create({
-    data: { email: 'evan@itothread.com', name: 'Evan Yoon', passwordHash: password },
+    data: {
+      email: 'evan@itothread.com',
+      name: 'Evan Yoon',
+      passwordHash: password,
+    },
   });
   const fiona = await prisma.user.create({
-    data: { email: 'fiona@itothread.com', name: 'Fiona Han', passwordHash: password },
+    data: {
+      email: 'fiona@itothread.com',
+      name: 'Fiona Han',
+      passwordHash: password,
+    },
   });
 
   const users = [alice, bob, charlie, diana, evan, fiona];
@@ -103,7 +127,7 @@ async function main() {
   const daysLater = (n: number) => new Date(Date.now() + n * 86400000);
 
   // ── Tasks — Case 1: Simple (no thread) ───────
-  const task1= await prisma.task.create({
+  const task1 = await prisma.task.create({
     data: {
       title: '프로젝트 README 작성',
       description: '새로운 프로젝트의 README.md를 작성합니다.',
@@ -118,7 +142,7 @@ async function main() {
     },
   });
 
-  const task2= await prisma.task.create({
+  const task2 = await prisma.task.create({
     data: {
       title: 'CI/CD 파이프라인 설정',
       description: 'GitHub Actions로 자동 배포 설정',
@@ -133,7 +157,7 @@ async function main() {
   });
 
   // ── Case 2: Simple thread chain (A → B, completed) ──
-  const task3= await prisma.task.create({
+  const task3 = await prisma.task.create({
     data: {
       title: '디자인 리뷰 요청',
       description: 'v2 디자인 시안을 리뷰해주세요.',
@@ -161,7 +185,7 @@ async function main() {
   });
 
   // ── Case 3: Active chain (A → B → C, B forwarded, C pending) ──
-  const task4= await prisma.task.create({
+  const task4 = await prisma.task.create({
     data: {
       title: 'API 엔드포인트 리팩터링',
       description: 'REST API의 응답 구조를 통일합니다.',
@@ -197,7 +221,7 @@ async function main() {
   });
 
   // ── Case 4: Long chain (A → B → C → D, snap-back in progress) ──
-  const task5= await prisma.task.create({
+  const task5 = await prisma.task.create({
     data: {
       title: '보안 감사 리포트',
       description: '분기별 보안 감사 결과를 정리합니다.',
@@ -238,7 +262,7 @@ async function main() {
   });
 
   // ── Case 5: Circular chain (A → B → A) ──────
-  const task6= await prisma.task.create({
+  const task6 = await prisma.task.create({
     data: {
       title: '상호 코드리뷰',
       description: 'Alice와 Bob이 서로 코드리뷰를 진행합니다.',
@@ -273,10 +297,11 @@ async function main() {
   });
 
   // ── Case 6: Blocked task ─────────────────────
-  const task7= await prisma.task.create({
+  const task7 = await prisma.task.create({
     data: {
       title: '결제 시스템 마이그레이션',
-      description: '기존 결제 시스템을 새 API로 이전합니다. 외부 업체 응답 대기 중.',
+      description:
+        '기존 결제 시스템을 새 API로 이전합니다. 외부 업체 응답 대기 중.',
       status: 'BLOCKED',
       priority: 'URGENT',
       creatorId: bob.id,
@@ -303,11 +328,21 @@ async function main() {
   // ── Case 8: Many tasks for calendar spread ───
   const calendarTasks = [];
   const titles = [
-    '주간 스탠드업 정리', '기능 스펙 초안', 'DB 인덱스 최적화',
-    '사용자 피드백 분석', 'A/B 테스트 설계', '모바일 대응 점검',
-    '배포 롤백 플랜', '로그 모니터링 설정', '팀 회고 진행',
-    '코드 컨벤션 문서화', '성능 벤치마크', 'API 문서 업데이트',
-    '에러 트래킹 설정', '접근성 감사', '캐시 전략 수립',
+    '주간 스탠드업 정리',
+    '기능 스펙 초안',
+    'DB 인덱스 최적화',
+    '사용자 피드백 분석',
+    'A/B 테스트 설계',
+    '모바일 대응 점검',
+    '배포 롤백 플랜',
+    '로그 모니터링 설정',
+    '팀 회고 진행',
+    '코드 컨벤션 문서화',
+    '성능 벤치마크',
+    'API 문서 업데이트',
+    '에러 트래킹 설정',
+    '접근성 감사',
+    '캐시 전략 수립',
   ];
   for (let i = 0; i < 15; i++) {
     const dayOffset = Math.floor(i / 3) * 2; // spread across days
@@ -331,7 +366,9 @@ async function main() {
     );
   }
   await Promise.all(calendarTasks);
-  console.log('✅ 23 tasks created (various statuses, threads, calendar spread)');
+  console.log(
+    '✅ 23 tasks created (various statuses, threads, calendar spread)',
+  );
 
   // ── ws2 tasks ────────────────────────────────
   await prisma.task.create({
@@ -525,8 +562,12 @@ async function main() {
   console.log('\n🎉 Seed complete!\n');
   console.log('📋 Login credentials (all users):');
   console.log('   Password: password123');
-  console.log('   Emails: alice@itothread.com, bob@itothread.com, charlie@itothread.com,');
-  console.log('           diana@itothread.com, evan@itothread.com, fiona@itothread.com');
+  console.log(
+    '   Emails: alice@itothread.com, bob@itothread.com, charlie@itothread.com,',
+  );
+  console.log(
+    '           diana@itothread.com, evan@itothread.com, fiona@itothread.com',
+  );
   console.log('\n📊 Data created:');
   console.log('   • 6 users (4 roles: OWNER, ADMIN, MEMBER, GUEST)');
   console.log('   • 2 workspaces (Krow Studio + Side Project)');
