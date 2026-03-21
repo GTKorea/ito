@@ -21,12 +21,12 @@ export class ChatService {
   ) {}
 
   /**
-   * Check if a user is a participant of a todo
+   * Check if a user is a participant of a task
    * (creator, current assignee, or in any thread link as sender/receiver)
    */
-  async isParticipant(todoId: string, userId: string): Promise<boolean> {
-    const todo = await this.prisma.todo.findUnique({
-      where: { id: todoId },
+  async isParticipant(taskId: string, userId: string): Promise<boolean> {
+    const task = await this.prisma.task.findUnique({
+      where: { id: taskId },
       select: {
         creatorId: true,
         assigneeId: true,
@@ -36,36 +36,36 @@ export class ChatService {
       },
     });
 
-    if (!todo) return false;
+    if (!task) return false;
 
-    if (todo.creatorId === userId || todo.assigneeId === userId) return true;
+    if (task.creatorId === userId || task.assigneeId === userId) return true;
 
-    return todo.threadLinks.some(
+    return task.threadLinks.some(
       (link) => link.fromUserId === userId || link.toUserId === userId,
     );
   }
 
   /**
-   * Get paginated messages for a todo (latest first, cursor-based)
+   * Get paginated messages for a task (latest first, cursor-based)
    */
   async getMessages(
-    todoId: string,
+    taskId: string,
     userId: string,
     cursor?: string,
     limit = 50,
   ) {
-    const todo = await this.prisma.todo.findUnique({
-      where: { id: todoId },
+    const task = await this.prisma.task.findUnique({
+      where: { id: taskId },
       select: { id: true },
     });
-    if (!todo) throw new NotFoundException('Todo not found');
+    if (!task) throw new NotFoundException('Task not found');
 
-    const isAllowed = await this.isParticipant(todoId, userId);
+    const isAllowed = await this.isParticipant(taskId, userId);
     if (!isAllowed)
-      throw new ForbiddenException('Not a participant of this todo');
+      throw new ForbiddenException('Not a participant of this task');
 
     const messages = await this.prisma.chatMessage.findMany({
-      where: { todoId },
+      where: { taskId },
       orderBy: { createdAt: 'desc' },
       take: limit + 1,
       ...(cursor && {
@@ -91,11 +91,11 @@ export class ChatService {
   }
 
   /**
-   * Send a message to a todo chat
+   * Send a message to a task chat
    */
-  async sendMessage(todoId: string, userId: string, content: string) {
-    const todo = await this.prisma.todo.findUnique({
-      where: { id: todoId },
+  async sendMessage(taskId: string, userId: string, content: string) {
+    const task = await this.prisma.task.findUnique({
+      where: { id: taskId },
       select: {
         id: true,
         title: true,
@@ -106,16 +106,16 @@ export class ChatService {
         },
       },
     });
-    if (!todo) throw new NotFoundException('Todo not found');
+    if (!task) throw new NotFoundException('Task not found');
 
-    const isAllowed = await this.isParticipant(todoId, userId);
+    const isAllowed = await this.isParticipant(taskId, userId);
     if (!isAllowed)
-      throw new ForbiddenException('Not a participant of this todo');
+      throw new ForbiddenException('Not a participant of this task');
 
     const message = await this.prisma.chatMessage.create({
       data: {
         content,
-        todoId,
+        taskId,
         senderId: userId,
       },
       include: {
@@ -125,17 +125,17 @@ export class ChatService {
       },
     });
 
-    // Broadcast to the todo chat room via WebSocket
+    // Broadcast to the task chat room via WebSocket
     this.wsGateway.server
-      ?.to(`todo-chat:${todoId}`)
+      ?.to(`task-chat:${taskId}`)
       .emit('newMessage', message);
 
     // Send notifications to other participants
     if (this.notificationsService) {
       const participantIds = new Set<string>();
-      if (todo.creatorId) participantIds.add(todo.creatorId);
-      if (todo.assigneeId) participantIds.add(todo.assigneeId);
-      for (const link of todo.threadLinks) {
+      if (task.creatorId) participantIds.add(task.creatorId);
+      if (task.assigneeId) participantIds.add(task.assigneeId);
+      for (const link of task.threadLinks) {
         participantIds.add(link.fromUserId);
         participantIds.add(link.toUserId);
       }
@@ -151,10 +151,10 @@ export class ChatService {
           userId: recipientId,
           type: 'CHAT_MESSAGE',
           title: `${senderName}: ${preview}`,
-          body: `New message in "${todo.title}"`,
+          body: `New message in "${task.title}"`,
           data: {
-            todoId,
-            todoTitle: todo.title,
+            taskId,
+            taskTitle: task.title,
             senderName,
             senderUserId: userId,
           },

@@ -4,9 +4,9 @@ import { useMemo, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CalendarDayCell } from './calendar-day-cell';
-import type { CalendarEvent } from '@/stores/todo-store';
+import type { CalendarEvent } from '@/stores/task-store';
 
-interface TodoItem {
+interface TaskItem {
   id: string;
   title: string;
   status: string;
@@ -20,11 +20,11 @@ interface CalendarViewProps {
   year: number;
   month: number; // 0-indexed
   onMonthChange: (year: number, month: number) => void;
-  completedTodos: TodoItem[];
-  upcomingTodos: TodoItem[];
+  completedTasks: TaskItem[];
+  upcomingTasks: TaskItem[];
   isLoading: boolean;
   externalEvents?: CalendarEvent[];
-  onCreateTodo?: (date: Date) => void;
+  onCreateTask?: (date: Date) => void;
 }
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -70,11 +70,11 @@ export function CalendarView({
   year,
   month,
   onMonthChange,
-  completedTodos,
-  upcomingTodos,
+  completedTasks,
+  upcomingTasks,
   isLoading,
   externalEvents,
-  onCreateTodo,
+  onCreateTask,
 }: CalendarViewProps) {
   const today = useMemo(() => new Date(), []);
   const days = useMemo(() => getDaysInMonth(year, month), [year, month]);
@@ -110,31 +110,31 @@ export function CalendarView({
     [],
   );
 
-  // Build a map of date -> todos for efficient lookup
-  const todosByDate = useMemo(() => {
+  // Build a map of date -> tasks for efficient lookup
+  const tasksByDate = useMemo(() => {
     const map = new Map<
       string,
-      { completed: TodoItem[]; upcoming: TodoItem[] }
+      { completed: TaskItem[]; upcoming: TaskItem[] }
     >();
 
-    for (const todo of completedTodos) {
-      if (!todo.completedAt) continue;
-      const d = new Date(todo.completedAt);
+    for (const task of completedTasks) {
+      if (!task.completedAt) continue;
+      const d = new Date(task.completedAt);
       const key = dateKey(d);
       if (!map.has(key)) map.set(key, { completed: [], upcoming: [] });
-      map.get(key)!.completed.push(todo);
+      map.get(key)!.completed.push(task);
     }
 
-    for (const todo of upcomingTodos) {
-      if (!todo.dueDate) continue;
-      const d = new Date(todo.dueDate);
+    for (const task of upcomingTasks) {
+      if (!task.dueDate) continue;
+      const d = new Date(task.dueDate);
       const key = dateKey(d);
       if (!map.has(key)) map.set(key, { completed: [], upcoming: [] });
-      map.get(key)!.upcoming.push(todo);
+      map.get(key)!.upcoming.push(task);
     }
 
     return map;
-  }, [completedTodos, upcomingTodos, dateKey]);
+  }, [completedTasks, upcomingTasks, dateKey]);
 
   // Build a map of date -> external calendar events
   const externalByDate = useMemo(() => {
@@ -191,7 +191,7 @@ export function CalendarView({
           <div className="grid grid-cols-7 flex-1" style={{ gridAutoRows: '1fr' }}>
             {days.map((date, i) => {
               const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
-              const dayTodos = todosByDate.get(key) || {
+              const dayTasks = tasksByDate.get(key) || {
                 completed: [],
                 upcoming: [],
               };
@@ -205,10 +205,10 @@ export function CalendarView({
                   date={date}
                   isCurrentMonth={date.getMonth() === month}
                   isToday={isSameDay(date, today)}
-                  completedTodos={dayTodos.completed}
-                  upcomingTodos={dayTodos.upcoming}
+                  completedTasks={dayTasks.completed}
+                  upcomingTasks={dayTasks.upcoming}
                   externalEvents={dayExternalEvents}
-                  onCreateTodo={onCreateTodo}
+                  onCreateTask={onCreateTask}
                 />
               );
             })}

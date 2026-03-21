@@ -2,23 +2,23 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { useTodoStore } from '@/stores/todo-store';
+import { useTaskStore } from '@/stores/task-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
-interface CreateTodoProps {
+interface CreateTaskProps {
   workspaceId: string;
   onClose: () => void;
 }
 
-export function CreateTodo({ workspaceId, onClose }: CreateTodoProps) {
+export function CreateTask({ workspaceId, onClose }: CreateTaskProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState('MEDIUM');
   const [dueDate, setDueDate] = useState('');
-  const { createTodo } = useTodoStore();
-  const t = useTranslations('todos');
+  const { createTask } = useTaskStore();
+  const t = useTranslations('tasks');
   const tc = useTranslations('common');
 
   const priorities = [
@@ -31,7 +31,7 @@ export function CreateTodo({ workspaceId, onClose }: CreateTodoProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    await createTodo(
+    await createTask(
       workspaceId,
       title,
       description || undefined,

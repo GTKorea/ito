@@ -8,7 +8,7 @@ import {
   createTestWorkspace,
 } from './setup';
 
-describe('Todos (e2e)', () => {
+describe('Tasks (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
 
@@ -26,26 +26,26 @@ describe('Todos (e2e)', () => {
     await app.close();
   });
 
-  async function setupWorkspaceWithTodo() {
+  async function setupWorkspaceWithTask() {
     const owner = await registerTestUser(app);
     const ws = await createTestWorkspace(app, owner.accessToken);
 
-    const todoRes = await request(app.getHttpServer())
-      .post(`/workspaces/${ws.id}/todos`)
+    const taskRes = await request(app.getHttpServer())
+      .post(`/workspaces/${ws.id}/tasks`)
       .set('Authorization', `Bearer ${owner.accessToken}`)
-      .send({ title: 'Test Todo', description: 'A test task', priority: 'HIGH' })
+      .send({ title: 'Test Task', description: 'A test task', priority: 'HIGH' })
       .expect(201);
 
-    return { owner, ws, todo: todoRes.body };
+    return { owner, ws, task: taskRes.body };
   }
 
-  describe('POST /workspaces/:wid/todos', () => {
-    it('should create a todo', async () => {
+  describe('POST /workspaces/:wid/tasks', () => {
+    it('should create a task', async () => {
       const owner = await registerTestUser(app);
       const ws = await createTestWorkspace(app, owner.accessToken);
 
       const res = await request(app.getHttpServer())
-        .post(`/workspaces/${ws.id}/todos`)
+        .post(`/workspaces/${ws.id}/tasks`)
         .set('Authorization', `Bearer ${owner.accessToken}`)
         .send({
           title: 'New Task',
@@ -68,19 +68,19 @@ describe('Todos (e2e)', () => {
       const ws = await createTestWorkspace(app, owner.accessToken);
 
       await request(app.getHttpServer())
-        .post(`/workspaces/${ws.id}/todos`)
+        .post(`/workspaces/${ws.id}/tasks`)
         .set('Authorization', `Bearer ${owner.accessToken}`)
         .send({ description: 'No title' })
         .expect(400);
     });
   });
 
-  describe('GET /workspaces/:wid/todos', () => {
-    it('should list todos in workspace', async () => {
-      const { owner, ws } = await setupWorkspaceWithTodo();
+  describe('GET /workspaces/:wid/tasks', () => {
+    it('should list tasks in workspace', async () => {
+      const { owner, ws } = await setupWorkspaceWithTask();
 
       const res = await request(app.getHttpServer())
-        .get(`/workspaces/${ws.id}/todos`)
+        .get(`/workspaces/${ws.id}/tasks`)
         .set('Authorization', `Bearer ${owner.accessToken}`)
         .expect(200);
 
@@ -88,10 +88,10 @@ describe('Todos (e2e)', () => {
     });
 
     it('should filter by assignedToMe', async () => {
-      const { owner, ws } = await setupWorkspaceWithTodo();
+      const { owner, ws } = await setupWorkspaceWithTask();
 
       const res = await request(app.getHttpServer())
-        .get(`/workspaces/${ws.id}/todos?assignedToMe=true`)
+        .get(`/workspaces/${ws.id}/tasks?assignedToMe=true`)
         .set('Authorization', `Bearer ${owner.accessToken}`)
         .expect(200);
 
@@ -99,10 +99,10 @@ describe('Todos (e2e)', () => {
     });
 
     it('should filter by status', async () => {
-      const { owner, ws } = await setupWorkspaceWithTodo();
+      const { owner, ws } = await setupWorkspaceWithTask();
 
       const res = await request(app.getHttpServer())
-        .get(`/workspaces/${ws.id}/todos?status=OPEN`)
+        .get(`/workspaces/${ws.id}/tasks?status=OPEN`)
         .set('Authorization', `Bearer ${owner.accessToken}`)
         .expect(200);
 
@@ -110,36 +110,36 @@ describe('Todos (e2e)', () => {
     });
   });
 
-  describe('GET /todos/:id', () => {
-    it('should return todo details with thread links', async () => {
-      const { owner, todo } = await setupWorkspaceWithTodo();
+  describe('GET /tasks/:id', () => {
+    it('should return task details with thread links', async () => {
+      const { owner, task } = await setupWorkspaceWithTask();
 
       const res = await request(app.getHttpServer())
-        .get(`/todos/${todo.id}`)
+        .get(`/tasks/${task.id}`)
         .set('Authorization', `Bearer ${owner.accessToken}`)
         .expect(200);
 
-      expect(res.body.id).toBe(todo.id);
+      expect(res.body.id).toBe(task.id);
       expect(res.body.threadLinks).toBeDefined();
       expect(res.body.creator).toBeDefined();
     });
 
-    it('should return 404 for non-existent todo', async () => {
+    it('should return 404 for non-existent task', async () => {
       const owner = await registerTestUser(app);
 
       await request(app.getHttpServer())
-        .get('/todos/non-existent-id')
+        .get('/tasks/non-existent-id')
         .set('Authorization', `Bearer ${owner.accessToken}`)
         .expect(404);
     });
   });
 
-  describe('PATCH /todos/:id', () => {
-    it('should update todo title and status', async () => {
-      const { owner, todo } = await setupWorkspaceWithTodo();
+  describe('PATCH /tasks/:id', () => {
+    it('should update task title and status', async () => {
+      const { owner, task } = await setupWorkspaceWithTask();
 
       const res = await request(app.getHttpServer())
-        .patch(`/todos/${todo.id}`)
+        .patch(`/tasks/${task.id}`)
         .set('Authorization', `Bearer ${owner.accessToken}`)
         .send({ title: 'Updated Title', status: 'IN_PROGRESS' })
         .expect(200);
@@ -149,10 +149,10 @@ describe('Todos (e2e)', () => {
     });
 
     it('should set completedAt when status is COMPLETED', async () => {
-      const { owner, todo } = await setupWorkspaceWithTodo();
+      const { owner, task } = await setupWorkspaceWithTask();
 
       const res = await request(app.getHttpServer())
-        .patch(`/todos/${todo.id}`)
+        .patch(`/tasks/${task.id}`)
         .set('Authorization', `Bearer ${owner.accessToken}`)
         .send({ status: 'COMPLETED' })
         .expect(200);
@@ -161,7 +161,7 @@ describe('Todos (e2e)', () => {
     });
 
     it('should return 403 for non-creator/non-assignee', async () => {
-      const { ws, todo } = await setupWorkspaceWithTodo();
+      const { ws, task } = await setupWorkspaceWithTask();
       const other = await registerTestUser(app);
 
       // Join workspace
@@ -172,23 +172,23 @@ describe('Todos (e2e)', () => {
 
       // other user tries to update
       await request(app.getHttpServer())
-        .patch(`/todos/${todo.id}`)
+        .patch(`/tasks/${task.id}`)
         .set('Authorization', `Bearer ${other.accessToken}`)
         .send({ title: 'Hacked' })
         .expect(403);
     });
   });
 
-  describe('GET /workspaces/:wid/todos/calendar', () => {
-    it('should return completed and upcoming todos for date range', async () => {
+  describe('GET /workspaces/:wid/tasks/calendar', () => {
+    it('should return completed and upcoming tasks for date range', async () => {
       const owner = await registerTestUser(app);
       const ws = await createTestWorkspace(app, owner.accessToken);
 
-      // Create a todo with a due date
+      // Create a task with a due date
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const todoRes = await request(app.getHttpServer())
-        .post(`/workspaces/${ws.id}/todos`)
+      const taskRes = await request(app.getHttpServer())
+        .post(`/workspaces/${ws.id}/tasks`)
         .set('Authorization', `Bearer ${owner.accessToken}`)
         .send({
           title: 'Calendar Task',
@@ -197,18 +197,18 @@ describe('Todos (e2e)', () => {
         })
         .expect(201);
 
-      // Complete the todo
+      // Complete the task
       await request(app.getHttpServer())
-        .patch(`/todos/${todoRes.body.id}`)
+        .patch(`/tasks/${taskRes.body.id}`)
         .set('Authorization', `Bearer ${owner.accessToken}`)
         .send({ status: 'COMPLETED' })
         .expect(200);
 
-      // Create another todo with due date (not completed)
+      // Create another task with due date (not completed)
       const nextWeek = new Date();
       nextWeek.setDate(nextWeek.getDate() + 7);
       await request(app.getHttpServer())
-        .post(`/workspaces/${ws.id}/todos`)
+        .post(`/workspaces/${ws.id}/tasks`)
         .set('Authorization', `Bearer ${owner.accessToken}`)
         .send({
           title: 'Upcoming Task',
@@ -224,7 +224,7 @@ describe('Todos (e2e)', () => {
       endDate.setDate(endDate.getDate() + 14);
 
       const res = await request(app.getHttpServer())
-        .get(`/workspaces/${ws.id}/todos/calendar`)
+        .get(`/workspaces/${ws.id}/tasks/calendar`)
         .query({
           start: startDate.toISOString(),
           end: endDate.toISOString(),
@@ -241,28 +241,28 @@ describe('Todos (e2e)', () => {
     });
   });
 
-  describe('DELETE /todos/:id', () => {
-    it('should delete a todo by creator', async () => {
-      const { owner, todo } = await setupWorkspaceWithTodo();
+  describe('DELETE /tasks/:id', () => {
+    it('should delete a task by creator', async () => {
+      const { owner, task } = await setupWorkspaceWithTask();
 
       await request(app.getHttpServer())
-        .delete(`/todos/${todo.id}`)
+        .delete(`/tasks/${task.id}`)
         .set('Authorization', `Bearer ${owner.accessToken}`)
         .expect(200);
 
       // Should be gone
       await request(app.getHttpServer())
-        .get(`/todos/${todo.id}`)
+        .get(`/tasks/${task.id}`)
         .set('Authorization', `Bearer ${owner.accessToken}`)
         .expect(404);
     });
 
     it('should return 403 for non-creator', async () => {
-      const { ws, todo } = await setupWorkspaceWithTodo();
+      const { ws, task } = await setupWorkspaceWithTask();
       const other = await registerTestUser(app);
 
       await request(app.getHttpServer())
-        .delete(`/todos/${todo.id}`)
+        .delete(`/tasks/${task.id}`)
         .set('Authorization', `Bearer ${other.accessToken}`)
         .expect(403);
     });

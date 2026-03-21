@@ -20,8 +20,8 @@ const NOTIFICATION_TYPES = [
   'THREAD_SNAPPED',
   'THREAD_COMPLETED',
   'WORKSPACE_INVITE',
-  'TODO_ASSIGNED',
-  'TODO_COMPLETED',
+  'TASK_ASSIGNED',
+  'TASK_COMPLETED',
 ] as const;
 
 export function NotificationSettings() {

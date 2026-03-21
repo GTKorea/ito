@@ -1,4 +1,4 @@
-export type TodoStatus = 'OPEN' | 'IN_PROGRESS' | 'BLOCKED' | 'COMPLETED' | 'CANCELLED';
+export type TaskStatus = 'OPEN' | 'IN_PROGRESS' | 'BLOCKED' | 'COMPLETED' | 'CANCELLED';
 export type Priority = 'URGENT' | 'HIGH' | 'MEDIUM' | 'LOW';
 export type ThreadLinkStatus = 'PENDING' | 'COMPLETED' | 'FORWARDED' | 'CANCELLED';
 export type WorkspaceRole = 'OWNER' | 'ADMIN' | 'MEMBER' | 'GUEST';
@@ -8,5 +8,5 @@ export type NotificationType =
   | 'THREAD_SNAPPED'
   | 'THREAD_COMPLETED'
   | 'WORKSPACE_INVITE'
-  | 'TODO_ASSIGNED'
-  | 'TODO_COMPLETED';
+  | 'TASK_ASSIGNED'
+  | 'TASK_COMPLETED';

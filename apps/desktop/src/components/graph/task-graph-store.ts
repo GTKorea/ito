@@ -22,7 +22,7 @@ interface ThreadLink {
   resolvedAt?: string;
 }
 
-export interface TaskGraphTodo {
+export interface TaskGraphTask {
   id: string;
   title: string;
   description?: string;
@@ -40,32 +40,32 @@ export interface TaskGraphTodo {
 }
 
 interface GraphState {
-  todos: TaskGraphTodo[];
+  tasks: TaskGraphTask[];
   isLoading: boolean;
   scope: 'active' | 'all' | 'completed';
   statusFilter: string[];
   priorityFilter: string[];
   searchQuery: string;
   layoutMode: 'force' | 'hierarchy';
-  selectedTodoId: string | null;
+  selectedTaskId: string | null;
   fetchGraphData: (workspaceId: string) => Promise<void>;
   setScope: (scope: 'active' | 'all' | 'completed') => void;
   setStatusFilter: (filter: string[]) => void;
   setPriorityFilter: (filter: string[]) => void;
   setSearchQuery: (query: string) => void;
   setLayoutMode: (mode: 'force' | 'hierarchy') => void;
-  selectTodo: (todoId: string | null) => void;
+  selectTask: (taskId: string | null) => void;
 }
 
 export const useGraphStore = create<GraphState>((set, get) => ({
-  todos: [],
+  tasks: [],
   isLoading: false,
   scope: 'active',
   statusFilter: [],
   priorityFilter: [],
   searchQuery: '',
   layoutMode: 'force',
-  selectedTodoId: null,
+  selectedTaskId: null,
 
   fetchGraphData: async (workspaceId: string) => {
     set({ isLoading: true });
@@ -76,7 +76,7 @@ export const useGraphStore = create<GraphState>((set, get) => ({
       if (priorityFilter.length > 0) params.priority = priorityFilter.join(',');
 
       const { data } = await api.get(`/workspaces/${workspaceId}/task-graph`, { params });
-      set({ todos: data, isLoading: false });
+      set({ tasks: data, isLoading: false });
     } catch {
       set({ isLoading: false });
     }
@@ -87,5 +87,5 @@ export const useGraphStore = create<GraphState>((set, get) => ({
   setPriorityFilter: (filter) => set({ priorityFilter: filter }),
   setSearchQuery: (query) => set({ searchQuery: query }),
   setLayoutMode: (mode) => set({ layoutMode: mode }),
-  selectTodo: (todoId) => set({ selectedTodoId: todoId }),
+  selectTask: (taskId) => set({ selectedTaskId: taskId }),
 }));

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { useTodoStore } from '@/stores/todo-store';
+import { useTaskStore } from '@/stores/task-store';
 import { api } from '@/lib/api-client';
 import { ThreadChain } from '@/components/threads/thread-chain';
 import { ThreadGraph } from '@/components/threads/thread-graph';
@@ -19,15 +19,15 @@ import { ChatPanel } from '@/components/chat/chat-panel';
 const statuses = ['OPEN', 'IN_PROGRESS', 'BLOCKED', 'COMPLETED', 'CANCELLED'];
 const priorities = ['URGENT', 'HIGH', 'MEDIUM', 'LOW'];
 
-interface TodoDetailProps {
-  todoId: string;
+interface TaskDetailProps {
+  taskId: string;
   onClose: () => void;
   initialShowChat?: boolean;
 }
 
-export function TodoDetail({ todoId, onClose, initialShowChat }: TodoDetailProps) {
-  const { updateTodo } = useTodoStore();
-  const [todo, setTodo] = useState<any>(null);
+export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps) {
+  const { updateTask } = useTaskStore();
+  const [task, setTask] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -38,7 +38,7 @@ export function TodoDetail({ todoId, onClose, initialShowChat }: TodoDetailProps
   const [graphView, setGraphView] = useState(false);
   const [fileRefreshKey, setFileRefreshKey] = useState(0);
   const [showChat, setShowChat] = useState(initialShowChat ?? false);
-  const t = useTranslations('todos');
+  const t = useTranslations('tasks');
   const tc = useTranslations('chat');
 
   useEffect(() => {
@@ -48,23 +48,23 @@ export function TodoDetail({ todoId, onClose, initialShowChat }: TodoDetailProps
   useEffect(() => {
     setIsLoading(true);
     api
-      .get(`/todos/${todoId}`)
+      .get(`/tasks/${taskId}`)
       .then(({ data }) => {
-        setTodo(data);
+        setTask(data);
         setTitle(data.title);
         setDescription(data.description || '');
         setStatus(data.status);
         setPriority(data.priority);
         setDueDate(data.dueDate ? data.dueDate.slice(0, 10) : '');
       })
-      .catch((e) => console.error('Failed to load todo:', e))
+      .catch((e) => console.error('Failed to load task:', e))
       .finally(() => setIsLoading(false));
-  }, [todoId]);
+  }, [taskId]);
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await updateTodo(todoId, {
+      await updateTask(taskId, {
         title,
         description: description || undefined,
         status,
@@ -72,16 +72,16 @@ export function TodoDetail({ todoId, onClose, initialShowChat }: TodoDetailProps
         dueDate: dueDate || undefined,
       });
       // Refetch to get updated data
-      const { data } = await api.get(`/todos/${todoId}`);
-      setTodo(data);
+      const { data } = await api.get(`/tasks/${taskId}`);
+      setTask(data);
     } catch (error) {
-      console.error('Failed to update todo:', error);
+      console.error('Failed to update task:', error);
     } finally {
       setIsSaving(false);
     }
   };
 
-  if (isLoading || !todo) {
+  if (isLoading || !task) {
     return (
       <div className="flex h-full w-full items-center justify-center border-l border-border bg-[#1A1A1A]">
         <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -92,7 +92,7 @@ export function TodoDetail({ todoId, onClose, initialShowChat }: TodoDetailProps
   if (showChat) {
     return (
       <div className="flex h-full w-full bg-[#0F0F0F]">
-        <ChatPanel todoId={todoId} onClose={() => setShowChat(false)} />
+        <ChatPanel taskId={taskId} onClose={() => setShowChat(false)} />
       </div>
     );
   }
@@ -189,11 +189,11 @@ export function TodoDetail({ todoId, onClose, initialShowChat }: TodoDetailProps
             <div className="flex items-center gap-2 h-8">
               <Avatar className="h-5 w-5">
                 <AvatarFallback className="text-[8px] bg-secondary">
-                  {todo.assignee?.name?.charAt(0).toUpperCase() || '?'}
+                  {task.assignee?.name?.charAt(0).toUpperCase() || '?'}
                 </AvatarFallback>
               </Avatar>
               <span className="text-xs text-foreground truncate">
-                {todo.assignee?.name || t('unassigned')}
+                {task.assignee?.name || t('unassigned')}
               </span>
             </div>
           </div>
@@ -206,14 +206,14 @@ export function TodoDetail({ todoId, onClose, initialShowChat }: TodoDetailProps
         </Button>
 
         {/* Thread Chain */}
-        {todo.threadLinks?.length > 0 && (
+        {task.threadLinks?.length > 0 && (
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Link2 className="h-3.5 w-3.5" />
-                {t('threadChain')} ({todo.threadLinks.length})
+                {t('threadChain')} ({task.threadLinks.length})
               </div>
-              {todo.threadLinks.length >= 2 && (
+              {task.threadLinks.length >= 2 && (
                 <div className="flex gap-0.5">
                   <button
                     onClick={() => setGraphView(false)}
@@ -238,10 +238,10 @@ export function TodoDetail({ todoId, onClose, initialShowChat }: TodoDetailProps
             </div>
             {graphView ? (
               <div className="h-64 rounded-lg border border-border overflow-hidden">
-                <ThreadGraph links={todo.threadLinks} creator={todo.creator} />
+                <ThreadGraph links={task.threadLinks} creator={task.creator} />
               </div>
             ) : (
-              <ThreadChain links={todo.threadLinks} creator={todo.creator} />
+              <ThreadChain links={task.threadLinks} creator={task.creator} />
             )}
           </div>
         )}
@@ -252,9 +252,9 @@ export function TodoDetail({ todoId, onClose, initialShowChat }: TodoDetailProps
             <Paperclip className="h-3.5 w-3.5" />
             {t('attachments')}
           </div>
-          <FileList todoId={todoId} refreshKey={fileRefreshKey} />
+          <FileList taskId={taskId} refreshKey={fileRefreshKey} />
           <FileUpload
-            todoId={todoId}
+            taskId={taskId}
             onUploadComplete={() => setFileRefreshKey((k) => k + 1)}
           />
         </div>

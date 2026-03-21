@@ -76,7 +76,7 @@ export default function PrivacyPage() {
                 <InfoTable
                   rows={[
                     { label: '워크스페이스 정보', desc: '워크스페이스 이름, 슬러그(URL 식별자), 멤버 관계' },
-                    { label: '태스크(Todo) 데이터', desc: '제목, 내용, 상태, 우선순위, 마감일, 담당자 정보' },
+                    { label: '태스크(Task) 데이터', desc: '제목, 내용, 상태, 우선순위, 마감일, 담당자 정보' },
                     { label: '실(Thread) 연결 정보', desc: '태스크 위임 체인, 연결 상태, 처리 이력' },
                     { label: '파일 업로드', desc: '태스크 또는 스레드에 첨부된 파일(최대 10MB), 파일명, 크기, MIME 타입' },
                     { label: '활동 로그', desc: '서비스 내 주요 액션 이력(태스크 생성, 상태 변경, 연결 등)' },

@@ -12,7 +12,7 @@ interface InviteInfo {
   sharedSpaceName: string;
   sharedSpaceDescription?: string;
   participantCount: number;
-  todoCount: number;
+  taskCount: number;
   workspaceSlug: string;
   expiresAt: string;
 }
@@ -99,7 +99,7 @@ export default function SharedSpaceJoinPage() {
         )}
         <div className="flex items-center justify-center gap-4 mt-3 text-xs text-muted-foreground">
           <span>{inviteInfo.participantCount} {t('workspaces')}</span>
-          <span>{inviteInfo.todoCount} {t('todos')}</span>
+          <span>{inviteInfo.taskCount} {t('tasks')}</span>
         </div>
         <p className="text-xs text-muted-foreground mt-2">
           Your workspace ({inviteInfo.workspaceSlug}) has been invited to join this shared space.

@@ -20,7 +20,7 @@ const mockedGetSocket = vi.mocked(getSocket);
 
 const mockNotifications = [
   { id: 'n1', type: 'THREAD_RECEIVED', title: 'New thread', read: false, createdAt: '2026-01-01T00:00:00Z' },
-  { id: 'n2', type: 'TODO_ASSIGNED', title: 'Assigned to you', read: true, createdAt: '2026-01-02T00:00:00Z' },
+  { id: 'n2', type: 'TASK_ASSIGNED', title: 'Assigned to you', read: true, createdAt: '2026-01-02T00:00:00Z' },
   { id: 'n3', type: 'THREAD_SNAPPED', title: 'Thread snapped back', read: false, createdAt: '2026-01-03T00:00:00Z' },
 ];
 
@@ -129,7 +129,7 @@ describe('notification-store', () => {
 
       // Extract the callback and invoke it
       const callback = mockOn.mock.calls[0][1];
-      const newNotif = { id: 'n4', type: 'TODO_COMPLETED', title: 'Done', read: false, createdAt: '2026-01-04T00:00:00Z' };
+      const newNotif = { id: 'n4', type: 'TASK_COMPLETED', title: 'Done', read: false, createdAt: '2026-01-04T00:00:00Z' };
       callback(newNotif);
 
       const state = useNotificationStore.getState();

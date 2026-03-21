@@ -4,24 +4,24 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ListTodo } from 'lucide-react';
 
-interface TodoUser {
+interface TaskUser {
   id: string;
   name: string;
   avatarUrl?: string;
 }
 
-interface TeamTodo {
+interface TeamTask {
   id: string;
   title: string;
   status: string;
   priority: string;
-  assignee: TodoUser;
-  creator: TodoUser;
+  assignee: TaskUser;
+  creator: TaskUser;
   createdAt: string;
 }
 
-interface TeamTodoListProps {
-  todos: TeamTodo[];
+interface TeamTaskListProps {
+  tasks: TeamTask[];
   isLoading: boolean;
 }
 
@@ -40,7 +40,7 @@ const priorityLabels: Record<string, string> = {
   LOW: 'Low',
 };
 
-export function TeamTodoList({ todos, isLoading }: TeamTodoListProps) {
+export function TeamTaskList({ tasks, isLoading }: TeamTaskListProps) {
   if (isLoading) {
     return (
       <div className="flex justify-center py-6">
@@ -49,7 +49,7 @@ export function TeamTodoList({ todos, isLoading }: TeamTodoListProps) {
     );
   }
 
-  if (todos.length === 0) {
+  if (tasks.length === 0) {
     return (
       <div className="flex flex-col items-center py-6 text-muted-foreground">
         <ListTodo className="h-6 w-6 mb-2 opacity-40" />
@@ -60,33 +60,33 @@ export function TeamTodoList({ todos, isLoading }: TeamTodoListProps) {
 
   return (
     <div className="space-y-1">
-      {todos.map((todo) => (
+      {tasks.map((task) => (
         <div
-          key={todo.id}
+          key={task.id}
           className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-accent/20 transition-colors"
         >
           <div className="flex-1 min-w-0">
-            <p className="text-sm truncate">{todo.title}</p>
+            <p className="text-sm truncate">{task.title}</p>
             <div className="flex items-center gap-2 mt-0.5">
               <Badge
                 variant="secondary"
-                className={`text-[9px] px-1.5 py-0 ${statusColors[todo.status] || ''}`}
+                className={`text-[9px] px-1.5 py-0 ${statusColors[task.status] || ''}`}
               >
-                {todo.status.replace('_', ' ')}
+                {task.status.replace('_', ' ')}
               </Badge>
               <span className="text-[10px] text-muted-foreground">
-                {priorityLabels[todo.priority] || todo.priority}
+                {priorityLabels[task.priority] || task.priority}
               </span>
             </div>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             <Avatar className="h-5 w-5">
               <AvatarFallback className="text-[8px] bg-secondary">
-                {todo.assignee.name.charAt(0).toUpperCase()}
+                {task.assignee.name.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <span className="text-[10px] text-muted-foreground truncate max-w-[80px]">
-              {todo.assignee.name}
+              {task.assignee.name}
             </span>
           </div>
         </div>

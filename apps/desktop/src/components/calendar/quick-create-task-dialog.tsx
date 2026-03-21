@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { useTodoStore } from '@/stores/todo-store';
+import { useTaskStore } from '@/stores/task-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 import {
   Dialog,
@@ -14,22 +14,22 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-interface QuickCreateTodoDialogProps {
+interface QuickCreateTaskDialogProps {
   date: Date;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreated?: () => void;
 }
 
-export function QuickCreateTodoDialog({
+export function QuickCreateTaskDialog({
   date,
   open,
   onOpenChange,
   onCreated,
-}: QuickCreateTodoDialogProps) {
+}: QuickCreateTaskDialogProps) {
   const [title, setTitle] = useState('');
   const [isCreating, setIsCreating] = useState(false);
-  const { createTodo } = useTodoStore();
+  const { createTask } = useTaskStore();
   const { currentWorkspace } = useWorkspaceStore();
   const t = useTranslations('calendar');
 
@@ -37,7 +37,7 @@ export function QuickCreateTodoDialog({
     if (!title.trim() || !currentWorkspace) return;
     setIsCreating(true);
     try {
-      await createTodo(currentWorkspace.id, title, undefined, undefined, date.toISOString().slice(0, 10));
+      await createTask(currentWorkspace.id, title, undefined, undefined, date.toISOString().slice(0, 10));
       setTitle('');
       onOpenChange(false);
       onCreated?.();

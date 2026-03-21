@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils';
 interface MemberSummary {
   user: { id: string; name: string; email: string; avatarUrl?: string };
   role: string;
-  assignedTodos: Array<{
+  assignedTasks: Array<{
     id: string;
     title: string;
     status: string;
@@ -32,7 +32,7 @@ interface MemberSummary {
     status: string;
     fromUser: { id: string; name: string };
     toUser: { id: string; name: string };
-    todo: { id: string; title: string };
+    task: { id: string; title: string };
   }>;
   recentActivity: Array<{
     id: string;
@@ -43,8 +43,8 @@ interface MemberSummary {
     createdAt: string;
   }>;
   stats: {
-    totalTodos: number;
-    completedTodos: number;
+    totalTasks: number;
+    completedTasks: number;
     activeThreads: number;
   };
 }
@@ -99,8 +99,8 @@ export function MemberDetailPanel({ userId, onClose }: MemberDetailPanelProps) {
   }
 
   const completionRate =
-    data.stats.totalTodos > 0
-      ? Math.round((data.stats.completedTodos / data.stats.totalTodos) * 100)
+    data.stats.totalTasks > 0
+      ? Math.round((data.stats.completedTasks / data.stats.totalTasks) * 100)
       : 0;
 
   return (
@@ -136,7 +136,7 @@ export function MemberDetailPanel({ userId, onClose }: MemberDetailPanelProps) {
         {/* Stats */}
         <div className="grid grid-cols-3 gap-2">
           <div className="rounded-lg bg-accent/30 p-2.5 text-center">
-            <p className="text-lg font-bold">{data.stats.totalTodos}</p>
+            <p className="text-lg font-bold">{data.stats.totalTasks}</p>
             <p className="text-[10px] text-muted-foreground">
               {t('totalTasks') || 'Tasks'}
             </p>
@@ -161,29 +161,29 @@ export function MemberDetailPanel({ userId, onClose }: MemberDetailPanelProps) {
             <ListTodo className="h-3.5 w-3.5" />
             {t('assignedTasks') || 'Assigned Tasks'}
           </div>
-          {data.assignedTodos.length === 0 ? (
+          {data.assignedTasks.length === 0 ? (
             <p className="text-xs text-muted-foreground/60 pl-5">
               {t('noTasks') || 'No tasks assigned'}
             </p>
           ) : (
             <div className="space-y-1">
-              {data.assignedTodos.map((todo) => (
+              {data.assignedTasks.map((task) => (
                 <div
-                  key={todo.id}
+                  key={task.id}
                   className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-accent/30 transition-colors"
                 >
                   <CheckCircle2
                     className={cn(
                       'h-3.5 w-3.5 shrink-0',
-                      todo.status === 'COMPLETED' ? 'text-green-400' : 'text-muted-foreground',
+                      task.status === 'COMPLETED' ? 'text-green-400' : 'text-muted-foreground',
                     )}
                   />
-                  <span className="text-xs truncate flex-1">{todo.title}</span>
+                  <span className="text-xs truncate flex-1">{task.title}</span>
                   <Badge
                     variant="secondary"
-                    className={cn('text-[9px] px-1.5 border-0', STATUS_COLORS[todo.status])}
+                    className={cn('text-[9px] px-1.5 border-0', STATUS_COLORS[task.status])}
                   >
-                    {todo.status.replace('_', ' ')}
+                    {task.status.replace('_', ' ')}
                   </Badge>
                 </div>
               ))}
@@ -223,7 +223,7 @@ export function MemberDetailPanel({ userId, onClose }: MemberDetailPanelProps) {
                     </Badge>
                   </div>
                   <p className="text-[10px] text-muted-foreground/70 truncate">
-                    {thread.todo.title}
+                    {thread.task.title}
                   </p>
                 </div>
               ))}

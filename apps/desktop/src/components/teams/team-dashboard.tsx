@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api-client';
 import { TeamMemberStats } from './team-member-stats';
-import { TeamTodoList } from './team-todo-list';
+import { TeamTaskList } from './team-task-list';
 import { Badge } from '@/components/ui/badge';
 import { Activity, CheckCircle2, Clock, ListTodo } from 'lucide-react';
 
@@ -30,7 +30,7 @@ interface Dashboard {
   };
 }
 
-interface TeamTodo {
+interface TeamTask {
   id: string;
   title: string;
   status: string;
@@ -47,24 +47,24 @@ interface TeamDashboardProps {
 
 export function TeamDashboard({ teamId, workspaceId }: TeamDashboardProps) {
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
-  const [todos, setTodos] = useState<TeamTodo[]>([]);
+  const [tasks, setTasks] = useState<TeamTask[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [todosLoading, setTodosLoading] = useState(true);
+  const [tasksLoading, setTasksLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [dashRes, todosRes] = await Promise.all([
+        const [dashRes, tasksRes] = await Promise.all([
           api.get(`/workspaces/${workspaceId}/teams/${teamId}/dashboard`),
-          api.get(`/workspaces/${workspaceId}/teams/${teamId}/todos`),
+          api.get(`/workspaces/${workspaceId}/teams/${teamId}/tasks`),
         ]);
         setDashboard(dashRes.data);
-        setTodos(todosRes.data);
+        setTasks(tasksRes.data);
       } catch (error) {
         console.error('Failed to load team data:', error);
       } finally {
         setIsLoading(false);
-        setTodosLoading(false);
+        setTasksLoading(false);
       }
     };
 
@@ -140,7 +140,7 @@ export function TeamDashboard({ teamId, workspaceId }: TeamDashboardProps) {
         </div>
       </div>
 
-      {/* Team todos */}
+      {/* Team tasks */}
       <div>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
@@ -150,11 +150,11 @@ export function TeamDashboard({ teamId, workspaceId }: TeamDashboardProps) {
             </h3>
           </div>
           <Badge variant="secondary" className="text-[10px]">
-            {todos.length}
+            {tasks.length}
           </Badge>
         </div>
         <div className="rounded-lg border border-border bg-card">
-          <TeamTodoList todos={todos} isLoading={todosLoading} />
+          <TeamTaskList tasks={tasks} isLoading={tasksLoading} />
         </div>
       </div>
     </div>

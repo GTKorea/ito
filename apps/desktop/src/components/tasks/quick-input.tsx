@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useTodoStore } from '@/stores/todo-store';
+import { useTaskStore } from '@/stores/task-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 import { api } from '@/lib/api-client';
 import { parseQuickInput } from '@/lib/quick-input-parser';
@@ -31,7 +31,7 @@ export function QuickInput() {
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { createTodo, connectChain, fetchCategorizedTodos } = useTodoStore();
+  const { createTask, connectChain, fetchCategorizedTasks } = useTaskStore();
   const { currentWorkspace } = useWorkspaceStore();
 
   const searchUsers = useCallback(
@@ -154,7 +154,7 @@ export function QuickInput() {
 
     setIsSubmitting(true);
     try {
-      const todo = await createTodo(currentWorkspace.id, parsed.title);
+      const task = await createTask(currentWorkspace.id, parsed.title);
 
       if (parsed.chain.length > 0) {
         // Resolve display names to user IDs
@@ -176,12 +176,12 @@ export function QuickInput() {
         }
 
         if (userIds.length > 0) {
-          await connectChain(todo.id, userIds);
+          await connectChain(task.id, userIds);
         }
       }
 
-      // Refresh the todo list
-      await fetchCategorizedTodos(currentWorkspace.id);
+      // Refresh the task list
+      await fetchCategorizedTasks(currentWorkspace.id);
       setInput('');
       resolvedUsersRef.current.clear();
     } catch {

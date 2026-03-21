@@ -10,7 +10,7 @@ import { X, Send, MessageCircle, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ChatPanelProps {
-  todoId: string;
+  taskId: string;
   onClose: () => void;
 }
 
@@ -57,11 +57,11 @@ function isSameGroup(
   return diff < 2 * 60 * 1000; // 2 minutes
 }
 
-export function ChatPanel({ todoId, onClose }: ChatPanelProps) {
+export function ChatPanel({ taskId, onClose }: ChatPanelProps) {
   const {
-    messagesByTodo,
-    loadingByTodo,
-    hasMoreByTodo,
+    messagesByTask,
+    loadingByTask,
+    hasMoreByTask,
     openChat,
     closeChat,
     sendMessage,
@@ -75,14 +75,14 @@ export function ChatPanel({ todoId, onClose }: ChatPanelProps) {
   const initialScrollDone = useRef(false);
   const t = useTranslations('chat');
 
-  const messages = messagesByTodo[todoId] || [];
-  const isLoading = loadingByTodo[todoId] || false;
-  const hasMore = hasMoreByTodo[todoId] || false;
+  const messages = messagesByTask[taskId] || [];
+  const isLoading = loadingByTask[taskId] || false;
+  const hasMore = hasMoreByTask[taskId] || false;
 
   useEffect(() => {
-    openChat(todoId);
+    openChat(taskId);
     return () => closeChat();
-  }, [todoId, openChat, closeChat]);
+  }, [taskId, openChat, closeChat]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -110,9 +110,9 @@ export function ChatPanel({ todoId, onClose }: ChatPanelProps) {
     if (!container || isLoading || !hasMore) return;
 
     if (container.scrollTop < 50) {
-      fetchMoreMessages(todoId);
+      fetchMoreMessages(taskId);
     }
-  }, [todoId, isLoading, hasMore, fetchMoreMessages]);
+  }, [taskId, isLoading, hasMore, fetchMoreMessages]);
 
   const handleSend = async () => {
     const content = input.trim();
@@ -121,7 +121,7 @@ export function ChatPanel({ todoId, onClose }: ChatPanelProps) {
     setSending(true);
     setInput('');
     try {
-      await sendMessage(todoId, content);
+      await sendMessage(taskId, content);
     } finally {
       setSending(false);
     }
@@ -175,7 +175,7 @@ export function ChatPanel({ todoId, onClose }: ChatPanelProps) {
                   <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                 ) : (
                   <button
-                    onClick={() => fetchMoreMessages(todoId)}
+                    onClick={() => fetchMoreMessages(taskId)}
                     className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {t('loadMore')}

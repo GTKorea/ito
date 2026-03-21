@@ -32,10 +32,10 @@ export class FilesController {
   upload(
     @UploadedFile() file: Express.Multer.File,
     @CurrentUser('id') userId: string,
-    @Body('todoId') todoId?: string,
+    @Body('taskId') taskId?: string,
     @Body('threadLinkId') threadLinkId?: string,
   ) {
-    return this.filesService.upload(file, userId, todoId, threadLinkId);
+    return this.filesService.upload(file, userId, taskId, threadLinkId);
   }
 
   @Get(':id')
@@ -52,10 +52,10 @@ export class FilesController {
     res.download(filepath, file.filename);
   }
 
-  @Get('todo/:todoId')
-  @ApiOperation({ summary: 'Get files for a todo' })
-  findByTodo(@Param('todoId') todoId: string) {
-    return this.filesService.findByTodo(todoId);
+  @Get('task/:taskId')
+  @ApiOperation({ summary: 'Get files for a task' })
+  findByTask(@Param('taskId') taskId: string) {
+    return this.filesService.findByTask(taskId);
   }
 
   @Delete(':id')

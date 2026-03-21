@@ -3,14 +3,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useTodoStore } from '@/stores/todo-store';
+import { useTaskStore } from '@/stores/task-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 import { useOnboardingStore } from '@/stores/onboarding-store';
 import { OnboardingWizard } from '@/components/onboarding/onboarding-wizard';
 
-import { TodoList } from '@/components/todos/todo-list';
-import { CreateTodo } from '@/components/todos/create-todo';
-import { TodoDetail } from '@/components/todos/todo-detail';
+import { TaskList } from '@/components/tasks/task-list';
+import { CreateTask } from '@/components/tasks/create-task';
+import { TaskDetail } from '@/components/tasks/task-detail';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,7 +21,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Plus, Building2, ArrowUpDown } from 'lucide-react';
-import { QuickInput } from '@/components/todos/quick-input';
+import { QuickInput } from '@/components/tasks/quick-input';
 import { cn } from '@/lib/utils';
 
 function CreateWorkspacePrompt() {
@@ -84,22 +84,22 @@ function CreateWorkspacePrompt() {
 
 export default function WorkspacePage() {
   const { currentWorkspace, isLoading: wsLoading } = useWorkspaceStore();
-  const { actionRequired, waiting, completed, isLoading, fetchCategorizedTodos } = useTodoStore();
+  const { actionRequired, waiting, completed, isLoading, fetchCategorizedTasks } = useTaskStore();
   const { checkAndStartWizard } = useOnboardingStore();
   const [showCreate, setShowCreate] = useState(false);
-  const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [openWithChat, setOpenWithChat] = useState(false);
   const [sortBy, setSortBy] = useState<'priority' | 'dueDate'>('priority');
   const searchParams = useSearchParams();
   const t = useTranslations('workspace');
-  const tt = useTranslations('todos');
+  const tt = useTranslations('tasks');
 
   useEffect(() => {
     if (currentWorkspace) {
-      fetchCategorizedTodos(currentWorkspace.id);
+      fetchCategorizedTasks(currentWorkspace.id);
     }
-  }, [currentWorkspace, fetchCategorizedTodos]);
+  }, [currentWorkspace, fetchCategorizedTasks]);
 
   // Trigger onboarding wizard on first workspace visit
   useEffect(() => {
@@ -108,25 +108,25 @@ export default function WorkspacePage() {
     }
   }, [currentWorkspace, checkAndStartWizard]);
 
-  // Auto-select todo from query param (e.g. from notification click)
+  // Auto-select task from query param (e.g. from notification click)
   useEffect(() => {
-    const todoId = searchParams.get('todo');
-    if (todoId) {
-      setSelectedTodoId(todoId);
+    const taskId = searchParams.get('task');
+    if (taskId) {
+      setSelectedTaskId(taskId);
     }
   }, [searchParams]);
 
-  const handleSelectTodo = (id: string, openChat?: boolean) => {
-    setSelectedTodoId(id);
+  const handleSelectTask = (id: string, openChat?: boolean) => {
+    setSelectedTaskId(id);
     setDrawerVisible(true);
     setOpenWithChat(!!openChat);
   };
 
-  const handleCloseTodo = () => {
+  const handleCloseTask = () => {
     setDrawerVisible(false);
     setOpenWithChat(false);
     // Wait for slide-out animation to finish before unmounting
-    setTimeout(() => setSelectedTodoId(null), 200);
+    setTimeout(() => setSelectedTaskId(null), 200);
   };
 
   const sortFn = useMemo(() => {
@@ -198,7 +198,7 @@ export default function WorkspacePage() {
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-2">
         {showCreate && (
-          <CreateTodo
+          <CreateTask
             workspaceId={currentWorkspace.id}
             onClose={() => setShowCreate(false)}
           />
@@ -209,11 +209,11 @@ export default function WorkspacePage() {
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>
         ) : (
-          <TodoList
+          <TaskList
             actionRequired={sortedActionRequired}
             waiting={sortedWaiting}
             completed={sortedCompleted}
-            onSelectTodo={handleSelectTodo}
+            onSelectTask={handleSelectTask}
           />
         )}
       </div>
@@ -222,28 +222,28 @@ export default function WorkspacePage() {
       <QuickInput />
 
       {/* Backdrop */}
-      {selectedTodoId && (
+      {selectedTaskId && (
         <div
           className={cn(
             'fixed inset-0 z-40 transition-opacity duration-200',
             drawerVisible ? 'bg-black/30 opacity-100' : 'opacity-0 pointer-events-none',
           )}
-          onClick={handleCloseTodo}
+          onClick={handleCloseTask}
         />
       )}
 
-      {/* Todo Detail Slide-over */}
+      {/* Task Detail Slide-over */}
       <div
         className={cn(
           'fixed right-0 top-0 z-50 h-full w-full md:w-[420px] transition-transform duration-200 ease-out',
           drawerVisible ? 'translate-x-0' : 'translate-x-full',
-          !selectedTodoId && 'pointer-events-none',
+          !selectedTaskId && 'pointer-events-none',
         )}
       >
-        {selectedTodoId && (
-          <TodoDetail
-            todoId={selectedTodoId}
-            onClose={handleCloseTodo}
+        {selectedTaskId && (
+          <TaskDetail
+            taskId={selectedTaskId}
+            onClose={handleCloseTask}
             initialShowChat={openWithChat}
           />
         )}

@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { ActivityService } from '../activity/activity.service';
-import { CreateTodoDto, UpdateTodoDto } from './dto/create-todo.dto';
+import { CreateTaskDto, UpdateTaskDto } from './dto/create-task.dto';
 
-/** Shared include for todo queries with full thread link details */
-const TODO_INCLUDE_FULL = {
+/** Shared include for task queries with full thread link details */
+const TASK_INCLUDE_FULL = {
   creator: { select: { id: true, name: true, avatarUrl: true } },
   assignee: { select: { id: true, name: true, avatarUrl: true } },
   threadLinks: {
@@ -18,14 +18,14 @@ const TODO_INCLUDE_FULL = {
 } as const;
 
 @Injectable()
-export class TodosService {
+export class TasksService {
   constructor(
     private prisma: PrismaService,
     private activityService: ActivityService,
   ) {}
 
-  async create(dto: CreateTodoDto, workspaceId: string, userId: string) {
-    const todo = await this.prisma.todo.create({
+  async create(dto: CreateTaskDto, workspaceId: string, userId: string) {
+    const task = await this.prisma.task.create({
       data: {
         title: dto.title,
         description: dto.description,
@@ -47,12 +47,12 @@ export class TodosService {
       workspaceId,
       userId,
       action: 'CREATED',
-      entityType: 'Todo',
-      entityId: todo.id,
-      metadata: { title: todo.title },
+      entityType: 'Task',
+      entityId: task.id,
+      metadata: { title: task.title },
     });
 
-    return todo;
+    return task;
   }
 
   async findAllInWorkspace(
@@ -87,15 +87,15 @@ export class TodosService {
       where.teamId = filter.teamId;
     }
 
-    return this.prisma.todo.findMany({
+    return this.prisma.task.findMany({
       where,
-      include: TODO_INCLUDE_FULL,
+      include: TASK_INCLUDE_FULL,
       orderBy: [{ priority: 'asc' }, { createdAt: 'desc' }],
     });
   }
 
   async findById(id: string) {
-    const todo = await this.prisma.todo.findUnique({
+    const task = await this.prisma.task.findUnique({
       where: { id },
       include: {
         creator: { select: { id: true, name: true, avatarUrl: true } },
@@ -110,24 +110,24 @@ export class TodosService {
         files: true,
       },
     });
-    if (!todo) throw new NotFoundException('Todo not found');
-    return todo;
+    if (!task) throw new NotFoundException('Task not found');
+    return task;
   }
 
-  async update(id: string, dto: UpdateTodoDto, userId: string) {
-    const todo = await this.prisma.todo.findUnique({ where: { id } });
-    if (!todo) throw new NotFoundException('Todo not found');
-    if (todo.assigneeId !== userId && todo.creatorId !== userId) {
-      throw new ForbiddenException('Not authorized to update this todo');
+  async update(id: string, dto: UpdateTaskDto, userId: string) {
+    const task = await this.prisma.task.findUnique({ where: { id } });
+    if (!task) throw new NotFoundException('Task not found');
+    if (task.assigneeId !== userId && task.creatorId !== userId) {
+      throw new ForbiddenException('Not authorized to update this task');
     }
 
     // Only the current assignee can change the status
-    if (dto.status && todo.assigneeId !== userId) {
+    if (dto.status && task.assigneeId !== userId) {
       throw new ForbiddenException('Only the current assignee can change task status');
     }
 
     // Cannot revert a completed task
-    if (todo.status === 'COMPLETED' && dto.status && dto.status !== 'COMPLETED') {
+    if (task.status === 'COMPLETED' && dto.status && dto.status !== 'COMPLETED') {
       throw new ForbiddenException('Cannot revert a completed task');
     }
 
@@ -135,7 +135,7 @@ export class TodosService {
     if (dto.dueDate) data.dueDate = new Date(dto.dueDate);
     if (dto.status === 'COMPLETED') data.completedAt = new Date();
 
-    const updated = await this.prisma.todo.update({
+    const updated = await this.prisma.task.update({
       where: { id },
       data,
       include: {
@@ -146,10 +146,10 @@ export class TodosService {
     });
 
     await this.activityService.log({
-      workspaceId: todo.workspaceId,
+      workspaceId: task.workspaceId,
       userId,
       action: 'UPDATED',
-      entityType: 'Todo',
+      entityType: 'Task',
       entityId: id,
       metadata: { changes: dto },
     });
@@ -158,7 +158,7 @@ export class TodosService {
   }
 
   async findCategorized(workspaceId: string, userId: string) {
-    const allTodos = await this.prisma.todo.findMany({
+    const allTasks = await this.prisma.task.findMany({
       where: {
         workspaceId,
         OR: [
@@ -168,41 +168,41 @@ export class TodosService {
           { threadLinks: { some: { toUserId: userId } } },
         ],
       },
-      include: TODO_INCLUDE_FULL,
+      include: TASK_INCLUDE_FULL,
       orderBy: [{ priority: 'asc' }, { createdAt: 'desc' }],
     });
 
-    const actionRequired: typeof allTodos = [];
-    const waiting: typeof allTodos = [];
-    const completed: typeof allTodos = [];
+    const actionRequired: typeof allTasks = [];
+    const waiting: typeof allTasks = [];
+    const completed: typeof allTasks = [];
 
-    for (const todo of allTodos) {
-      const isActive = !['COMPLETED', 'CANCELLED'].includes(todo.status);
-      const isAssignee = todo.assigneeId === userId;
+    for (const task of allTasks) {
+      const isActive = !['COMPLETED', 'CANCELLED'].includes(task.status);
+      const isAssignee = task.assigneeId === userId;
 
       if (isActive && isAssignee) {
-        actionRequired.push(todo);
+        actionRequired.push(task);
       } else if (isActive && !isAssignee) {
-        const isCreator = todo.creatorId === userId;
-        const hasForwardedLink = todo.threadLinks.some(
+        const isCreator = task.creatorId === userId;
+        const hasForwardedLink = task.threadLinks.some(
           (l) =>
             (l.fromUserId === userId || l.toUserId === userId) &&
             l.status === 'FORWARDED',
         );
         if (isCreator || hasForwardedLink) {
-          waiting.push(todo);
+          waiting.push(task);
         } else {
-          completed.push(todo);
+          completed.push(task);
         }
       } else {
-        completed.push(todo);
+        completed.push(task);
       }
     }
 
     return { actionRequired, waiting, completed };
   }
 
-  async getCalendarTodos(
+  async getCalendarTasks(
     workspaceId: string,
     start: string,
     end: string,
@@ -222,7 +222,7 @@ export class TodosService {
     };
 
     const [completed, upcoming] = await Promise.all([
-      this.prisma.todo.findMany({
+      this.prisma.task.findMany({
         where: {
           ...baseWhere,
           status: 'COMPLETED',
@@ -231,7 +231,7 @@ export class TodosService {
         include,
         orderBy: { completedAt: 'asc' },
       }),
-      this.prisma.todo.findMany({
+      this.prisma.task.findMany({
         where: {
           ...baseWhere,
           dueDate: { gte: startDate, lte: endDate },
@@ -246,21 +246,21 @@ export class TodosService {
   }
 
   async delete(id: string, userId: string) {
-    const todo = await this.prisma.todo.findUnique({ where: { id } });
-    if (!todo) throw new NotFoundException('Todo not found');
-    if (todo.creatorId !== userId) {
-      throw new ForbiddenException('Only the creator can delete a todo');
+    const task = await this.prisma.task.findUnique({ where: { id } });
+    if (!task) throw new NotFoundException('Task not found');
+    if (task.creatorId !== userId) {
+      throw new ForbiddenException('Only the creator can delete a task');
     }
 
-    const deleted = await this.prisma.todo.delete({ where: { id } });
+    const deleted = await this.prisma.task.delete({ where: { id } });
 
     await this.activityService.log({
-      workspaceId: todo.workspaceId,
+      workspaceId: task.workspaceId,
       userId,
       action: 'DELETED',
-      entityType: 'Todo',
+      entityType: 'Task',
       entityId: id,
-      metadata: { title: todo.title },
+      metadata: { title: task.title },
     });
 
     return deleted;

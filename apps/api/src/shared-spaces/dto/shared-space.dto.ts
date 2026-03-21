@@ -37,7 +37,7 @@ export class InviteWorkspaceDto {
   workspaceSlug: string;
 }
 
-export class CreateSharedSpaceTodoDto {
+export class CreateSharedSpaceTaskDto {
   @ApiProperty({ example: 'Review design mockups' })
   @IsString()
   title: string;

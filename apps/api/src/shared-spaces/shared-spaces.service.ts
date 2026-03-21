@@ -12,7 +12,7 @@ import {
   CreateSharedSpaceDto,
   UpdateSharedSpaceDto,
   InviteWorkspaceDto,
-  CreateSharedSpaceTodoDto,
+  CreateSharedSpaceTaskDto,
 } from './dto/shared-space.dto';
 
 @Injectable()
@@ -53,7 +53,7 @@ export class SharedSpacesService {
             workspace: { select: { id: true, name: true, slug: true, avatarUrl: true } },
           },
         },
-        _count: { select: { todos: true, participants: true } },
+        _count: { select: { tasks: true, participants: true } },
       },
     });
 
@@ -74,7 +74,7 @@ export class SharedSpacesService {
             workspace: { select: { id: true, name: true, slug: true, avatarUrl: true } },
           },
         },
-        _count: { select: { todos: true, participants: true } },
+        _count: { select: { tasks: true, participants: true } },
       },
       orderBy: { updatedAt: 'desc' },
     });
@@ -101,7 +101,7 @@ export class SharedSpacesService {
             },
           },
         },
-        _count: { select: { todos: true, participants: true } },
+        _count: { select: { tasks: true, participants: true } },
       },
     });
 
@@ -138,7 +138,7 @@ export class SharedSpacesService {
             workspace: { select: { id: true, name: true, slug: true, avatarUrl: true } },
           },
         },
-        _count: { select: { todos: true, participants: true } },
+        _count: { select: { tasks: true, participants: true } },
       },
     });
   }
@@ -292,7 +292,7 @@ export class SharedSpacesService {
             id: true,
             name: true,
             description: true,
-            _count: { select: { participants: true, todos: true } },
+            _count: { select: { participants: true, tasks: true } },
           },
         },
       },
@@ -304,7 +304,7 @@ export class SharedSpacesService {
       sharedSpaceName: invite.sharedSpace.name,
       sharedSpaceDescription: invite.sharedSpace.description,
       participantCount: invite.sharedSpace._count.participants,
-      todoCount: invite.sharedSpace._count.todos,
+      taskCount: invite.sharedSpace._count.tasks,
       workspaceSlug: invite.workspaceSlug,
       expiresAt: invite.expiresAt,
     };
@@ -340,12 +340,12 @@ export class SharedSpacesService {
   }
 
   /**
-   * Get todos in a shared space.
+   * Get tasks in a shared space.
    */
-  async getTodos(sharedSpaceId: string, workspaceId: string) {
+  async getTasks(sharedSpaceId: string, workspaceId: string) {
     await this.requireParticipant(sharedSpaceId, workspaceId);
 
-    return this.prisma.todo.findMany({
+    return this.prisma.task.findMany({
       where: { sharedSpaceId },
       include: {
         creator: { select: { id: true, name: true, avatarUrl: true } },
@@ -364,17 +364,17 @@ export class SharedSpacesService {
   }
 
   /**
-   * Create a todo in shared space.
+   * Create a task in shared space.
    */
-  async createTodo(
+  async createTask(
     sharedSpaceId: string,
-    dto: CreateSharedSpaceTodoDto,
+    dto: CreateSharedSpaceTaskDto,
     userId: string,
     workspaceId: string,
   ) {
     await this.requireParticipant(sharedSpaceId, workspaceId);
 
-    const todo = await this.prisma.todo.create({
+    const task = await this.prisma.task.create({
       data: {
         title: dto.title,
         description: dto.description,
@@ -393,7 +393,7 @@ export class SharedSpacesService {
       },
     });
 
-    return todo;
+    return task;
   }
 
   // ──────────── Helpers ────────────

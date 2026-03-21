@@ -2,7 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WebClient } from '@slack/web-api';
 import { PrismaService } from '../common/prisma/prisma.service';
-import { TodosService } from '../todos/todos.service';
+import { TasksService } from '../tasks/tasks.service';
 import { SlackCommandDto } from './dto/slack-command.dto';
 import * as crypto from 'crypto';
 
@@ -30,7 +30,7 @@ export class SlackService implements OnModuleInit {
   constructor(
     private configService: ConfigService,
     private prisma: PrismaService,
-    private todosService: TodosService,
+    private tasksService: TasksService,
   ) {}
 
   onModuleInit() {
@@ -395,22 +395,22 @@ export class SlackService implements OnModuleInit {
     data?: any;
   }): string {
     const data = notification.data || {};
-    const todoTitle = data.todoTitle || notification.title;
+    const taskTitle = data.taskTitle || notification.title;
     const fromUser = data.fromUserName || 'Someone';
 
     switch (notification.type) {
       case 'THREAD_RECEIVED':
-        return `\u{1F9F5} ${fromUser}\uB2D8\uC774 '${todoTitle}' \uD0DC\uC2A4\uD06C\uB97C \uB118\uACBC\uC2B5\uB2C8\uB2E4`;
+        return `\u{1F9F5} ${fromUser}\uB2D8\uC774 '${taskTitle}' \uD0DC\uC2A4\uD06C\uB97C \uB118\uACBC\uC2B5\uB2C8\uB2E4`;
       case 'THREAD_SNAPPED':
-        return `\u{1F519} '${todoTitle}' \uD0DC\uC2A4\uD06C\uAC00 \uB418\uB3CC\uC544\uC654\uC2B5\uB2C8\uB2E4`;
+        return `\u{1F519} '${taskTitle}' \uD0DC\uC2A4\uD06C\uAC00 \uB418\uB3CC\uC544\uC654\uC2B5\uB2C8\uB2E4`;
       case 'THREAD_COMPLETED':
-        return `\u2705 '${todoTitle}' \uD0DC\uC2A4\uD06C\uC758 \uC2E4\uC774 \uC644\uB8CC\uB418\uC5C8\uC2B5\uB2C8\uB2E4`;
+        return `\u2705 '${taskTitle}' \uD0DC\uC2A4\uD06C\uC758 \uC2E4\uC774 \uC644\uB8CC\uB418\uC5C8\uC2B5\uB2C8\uB2E4`;
       case 'WORKSPACE_INVITE':
         return `\u{1F4E8} \uC6CC\uD06C\uC2A4\uD398\uC774\uC2A4 \uCD08\uB300\uAC00 \uB3C4\uCC29\uD588\uC2B5\uB2C8\uB2E4`;
-      case 'TODO_ASSIGNED':
-        return `\u{1F4CB} '${todoTitle}' \uD0DC\uC2A4\uD06C\uAC00 \uBC30\uC815\uB418\uC5C8\uC2B5\uB2C8\uB2E4`;
-      case 'TODO_COMPLETED':
-        return `\u2705 '${todoTitle}' \uD0DC\uC2A4\uD06C\uAC00 \uC644\uB8CC\uB418\uC5C8\uC2B5\uB2C8\uB2E4`;
+      case 'TASK_ASSIGNED':
+        return `\u{1F4CB} '${taskTitle}' \uD0DC\uC2A4\uD06C\uAC00 \uBC30\uC815\uB418\uC5C8\uC2B5\uB2C8\uB2E4`;
+      case 'TASK_COMPLETED':
+        return `\u2705 '${taskTitle}' \uD0DC\uC2A4\uD06C\uAC00 \uC644\uB8CC\uB418\uC5C8\uC2B5\uB2C8\uB2E4`;
       default:
         return notification.title;
     }
@@ -468,7 +468,7 @@ export class SlackService implements OnModuleInit {
     }
 
     try {
-      const todo = await this.todosService.create(
+      const task = await this.tasksService.create(
         { title },
         mapping.slackWorkspace.workspaceId,
         mapping.userId,
@@ -476,10 +476,10 @@ export class SlackService implements OnModuleInit {
 
       return {
         response_type: 'ephemeral',
-        text: `:white_check_mark: \uD0DC\uC2A4\uD06C\uAC00 \uC0DD\uC131\uB418\uC5C8\uC2B5\uB2C8\uB2E4: *${todo.title}*`,
+        text: `:white_check_mark: \uD0DC\uC2A4\uD06C\uAC00 \uC0DD\uC131\uB418\uC5C8\uC2B5\uB2C8\uB2E4: *${task.title}*`,
       };
     } catch (error) {
-      this.logger.error('Failed to create todo from Slack command', error);
+      this.logger.error('Failed to create task from Slack command', error);
       return {
         response_type: 'ephemeral',
         text: ':x: \uD0DC\uC2A4\uD06C \uC0DD\uC131\uC5D0 \uC2E4\uD328\uD588\uC2B5\uB2C8\uB2E4. \uB2E4\uC2DC \uC2DC\uB3C4\uD574\uC8FC\uC138\uC694.',
@@ -502,13 +502,13 @@ export class SlackService implements OnModuleInit {
     }
 
     try {
-      const todos = await this.todosService.findAllInWorkspace(
+      const tasks = await this.tasksService.findAllInWorkspace(
         mapping.slackWorkspace.workspaceId,
         mapping.userId,
         { assignedToMe: true },
       );
 
-      if (todos.length === 0) {
+      if (tasks.length === 0) {
         return {
           response_type: 'ephemeral',
           text: ':clipboard: \uBC30\uC815\uB41C \uD0DC\uC2A4\uD06C\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.',
@@ -534,30 +534,30 @@ export class SlackService implements OnModuleInit {
         { type: 'divider' },
       ];
 
-      for (const todo of todos.slice(0, 10)) {
-        const emoji = statusEmoji[todo.status] || ':white_circle:';
+      for (const task of tasks.slice(0, 10)) {
+        const emoji = statusEmoji[task.status] || ':white_circle:';
         const priority =
-          todo.priority === 'URGENT'
+          task.priority === 'URGENT'
             ? ':fire:'
-            : todo.priority === 'HIGH'
+            : task.priority === 'HIGH'
               ? ':arrow_up:'
               : '';
         blocks.push({
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: `${emoji} ${priority} *${todo.title}*\nStatus: \`${todo.status}\``,
+            text: `${emoji} ${priority} *${task.title}*\nStatus: \`${task.status}\``,
           },
         });
       }
 
-      if (todos.length > 10) {
+      if (tasks.length > 10) {
         blocks.push({
           type: 'context',
           elements: [
             {
               type: 'mrkdwn',
-              text: `... \uC678 ${todos.length - 10}\uAC1C\uC758 \uD0DC\uC2A4\uD06C\uAC00 \uB354 \uC788\uC2B5\uB2C8\uB2E4`,
+              text: `... \uC678 ${tasks.length - 10}\uAC1C\uC758 \uD0DC\uC2A4\uD06C\uAC00 \uB354 \uC788\uC2B5\uB2C8\uB2E4`,
             },
           ],
         });
@@ -566,10 +566,10 @@ export class SlackService implements OnModuleInit {
       return {
         response_type: 'ephemeral',
         blocks,
-        text: `\uBC30\uC815\uB41C \uD0DC\uC2A4\uD06C ${todos.length}\uAC1C`,
+        text: `\uBC30\uC815\uB41C \uD0DC\uC2A4\uD06C ${tasks.length}\uAC1C`,
       };
     } catch (error) {
-      this.logger.error('Failed to list todos from Slack command', error);
+      this.logger.error('Failed to list tasks from Slack command', error);
       return {
         response_type: 'ephemeral',
         text: ':x: \uD0DC\uC2A4\uD06C \uBAA9\uB85D \uC870\uD68C\uC5D0 \uC2E4\uD328\uD588\uC2B5\uB2C8\uB2E4.',

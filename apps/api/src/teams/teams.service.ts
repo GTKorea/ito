@@ -56,7 +56,7 @@ export class TeamsService {
             user: { select: { id: true, name: true, avatarUrl: true } },
           },
         },
-        _count: { select: { members: true, todos: true } },
+        _count: { select: { members: true, tasks: true } },
       },
     });
   }
@@ -70,7 +70,7 @@ export class TeamsService {
             user: { select: { id: true, name: true, avatarUrl: true } },
           },
         },
-        _count: { select: { members: true, todos: true } },
+        _count: { select: { members: true, tasks: true } },
       },
     });
     if (!team) throw new NotFoundException('Team not found');
@@ -81,9 +81,9 @@ export class TeamsService {
 
     const memberStats = await Promise.all(
       team.members.map(async (member) => {
-        const [activeTodos, pendingThreads, completedTodos] = await Promise.all(
+        const [activeTasks, pendingThreads, completedTasks] = await Promise.all(
           [
-            this.prisma.todo.count({
+            this.prisma.task.count({
               where: {
                 teamId,
                 assigneeId: member.userId,
@@ -94,10 +94,10 @@ export class TeamsService {
               where: {
                 toUserId: member.userId,
                 status: 'PENDING',
-                todo: { teamId },
+                task: { teamId },
               },
             }),
-            this.prisma.todo.count({
+            this.prisma.task.count({
               where: {
                 teamId,
                 assigneeId: member.userId,
@@ -113,9 +113,9 @@ export class TeamsService {
           name: member.user.name,
           avatarUrl: member.user.avatarUrl,
           role: member.role,
-          activeTodos,
+          activeTasks,
           pendingThreads,
-          completedTodos,
+          completedTasks,
         };
       }),
     );
@@ -123,16 +123,16 @@ export class TeamsService {
     // Team totals
     const [totalActive, totalPendingThreads, totalCompletedThisWeek] =
       await Promise.all([
-        this.prisma.todo.count({
+        this.prisma.task.count({
           where: {
             teamId,
             status: { in: ['OPEN', 'IN_PROGRESS', 'BLOCKED'] },
           },
         }),
         this.prisma.threadLink.count({
-          where: { status: 'PENDING', todo: { teamId } },
+          where: { status: 'PENDING', task: { teamId } },
         }),
-        this.prisma.todo.count({
+        this.prisma.task.count({
           where: {
             teamId,
             status: 'COMPLETED',
@@ -145,17 +145,17 @@ export class TeamsService {
       id: team.id,
       name: team.name,
       memberCount: team._count.members,
-      todoCount: team._count.todos,
+      taskCount: team._count.tasks,
       members: memberStats,
       totals: {
-        activeTodos: totalActive,
+        activeTasks: totalActive,
         pendingThreads: totalPendingThreads,
         completedThisWeek: totalCompletedThisWeek,
       },
     };
   }
 
-  async getTeamTodos(
+  async getTeamTasks(
     teamId: string,
     filters?: { status?: string; assigneeId?: string },
   ) {
@@ -168,7 +168,7 @@ export class TeamsService {
     if (filters?.status) where.status = filters.status;
     if (filters?.assigneeId) where.assigneeId = filters.assigneeId;
 
-    return this.prisma.todo.findMany({
+    return this.prisma.task.findMany({
       where,
       include: {
         creator: { select: { id: true, name: true, avatarUrl: true } },

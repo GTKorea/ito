@@ -1,16 +1,16 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useTodoStore } from '@/stores/todo-store';
+import { useTaskStore } from '@/stores/task-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 import { CalendarView } from '@/components/calendar/calendar-view';
-import { QuickCreateTodoDialog } from '@/components/calendar/quick-create-todo-dialog';
+import { QuickCreateTaskDialog } from '@/components/calendar/quick-create-task-dialog';
 import { CalendarDays } from 'lucide-react';
 
 
 export default function CalendarPage() {
   const { currentWorkspace } = useWorkspaceStore();
-  const { calendarData, calendarLoading, fetchCalendarTodos, calendarEvents, fetchCalendarEvents } = useTodoStore();
+  const { calendarData, calendarLoading, fetchCalendarTasks, calendarEvents, fetchCalendarEvents } = useTaskStore();
 
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
@@ -34,9 +34,9 @@ export default function CalendarPage() {
     const startISO = start.toISOString();
     const endISO = end.toISOString();
 
-    fetchCalendarTodos(currentWorkspace.id, startISO, endISO);
+    fetchCalendarTasks(currentWorkspace.id, startISO, endISO);
     fetchCalendarEvents(startISO, endISO);
-  }, [currentWorkspace, year, month, fetchCalendarTodos, fetchCalendarEvents]);
+  }, [currentWorkspace, year, month, fetchCalendarTasks, fetchCalendarEvents]);
 
   return (
     <div className="h-full flex flex-col">
@@ -62,18 +62,18 @@ export default function CalendarPage() {
             year={year}
             month={month}
             onMonthChange={handleMonthChange}
-            completedTodos={calendarData?.completed || []}
-            upcomingTodos={calendarData?.upcoming || []}
+            completedTasks={calendarData?.completed || []}
+            upcomingTasks={calendarData?.upcoming || []}
             isLoading={calendarLoading}
             externalEvents={calendarEvents}
-            onCreateTodo={(date) => setCreateDate(date)}
+            onCreateTask={(date) => setCreateDate(date)}
           />
         )}
       </div>
 
 
       {createDate && (
-        <QuickCreateTodoDialog
+        <QuickCreateTaskDialog
           date={createDate}
           open={!!createDate}
           onOpenChange={(open) => { if (!open) setCreateDate(null); }}
@@ -83,7 +83,7 @@ export default function CalendarPage() {
               start.setDate(start.getDate() - 7);
               const end = new Date(year, month + 1, 0);
               end.setDate(end.getDate() + 7);
-              fetchCalendarTodos(currentWorkspace.id, start.toISOString(), end.toISOString());
+              fetchCalendarTasks(currentWorkspace.id, start.toISOString(), end.toISOString());
             }
           }}
         />

@@ -70,7 +70,7 @@
     "workspaceName": "工作區名稱",
     "workspaceNamePlaceholder": "例如：我的團隊"
   },
-  "todos": {
+  "tasks": {
     "noTasksYet": "尚無任務",
     "createNewToStart": "建立新任務以開始",
     "completed": "已完成",
@@ -479,8 +479,8 @@
       "THREAD_SNAPPED": "線程回彈",
       "THREAD_COMPLETED": "線程完成",
       "WORKSPACE_INVITE": "工作區邀請",
-      "TODO_ASSIGNED": "任務指派",
-      "TODO_COMPLETED": "任務完成",
+      "TASK_ASSIGNED": "任務指派",
+      "TASK_COMPLETED": "任務完成",
       "THREAD_DECLINED": "線程拒絕",
       "SHARED_SPACE_INVITE": "共享空間邀請"
     }
@@ -568,11 +568,11 @@
           "name": "工作區邀請",
           "description": "您被邀請加入工作區。"
         },
-        "todoAssigned": {
+        "taskAssigned": {
           "name": "任務指派",
           "description": "有任務指派給了您。"
         },
-        "todoCompleted": {
+        "taskCompleted": {
           "name": "任務完成",
           "description": "您建立或參與的任務已完成。"
         }
@@ -593,10 +593,10 @@
     "accessDenied": "需要管理員權限",
     "totalUsers": "總用戶數",
     "totalWorkspaces": "總工作區數",
-    "totalTodos": "總任務數",
+    "totalTasks": "總任務數",
     "totalThreads": "總線程數",
     "activeThisWeek": "本週活躍",
-    "todosByStatus": "按狀態分類的任務",
+    "tasksByStatus": "按狀態分類的任務",
     "status_OPEN": "開放",
     "status_IN_PROGRESS": "進行中",
     "status_BLOCKED": "已阻塞",
@@ -606,13 +606,13 @@
     "noActivity": "暫無活動",
     "manageUsers": "管理用戶",
     "manageWorkspaces": "管理工作區",
-    "manageTodos": "管理任務",
+    "manageTasks": "管理任務",
     "users": "用戶",
     "workspaces": "工作區",
-    "todos": "任務",
+    "tasks": "任務",
     "searchUsers": "按姓名或信箱搜尋...",
     "searchWorkspaces": "按名稱或標識搜尋...",
-    "searchTodos": "按標題搜尋...",
+    "searchTasks": "按標題搜尋...",
     "name": "名稱",
     "email": "信箱",
     "role": "角色",
@@ -621,7 +621,7 @@
     "members": "成員",
     "teamsCount": "團隊",
     "created": "建立時間",
-    "todoTitle": "標題",
+    "taskTitle": "標題",
     "status": "狀態",
     "priority": "優先級",
     "assignee": "負責人",
@@ -656,17 +656,17 @@
     "sendInvite": "Send Invite",
     "inviteSent": "Invite sent! Share this link with the workspace admin:",
     "workspaces": "workspaces",
-    "todos": "todos",
+    "tasks": "tasks",
     "members": "members",
     "threads": "threads",
     "participatingWorkspaces": "Participating Workspaces",
-    "sharedTodos": "Shared Todos",
-    "noTodosYet": "No shared todos yet",
-    "createFirstTodo": "Create the first shared todo",
-    "newTodo": "New Todo",
-    "createTodo": "Create Shared Todo",
-    "todoTitle": "Title",
-    "todoTitlePlaceholder": "What needs to be done?",
-    "todoDescriptionPlaceholder": "Add details..."
+    "sharedTasks": "Shared Tasks",
+    "noTasksYet": "No shared tasks yet",
+    "createFirstTask": "Create the first shared task",
+    "newTask": "New Task",
+    "createTask": "Create Shared Task",
+    "taskTitle": "Title",
+    "taskTitlePlaceholder": "What needs to be done?",
+    "taskDescriptionPlaceholder": "Add details..."
   }
 }

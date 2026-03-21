@@ -29,8 +29,8 @@ model User {
 
   workspaceMembers     WorkspaceMember[]
   teamMembers          TeamMember[]
-  todosCreated         Todo[]         @relation("TodoCreator")
-  todosAssigned        Todo[]         @relation("TodoAssignee")
+  tasksCreated         Task[]         @relation("TaskCreator")
+  tasksAssigned        Task[]         @relation("TaskAssignee")
   threadLinksFrom      ThreadLink[]   @relation("ThreadLinkSender")
   threadLinksTo        ThreadLink[]   @relation("ThreadLinkReceiver")
   notifications             Notification[]
@@ -68,7 +68,7 @@ model Workspace {
 
   members                WorkspaceMember[]
   teams                  Team[]
-  todos                  Todo[]
+  tasks                  Task[]
   invites                WorkspaceInvite[]
   activities             Activity[]
   slackWorkspaces        SlackWorkspace[]
@@ -120,7 +120,7 @@ model Team {
 
   workspace Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   members   TeamMember[]
-  todos     Todo[]
+  tasks     Task[]
 
   @@index([workspaceId])
 }
@@ -149,13 +149,13 @@ enum SystemRole {
   ADMIN
 }
 
-// ──────────────────── Todo & Thread System ────────────────────
+// ──────────────────── Task & Thread System ────────────────────
 
-model Todo {
+model Task {
   id          String     @id @default(cuid())
   title       String
   description String?
-  status      TodoStatus @default(OPEN)
+  status      TaskStatus @default(OPEN)
   priority    Priority   @default(MEDIUM)
   dueDate     DateTime?
 
@@ -169,8 +169,8 @@ model Todo {
   updatedAt   DateTime  @updatedAt
   completedAt DateTime?
 
-  creator     User         @relation("TodoCreator", fields: [creatorId], references: [id])
-  assignee    User         @relation("TodoAssignee", fields: [assigneeId], references: [id])
+  creator     User         @relation("TaskCreator", fields: [creatorId], references: [id])
+  assignee    User         @relation("TaskAssignee", fields: [assigneeId], references: [id])
   workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   team        Team?        @relation(fields: [teamId], references: [id], onDelete: SetNull)
   sharedSpace SharedSpace? @relation(fields: [sharedSpaceId], references: [id], onDelete: SetNull)
@@ -186,7 +186,7 @@ model Todo {
   @@index([sharedSpaceId])
 }
 
-enum TodoStatus {
+enum TaskStatus {
   OPEN
   IN_PROGRESS
   BLOCKED
@@ -203,7 +203,7 @@ enum Priority {
 
 model ThreadLink {
   id         String           @id @default(cuid())
-  todoId     String
+  taskId     String
   fromUserId String
   toUserId   String
   message    String?
@@ -214,12 +214,12 @@ model ThreadLink {
   createdAt  DateTime  @default(now())
   resolvedAt DateTime?
 
-  todo     Todo   @relation(fields: [todoId], references: [id], onDelete: Cascade)
+  task     Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
   fromUser User   @relation("ThreadLinkSender", fields: [fromUserId], references: [id])
   toUser   User   @relation("ThreadLinkReceiver", fields: [toUserId], references: [id])
   files    File[]
 
-  @@index([todoId, chainIndex])
+  @@index([taskId, chainIndex])
   @@index([toUserId, status])
   @@index([fromUserId])
   @@index([groupId])
@@ -255,8 +255,8 @@ enum NotificationType {
   THREAD_COMPLETED
   THREAD_DECLINED
   WORKSPACE_INVITE
-  TODO_ASSIGNED
-  TODO_COMPLETED
+  TASK_ASSIGNED
+  TASK_COMPLETED
   SHARED_SPACE_INVITE
   CHAT_MESSAGE
 }
@@ -304,16 +304,16 @@ model File {
   size         Int
   mimeType     String
   uploaderId   String
-  todoId       String?
+  taskId       String?
   threadLinkId String?
 
   createdAt DateTime @default(now())
 
   uploader   User        @relation(fields: [uploaderId], references: [id])
-  todo       Todo?       @relation(fields: [todoId], references: [id], onDelete: SetNull)
+  task       Task?       @relation(fields: [taskId], references: [id], onDelete: SetNull)
   threadLink ThreadLink? @relation(fields: [threadLinkId], references: [id], onDelete: SetNull)
 
-  @@index([todoId])
+  @@index([taskId])
   @@index([threadLinkId])
 }
 
@@ -354,14 +354,14 @@ model SlackUser {
 model ChatMessage {
   id        String   @id @default(cuid())
   content   String
-  todoId    String
-  todo      Todo     @relation(fields: [todoId], references: [id], onDelete: Cascade)
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
   senderId  String
   sender    User     @relation(fields: [senderId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([todoId, createdAt])
+  @@index([taskId, createdAt])
   @@index([senderId])
 }
 
@@ -377,7 +377,7 @@ model SharedSpace {
   updatedAt   DateTime @updatedAt
 
   participants SharedSpaceParticipant[]
-  todos        Todo[]
+  tasks        Task[]
   invites      SharedSpaceInvite[]
 
   @@index([createdById])

@@ -52,21 +52,21 @@ describe('Notifications (e2e)', () => {
 
     const userBId = await getUserId(userB.accessToken);
 
-    // Create todo
-    const todoRes = await request(app.getHttpServer())
-      .post(`/workspaces/${ws.id}/todos`)
+    // Create task
+    const taskRes = await request(app.getHttpServer())
+      .post(`/workspaces/${ws.id}/tasks`)
       .set('Authorization', `Bearer ${userA.accessToken}`)
       .send({ title: 'Notify Task' })
       .expect(201);
 
     // A -> B (creates THREAD_RECEIVED notification for B)
     const link = await request(app.getHttpServer())
-      .post(`/todos/${todoRes.body.id}/connect`)
+      .post(`/tasks/${taskRes.body.id}/connect`)
       .set('Authorization', `Bearer ${userA.accessToken}`)
       .send({ toUserId: userBId })
       .expect(201);
 
-    return { userA, userB, userBId, ws, todo: todoRes.body, link: link.body };
+    return { userA, userB, userBId, ws, task: taskRes.body, link: link.body };
   }
 
   describe('Thread connect creates notification', () => {

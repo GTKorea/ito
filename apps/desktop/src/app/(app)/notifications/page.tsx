@@ -24,8 +24,8 @@ const typeIcons: Record<string, React.ReactNode> = {
   THREAD_SNAPPED: <ArrowLeftRight className="h-4 w-4 text-green-500" />,
   THREAD_COMPLETED: <CheckCheck className="h-4 w-4 text-green-500" />,
   THREAD_DECLINED: <XCircle className="h-4 w-4 text-red-500" />,
-  TODO_COMPLETED: <Check className="h-4 w-4 text-green-500" />,
-  TODO_ASSIGNED: <UserPlus className="h-4 w-4 text-blue-500" />,
+  TASK_COMPLETED: <Check className="h-4 w-4 text-green-500" />,
+  TASK_ASSIGNED: <UserPlus className="h-4 w-4 text-blue-500" />,
   WORKSPACE_INVITE: <UserPlus className="h-4 w-4 text-purple-500" />,
 };
 
@@ -93,8 +93,8 @@ export default function NotificationsPage() {
 
                 if (n.type === 'WORKSPACE_INVITE' && n.data?.token) {
                   router.push(`/invite?token=${n.data.token}`);
-                } else if (n.data?.todoId) {
-                  router.push(`/workspace?todo=${n.data.todoId}`);
+                } else if (n.data?.taskId) {
+                  router.push(`/workspace?task=${n.data.taskId}`);
                 }
               }}
             >

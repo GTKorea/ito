@@ -11,45 +11,45 @@ import { ChatService } from './chat.service';
 export class ChatGateway {
   constructor(private chatService: ChatService) {}
 
-  @SubscribeMessage('joinTodoChat')
+  @SubscribeMessage('joinTaskChat')
   async handleJoinChat(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { todoId: string },
+    @MessageBody() data: { taskId: string },
   ) {
     const userId = client.data.userId;
-    if (!userId || !data.todoId) return;
+    if (!userId || !data.taskId) return;
 
     const isAllowed = await this.chatService.isParticipant(
-      data.todoId,
+      data.taskId,
       userId,
     );
     if (!isAllowed) return;
 
-    client.join(`todo-chat:${data.todoId}`);
-    return { joined: true, todoId: data.todoId };
+    client.join(`task-chat:${data.taskId}`);
+    return { joined: true, taskId: data.taskId };
   }
 
-  @SubscribeMessage('leaveTodoChat')
+  @SubscribeMessage('leaveTaskChat')
   handleLeaveChat(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { todoId: string },
+    @MessageBody() data: { taskId: string },
   ) {
-    if (!data.todoId) return;
-    client.leave(`todo-chat:${data.todoId}`);
-    return { left: true, todoId: data.todoId };
+    if (!data.taskId) return;
+    client.leave(`task-chat:${data.taskId}`);
+    return { left: true, taskId: data.taskId };
   }
 
   @SubscribeMessage('sendMessage')
   async handleSendMessage(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { todoId: string; content: string },
+    @MessageBody() data: { taskId: string; content: string },
   ) {
     const userId = client.data.userId;
-    if (!userId || !data.todoId || !data.content) return;
+    if (!userId || !data.taskId || !data.content) return;
 
     try {
       const message = await this.chatService.sendMessage(
-        data.todoId,
+        data.taskId,
         userId,
         data.content,
       );

@@ -15,20 +15,20 @@ import { ChatService } from './chat.service';
 @ApiTags('chat')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@Controller('todos/:todoId/messages')
+@Controller('tasks/:taskId/messages')
 export class ChatController {
   constructor(private chatService: ChatService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get paginated chat messages for a todo' })
+  @ApiOperation({ summary: 'Get paginated chat messages for a task' })
   getMessages(
-    @Param('todoId') todoId: string,
+    @Param('taskId') taskId: string,
     @CurrentUser('id') userId: string,
     @Query('cursor') cursor?: string,
     @Query('limit') limit?: string,
   ) {
     return this.chatService.getMessages(
-      todoId,
+      taskId,
       userId,
       cursor,
       limit ? parseInt(limit, 10) : 50,
@@ -36,12 +36,12 @@ export class ChatController {
   }
 
   @Post()
-  @ApiOperation({ summary: 'Send a chat message to a todo' })
+  @ApiOperation({ summary: 'Send a chat message to a task' })
   sendMessage(
-    @Param('todoId') todoId: string,
+    @Param('taskId') taskId: string,
     @CurrentUser('id') userId: string,
     @Body('content') content: string,
   ) {
-    return this.chatService.sendMessage(todoId, userId, content);
+    return this.chatService.sendMessage(taskId, userId, content);
   }
 }

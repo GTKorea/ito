@@ -5,9 +5,9 @@ import { cn } from '@/lib/utils';
 import { CalendarEvent } from './calendar-event';
 import { Badge } from '@/components/ui/badge';
 import { CalendarDays, Plus } from 'lucide-react';
-import type { CalendarEvent as CalendarEventType } from '@/stores/todo-store';
+import type { CalendarEvent as CalendarEventType } from '@/stores/task-store';
 
-interface TodoItem {
+interface TaskItem {
   id: string;
   title: string;
   status: string;
@@ -21,23 +21,23 @@ interface CalendarDayCellProps {
   date: Date;
   isCurrentMonth: boolean;
   isToday: boolean;
-  completedTodos: TodoItem[];
-  upcomingTodos: TodoItem[];
+  completedTasks: TaskItem[];
+  upcomingTasks: TaskItem[];
   externalEvents?: CalendarEventType[];
-  onCreateTodo?: (date: Date) => void;
+  onCreateTask?: (date: Date) => void;
 }
 
 export function CalendarDayCell({
   date,
   isCurrentMonth,
   isToday,
-  completedTodos,
-  upcomingTodos,
+  completedTasks,
+  upcomingTasks,
   externalEvents,
-  onCreateTodo,
+  onCreateTask,
 }: CalendarDayCellProps) {
   const [expanded, setExpanded] = useState(false);
-  const totalItems = completedTodos.length + upcomingTodos.length;
+  const totalItems = completedTasks.length + upcomingTasks.length;
   const maxVisible = 2;
 
   return (
@@ -64,21 +64,21 @@ export function CalendarDayCell({
         </span>
         <div className="flex items-center gap-0.5">
           <button
-            onClick={(e) => { e.stopPropagation(); onCreateTodo?.(date); }}
+            onClick={(e) => { e.stopPropagation(); onCreateTask?.(date); }}
             className="opacity-0 group-hover:opacity-100 h-5 w-5 rounded hover:bg-accent flex items-center justify-center transition-opacity"
           >
             <Plus className="h-3 w-3" />
           </button>
           {totalItems > 0 && !expanded && (
             <>
-              {completedTodos.length > 0 && (
+              {completedTasks.length > 0 && (
                 <Badge variant="secondary" className="h-4 min-w-4 px-1 text-[9px] bg-green-500/15 text-green-400 border-0">
-                  {completedTodos.length}
+                  {completedTasks.length}
                 </Badge>
               )}
-              {upcomingTodos.length > 0 && (
+              {upcomingTasks.length > 0 && (
                 <Badge variant="secondary" className="h-4 min-w-4 px-1 text-[9px] bg-orange-500/15 text-orange-400 border-0">
-                  {upcomingTodos.length}
+                  {upcomingTasks.length}
                 </Badge>
               )}
             </>
@@ -90,20 +90,20 @@ export function CalendarDayCell({
       <div className="space-y-0.5">
         {expanded ? (
           <>
-            {completedTodos.map((todo) => (
+            {completedTasks.map((task) => (
               <CalendarEvent
-                key={todo.id}
-                title={todo.title}
+                key={task.id}
+                title={task.title}
                 type="completed"
-                assigneeName={todo.assignee.name}
+                assigneeName={task.assignee.name}
               />
             ))}
-            {upcomingTodos.map((todo) => (
+            {upcomingTasks.map((task) => (
               <CalendarEvent
-                key={todo.id}
-                title={todo.title}
+                key={task.id}
+                title={task.title}
                 type="upcoming"
-                assigneeName={todo.assignee.name}
+                assigneeName={task.assignee.name}
               />
             ))}
             {externalEvents?.map((event) => (
@@ -119,17 +119,17 @@ export function CalendarDayCell({
           </>
         ) : (
           <>
-            {[...completedTodos, ...upcomingTodos]
+            {[...completedTasks, ...upcomingTasks]
               .slice(0, maxVisible)
-              .map((todo) => (
+              .map((task) => (
                 <CalendarEvent
-                  key={todo.id}
-                  title={todo.title}
-                  type={todo.completedAt ? 'completed' : 'upcoming'}
-                  assigneeName={todo.assignee.name}
+                  key={task.id}
+                  title={task.title}
+                  type={task.completedAt ? 'completed' : 'upcoming'}
+                  assigneeName={task.assignee.name}
                 />
               ))}
-            {externalEvents?.slice(0, Math.max(0, maxVisible - completedTodos.length - upcomingTodos.length)).map((event) => (
+            {externalEvents?.slice(0, Math.max(0, maxVisible - completedTasks.length - upcomingTasks.length)).map((event) => (
               <div
                 key={event.id}
                 className="flex items-center gap-1 rounded px-1 py-0.5 text-[10px] bg-blue-500/10 text-blue-400 truncate"

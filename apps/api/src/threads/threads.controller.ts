@@ -22,31 +22,31 @@ import { ConnectChainDto } from './dto/connect-chain.dto';
 export class ThreadsController {
   constructor(private threadsService: ThreadsService) {}
 
-  @Post('todos/:todoId/connect')
-  @ApiOperation({ summary: 'Connect a todo to one or more users via thread' })
+  @Post('tasks/:taskId/connect')
+  @ApiOperation({ summary: 'Connect a task to one or more users via thread' })
   connect(
-    @Param('todoId') todoId: string,
+    @Param('taskId') taskId: string,
     @Body() dto: ConnectThreadDto,
     @CurrentUser('id') userId: string,
   ) {
     // Normalize: support both toUserId (single) and toUserIds (array)
     const toUserIds = dto.toUserIds || (dto.toUserId ? [dto.toUserId] : []);
     return this.threadsService.connect(
-      todoId,
+      taskId,
       userId,
       toUserIds,
       dto.message,
     );
   }
 
-  @Post('todos/:todoId/connect-chain')
-  @ApiOperation({ summary: 'Connect a chain of users to a todo in one request' })
+  @Post('tasks/:taskId/connect-chain')
+  @ApiOperation({ summary: 'Connect a chain of users to a task in one request' })
   connectChain(
-    @Param('todoId') todoId: string,
+    @Param('taskId') taskId: string,
     @Body() dto: ConnectChainDto,
     @CurrentUser('id') userId: string,
   ) {
-    return this.threadsService.connectChain(todoId, userId, dto.userIds);
+    return this.threadsService.connectChain(taskId, userId, dto.userIds);
   }
 
   @Post('thread-links/:id/resolve')
@@ -68,10 +68,10 @@ export class ThreadsController {
     return this.threadsService.decline(id, userId, body?.reason);
   }
 
-  @Get('todos/:todoId/chain')
-  @ApiOperation({ summary: 'Get the thread chain for a todo' })
-  getChain(@Param('todoId') todoId: string) {
-    return this.threadsService.getChain(todoId);
+  @Get('tasks/:taskId/chain')
+  @ApiOperation({ summary: 'Get the thread chain for a task' })
+  getChain(@Param('taskId') taskId: string) {
+    return this.threadsService.getChain(taskId);
   }
 
   @Get('thread-links/group/:groupId')
