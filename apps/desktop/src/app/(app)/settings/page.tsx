@@ -98,6 +98,10 @@ export default function SettingsPage() {
   // Slack integration state
   const [slackStatus, setSlackStatus] = useState<{ connected: boolean; teamName?: string } | null>(null);
   const [slackLoading, setSlackLoading] = useState(false);
+  const [slackUserLinked, setSlackUserLinked] = useState(false);
+  const [slackLinkCode, setSlackLinkCode] = useState<string | null>(null);
+  const [slackLinkExpiry, setSlackLinkExpiry] = useState<Date | null>(null);
+  const [slackLinkLoading, setSlackLinkLoading] = useState(false);
 
   // Fetch calendar integrations + Slack status
   useEffect(() => {
@@ -130,6 +134,10 @@ export default function SettingsPage() {
       try {
         const { data } = await api.get(`/slack/status?workspaceId=${currentWorkspace.id}`);
         setSlackStatus(data);
+        if (data.connected) {
+          const { data: linkData } = await api.get(`/slack/user-link-status?workspaceId=${currentWorkspace.id}`);
+          setSlackUserLinked(linkData.linked);
+        }
       } catch {
         setSlackStatus({ connected: false });
       } finally {
@@ -177,6 +185,31 @@ export default function SettingsPage() {
     if (!currentWorkspace?.id) return;
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3011';
     window.location.href = `${apiUrl}/slack/install?workspaceId=${currentWorkspace.id}`;
+  };
+
+  const handleGenerateLinkCode = async () => {
+    if (!currentWorkspace?.id) return;
+    setSlackLinkLoading(true);
+    try {
+      const { data } = await api.post(`/slack/link-code?workspaceId=${currentWorkspace.id}`);
+      setSlackLinkCode(data.code);
+      setSlackLinkExpiry(new Date(data.expiresAt));
+    } catch (error) {
+      console.error('Failed to generate link code:', error);
+    } finally {
+      setSlackLinkLoading(false);
+    }
+  };
+
+  const handleUnlinkSlack = async () => {
+    if (!currentWorkspace?.id) return;
+    try {
+      await api.delete(`/slack/unlink?workspaceId=${currentWorkspace.id}`);
+      setSlackUserLinked(false);
+      setSlackLinkCode(null);
+    } catch (error) {
+      console.error('Failed to unlink Slack:', error);
+    }
   };
 
   const handleConnectCalendar = async (provider: 'google' | 'outlook') => {
@@ -594,6 +627,7 @@ export default function SettingsPage() {
             {t('slackDescription')}
           </p>
 
+          {/* Workspace-level Slack connection */}
           <div className="flex items-center justify-between rounded-md border border-border px-3 py-2.5">
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded bg-purple-500/10">
@@ -627,6 +661,73 @@ export default function SettingsPage() {
               </div>
             )}
           </div>
+
+          {/* User-level Slack account linking */}
+          {slackStatus?.connected && (
+            <div className="rounded-md border border-border px-3 py-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">{t('slackAccountLink')}</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {slackUserLinked
+                      ? t('slackAccountLinked')
+                      : t('slackAccountNotLinked')}
+                  </p>
+                </div>
+                {slackUserLinked ? (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-destructive hover:text-destructive"
+                    onClick={handleUnlinkSlack}
+                  >
+                    <Unlink className="mr-1 h-3.5 w-3.5" />
+                    {t('disconnect')}
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleGenerateLinkCode}
+                    disabled={slackLinkLoading}
+                  >
+                    {slackLinkLoading ? (
+                      <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Link className="mr-1 h-3.5 w-3.5" />
+                    )}
+                    {t('slackGenerateCode')}
+                  </Button>
+                )}
+              </div>
+
+              {slackLinkCode && !slackUserLinked && (
+                <div className="rounded-md bg-muted/50 px-3 py-2.5 space-y-1.5">
+                  <p className="text-xs text-muted-foreground">
+                    {t('slackLinkInstruction')}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <code className="rounded bg-background px-2 py-1 text-sm font-mono font-bold tracking-widest">
+                      /ito link {slackLinkCode}
+                    </code>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 px-2"
+                      onClick={() => {
+                        navigator.clipboard.writeText(`/ito link ${slackLinkCode}`);
+                      }}
+                    >
+                      {t('copy')}
+                    </Button>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    {t('slackCodeExpiry')}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </section>
 
         <Separator />

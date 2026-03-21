@@ -299,76 +299,132 @@ export class SlackService implements OnModuleInit {
     });
   }
 
-  // ──────────────────── SlackUser Linking ────────────────────
+  // ──────────────────── SlackUser Linking (Code-based) ────────────────────
 
   /**
-   * Auto-match a Slack user to an ito user by email.
-   * Called when a user first interacts via slash command and has no mapping yet.
+   * Generate a 6-char alphanumeric link code for the authenticated ito user.
+   * The code expires in 5 minutes and is single-use.
    */
-  async autoLinkSlackUser(
-    slackTeamId: string,
+  async generateLinkCode(
+    userId: string,
+    workspaceId: string,
+  ): Promise<{ code: string; expiresAt: Date }> {
+    // Delete any unused codes for this user/workspace
+    await this.prisma.slackLinkCode.deleteMany({
+      where: { userId, workspaceId, usedAt: null },
+    });
+
+    const code = crypto.randomBytes(3).toString('hex').toUpperCase(); // 6 chars
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+    await this.prisma.slackLinkCode.create({
+      data: { code, userId, workspaceId, expiresAt },
+    });
+
+    return { code, expiresAt };
+  }
+
+  /**
+   * Complete the linking process: validate the code and create the SlackUser mapping.
+   * Called from the `/ito link <code>` slash command.
+   */
+  async completeLinking(
+    code: string,
     slackUserId: string,
-  ): Promise<{ userId: string; slackWorkspaceId: string } | null> {
+    slackTeamId: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    const linkCode = await this.prisma.slackLinkCode.findUnique({
+      where: { code: code.toUpperCase() },
+    });
+
+    if (!linkCode) {
+      return { success: false, error: '유효하지 않은 코드입니다.' };
+    }
+    if (linkCode.usedAt) {
+      return { success: false, error: '이미 사용된 코드입니다.' };
+    }
+    if (linkCode.expiresAt < new Date()) {
+      return { success: false, error: '만료된 코드입니다. ito 설정에서 새 코드를 발급받아주세요.' };
+    }
+
     const slackWorkspace = await this.prisma.slackWorkspace.findUnique({
       where: { slackTeamId },
     });
-    if (!slackWorkspace) return null;
+    if (!slackWorkspace) {
+      return { success: false, error: '이 Slack 워크스페이스는 ito와 연결되어 있지 않습니다.' };
+    }
 
-    // Check if already linked
-    const existing = await this.prisma.slackUser.findUnique({
+    if (slackWorkspace.workspaceId !== linkCode.workspaceId) {
+      return { success: false, error: '코드가 발급된 ito 워크스페이스와 이 Slack 워크스페이스가 일치하지 않습니다.' };
+    }
+
+    // Upsert the SlackUser mapping
+    await this.prisma.slackUser.upsert({
       where: {
         slackUserId_slackWorkspaceId: {
           slackUserId,
           slackWorkspaceId: slackWorkspace.id,
         },
       },
-    });
-    if (existing) return { userId: existing.userId, slackWorkspaceId: slackWorkspace.id };
-
-    // Look up Slack user's email via the API
-    const client = new WebClient(slackWorkspace.accessToken);
-    let email: string | undefined;
-    try {
-      const info = await client.users.info({ user: slackUserId });
-      email = info.user?.profile?.email;
-    } catch (error) {
-      this.logger.warn(`Failed to fetch Slack user info for ${slackUserId}`, error);
-      return null;
-    }
-
-    if (!email) return null;
-
-    // Match with ito user by email
-    const itoUser = await this.prisma.user.findUnique({
-      where: { email },
-    });
-    if (!itoUser) return null;
-
-    // Verify the ito user is a member of the linked workspace
-    const membership = await this.prisma.workspaceMember.findUnique({
-      where: {
-        userId_workspaceId: {
-          userId: itoUser.id,
-          workspaceId: slackWorkspace.workspaceId,
-        },
-      },
-    });
-    if (!membership) return null;
-
-    // Create the SlackUser mapping
-    const slackUser = await this.prisma.slackUser.create({
-      data: {
+      update: { userId: linkCode.userId },
+      create: {
         slackUserId,
         slackWorkspaceId: slackWorkspace.id,
-        userId: itoUser.id,
+        userId: linkCode.userId,
       },
+    });
+
+    // Mark code as used
+    await this.prisma.slackLinkCode.update({
+      where: { id: linkCode.id },
+      data: { usedAt: new Date() },
     });
 
     this.logger.log(
-      `Auto-linked Slack user ${slackUserId} → ito user ${itoUser.email}`,
+      `Linked Slack user ${slackUserId} → ito user ${linkCode.userId} via code`,
     );
 
-    return { userId: slackUser.userId, slackWorkspaceId: slackWorkspace.id };
+    return { success: true };
+  }
+
+  /**
+   * Unlink the current user's Slack account from their ito account.
+   */
+  async unlinkSlackUser(
+    userId: string,
+    workspaceId: string,
+  ): Promise<boolean> {
+    const slackWorkspace = await this.prisma.slackWorkspace.findFirst({
+      where: { workspaceId },
+    });
+    if (!slackWorkspace) return false;
+
+    const deleted = await this.prisma.slackUser.deleteMany({
+      where: { userId, slackWorkspaceId: slackWorkspace.id },
+    });
+
+    return deleted.count > 0;
+  }
+
+  /**
+   * Get the link status for a user in a workspace.
+   */
+  async getUserLinkStatus(
+    userId: string,
+    workspaceId: string,
+  ): Promise<{ linked: boolean; slackUserId?: string }> {
+    const slackWorkspace = await this.prisma.slackWorkspace.findFirst({
+      where: { workspaceId },
+    });
+    if (!slackWorkspace) return { linked: false };
+
+    const slackUser = await this.prisma.slackUser.findFirst({
+      where: { userId, slackWorkspaceId: slackWorkspace.id },
+    });
+
+    return slackUser
+      ? { linked: true, slackUserId: slackUser.slackUserId }
+      : { linked: false };
   }
 
   // ──────────────────── App Uninstall ────────────────────
@@ -430,6 +486,8 @@ export class SlackService implements OnModuleInit {
         return this.handleCreateCommand(payload, args);
       case 'list':
         return this.handleListCommand(payload);
+      case 'link':
+        return this.handleLinkCommand(payload, args);
       case 'connect':
         return {
           response_type: 'ephemeral',
@@ -463,7 +521,7 @@ export class SlackService implements OnModuleInit {
     if (!mapping) {
       return {
         response_type: 'ephemeral',
-        text: ':x: Slack \uACC4\uC815\uC774 ito\uC640 \uC5F0\uB3D9\uB418\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4. \uBA3C\uC800 ito\uC5D0\uC11C Slack \uC5F0\uB3D9\uC744 \uC124\uC815\uD574\uC8FC\uC138\uC694.',
+        text: ':x: Slack 계정이 ito와 연동되지 않았습니다. ito 설정에서 연동 코드를 발급받은 뒤 `/ito link <코드>`를 실행해주세요.',
       };
     }
 
@@ -577,6 +635,36 @@ export class SlackService implements OnModuleInit {
     }
   }
 
+  private async handleLinkCommand(
+    payload: SlackCommandDto,
+    code: string,
+  ): Promise<{ response_type: string; text: string }> {
+    if (!code) {
+      return {
+        response_type: 'ephemeral',
+        text: ':warning: 인증 코드를 입력해주세요. 예: `/ito link ABC123`\nito 설정 페이지에서 코드를 발급받을 수 있습니다.',
+      };
+    }
+
+    const result = await this.completeLinking(
+      code,
+      payload.user_id,
+      payload.team_id,
+    );
+
+    if (!result.success) {
+      return {
+        response_type: 'ephemeral',
+        text: `:x: ${result.error}`,
+      };
+    }
+
+    return {
+      response_type: 'ephemeral',
+      text: ':white_check_mark: ito 계정과 Slack이 성공적으로 연동되었습니다! 이제 `/ito create`, `/ito list` 명령어를 사용할 수 있습니다.',
+    };
+  }
+
   private handleHelpCommand(): {
     response_type: string;
     blocks: any[];
@@ -599,11 +687,12 @@ export class SlackService implements OnModuleInit {
           text: {
             type: 'mrkdwn',
             text: [
-              '`/ito create <\uD0DC\uC2A4\uD06C\uBA85>` — \uC0C8 \uD0DC\uC2A4\uD06C \uC0DD\uC131',
-              '`/ito list` — \uB0B4 \uD0DC\uC2A4\uD06C \uBAA9\uB85D',
-              '`/ito connect @user` — \uC2E4 \uC5F0\uACB0 (\uC900\uBE44 \uC911)',
-              '`/ito resolve` — \uC2E4 \uC644\uB8CC (\uC900\uBE44 \uC911)',
-              '`/ito help` — \uB3C4\uC6C0\uB9D0',
+              '`/ito link <코드>` — ito 계정 연동 (설정에서 코드 발급)',
+              '`/ito create <태스크명>` — 새 태스크 생성',
+              '`/ito list` — 내 태스크 목록',
+              '`/ito connect @user` — 실 연결 (준비 중)',
+              '`/ito resolve` — 실 완료 (준비 중)',
+              '`/ito help` — 도움말',
             ].join('\n'),
           },
         },
@@ -617,7 +706,7 @@ export class SlackService implements OnModuleInit {
     });
     if (!slackWorkspace) return null;
 
-    let slackUser = await this.prisma.slackUser.findUnique({
+    return this.prisma.slackUser.findUnique({
       where: {
         slackUserId_slackWorkspaceId: {
           slackUserId,
@@ -626,23 +715,5 @@ export class SlackService implements OnModuleInit {
       },
       include: { slackWorkspace: true },
     });
-
-    // Auto-link if not yet mapped
-    if (!slackUser) {
-      const linked = await this.autoLinkSlackUser(slackTeamId, slackUserId);
-      if (linked) {
-        slackUser = await this.prisma.slackUser.findUnique({
-          where: {
-            slackUserId_slackWorkspaceId: {
-              slackUserId,
-              slackWorkspaceId: slackWorkspace.id,
-            },
-          },
-          include: { slackWorkspace: true },
-        });
-      }
-    }
-
-    return slackUser;
   }
 }

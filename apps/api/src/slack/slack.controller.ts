@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Delete,
   Query,
   Req,
   Res,
@@ -129,6 +130,52 @@ export class SlackController {
       teamName: slackWorkspace.slackTeamName,
       slackTeamId: slackWorkspace.slackTeamId,
     };
+  }
+
+  // ──────────────────── User Link Code ────────────────────
+
+  @Post('link-code')
+  @UseGuards(JwtAuthGuard)
+  async generateLinkCode(
+    @Req() req: Request,
+    @Query('workspaceId') workspaceId: string,
+  ) {
+    const userId = (req as any).user?.id;
+    if (!userId || !workspaceId) {
+      return { error: 'Missing userId or workspaceId' };
+    }
+
+    const result = await this.slackService.generateLinkCode(userId, workspaceId);
+    return result;
+  }
+
+  @Get('user-link-status')
+  @UseGuards(JwtAuthGuard)
+  async getUserLinkStatus(
+    @Req() req: Request,
+    @Query('workspaceId') workspaceId: string,
+  ) {
+    const userId = (req as any).user?.id;
+    if (!userId || !workspaceId) {
+      return { linked: false };
+    }
+
+    return this.slackService.getUserLinkStatus(userId, workspaceId);
+  }
+
+  @Delete('unlink')
+  @UseGuards(JwtAuthGuard)
+  async unlinkSlackUser(
+    @Req() req: Request,
+    @Query('workspaceId') workspaceId: string,
+  ) {
+    const userId = (req as any).user?.id;
+    if (!userId || !workspaceId) {
+      return { success: false };
+    }
+
+    const success = await this.slackService.unlinkSlackUser(userId, workspaceId);
+    return { success };
   }
 
   // ──────────────────── Events & Commands ────────────────────

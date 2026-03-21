@@ -39,6 +39,7 @@ model User {
   activities           Activity[]
   filesUploaded        File[]
   slackUsers           SlackUser[]
+  slackLinkCodes       SlackLinkCode[]
   calendarIntegrations CalendarIntegration[]
   chatMessages         ChatMessage[]
   sharedSpacesCreated  SharedSpace[]
@@ -350,6 +351,19 @@ model SlackUser {
   createdAt        DateTime       @default(now())
 
   @@unique([slackUserId, slackWorkspaceId])
+  @@index([userId])
+}
+
+model SlackLinkCode {
+  id          String    @id @default(cuid())
+  code        String    @unique
+  userId      String
+  workspaceId String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdAt   DateTime  @default(now())
+
   @@index([userId])
 }
 
