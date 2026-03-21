@@ -70,7 +70,7 @@ export class WorkspacesService {
             user: { select: { id: true, name: true, email: true, avatarUrl: true } },
           },
         },
-        _count: { select: { members: true, teams: true, todos: true } },
+        _count: { select: { members: true, teams: true, tasks: true } },
       },
     });
     if (!ws) throw new NotFoundException('Workspace not found');
@@ -324,7 +324,7 @@ export class WorkspacesService {
       where: { id: workspaceId },
       include: {
         members: { where: { userId } },
-        _count: { select: { todos: true } },
+        _count: { select: { tasks: true } },
       },
     });
     if (!workspace) throw new NotFoundException('Workspace not found');
@@ -335,20 +335,20 @@ export class WorkspacesService {
       throw new ForbiddenException('Only the workspace owner can seed sample data');
     }
 
-    // Idempotent: only if workspace has 0 existing todos
-    if (workspace._count.todos > 0) {
+    // Idempotent: only if workspace has 0 existing tasks
+    if (workspace._count.tasks > 0) {
       return { message: 'Sample data already exists', seeded: false };
     }
 
-    // Create sample todos
+    // Create sample tasks
     const now = new Date();
     const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
     const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
     const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-    const todos = await this.prisma.$transaction([
+    const tasks = await this.prisma.$transaction([
       // 1. Completed task
-      this.prisma.todo.create({
+      this.prisma.task.create({
         data: {
           title: '프로젝트 킥오프 미팅 준비',
           description: '프로젝트 목표, 일정, 팀 역할을 정리하고 킥오프 미팅을 진행합니다.',
@@ -361,7 +361,7 @@ export class WorkspacesService {
         },
       }),
       // 2. In-progress task (demonstrating thread concept)
-      this.prisma.todo.create({
+      this.prisma.task.create({
         data: {
           title: '디자인 시안 검토',
           description: '메인 페이지 디자인 시안을 검토하고 피드백을 정리합니다. 실(Thread)을 연결하여 팀원에게 작업을 넘길 수 있습니다.',
@@ -374,7 +374,7 @@ export class WorkspacesService {
         },
       }),
       // 3. Open task
-      this.prisma.todo.create({
+      this.prisma.task.create({
         data: {
           title: 'API 문서 작성',
           description: 'REST API 엔드포인트 문서를 작성합니다.',
@@ -387,7 +387,7 @@ export class WorkspacesService {
         },
       }),
       // 4. Open task
-      this.prisma.todo.create({
+      this.prisma.task.create({
         data: {
           title: '사용자 피드백 분석',
           description: '베타 테스터의 피드백을 수집하고 우선순위를 정합니다.',
@@ -406,10 +406,10 @@ export class WorkspacesService {
       action: 'SEEDED',
       entityType: 'Workspace',
       entityId: workspaceId,
-      metadata: { todoCount: todos.length },
+      metadata: { taskCount: tasks.length },
     });
 
-    return { message: 'Sample data created', seeded: true, todos };
+    return { message: 'Sample data created', seeded: true, tasks };
   }
 
   async getMemberSummary(workspaceId: string, targetUserId: string) {
@@ -425,9 +425,9 @@ export class WorkspacesService {
     });
     if (!member) throw new NotFoundException('Member not found');
 
-    const [assignedTodos, activeThreads, recentActivity, stats] =
+    const [assignedTasks, activeThreads, recentActivity, stats] =
       await Promise.all([
-        this.prisma.todo.findMany({
+        this.prisma.task.findMany({
           where: { workspaceId, assigneeId: targetUserId },
           take: 10,
           orderBy: { updatedAt: 'desc' },
@@ -446,13 +446,13 @@ export class WorkspacesService {
               { toUserId: targetUserId },
             ],
             status: { in: ['PENDING', 'FORWARDED'] },
-            todo: { workspaceId },
+            task: { workspaceId },
           },
           take: 10,
           include: {
             fromUser: { select: { id: true, name: true } },
             toUser: { select: { id: true, name: true } },
-            todo: { select: { id: true, title: true } },
+            task: { select: { id: true, title: true } },
           },
         }),
         this.prisma.activity.findMany({
@@ -461,10 +461,10 @@ export class WorkspacesService {
           orderBy: { createdAt: 'desc' },
         }),
         Promise.all([
-          this.prisma.todo.count({
+          this.prisma.task.count({
             where: { workspaceId, assigneeId: targetUserId },
           }),
-          this.prisma.todo.count({
+          this.prisma.task.count({
             where: {
               workspaceId,
               assigneeId: targetUserId,
@@ -478,7 +478,7 @@ export class WorkspacesService {
                 { toUserId: targetUserId },
               ],
               status: { in: ['PENDING', 'FORWARDED'] },
-              todo: { workspaceId },
+              task: { workspaceId },
             },
           }),
         ]),
@@ -487,12 +487,12 @@ export class WorkspacesService {
     return {
       user: member.user,
       role: member.role,
-      assignedTodos,
+      assignedTasks,
       activeThreads,
       recentActivity,
       stats: {
-        totalTodos: stats[0],
-        completedTodos: stats[1],
+        totalTasks: stats[0],
+        completedTasks: stats[1],
         activeThreads: stats[2],
       },
     };

@@ -34,11 +34,11 @@ interface SharedSpaceDetailProps {
 export function SharedSpaceDetail({ sharedSpaceId, onBack }: SharedSpaceDetailProps) {
   const {
     currentSharedSpace,
-    todos,
-    todosLoading,
+    tasks,
+    tasksLoading,
     fetchSharedSpace,
-    fetchTodos,
-    createTodo,
+    fetchTasks,
+    createTask,
     inviteWorkspace,
     removeParticipant,
   } = useSharedSpaceStore();
@@ -46,7 +46,7 @@ export function SharedSpaceDetail({ sharedSpaceId, onBack }: SharedSpaceDetailPr
   const t = useTranslations('sharedSpaces');
   const tc = useTranslations('common');
 
-  const [showCreateTodo, setShowCreateTodo] = useState(false);
+  const [showCreateTask, setShowCreateTask] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newDescription, setNewDescription] = useState('');
@@ -56,15 +56,15 @@ export function SharedSpaceDetail({ sharedSpaceId, onBack }: SharedSpaceDetailPr
 
   useEffect(() => {
     fetchSharedSpace(sharedSpaceId);
-    fetchTodos(sharedSpaceId);
-  }, [sharedSpaceId, fetchSharedSpace, fetchTodos]);
+    fetchTasks(sharedSpaceId);
+  }, [sharedSpaceId, fetchSharedSpace, fetchTasks]);
 
-  const handleCreateTodo = async () => {
+  const handleCreateTask = async () => {
     if (!newTitle.trim()) return;
-    await createTodo(sharedSpaceId, newTitle, newDescription || undefined);
+    await createTask(sharedSpaceId, newTitle, newDescription || undefined);
     setNewTitle('');
     setNewDescription('');
-    setShowCreateTodo(false);
+    setShowCreateTask(false);
   };
 
   const handleInvite = async () => {
@@ -137,9 +137,9 @@ export function SharedSpaceDetail({ sharedSpaceId, onBack }: SharedSpaceDetailPr
             <UserPlus className="mr-1 h-4 w-4" />
             {t('inviteWorkspace')}
           </Button>
-          <Button size="sm" onClick={() => setShowCreateTodo(true)}>
+          <Button size="sm" onClick={() => setShowCreateTask(true)}>
             <Plus className="mr-1 h-4 w-4" />
-            {t('newTodo')}
+            {t('newTask')}
           </Button>
         </div>
       </div>
@@ -178,78 +178,78 @@ export function SharedSpaceDetail({ sharedSpaceId, onBack }: SharedSpaceDetailPr
           </div>
         </div>
 
-        {/* Todos */}
+        {/* Tasks */}
         <div className="px-6 py-4">
           <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
-            {t('sharedTodos')} ({todos.length})
+            {t('sharedTasks')} ({tasks.length})
           </h2>
 
-          {todosLoading ? (
+          {tasksLoading ? (
             <div className="flex justify-center py-8">
               <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             </div>
-          ) : todos.length === 0 ? (
+          ) : tasks.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-              <p className="text-sm">{t('noTodosYet')}</p>
+              <p className="text-sm">{t('noTasksYet')}</p>
               <Button
                 size="sm"
                 variant="outline"
                 className="mt-2"
-                onClick={() => setShowCreateTodo(true)}
+                onClick={() => setShowCreateTask(true)}
               >
-                {t('createFirstTodo')}
+                {t('createFirstTask')}
               </Button>
             </div>
           ) : (
             <div className="space-y-1">
-              {todos.map((todo) => (
+              {tasks.map((task) => (
                 <div
-                  key={todo.id}
+                  key={task.id}
                   className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-accent/30 transition-colors"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium truncate">
-                        {todo.title}
+                        {task.title}
                       </span>
                       <Badge
                         variant="outline"
                         className={cn(
                           'text-[9px] px-1.5 py-0',
-                          statusColors[todo.status],
+                          statusColors[task.status],
                         )}
                       >
-                        {todo.status}
+                        {task.status}
                       </Badge>
                     </div>
                     <div className="flex items-center gap-2 mt-1">
                       <Avatar className="h-4 w-4">
                         <AvatarFallback className="text-[7px] bg-secondary">
-                          {todo.assignee.name.charAt(0).toUpperCase()}
+                          {task.assignee.name.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <span className="text-[11px] text-muted-foreground">
-                        {todo.assignee.name}
+                        {task.assignee.name}
                       </span>
                       <span className="text-[10px] text-muted-foreground">
                         &middot;
                       </span>
                       <Badge variant="outline" className="text-[9px] px-1 py-0">
-                        {todo.workspace.name}
+                        {task.workspace.name}
                       </Badge>
-                      {todo.priority && (
+                      {task.priority && (
                         <span
                           className={cn(
                             'text-[10px]',
-                            priorityColors[todo.priority],
+                            priorityColors[task.priority],
                           )}
                         >
-                          {todo.priority}
+                          {task.priority}
                         </span>
                       )}
-                      {todo.threadLinks.length > 0 && (
+                      {task.threadLinks.length > 0 && (
                         <span className="text-[10px] text-muted-foreground">
-                          {todo.threadLinks.length} {t('threads')}
+                          {task.threadLinks.length} {t('threads')}
                         </span>
                       )}
                     </div>
@@ -261,34 +261,34 @@ export function SharedSpaceDetail({ sharedSpaceId, onBack }: SharedSpaceDetailPr
         </div>
       </div>
 
-      {/* Create Todo Dialog */}
-      {showCreateTodo && (
-        <Dialog open onOpenChange={() => setShowCreateTodo(false)}>
+      {/* Create Task Dialog */}
+      {showCreateTask && (
+        <Dialog open onOpenChange={() => setShowCreateTask(false)}>
           <DialogContent className="sm:max-w-sm">
             <DialogHeader>
-              <DialogTitle>{t('createTodo')}</DialogTitle>
+              <DialogTitle>{t('createTask')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <Label>{t('todoTitle')}</Label>
+                <Label>{t('taskTitle')}</Label>
                 <Input
-                  placeholder={t('todoTitlePlaceholder')}
+                  placeholder={t('taskTitlePlaceholder')}
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleCreateTodo()}
+                  onKeyDown={(e) => e.key === 'Enter' && handleCreateTask()}
                   autoFocus
                 />
               </div>
               <div className="space-y-1.5">
                 <Label>{t('descriptionOptional')}</Label>
                 <Input
-                  placeholder={t('todoDescriptionPlaceholder')}
+                  placeholder={t('taskDescriptionPlaceholder')}
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
                 />
               </div>
               <Button
-                onClick={handleCreateTodo}
+                onClick={handleCreateTask}
                 className="w-full"
                 disabled={!newTitle.trim()}
               >

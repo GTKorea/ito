@@ -187,7 +187,7 @@ export default function SharedSpacesPage() {
 
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <CheckSquare className="h-3 w-3" />
-                    {space._count?.todos || 0} {t('todos')}
+                    {space._count?.tasks || 0} {t('tasks')}
                   </div>
                 </div>
 

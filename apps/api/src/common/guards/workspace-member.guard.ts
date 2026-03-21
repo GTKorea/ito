@@ -68,12 +68,12 @@ export class WorkspaceMemberGuard implements CanActivate {
       }
 
       // GUEST can only use GET for most resources (read-only)
-      // Exception: POST to thread-links/:id/resolve and PATCH to todos/:id (status updates)
+      // Exception: POST to thread-links/:id/resolve and PATCH to tasks/:id (status updates)
       const isResolveThread = path.includes('thread-links') && path.includes('resolve');
-      const isTodoUpdate = path.includes('/todos') && method === 'PATCH';
+      const isTaskUpdate = path.includes('/tasks') && method === 'PATCH';
       const isAllowedMethod = GUEST_ALLOWED_METHODS.includes(method);
 
-      if (!isAllowedMethod && !isResolveThread && !isTodoUpdate) {
+      if (!isAllowedMethod && !isResolveThread && !isTaskUpdate) {
         throw new ForbiddenException(
           'Guest users have read-only access',
         );

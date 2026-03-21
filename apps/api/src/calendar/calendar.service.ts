@@ -259,7 +259,7 @@ export class CalendarService implements OnModuleInit {
 
   async createEvent(
     userId: string,
-    todo: { title: string; description?: string; dueDate: Date },
+    task: { title: string; description?: string; dueDate: Date },
   ) {
     const integrations = await this.prisma.calendarIntegration.findMany({
       where: { userId, syncEnabled: true },
@@ -268,9 +268,9 @@ export class CalendarService implements OnModuleInit {
     for (const integration of integrations) {
       try {
         if (integration.provider === 'google') {
-          await this.createGoogleEvent(integration, todo);
+          await this.createGoogleEvent(integration, task);
         } else if (integration.provider === 'outlook') {
-          await this.createOutlookEvent(integration, todo);
+          await this.createOutlookEvent(integration, task);
         }
       } catch (error) {
         this.logger.error(
@@ -389,7 +389,7 @@ export class CalendarService implements OnModuleInit {
       refreshToken: string;
       calendarId?: string | null;
     },
-    todo: { title: string; description?: string; dueDate: Date },
+    task: { title: string; description?: string; dueDate: Date },
   ) {
     if (!this.googleEnabled) return;
 
@@ -407,15 +407,15 @@ export class CalendarService implements OnModuleInit {
     await calendar.events.insert({
       calendarId: integration.calendarId || 'primary',
       requestBody: {
-        summary: todo.title,
-        description: todo.description || '',
+        summary: task.title,
+        description: task.description || '',
         start: {
-          dateTime: todo.dueDate.toISOString(),
+          dateTime: task.dueDate.toISOString(),
           timeZone: 'UTC',
         },
         end: {
           dateTime: new Date(
-            todo.dueDate.getTime() + 60 * 60 * 1000,
+            task.dueDate.getTime() + 60 * 60 * 1000,
           ).toISOString(),
           timeZone: 'UTC',
         },
@@ -425,7 +425,7 @@ export class CalendarService implements OnModuleInit {
 
   private async createOutlookEvent(
     integration: { accessToken: string },
-    todo: { title: string; description?: string; dueDate: Date },
+    task: { title: string; description?: string; dueDate: Date },
   ) {
     if (!this.outlookEnabled) return;
 
@@ -436,15 +436,15 @@ export class CalendarService implements OnModuleInit {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        subject: todo.title,
-        body: { contentType: 'text', content: todo.description || '' },
+        subject: task.title,
+        body: { contentType: 'text', content: task.description || '' },
         start: {
-          dateTime: todo.dueDate.toISOString(),
+          dateTime: task.dueDate.toISOString(),
           timeZone: 'UTC',
         },
         end: {
           dateTime: new Date(
-            todo.dueDate.getTime() + 60 * 60 * 1000,
+            task.dueDate.getTime() + 60 * 60 * 1000,
           ).toISOString(),
           timeZone: 'UTC',
         },

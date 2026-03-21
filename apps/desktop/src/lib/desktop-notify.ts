@@ -47,7 +47,7 @@ export function formatNotification(notification: NotificationData): {
   body: string;
 } {
   const data = notification.data || {};
-  const taskTitle = data.todoTitle || data.title || '';
+  const taskTitle = data.taskTitle || data.title || '';
 
   switch (notification.type) {
     case 'THREAD_RECEIVED':
@@ -74,12 +74,12 @@ export function formatNotification(notification: NotificationData): {
           ? `You've been invited to ${data.workspaceName}`
           : "You've been invited to a workspace",
       };
-    case 'TODO_ASSIGNED':
+    case 'TASK_ASSIGNED':
       return {
         title: `Task Assigned: ${taskTitle}`,
         body: 'A task has been assigned to you',
       };
-    case 'TODO_COMPLETED':
+    case 'TASK_COMPLETED':
       return {
         title: `Task Complete: ${taskTitle}`,
         body: 'A task has been completed',

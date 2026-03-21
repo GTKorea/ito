@@ -70,7 +70,7 @@
     "workspaceName": "ワークスペース名",
     "workspaceNamePlaceholder": "例：マイチーム"
   },
-  "todos": {
+  "tasks": {
     "noTasksYet": "タスクがありません",
     "createNewToStart": "新しいタスクを作成して始めましょう",
     "completed": "完了済み",
@@ -474,8 +474,8 @@
       "THREAD_SNAPPED": "スレッドスナップバック",
       "THREAD_COMPLETED": "スレッド完了",
       "WORKSPACE_INVITE": "ワークスペース招待",
-      "TODO_ASSIGNED": "タスク割り当て",
-      "TODO_COMPLETED": "タスク完了",
+      "TASK_ASSIGNED": "タスク割り当て",
+      "TASK_COMPLETED": "タスク完了",
       "THREAD_DECLINED": "スレッド拒否",
       "SHARED_SPACE_INVITE": "共有スペース招待"
     }
@@ -563,11 +563,11 @@
           "name": "ワークスペース招待",
           "description": "ワークスペースに招待されました。"
         },
-        "todoAssigned": {
+        "taskAssigned": {
           "name": "タスク割り当て",
           "description": "タスクが割り当てられました。"
         },
-        "todoCompleted": {
+        "taskCompleted": {
           "name": "タスク完了",
           "description": "作成または参加したタスクが完了しました。"
         }
@@ -588,10 +588,10 @@
     "accessDenied": "管理者アクセスが必要です",
     "totalUsers": "総ユーザー数",
     "totalWorkspaces": "総ワークスペース数",
-    "totalTodos": "総タスク数",
+    "totalTasks": "総タスク数",
     "totalThreads": "総スレッド数",
     "activeThisWeek": "今週アクティブ",
-    "todosByStatus": "ステータス別タスク",
+    "tasksByStatus": "ステータス別タスク",
     "status_OPEN": "オープン",
     "status_IN_PROGRESS": "進行中",
     "status_BLOCKED": "ブロック中",
@@ -601,13 +601,13 @@
     "noActivity": "アクティビティなし",
     "manageUsers": "ユーザー管理",
     "manageWorkspaces": "ワークスペース管理",
-    "manageTodos": "タスク管理",
+    "manageTasks": "タスク管理",
     "users": "ユーザー",
     "workspaces": "ワークスペース",
-    "todos": "タスク",
+    "tasks": "タスク",
     "searchUsers": "名前またはメールで検索...",
     "searchWorkspaces": "名前またはスラッグで検索...",
-    "searchTodos": "タイトルで検索...",
+    "searchTasks": "タイトルで検索...",
     "name": "名前",
     "email": "メール",
     "role": "役割",
@@ -616,7 +616,7 @@
     "members": "メンバー",
     "teamsCount": "チーム",
     "created": "作成日",
-    "todoTitle": "タイトル",
+    "taskTitle": "タイトル",
     "status": "ステータス",
     "priority": "優先度",
     "assignee": "担当者",
@@ -651,17 +651,17 @@
     "sendInvite": "Send Invite",
     "inviteSent": "Invite sent! Share this link with the workspace admin:",
     "workspaces": "workspaces",
-    "todos": "todos",
+    "tasks": "tasks",
     "members": "members",
     "threads": "threads",
     "participatingWorkspaces": "Participating Workspaces",
-    "sharedTodos": "Shared Todos",
-    "noTodosYet": "No shared todos yet",
-    "createFirstTodo": "Create the first shared todo",
-    "newTodo": "New Todo",
-    "createTodo": "Create Shared Todo",
-    "todoTitle": "Title",
-    "todoTitlePlaceholder": "What needs to be done?",
-    "todoDescriptionPlaceholder": "Add details..."
+    "sharedTasks": "Shared Tasks",
+    "noTasksYet": "No shared tasks yet",
+    "createFirstTask": "Create the first shared task",
+    "newTask": "New Task",
+    "createTask": "Create Shared Task",
+    "taskTitle": "Title",
+    "taskTitlePlaceholder": "What needs to be done?",
+    "taskDescriptionPlaceholder": "Add details..."
   }
 }

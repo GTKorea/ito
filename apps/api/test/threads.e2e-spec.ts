@@ -56,22 +56,22 @@ describe('Threads (e2e)', () => {
     const userBId = await getUserId(userB.accessToken);
     const userCId = await getUserId(userC.accessToken);
 
-    // A creates a todo
-    const todoRes = await request(app.getHttpServer())
-      .post(`/workspaces/${ws.id}/todos`)
+    // A creates a task
+    const taskRes = await request(app.getHttpServer())
+      .post(`/workspaces/${ws.id}/tasks`)
       .set('Authorization', `Bearer ${userA.accessToken}`)
       .send({ title: 'Chain Task' })
       .expect(201);
 
-    return { userA, userB, userC, userBId, userCId, ws, todo: todoRes.body };
+    return { userA, userB, userC, userBId, userCId, ws, task: taskRes.body };
   }
 
-  describe('POST /todos/:todoId/connect', () => {
-    it('should connect a todo to another user', async () => {
-      const { userA, userBId, todo } = await setupChainScenario();
+  describe('POST /tasks/:taskId/connect', () => {
+    it('should connect a task to another user', async () => {
+      const { userA, userBId, task } = await setupChainScenario();
 
       const res = await request(app.getHttpServer())
-        .post(`/todos/${todo.id}/connect`)
+        .post(`/tasks/${task.id}/connect`)
         .set('Authorization', `Bearer ${userA.accessToken}`)
         .send({ toUserId: userBId, message: 'Please review' })
         .expect(201);
@@ -82,41 +82,41 @@ describe('Threads (e2e)', () => {
     });
 
     it('should prevent self-connection', async () => {
-      const { userA, todo } = await setupChainScenario();
+      const { userA, task } = await setupChainScenario();
       const userAId = await getUserId(userA.accessToken);
 
       await request(app.getHttpServer())
-        .post(`/todos/${todo.id}/connect`)
+        .post(`/tasks/${task.id}/connect`)
         .set('Authorization', `Bearer ${userA.accessToken}`)
         .send({ toUserId: userAId })
         .expect(400);
     });
 
     it('should prevent non-assignee from connecting', async () => {
-      const { userB, userCId, todo } = await setupChainScenario();
+      const { userB, userCId, task } = await setupChainScenario();
 
       // B is not the assignee, should get 403 even when trying to connect to C
       await request(app.getHttpServer())
-        .post(`/todos/${todo.id}/connect`)
+        .post(`/tasks/${task.id}/connect`)
         .set('Authorization', `Bearer ${userB.accessToken}`)
         .send({ toUserId: userCId })
         .expect(403);
     });
 
     it('should allow circular thread connection (A->B->A)', async () => {
-      const { userA, userB, userBId, todo } = await setupChainScenario();
+      const { userA, userB, userBId, task } = await setupChainScenario();
       const userAId = await getUserId(userA.accessToken);
 
       // A -> B
       await request(app.getHttpServer())
-        .post(`/todos/${todo.id}/connect`)
+        .post(`/tasks/${task.id}/connect`)
         .set('Authorization', `Bearer ${userA.accessToken}`)
         .send({ toUserId: userBId })
         .expect(201);
 
       // B -> A (circular, should now succeed)
       const res = await request(app.getHttpServer())
-        .post(`/todos/${todo.id}/connect`)
+        .post(`/tasks/${task.id}/connect`)
         .set('Authorization', `Bearer ${userB.accessToken}`)
         .send({ toUserId: userAId })
         .expect(201);
@@ -125,26 +125,26 @@ describe('Threads (e2e)', () => {
     });
 
     it('should allow circular connection to intermediate user (A->B->C->B)', async () => {
-      const { userA, userB, userC, userBId, userCId, todo } =
+      const { userA, userB, userC, userBId, userCId, task } =
         await setupChainScenario();
 
       // A -> B
       await request(app.getHttpServer())
-        .post(`/todos/${todo.id}/connect`)
+        .post(`/tasks/${task.id}/connect`)
         .set('Authorization', `Bearer ${userA.accessToken}`)
         .send({ toUserId: userBId })
         .expect(201);
 
       // B -> C
       await request(app.getHttpServer())
-        .post(`/todos/${todo.id}/connect`)
+        .post(`/tasks/${task.id}/connect`)
         .set('Authorization', `Bearer ${userB.accessToken}`)
         .send({ toUserId: userCId })
         .expect(201);
 
       // C -> B (circular back to intermediate user, should succeed)
       const res = await request(app.getHttpServer())
-        .post(`/todos/${todo.id}/connect`)
+        .post(`/tasks/${task.id}/connect`)
         .set('Authorization', `Bearer ${userC.accessToken}`)
         .send({ toUserId: userBId })
         .expect(201);
@@ -153,19 +153,19 @@ describe('Threads (e2e)', () => {
     });
 
     it('should allow chaining: A -> B -> C', async () => {
-      const { userA, userB, userBId, userCId, todo } =
+      const { userA, userB, userBId, userCId, task } =
         await setupChainScenario();
 
       // A -> B
       await request(app.getHttpServer())
-        .post(`/todos/${todo.id}/connect`)
+        .post(`/tasks/${task.id}/connect`)
         .set('Authorization', `Bearer ${userA.accessToken}`)
         .send({ toUserId: userBId })
         .expect(201);
 
       // B -> C
       const res = await request(app.getHttpServer())
-        .post(`/todos/${todo.id}/connect`)
+        .post(`/tasks/${task.id}/connect`)
         .set('Authorization', `Bearer ${userB.accessToken}`)
         .send({ toUserId: userCId })
         .expect(201);
@@ -176,11 +176,11 @@ describe('Threads (e2e)', () => {
 
   describe('POST /thread-links/:id/resolve', () => {
     it('should resolve and snap back to previous user', async () => {
-      const { userA, userB, userBId, todo } = await setupChainScenario();
+      const { userA, userB, userBId, task } = await setupChainScenario();
 
       // A -> B
       const connectRes = await request(app.getHttpServer())
-        .post(`/todos/${todo.id}/connect`)
+        .post(`/tasks/${task.id}/connect`)
         .set('Authorization', `Bearer ${userA.accessToken}`)
         .send({ toUserId: userBId })
         .expect(201);
@@ -193,23 +193,23 @@ describe('Threads (e2e)', () => {
 
       expect(resolveRes.body.snapBackTo).toBeDefined();
 
-      // Todo should now be assigned back to A
-      const todoRes = await request(app.getHttpServer())
-        .get(`/todos/${todo.id}`)
+      // Task should now be assigned back to A
+      const taskRes = await request(app.getHttpServer())
+        .get(`/tasks/${task.id}`)
         .set('Authorization', `Bearer ${userA.accessToken}`)
         .expect(200);
 
       const userAId = await getUserId(userA.accessToken);
-      expect(todoRes.body.assigneeId).toBe(userAId);
-      expect(todoRes.body.status).toBe('IN_PROGRESS');
+      expect(taskRes.body.assigneeId).toBe(userAId);
+      expect(taskRes.body.status).toBe('IN_PROGRESS');
     });
 
     it('should allow reconnection to a previously resolved user', async () => {
-      const { userA, userB, userBId, todo } = await setupChainScenario();
+      const { userA, userB, userBId, task } = await setupChainScenario();
 
       // A -> B
       const connectRes = await request(app.getHttpServer())
-        .post(`/todos/${todo.id}/connect`)
+        .post(`/tasks/${task.id}/connect`)
         .set('Authorization', `Bearer ${userA.accessToken}`)
         .send({ toUserId: userBId })
         .expect(201);
@@ -222,7 +222,7 @@ describe('Threads (e2e)', () => {
 
       // A reconnects to B (should succeed, B's link is COMPLETED)
       const reconnectRes = await request(app.getHttpServer())
-        .post(`/todos/${todo.id}/connect`)
+        .post(`/tasks/${task.id}/connect`)
         .set('Authorization', `Bearer ${userA.accessToken}`)
         .send({ toUserId: userBId })
         .expect(201);
@@ -231,19 +231,19 @@ describe('Threads (e2e)', () => {
     });
 
     it('should snap back through chain: C resolves -> B gets it, B resolves -> A gets it', async () => {
-      const { userA, userB, userC, userBId, userCId, todo } =
+      const { userA, userB, userC, userBId, userCId, task } =
         await setupChainScenario();
 
       // A -> B
       await request(app.getHttpServer())
-        .post(`/todos/${todo.id}/connect`)
+        .post(`/tasks/${task.id}/connect`)
         .set('Authorization', `Bearer ${userA.accessToken}`)
         .send({ toUserId: userBId })
         .expect(201);
 
       // B -> C
       const linkBC = await request(app.getHttpServer())
-        .post(`/todos/${todo.id}/connect`)
+        .post(`/tasks/${task.id}/connect`)
         .set('Authorization', `Bearer ${userB.accessToken}`)
         .send({ toUserId: userCId })
         .expect(201);
@@ -255,16 +255,16 @@ describe('Threads (e2e)', () => {
         .expect(201);
 
       // Check: B should be the assignee now, status should be IN_PROGRESS
-      let todoCheck = await request(app.getHttpServer())
-        .get(`/todos/${todo.id}`)
+      let taskCheck = await request(app.getHttpServer())
+        .get(`/tasks/${task.id}`)
         .set('Authorization', `Bearer ${userA.accessToken}`)
         .expect(200);
 
-      expect(todoCheck.body.assigneeId).toBe(userBId);
+      expect(taskCheck.body.assigneeId).toBe(userBId);
 
       // B's link should be PENDING again
       const chain = await request(app.getHttpServer())
-        .get(`/todos/${todo.id}/chain`)
+        .get(`/tasks/${task.id}/chain`)
         .set('Authorization', `Bearer ${userA.accessToken}`)
         .expect(200);
 
@@ -279,21 +279,21 @@ describe('Threads (e2e)', () => {
         .set('Authorization', `Bearer ${userB.accessToken}`)
         .expect(201);
 
-      todoCheck = await request(app.getHttpServer())
-        .get(`/todos/${todo.id}`)
+      taskCheck = await request(app.getHttpServer())
+        .get(`/tasks/${task.id}`)
         .set('Authorization', `Bearer ${userA.accessToken}`)
         .expect(200);
 
       const userAId = await getUserId(userA.accessToken);
-      expect(todoCheck.body.assigneeId).toBe(userAId);
-      expect(todoCheck.body.status).toBe('IN_PROGRESS');
+      expect(taskCheck.body.assigneeId).toBe(userAId);
+      expect(taskCheck.body.status).toBe('IN_PROGRESS');
     });
 
     it('should return 403 when non-recipient tries to resolve', async () => {
-      const { userA, userBId, todo } = await setupChainScenario();
+      const { userA, userBId, task } = await setupChainScenario();
 
       const connectRes = await request(app.getHttpServer())
-        .post(`/todos/${todo.id}/connect`)
+        .post(`/tasks/${task.id}/connect`)
         .set('Authorization', `Bearer ${userA.accessToken}`)
         .send({ toUserId: userBId })
         .expect(201);
@@ -306,23 +306,23 @@ describe('Threads (e2e)', () => {
     });
   });
 
-  describe('POST /todos/:todoId/connect-chain', () => {
+  describe('POST /tasks/:taskId/connect-chain', () => {
     it('should create a chain of connections (A→B→C)', async () => {
-      const { userA, userBId, userCId, ws, todo } =
+      const { userA, userBId, userCId, ws, task } =
         await setupChainScenario();
 
       const res = await request(app.getHttpServer())
-        .post(`/todos/${todo.id}/connect-chain`)
+        .post(`/tasks/${task.id}/connect-chain`)
         .set('Authorization', `Bearer ${userA.accessToken}`)
         .send({ userIds: [userBId, userCId] })
         .expect(201);
 
       expect(res.body.threadLinks).toHaveLength(2);
-      expect(res.body.todo.assigneeId).toBe(userCId);
+      expect(res.body.task.assigneeId).toBe(userCId);
 
       // Verify the chain state
       const chain = await request(app.getHttpServer())
-        .get(`/todos/${todo.id}/chain`)
+        .get(`/tasks/${task.id}/chain`)
         .set('Authorization', `Bearer ${userA.accessToken}`)
         .expect(200);
 
@@ -336,47 +336,47 @@ describe('Threads (e2e)', () => {
     });
 
     it('should fail if not the creator/assignee', async () => {
-      const { userB, userCId, todo } = await setupChainScenario();
+      const { userB, userCId, task } = await setupChainScenario();
 
       await request(app.getHttpServer())
-        .post(`/todos/${todo.id}/connect-chain`)
+        .post(`/tasks/${task.id}/connect-chain`)
         .set('Authorization', `Bearer ${userB.accessToken}`)
         .send({ userIds: [userCId] })
         .expect(403);
     });
 
     it('should fail with empty userIds', async () => {
-      const { userA, todo } = await setupChainScenario();
+      const { userA, task } = await setupChainScenario();
 
       await request(app.getHttpServer())
-        .post(`/todos/${todo.id}/connect-chain`)
+        .post(`/tasks/${task.id}/connect-chain`)
         .set('Authorization', `Bearer ${userA.accessToken}`)
         .send({ userIds: [] })
         .expect(400);
     });
   });
 
-  describe('GET /todos/:todoId/chain', () => {
+  describe('GET /tasks/:taskId/chain', () => {
     it('should return ordered thread links', async () => {
-      const { userA, userB, userBId, userCId, todo } =
+      const { userA, userB, userBId, userCId, task } =
         await setupChainScenario();
 
       // A -> B
       await request(app.getHttpServer())
-        .post(`/todos/${todo.id}/connect`)
+        .post(`/tasks/${task.id}/connect`)
         .set('Authorization', `Bearer ${userA.accessToken}`)
         .send({ toUserId: userBId })
         .expect(201);
 
       // B -> C
       await request(app.getHttpServer())
-        .post(`/todos/${todo.id}/connect`)
+        .post(`/tasks/${task.id}/connect`)
         .set('Authorization', `Bearer ${userB.accessToken}`)
         .send({ toUserId: userCId })
         .expect(201);
 
       const res = await request(app.getHttpServer())
-        .get(`/todos/${todo.id}/chain`)
+        .get(`/tasks/${task.id}/chain`)
         .set('Authorization', `Bearer ${userA.accessToken}`)
         .expect(200);
 
@@ -388,11 +388,11 @@ describe('Threads (e2e)', () => {
 
   describe('GET /threads/mine', () => {
     it('should return incoming and outgoing threads', async () => {
-      const { userA, userB, userBId, ws, todo } = await setupChainScenario();
+      const { userA, userB, userBId, ws, task } = await setupChainScenario();
 
       // A -> B
       await request(app.getHttpServer())
-        .post(`/todos/${todo.id}/connect`)
+        .post(`/tasks/${task.id}/connect`)
         .set('Authorization', `Bearer ${userA.accessToken}`)
         .send({ toUserId: userBId })
         .expect(201);

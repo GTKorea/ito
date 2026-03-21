@@ -6,7 +6,7 @@ interface TeamCardProps {
   team: {
     id: string;
     name: string;
-    _count?: { members: number; todos: number };
+    _count?: { members: number; tasks: number };
   };
   isExpanded: boolean;
   onClick: () => void;
@@ -30,7 +30,7 @@ export function TeamCard({ team, isExpanded, onClick }: TeamCardProps) {
           </span>
           <span className="flex items-center gap-1">
             <ListTodo className="h-3 w-3" />
-            {team._count?.todos || 0} tasks
+            {team._count?.tasks || 0} tasks
           </span>
         </div>
       </div>

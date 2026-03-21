@@ -19,12 +19,12 @@ export class ThreadsService {
   ) {}
 
   /**
-   * Connect a todo to one or more users via thread links.
+   * Connect a task to one or more users via thread links.
    * Single user: behaves as before (A → B).
    * Multiple users: creates parallel branches with a shared groupId (A → B, A → C).
    */
   async connect(
-    todoId: string,
+    taskId: string,
     fromUserId: string,
     toUserIds: string[],
     message?: string,
@@ -49,22 +49,22 @@ export class ThreadsService {
       }
     }
 
-    const todo = await this.prisma.todo.findUnique({
-      where: { id: todoId },
+    const task = await this.prisma.task.findUnique({
+      where: { id: taskId },
       include: { threadLinks: { orderBy: { chainIndex: 'asc' } } },
     });
 
-    if (!todo) throw new NotFoundException('Todo not found');
+    if (!task) throw new NotFoundException('Task not found');
 
     // Only current assignee can connect to someone else
-    if (todo.assigneeId !== fromUserId) {
+    if (task.assigneeId !== fromUserId) {
       throw new ForbiddenException(
-        'Only the current assignee can connect this todo',
+        'Only the current assignee can connect this task',
       );
     }
 
     // Check max depth
-    const nextIndex = todo.threadLinks.length;
+    const nextIndex = task.threadLinks.length;
     if (nextIndex + toUserIds.length > MAX_CHAIN_DEPTH) {
       throw new BadRequestException(
         `Thread chain cannot exceed ${MAX_CHAIN_DEPTH} connections`,
@@ -73,14 +73,14 @@ export class ThreadsService {
 
     // Check for circular references — no user in toUserIds should be in the active chain
     const usersInActiveChain = new Set<string>();
-    for (const link of todo.threadLinks) {
+    for (const link of task.threadLinks) {
       if (link.status === 'PENDING' || link.status === 'FORWARDED') {
         usersInActiveChain.add(link.fromUserId);
         usersInActiveChain.add(link.toUserId);
       }
     }
-    // Also add the todo creator if they are still part of the active chain
-    usersInActiveChain.add(todo.creatorId);
+    // Also add the task creator if they are still part of the active chain
+    usersInActiveChain.add(task.creatorId);
 
     for (const toUserId of toUserIds) {
       if (usersInActiveChain.has(toUserId)) {
@@ -91,7 +91,7 @@ export class ThreadsService {
     }
 
     // Mark current user's status as FORWARDED if they have a pending link
-    const currentLink = todo.threadLinks.find(
+    const currentLink = task.threadLinks.find(
       (l) => l.toUserId === fromUserId && l.status === 'PENDING',
     );
 
@@ -113,7 +113,7 @@ export class ThreadsService {
       for (let i = 0; i < toUserIds.length; i++) {
         const link = await tx.threadLink.create({
           data: {
-            todoId,
+            taskId,
             fromUserId,
             toUserId: toUserIds[i],
             message,
@@ -131,13 +131,13 @@ export class ThreadsService {
       // For multi-connect: keep assignee as the sender (they are waiting for all to complete)
       // For single connect: assign to the target user (original behavior)
       if (isMulti) {
-        await tx.todo.update({
-          where: { id: todoId },
+        await tx.task.update({
+          where: { id: taskId },
           data: { status: 'IN_PROGRESS' },
         });
       } else {
-        await tx.todo.update({
-          where: { id: todoId },
+        await tx.task.update({
+          where: { id: taskId },
           data: { assigneeId: toUserIds[0], status: 'IN_PROGRESS' },
         });
       }
@@ -152,17 +152,17 @@ export class ThreadsService {
         type: 'THREAD_RECEIVED',
         title: 'New thread connected to you',
         body: message || `${link.fromUser.name} connected a task to you`,
-        data: { todoId, threadLinkId: link.id, groupId },
+        data: { taskId, threadLinkId: link.id, groupId },
       });
     }
 
     await this.activityService.log({
-      workspaceId: todo.workspaceId,
+      workspaceId: task.workspaceId,
       userId: fromUserId,
       action: 'CONNECTED',
       entityType: 'ThreadLink',
       entityId: threadLinks[0].id,
-      metadata: { todoId, toUserIds, groupId },
+      metadata: { taskId, toUserIds, groupId },
     });
 
     // Return single link for backward compat, array for multi
@@ -177,7 +177,7 @@ export class ThreadsService {
     const link = await this.prisma.threadLink.findUnique({
       where: { id: threadLinkId },
       include: {
-        todo: { include: { threadLinks: { orderBy: { chainIndex: 'asc' } } } },
+        task: { include: { threadLinks: { orderBy: { chainIndex: 'asc' } } } },
       },
     });
 
@@ -211,7 +211,7 @@ export class ThreadsService {
 
         if (allCompleted) {
           // All parallel branches done — snap back to the sender
-          const previousLink = link.todo.threadLinks.find(
+          const previousLink = link.task.threadLinks.find(
             (l) => l.toUserId === previousUser && l.status === 'FORWARDED',
           );
 
@@ -222,18 +222,18 @@ export class ThreadsService {
             });
           }
 
-          await tx.todo.update({
-            where: { id: link.todoId },
+          await tx.task.update({
+            where: { id: link.taskId },
             data: {
               assigneeId: previousUser,
               status: 'IN_PROGRESS',
             },
           });
         }
-        // If not all completed, just leave the todo as-is — still waiting
+        // If not all completed, just leave the task as-is — still waiting
       } else {
         // Original single-link resolve logic
-        const previousLink = link.todo.threadLinks.find(
+        const previousLink = link.task.threadLinks.find(
           (l) => l.toUserId === previousUser && l.status === 'FORWARDED',
         );
 
@@ -244,8 +244,8 @@ export class ThreadsService {
           });
         }
 
-        await tx.todo.update({
-          where: { id: link.todoId },
+        await tx.task.update({
+          where: { id: link.taskId },
           data: {
             assigneeId: previousUser,
             status: 'IN_PROGRESS',
@@ -268,7 +268,7 @@ export class ThreadsService {
           type: 'THREAD_SNAPPED',
           title: 'All parallel threads resolved — your turn',
           body: 'All parallel dependencies were resolved and the task is back to you',
-          data: { todoId: link.todoId, threadLinkId: link.id, groupId: link.groupId },
+          data: { taskId: link.taskId, threadLinkId: link.id, groupId: link.groupId },
         });
       } else {
         // Notify the sender that one branch is done (partial progress)
@@ -278,7 +278,7 @@ export class ThreadsService {
           type: 'THREAD_COMPLETED',
           title: 'A parallel thread was resolved',
           body: `${completedCount}/${groupLinks.length} parallel threads completed`,
-          data: { todoId: link.todoId, threadLinkId: link.id, groupId: link.groupId },
+          data: { taskId: link.taskId, threadLinkId: link.id, groupId: link.groupId },
         });
       }
     } else {
@@ -288,17 +288,17 @@ export class ThreadsService {
         type: 'THREAD_SNAPPED',
         title: 'Thread resolved — your turn',
         body: 'A dependency was resolved and the task is back to you',
-        data: { todoId: link.todoId, threadLinkId: link.id },
+        data: { taskId: link.taskId, threadLinkId: link.id },
       });
     }
 
     await this.activityService.log({
-      workspaceId: link.todo.workspaceId,
+      workspaceId: link.task.workspaceId,
       userId,
       action: 'RESOLVED',
       entityType: 'ThreadLink',
       entityId: threadLinkId,
-      metadata: { todoId: link.todoId, groupId: link.groupId },
+      metadata: { taskId: link.taskId, groupId: link.groupId },
     });
 
     return { message: 'Thread link resolved', snapBackTo: previousUser, groupId: link.groupId };
@@ -310,7 +310,7 @@ export class ThreadsService {
   async decline(threadLinkId: string, userId: string, reason?: string) {
     const link = await this.prisma.threadLink.findUnique({
       where: { id: threadLinkId },
-      include: { todo: true },
+      include: { task: true },
     });
 
     if (!link) throw new NotFoundException('Thread link not found');
@@ -328,10 +328,10 @@ export class ThreadsService {
         data: { status: 'CANCELLED' },
       });
 
-      // Find previous forwarded link (same todo, fromUserId of this link as toUserId, status FORWARDED)
+      // Find previous forwarded link (same task, fromUserId of this link as toUserId, status FORWARDED)
       const prevLink = await tx.threadLink.findFirst({
         where: {
-          todoId: link.todoId,
+          taskId: link.taskId,
           toUserId: link.fromUserId,
           status: 'FORWARDED',
         },
@@ -344,9 +344,9 @@ export class ThreadsService {
         });
       }
 
-      // Update todo assignee back to fromUser
-      await tx.todo.update({
-        where: { id: link.todoId },
+      // Update task assignee back to fromUser
+      await tx.task.update({
+        where: { id: link.taskId },
         data: { assigneeId: link.fromUserId },
       });
 
@@ -359,8 +359,8 @@ export class ThreadsService {
           ? `Your thread was declined: ${reason}`
           : 'Your thread was declined',
         data: {
-          todoId: link.todoId,
-          todoTitle: link.todo.title,
+          taskId: link.taskId,
+          taskTitle: link.task.title,
           declinedBy: userId,
           reason: reason || null,
         },
@@ -368,12 +368,12 @@ export class ThreadsService {
 
       // Log activity
       await this.activityService.log({
-        workspaceId: link.todo.workspaceId,
+        workspaceId: link.task.workspaceId,
         userId,
         action: 'DECLINED',
         entityType: 'ThreadLink',
         entityId: threadLinkId,
-        metadata: { todoId: link.todoId, reason },
+        metadata: { taskId: link.taskId, reason },
       });
 
       return { success: true };
@@ -389,7 +389,7 @@ export class ThreadsService {
       include: {
         fromUser: { select: { id: true, name: true, avatarUrl: true } },
         toUser: { select: { id: true, name: true, avatarUrl: true } },
-        todo: { select: { id: true, title: true, status: true } },
+        task: { select: { id: true, title: true, status: true } },
       },
       orderBy: { chainIndex: 'asc' },
     });
@@ -410,26 +410,26 @@ export class ThreadsService {
   }
 
   /**
-   * Connect a chain of users to a todo in a single transaction.
+   * Connect a chain of users to a task in a single transaction.
    * Creates links: creator → userIds[0] → userIds[1] → ... → userIds[N-1]
    * The last user in the chain becomes the assignee.
    */
   async connectChain(
-    todoId: string,
+    taskId: string,
     creatorId: string,
     userIds: string[],
-  ): Promise<{ todo: any; threadLinks: any[] }> {
-    // 1. Validate todo exists and creator is the current assignee
-    const todo = await this.prisma.todo.findUnique({
-      where: { id: todoId },
+  ): Promise<{ task: any; threadLinks: any[] }> {
+    // 1. Validate task exists and creator is the current assignee
+    const task = await this.prisma.task.findUnique({
+      where: { id: taskId },
       include: { threadLinks: { orderBy: { chainIndex: 'asc' } } },
     });
 
-    if (!todo) throw new NotFoundException('Todo not found');
+    if (!task) throw new NotFoundException('Task not found');
 
-    if (todo.assigneeId !== creatorId) {
+    if (task.assigneeId !== creatorId) {
       throw new ForbiddenException(
-        'Only the current assignee can connect this todo',
+        'Only the current assignee can connect this task',
       );
     }
 
@@ -443,8 +443,8 @@ export class ThreadsService {
 
     // Check for circular connections with existing active chain
     const usersInActiveChain = new Set<string>();
-    usersInActiveChain.add(todo.creatorId);
-    for (const link of todo.threadLinks) {
+    usersInActiveChain.add(task.creatorId);
+    for (const link of task.threadLinks) {
       if (link.status === 'PENDING' || link.status === 'FORWARDED') {
         usersInActiveChain.add(link.fromUserId);
         usersInActiveChain.add(link.toUserId);
@@ -470,7 +470,7 @@ export class ThreadsService {
     }
 
     // 3. Validate chain depth won't exceed MAX_CHAIN_DEPTH
-    const startIndex = todo.threadLinks.length;
+    const startIndex = task.threadLinks.length;
     if (startIndex + userIds.length > MAX_CHAIN_DEPTH) {
       throw new BadRequestException(
         `Thread chain cannot exceed ${MAX_CHAIN_DEPTH} connections`,
@@ -478,7 +478,7 @@ export class ThreadsService {
     }
 
     // 4. Execute in a single transaction
-    const currentLink = todo.threadLinks.find(
+    const currentLink = task.threadLinks.find(
       (l) => l.toUserId === creatorId && l.status === 'PENDING',
     );
 
@@ -501,7 +501,7 @@ export class ThreadsService {
 
         const link = await tx.threadLink.create({
           data: {
-            todoId,
+            taskId,
             fromUserId: previousUserId,
             toUserId,
             chainIndex: startIndex + i,
@@ -517,14 +517,14 @@ export class ThreadsService {
         previousUserId = toUserId;
       }
 
-      // Set todo assignee to last user in chain
+      // Set task assignee to last user in chain
       const lastUserId = userIds[userIds.length - 1];
-      const updatedTodo = await tx.todo.update({
-        where: { id: todoId },
+      const updatedTask = await tx.task.update({
+        where: { id: taskId },
         data: { assigneeId: lastUserId, status: 'IN_PROGRESS' },
       });
 
-      return updatedTodo;
+      return updatedTask;
     });
 
     // 5. Send THREAD_RECEIVED notification to each user in the chain
@@ -534,29 +534,29 @@ export class ThreadsService {
         type: 'THREAD_RECEIVED',
         title: 'New thread connected to you',
         body: `${link.fromUser.name} connected a task to you`,
-        data: { todoId, threadLinkId: link.id },
+        data: { taskId, threadLinkId: link.id },
       });
     }
 
     // 6. Log activity
     await this.activityService.log({
-      workspaceId: todo.workspaceId,
+      workspaceId: task.workspaceId,
       userId: creatorId,
       action: 'CONNECTED',
       entityType: 'ThreadLink',
       entityId: threadLinks[0].id,
-      metadata: { todoId, chainUserIds: userIds },
+      metadata: { taskId, chainUserIds: userIds },
     });
 
-    return { todo: result, threadLinks };
+    return { task: result, threadLinks };
   }
 
   /**
-   * Get all thread links for a specific todo
+   * Get all thread links for a specific task
    */
-  async getChain(todoId: string) {
+  async getChain(taskId: string) {
     return this.prisma.threadLink.findMany({
-      where: { todoId },
+      where: { taskId },
       include: {
         fromUser: { select: { id: true, name: true, avatarUrl: true } },
         toUser: { select: { id: true, name: true, avatarUrl: true } },
@@ -566,7 +566,7 @@ export class ThreadsService {
   }
 
   /**
-   * Get a task graph for the current user — all todos where they are
+   * Get a task graph for the current user — all tasks where they are
    * creator, assignee, or appear in the thread chain.
    */
   async getTaskGraph(
@@ -591,7 +591,7 @@ export class ThreadsService {
       extraFilters.priority = { in: priorityFilter };
     }
 
-    const todos = await this.prisma.todo.findMany({
+    const tasks = await this.prisma.task.findMany({
       where: {
         workspaceId,
         OR: [
@@ -617,15 +617,15 @@ export class ThreadsService {
       orderBy: { updatedAt: 'desc' },
     });
 
-    // Post-process: add myRole for each todo
-    return todos.map((todo) => {
+    // Post-process: add myRole for each task
+    return tasks.map((task) => {
       let myRole: 'creator' | 'assignee' | 'chain_member' = 'chain_member';
-      if (todo.creatorId === userId) {
+      if (task.creatorId === userId) {
         myRole = 'creator';
-      } else if (todo.assigneeId === userId) {
+      } else if (task.assigneeId === userId) {
         myRole = 'assignee';
       }
-      return { ...todo, myRole };
+      return { ...task, myRole };
     });
   }
 
@@ -638,10 +638,10 @@ export class ThreadsService {
         where: {
           toUserId: userId,
           status: 'PENDING',
-          todo: { workspaceId },
+          task: { workspaceId },
         },
         include: {
-          todo: { select: { id: true, title: true, priority: true } },
+          task: { select: { id: true, title: true, priority: true } },
           fromUser: { select: { id: true, name: true, avatarUrl: true } },
           toUser: { select: { id: true, name: true, avatarUrl: true } },
         },
@@ -651,10 +651,10 @@ export class ThreadsService {
         where: {
           fromUserId: userId,
           status: { in: ['PENDING', 'FORWARDED'] },
-          todo: { workspaceId },
+          task: { workspaceId },
         },
         include: {
-          todo: { select: { id: true, title: true, priority: true } },
+          task: { select: { id: true, title: true, priority: true } },
           fromUser: { select: { id: true, name: true, avatarUrl: true } },
           toUser: { select: { id: true, name: true, avatarUrl: true } },
         },

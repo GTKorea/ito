@@ -35,10 +35,10 @@ interface SharedSpace {
   createdAt: string;
   updatedAt: string;
   participants: SharedSpaceParticipant[];
-  _count?: { todos: number; participants: number };
+  _count?: { tasks: number; participants: number };
 }
 
-interface SharedSpaceTodo {
+interface SharedSpaceTask {
   id: string;
   title: string;
   description?: string;
@@ -55,17 +55,17 @@ interface SharedSpaceTodo {
 interface SharedSpaceState {
   sharedSpaces: SharedSpace[];
   currentSharedSpace: SharedSpace | null;
-  todos: SharedSpaceTodo[];
+  tasks: SharedSpaceTask[];
   isLoading: boolean;
-  todosLoading: boolean;
+  tasksLoading: boolean;
   fetchSharedSpaces: () => Promise<void>;
   fetchSharedSpace: (id: string) => Promise<void>;
-  fetchTodos: (sharedSpaceId: string) => Promise<void>;
+  fetchTasks: (sharedSpaceId: string) => Promise<void>;
   createSharedSpace: (name: string, description?: string) => Promise<SharedSpace>;
   updateSharedSpace: (id: string, data: { name?: string; description?: string }) => Promise<void>;
   inviteWorkspace: (sharedSpaceId: string, workspaceSlug: string) => Promise<{ inviteLink: string }>;
   acceptInvite: (token: string) => Promise<void>;
-  createTodo: (sharedSpaceId: string, title: string, description?: string, priority?: string, dueDate?: string) => Promise<SharedSpaceTodo>;
+  createTask: (sharedSpaceId: string, title: string, description?: string, priority?: string, dueDate?: string) => Promise<SharedSpaceTask>;
   removeParticipant: (sharedSpaceId: string, workspaceId: string) => Promise<void>;
   setCurrentSharedSpace: (space: SharedSpace | null) => void;
 }
@@ -73,9 +73,9 @@ interface SharedSpaceState {
 export const useSharedSpaceStore = create<SharedSpaceState>((set, get) => ({
   sharedSpaces: [],
   currentSharedSpace: null,
-  todos: [],
+  tasks: [],
   isLoading: false,
-  todosLoading: false,
+  tasksLoading: false,
 
   fetchSharedSpaces: async () => {
     set({ isLoading: true });
@@ -96,13 +96,13 @@ export const useSharedSpaceStore = create<SharedSpaceState>((set, get) => ({
     }
   },
 
-  fetchTodos: async (sharedSpaceId: string) => {
-    set({ todosLoading: true });
+  fetchTasks: async (sharedSpaceId: string) => {
+    set({ tasksLoading: true });
     try {
-      const { data } = await api.get(`/shared-spaces/${sharedSpaceId}/todos`);
-      set({ todos: data, todosLoading: false });
+      const { data } = await api.get(`/shared-spaces/${sharedSpaceId}/tasks`);
+      set({ tasks: data, tasksLoading: false });
     } catch {
-      set({ todosLoading: false });
+      set({ tasksLoading: false });
     }
   },
 
@@ -133,14 +133,14 @@ export const useSharedSpaceStore = create<SharedSpaceState>((set, get) => ({
     await get().fetchSharedSpaces();
   },
 
-  createTodo: async (sharedSpaceId, title, description, priority, dueDate) => {
-    const { data } = await api.post(`/shared-spaces/${sharedSpaceId}/todos`, {
+  createTask: async (sharedSpaceId, title, description, priority, dueDate) => {
+    const { data } = await api.post(`/shared-spaces/${sharedSpaceId}/tasks`, {
       title,
       description,
       priority,
       dueDate,
     });
-    set((state) => ({ todos: [data, ...state.todos] }));
+    set((state) => ({ tasks: [data, ...state.tasks] }));
     return data;
   },
 

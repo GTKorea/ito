@@ -70,7 +70,7 @@
     "workspaceName": "워크스페이스 이름",
     "workspaceNamePlaceholder": "예: 우리 팀"
   },
-  "todos": {
+  "tasks": {
     "noTasksYet": "아직 태스크가 없습니다",
     "createNewToStart": "새 태스크를 만들어 시작하세요",
     "completed": "완료됨",
@@ -474,8 +474,8 @@
       "THREAD_SNAPPED": "스레드 스냅백",
       "THREAD_COMPLETED": "스레드 완료",
       "WORKSPACE_INVITE": "워크스페이스 초대",
-      "TODO_ASSIGNED": "태스크 배정",
-      "TODO_COMPLETED": "태스크 완료",
+      "TASK_ASSIGNED": "태스크 배정",
+      "TASK_COMPLETED": "태스크 완료",
       "THREAD_DECLINED": "스레드 거절",
       "SHARED_SPACE_INVITE": "공유 스페이스 초대"
     }
@@ -563,11 +563,11 @@
           "name": "워크스페이스 초대",
           "description": "워크스페이스에 초대되었습니다."
         },
-        "todoAssigned": {
+        "taskAssigned": {
           "name": "태스크 배정",
           "description": "태스크가 배정되었습니다."
         },
-        "todoCompleted": {
+        "taskCompleted": {
           "name": "태스크 완료",
           "description": "생성했거나 참여한 태스크가 완료되었습니다."
         }
@@ -588,10 +588,10 @@
     "accessDenied": "관리자 접근 권한이 필요합니다",
     "totalUsers": "전체 사용자",
     "totalWorkspaces": "전체 워크스페이스",
-    "totalTodos": "전체 태스크",
+    "totalTasks": "전체 태스크",
     "totalThreads": "전체 스레드",
     "activeThisWeek": "이번 주 활성",
-    "todosByStatus": "상태별 태스크",
+    "tasksByStatus": "상태별 태스크",
     "status_OPEN": "열림",
     "status_IN_PROGRESS": "진행 중",
     "status_BLOCKED": "차단됨",
@@ -601,13 +601,13 @@
     "noActivity": "아직 활동이 없습니다",
     "manageUsers": "사용자 관리",
     "manageWorkspaces": "워크스페이스 관리",
-    "manageTodos": "태스크 관리",
+    "manageTasks": "태스크 관리",
     "users": "사용자",
     "workspaces": "워크스페이스",
-    "todos": "태스크",
+    "tasks": "태스크",
     "searchUsers": "이름 또는 이메일로 검색...",
     "searchWorkspaces": "이름 또는 슬러그로 검색...",
-    "searchTodos": "제목으로 검색...",
+    "searchTasks": "제목으로 검색...",
     "name": "이름",
     "email": "이메일",
     "role": "역할",
@@ -616,7 +616,7 @@
     "members": "멤버",
     "teamsCount": "팀",
     "created": "생성일",
-    "todoTitle": "제목",
+    "taskTitle": "제목",
     "status": "상태",
     "priority": "우선순위",
     "assignee": "담당자",
@@ -651,17 +651,17 @@
     "sendInvite": "초대 보내기",
     "inviteSent": "초대를 보냈습니다! 이 링크를 워크스페이스 관리자에게 공유하세요:",
     "workspaces": "워크스페이스",
-    "todos": "할 일",
+    "tasks": "할 일",
     "members": "멤버",
     "threads": "스레드",
     "participatingWorkspaces": "참여 워크스페이스",
-    "sharedTodos": "공유 할 일",
-    "noTodosYet": "아직 공유 할 일이 없습니다",
-    "createFirstTodo": "첫 번째 공유 할 일을 만드세요",
-    "newTodo": "새 할 일",
-    "createTodo": "공유 할 일 만들기",
-    "todoTitle": "제목",
-    "todoTitlePlaceholder": "무엇을 해야 하나요?",
-    "todoDescriptionPlaceholder": "상세 내용 추가..."
+    "sharedTasks": "공유 할 일",
+    "noTasksYet": "아직 공유 할 일이 없습니다",
+    "createFirstTask": "첫 번째 공유 할 일을 만드세요",
+    "newTask": "새 할 일",
+    "createTask": "공유 할 일 만들기",
+    "taskTitle": "제목",
+    "taskTitlePlaceholder": "무엇을 해야 하나요?",
+    "taskDescriptionPlaceholder": "상세 내용 추가..."
   }
 }

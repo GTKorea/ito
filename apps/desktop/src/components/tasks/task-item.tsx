@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { useTodoStore } from '@/stores/todo-store';
+import { useTaskStore } from '@/stores/task-store';
 import { useAuthStore } from '@/stores/auth-store';
 import { ThreadChain } from '@/components/threads/thread-chain';
 import { ConnectDialog } from '@/components/threads/connect-dialog';
@@ -53,10 +53,10 @@ const statusIcons: Record<string, React.ReactNode> = {
   COMPLETED: <Check className="h-4 w-4 text-green-500" />,
 };
 
-type TodoSection = 'actionRequired' | 'waiting' | 'completed';
+type TaskSection = 'actionRequired' | 'waiting' | 'completed';
 
-interface TodoItemProps {
-  todo: {
+interface TaskItemProps {
+  task: {
     id: string;
     title: string;
     description?: string;
@@ -76,19 +76,19 @@ interface TodoItemProps {
     }>;
   };
   onSelect?: (id: string, openChat?: boolean) => void;
-  section: TodoSection;
+  section: TaskSection;
 }
 
-export function TodoItem({ todo, onSelect, section }: TodoItemProps) {
+export function TaskItem({ task, onSelect, section }: TaskItemProps) {
   const [showConnect, setShowConnect] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [isResolving, setIsResolving] = useState(false);
   const [showDecline, setShowDecline] = useState(false);
   const [isDeclining, setIsDeclining] = useState(false);
   const [declineReason, setDeclineReason] = useState('');
-  const { updateTodo, deleteTodo, resolveThread, declineThread } = useTodoStore();
+  const { updateTask, deleteTask, resolveThread, declineThread } = useTaskStore();
   const { user } = useAuthStore();
-  const t = useTranslations('todos');
+  const t = useTranslations('tasks');
   const tc = useTranslations('common');
 
   const handleResolve = async (linkId: string) => {
@@ -129,20 +129,20 @@ export function TodoItem({ todo, onSelect, section }: TodoItemProps) {
     };
   }
 
-  const hasThreads = todo.threadLinks.length > 0;
-  const dueDateInfo = getDueDateInfo(todo.dueDate);
-  const isAssignee = user?.id === todo.assignee?.id;
+  const hasThreads = task.threadLinks.length > 0;
+  const dueDateInfo = getDueDateInfo(task.dueDate);
+  const isAssignee = user?.id === task.assignee?.id;
 
   // Only show Done/Decline for pending links where I'm the recipient, and only in actionRequired section
-  const assigneeId = todo.assignee?.id;
+  const assigneeId = task.assignee?.id;
   const pendingLink = section === 'actionRequired' && assigneeId && user?.id
-    ? todo.threadLinks.find(
+    ? task.threadLinks.find(
         (l) => l.status === 'PENDING' && l.toUser.id === assigneeId && assigneeId === user.id,
       )
     : undefined;
 
   // Status toggle: only in actionRequired section, and cannot revert COMPLETED
-  const canToggleStatus = section === 'actionRequired' && isAssignee && todo.status !== 'COMPLETED';
+  const canToggleStatus = section === 'actionRequired' && isAssignee && task.status !== 'COMPLETED';
 
   return (
     <div className="group rounded-lg border border-border bg-card p-3 hover:border-border/80 transition-colors">
@@ -154,28 +154,28 @@ export function TodoItem({ todo, onSelect, section }: TodoItemProps) {
               <button
                 onClick={() => {
                   if (!canToggleStatus) return;
-                  updateTodo(todo.id, { status: 'COMPLETED' });
+                  updateTask(task.id, { status: 'COMPLETED' });
                 }}
                 className={cn('shrink-0', !canToggleStatus && 'cursor-default opacity-50')}
                 disabled={!canToggleStatus}
               />
             }
           >
-            {statusIcons[todo.status] || statusIcons.OPEN}
+            {statusIcons[task.status] || statusIcons.OPEN}
           </TooltipTrigger>
-          <TooltipContent side="left">{statusNames[todo.status] || 'Open'}</TooltipContent>
+          <TooltipContent side="left">{statusNames[task.status] || 'Open'}</TooltipContent>
         </Tooltip>
 
         {/* Content */}
-        <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onSelect?.(todo.id)}>
+        <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onSelect?.(task.id)}>
           <div className="flex items-center gap-2">
             <span
               className={cn(
                 'text-sm font-medium',
-                todo.status === 'COMPLETED' && 'line-through text-muted-foreground',
+                task.status === 'COMPLETED' && 'line-through text-muted-foreground',
               )}
             >
-              {todo.title}
+              {task.title}
             </span>
             {hasThreads && (
               <Badge
@@ -184,24 +184,24 @@ export function TodoItem({ todo, onSelect, section }: TodoItemProps) {
                 onClick={() => setExpanded(!expanded)}
               >
                 <Link2 className="h-3 w-3" />
-                {todo.threadLinks.length}
+                {task.threadLinks.length}
               </Badge>
             )}
           </div>
 
           {/* Waiting section: show current worker inline */}
-          {section === 'waiting' && todo.assignee && (
+          {section === 'waiting' && task.assignee && (
             <div className="flex items-center gap-1 mt-1">
               <User className="h-3 w-3 text-blue-400" />
               <span className="text-[10px] text-blue-400">
-                {todo.assignee.name}
+                {task.assignee.name}
               </span>
             </div>
           )}
 
-          {todo.description && (
+          {task.description && (
             <p className="text-xs text-muted-foreground mt-0.5 truncate">
-              {todo.description}
+              {task.description}
             </p>
           )}
           {dueDateInfo && (
@@ -213,11 +213,11 @@ export function TodoItem({ todo, onSelect, section }: TodoItemProps) {
         </div>
 
         {/* Assignee avatar */}
-        {todo.assignee && (
-          <UserProfilePopover userId={todo.assignee.id}>
+        {task.assignee && (
+          <UserProfilePopover userId={task.assignee.id}>
             <Avatar className="h-6 w-6 shrink-0">
               <AvatarFallback className="text-[9px] bg-secondary">
-                {todo.assignee.name.charAt(0).toUpperCase()}
+                {task.assignee.name.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
           </UserProfilePopover>
@@ -256,7 +256,7 @@ export function TodoItem({ todo, onSelect, section }: TodoItemProps) {
                   size="sm"
                   variant="ghost"
                   className="h-7 w-7 p-0"
-                  onClick={() => onSelect?.(todo.id, true)}
+                  onClick={() => onSelect?.(task.id, true)}
                 />
               }
             >
@@ -293,7 +293,7 @@ export function TodoItem({ todo, onSelect, section }: TodoItemProps) {
             <DropdownMenuContent align="end">
               <DropdownMenuItem
                 className="text-destructive"
-                onClick={() => deleteTodo(todo.id)}
+                onClick={() => deleteTask(task.id)}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
                 {tc('delete')}
@@ -306,14 +306,14 @@ export function TodoItem({ todo, onSelect, section }: TodoItemProps) {
       {/* Thread chain visualization */}
       {expanded && hasThreads && (
         <div className="mt-3 ml-7">
-          <ThreadChain links={todo.threadLinks} creator={todo.creator} />
+          <ThreadChain links={task.threadLinks} creator={task.creator} />
         </div>
       )}
 
       {/* Connect dialog */}
       {showConnect && (
         <ConnectDialog
-          todoId={todo.id}
+          taskId={task.id}
           onClose={() => setShowConnect(false)}
         />
       )}

@@ -7,7 +7,7 @@ export const THREAD_LINK_STATUS = {
   CANCELLED: 'CANCELLED',
 } as const;
 
-export const TODO_STATUS = {
+export const TASK_STATUS = {
   OPEN: 'OPEN',
   IN_PROGRESS: 'IN_PROGRESS',
   BLOCKED: 'BLOCKED',

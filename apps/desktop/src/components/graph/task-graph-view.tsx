@@ -23,7 +23,7 @@ import {
   type SimulationLinkDatum,
 } from 'd3-force';
 
-import { useGraphStore, type TaskGraphTodo } from './task-graph-store';
+import { useGraphStore, type TaskGraphTask } from './task-graph-store';
 import { useAuthStore } from '@/stores/auth-store';
 import { TaskNode, type TaskNodeData } from './nodes/task-node';
 import { ThreadEdge, type ThreadEdgeData } from './edges/thread-edge';
@@ -126,98 +126,98 @@ function forceLayout(
   }));
 }
 
-// ──────────────── Build nodes & edges from todos ────────────────
+// ──────────────── Build nodes & edges from tasks ────────────────
 
 function buildGraph(
-  todos: TaskGraphTodo[],
+  tasks: TaskGraphTask[],
   userId: string | undefined,
-  selectedTodoId: string | null,
+  selectedTaskId: string | null,
   searchQuery: string,
 ): { nodes: Node<TaskNodeData>[]; edges: Edge<ThreadEdgeData>[] } {
   // Filter by search query
   const filtered = searchQuery
-    ? todos.filter(
+    ? tasks.filter(
         (t) =>
           t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           t.assignee.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           t.creator.name.toLowerCase().includes(searchQuery.toLowerCase()),
       )
-    : todos;
+    : tasks;
 
-  const nodes: Node<TaskNodeData>[] = filtered.map((todo) => {
-    const chainTotal = todo.threadLinks.length;
-    const chainCompleted = todo.threadLinks.filter((l) => l.status === 'COMPLETED').length;
-    const hasPendingAction = todo.threadLinks.some(
+  const nodes: Node<TaskNodeData>[] = filtered.map((task) => {
+    const chainTotal = task.threadLinks.length;
+    const chainCompleted = task.threadLinks.filter((l) => l.status === 'COMPLETED').length;
+    const hasPendingAction = task.threadLinks.some(
       (l) => l.toUserId === userId && l.status === 'PENDING',
     );
 
     return {
-      id: todo.id,
+      id: task.id,
       type: 'taskNode',
       position: { x: 0, y: 0 },
       data: {
-        title: todo.title,
-        status: todo.status,
-        priority: todo.priority,
-        assigneeName: todo.assignee.name,
-        assigneeInitial: todo.assignee.name?.charAt(0).toUpperCase() || '?',
+        title: task.title,
+        status: task.status,
+        priority: task.priority,
+        assigneeName: task.assignee.name,
+        assigneeInitial: task.assignee.name?.charAt(0).toUpperCase() || '?',
         chainTotal,
         chainCompleted,
-        dueDate: todo.dueDate,
+        dueDate: task.dueDate,
         hasPendingAction,
-        isSelected: todo.id === selectedTodoId,
+        isSelected: task.id === selectedTaskId,
       },
     };
   });
 
   const edges: Edge<ThreadEdgeData>[] = [];
-  const todoIds = new Set(filtered.map((t) => t.id));
+  const taskIds = new Set(filtered.map((t) => t.id));
 
-  // Within each todo, create edges between consecutive thread link users
-  for (const todo of filtered) {
-    for (const link of todo.threadLinks) {
-      // Only create intra-todo edges if both source/target todos are the same
-      // We create edges from todoId perspective — each link creates an edge to this todo
-      // from a conceptual "chain step" perspective, but since our nodes are todos,
-      // we skip intra-todo link edges (they are shown in the detail panel).
+  // Within each task, create edges between consecutive thread link users
+  for (const task of filtered) {
+    for (const link of task.threadLinks) {
+      // Only create intra-task edges if both source/target tasks are the same
+      // We create edges from taskId perspective — each link creates an edge to this task
+      // from a conceptual "chain step" perspective, but since our nodes are tasks,
+      // we skip intra-task link edges (they are shown in the detail panel).
     }
   }
 
-  // Between todos: create edges if they share users in the thread chain
-  const todoUserMap = new Map<string, Set<string>>();
-  for (const todo of filtered) {
+  // Between tasks: create edges if they share users in the thread chain
+  const taskUserMap = new Map<string, Set<string>>();
+  for (const task of filtered) {
     const users = new Set<string>();
-    users.add(todo.creatorId);
-    users.add(todo.assigneeId);
-    for (const link of todo.threadLinks) {
+    users.add(task.creatorId);
+    users.add(task.assigneeId);
+    for (const link of task.threadLinks) {
       users.add(link.fromUserId);
       users.add(link.toUserId);
     }
-    todoUserMap.set(todo.id, users);
+    taskUserMap.set(task.id, users);
   }
 
-  // Create thread chain edges: connect todos linked through thread chains
-  // For each todo with thread links, create edges to represent the task flow
-  for (const todo of filtered) {
-    if (todo.threadLinks.length === 0) continue;
+  // Create thread chain edges: connect tasks linked through thread chains
+  // For each task with thread links, create edges to represent the task flow
+  for (const task of filtered) {
+    if (task.threadLinks.length === 0) continue;
 
-    // Find other todos that share the last link's toUser as creator or have a chain from them
-    for (const otherTodo of filtered) {
-      if (otherTodo.id === todo.id) continue;
+    // Find other tasks that share the last link's toUser as creator or have a chain from them
+    for (const otherTask of filtered) {
+      if (otherTask.id === task.id) continue;
 
-      // Connect if the assignee of one todo is the creator of another
+      // Connect if the assignee of one task is the creator of another
       // (suggesting a workflow relationship)
-      for (const link of todo.threadLinks) {
+      for (const link of task.threadLinks) {
         if (
-          link.toUserId === otherTodo.creatorId &&
+          link.toUserId === otherTask.creatorId &&
           link.status !== 'CANCELLED'
         ) {
-          const edgeId = `collab-${todo.id}-${otherTodo.id}`;
+          const edgeId = `collab-${task.id}-${otherTask.id}`;
           if (!edges.find((e) => e.id === edgeId)) {
             edges.push({
               id: edgeId,
-              source: todo.id,
-              target: otherTodo.id,
+              source: task.id,
+              target: otherTask.id,
               type: 'threadEdge',
               data: {
                 linkStatus: link.status,
@@ -233,21 +233,21 @@ function buildGraph(
 
   // Also create explicit thread edges between tasks in the same chain
   // For each thread link, find if the toUser has tasks that are linked
-  for (const todo of filtered) {
-    for (const link of todo.threadLinks) {
-      // Find any other todo where this link connects meaningfully
-      for (const otherTodo of filtered) {
-        if (otherTodo.id === todo.id) continue;
+  for (const task of filtered) {
+    for (const link of task.threadLinks) {
+      // Find any other task where this link connects meaningfully
+      for (const otherTask of filtered) {
+        if (otherTask.id === task.id) continue;
         // If the linked user is the assignee of another task
-        if (link.toUserId === otherTodo.assigneeId && link.status !== 'CANCELLED') {
-          const edgeId = `thread-${link.id}-${otherTodo.id}`;
+        if (link.toUserId === otherTask.assigneeId && link.status !== 'CANCELLED') {
+          const edgeId = `thread-${link.id}-${otherTask.id}`;
           if (!edges.find((e) => e.id === edgeId)) {
             const fromName = link.fromUser.name.split(' ')[0];
             const toName = link.toUser.name.split(' ')[0];
             edges.push({
               id: edgeId,
-              source: todo.id,
-              target: otherTodo.id,
+              source: task.id,
+              target: otherTask.id,
               type: 'threadEdge',
               data: {
                 linkStatus: link.status,
@@ -272,12 +272,12 @@ interface TaskGraphViewProps {
 
 export function TaskGraphView({ workspaceId }: TaskGraphViewProps) {
   const {
-    todos,
+    tasks,
     isLoading,
     layoutMode,
-    selectedTodoId,
+    selectedTaskId,
     searchQuery,
-    selectTodo,
+    selectTask,
     fetchGraphData,
   } = useGraphStore();
   const { user } = useAuthStore();
@@ -296,9 +296,9 @@ export function TaskGraphView({ workspaceId }: TaskGraphViewProps) {
   // Rebuild graph when data changes
   useEffect(() => {
     const { nodes: rawNodes, edges: rawEdges } = buildGraph(
-      todos,
+      tasks,
       user?.id,
-      selectedTodoId,
+      selectedTaskId,
       searchQuery,
     );
 
@@ -309,7 +309,7 @@ export function TaskGraphView({ workspaceId }: TaskGraphViewProps) {
 
     setNodes(layoutedNodes);
     setEdges(rawEdges);
-  }, [todos, user?.id, selectedTodoId, searchQuery, layoutMode, setNodes, setEdges]);
+  }, [tasks, user?.id, selectedTaskId, searchQuery, layoutMode, setNodes, setEdges]);
 
   const onFiltersChange = useCallback(() => {
     // Re-fetch with new filters — use a small delay so the store updates first
@@ -320,14 +320,14 @@ export function TaskGraphView({ workspaceId }: TaskGraphViewProps) {
 
   const onNodeClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
-      selectTodo(node.id);
+      selectTask(node.id);
     },
-    [selectTodo],
+    [selectTask],
   );
 
   const onPaneClick = useCallback(() => {
-    selectTodo(null);
-  }, [selectTodo]);
+    selectTask(null);
+  }, [selectTask]);
 
   return (
     <div className="flex h-full flex-col">
@@ -340,7 +340,7 @@ export function TaskGraphView({ workspaceId }: TaskGraphViewProps) {
           </div>
         )}
 
-        {!isLoading && todos.length === 0 && (
+        {!isLoading && tasks.length === 0 && (
           <div className="flex h-full items-center justify-center">
             <div className="text-center">
               <p className="text-sm text-muted-foreground">No tasks found for this view.</p>
@@ -351,7 +351,7 @@ export function TaskGraphView({ workspaceId }: TaskGraphViewProps) {
           </div>
         )}
 
-        {(todos.length > 0 || isLoading) && (
+        {(tasks.length > 0 || isLoading) && (
           <ReactFlow
             nodes={nodes}
             edges={edges}

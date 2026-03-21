@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { SlackService } from './slack.service';
 import { SlackController } from './slack.controller';
-import { TodosModule } from '../todos/todos.module';
+import { TasksModule } from '../tasks/tasks.module';
 
 @Module({
-  imports: [TodosModule],
+  imports: [TasksModule],
   controllers: [SlackController],
   providers: [SlackService],
   exports: [SlackService],

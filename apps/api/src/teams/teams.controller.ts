@@ -49,14 +49,14 @@ export class TeamsController {
     return this.teamsService.getTeamDashboard(teamId);
   }
 
-  @Get(':teamId/todos')
-  @ApiOperation({ summary: "Get team's todos" })
-  getTeamTodos(
+  @Get(':teamId/tasks')
+  @ApiOperation({ summary: "Get team's tasks" })
+  getTeamTasks(
     @Param('teamId') teamId: string,
     @Query('status') status?: string,
     @Query('assigneeId') assigneeId?: string,
   ) {
-    return this.teamsService.getTeamTodos(teamId, { status, assigneeId });
+    return this.teamsService.getTeamTasks(teamId, { status, assigneeId });
   }
 
   @Post(':teamId/members')

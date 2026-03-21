@@ -28,7 +28,7 @@ export class PaginationQueryDto {
   sortOrder?: 'asc' | 'desc' = 'desc';
 }
 
-export class AdminTodoQueryDto extends PaginationQueryDto {
+export class AdminTaskQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsString()
   status?: string;

@@ -7,11 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Upload, Loader2 } from 'lucide-react';
 
 interface FileUploadProps {
-  todoId: string;
+  taskId: string;
   onUploadComplete: () => void;
 }
 
-export function FileUpload({ todoId, onUploadComplete }: FileUploadProps) {
+export function FileUpload({ taskId, onUploadComplete }: FileUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -22,7 +22,7 @@ export function FileUpload({ todoId, onUploadComplete }: FileUploadProps) {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('todoId', todoId);
+      formData.append('taskId', taskId);
       await api.post('/files/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });

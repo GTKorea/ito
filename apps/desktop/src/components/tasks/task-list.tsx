@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { TodoItem } from './todo-item';
+import { TaskItem } from './task-item';
 import { ChevronDown, ChevronRight, Clock, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -22,7 +22,7 @@ interface ThreadLink {
   groupId?: string;
 }
 
-interface Todo {
+interface Task {
   id: string;
   title: string;
   description?: string;
@@ -35,15 +35,15 @@ interface Todo {
   createdAt: string;
 }
 
-interface TodoListProps {
-  actionRequired: Todo[];
-  waiting: Todo[];
-  completed: Todo[];
-  onSelectTodo?: (id: string, openChat?: boolean) => void;
+interface TaskListProps {
+  actionRequired: Task[];
+  waiting: Task[];
+  completed: Task[];
+  onSelectTask?: (id: string, openChat?: boolean) => void;
 }
 
-export function TodoList({ actionRequired, waiting, completed, onSelectTodo }: TodoListProps) {
-  const t = useTranslations('todos');
+export function TaskList({ actionRequired, waiting, completed, onSelectTask }: TaskListProps) {
+  const t = useTranslations('tasks');
   const [waitingExpanded, setWaitingExpanded] = useState(true);
   const [showCompleted, setShowCompleted] = useState(false);
 
@@ -61,8 +61,8 @@ export function TodoList({ actionRequired, waiting, completed, onSelectTodo }: T
       {/* Section 1: Action Required — tasks I need to handle right now */}
       {actionRequired.length > 0 && (
         <div className="space-y-1">
-          {actionRequired.map((todo) => (
-            <TodoItem key={todo.id} todo={todo} onSelect={onSelectTodo} section="actionRequired" />
+          {actionRequired.map((task) => (
+            <TaskItem key={task.id} task={task} onSelect={onSelectTask} section="actionRequired" />
           ))}
         </div>
       )}
@@ -84,8 +84,8 @@ export function TodoList({ actionRequired, waiting, completed, onSelectTodo }: T
           </button>
           {waitingExpanded && (
             <div className="space-y-1">
-              {waiting.map((todo) => (
-                <TodoItem key={todo.id} todo={todo} onSelect={onSelectTodo} section="waiting" />
+              {waiting.map((task) => (
+                <TaskItem key={task.id} task={task} onSelect={onSelectTask} section="waiting" />
               ))}
             </div>
           )}
@@ -114,8 +114,8 @@ export function TodoList({ actionRequired, waiting, completed, onSelectTodo }: T
           </div>
           {showCompleted && (
             <div className="space-y-1 opacity-60">
-              {completed.map((todo) => (
-                <TodoItem key={todo.id} todo={todo} onSelect={onSelectTodo} section="completed" />
+              {completed.map((task) => (
+                <TaskItem key={task.id} task={task} onSelect={onSelectTask} section="completed" />
               ))}
             </div>
           )}

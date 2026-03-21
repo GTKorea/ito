@@ -2,9 +2,9 @@
 
 import { useMemo } from 'react';
 import { X, Link2, CheckCircle2, Circle, Clock, AlertCircle, Ban } from 'lucide-react';
-import { useGraphStore, type TaskGraphTodo } from '../task-graph-store';
+import { useGraphStore, type TaskGraphTask } from '../task-graph-store';
 import { useAuthStore } from '@/stores/auth-store';
-import { useTodoStore } from '@/stores/todo-store';
+import { useTaskStore } from '@/stores/task-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 
 const STATUS_CONFIG: Record<string, { label: string; icon: typeof Circle; color: string }> = {
@@ -30,24 +30,24 @@ const LINK_STATUS_COLORS: Record<string, string> = {
 };
 
 export function TaskDetailPanel() {
-  const { selectedTodoId, selectTodo, todos, fetchGraphData } = useGraphStore();
+  const { selectedTaskId, selectTask, tasks, fetchGraphData } = useGraphStore();
   const { user } = useAuthStore();
-  const { resolveThread, updateTodo } = useTodoStore();
+  const { resolveThread, updateTask } = useTaskStore();
   const { currentWorkspace } = useWorkspaceStore();
 
-  const todo = useMemo(
-    () => todos.find((t) => t.id === selectedTodoId) || null,
-    [todos, selectedTodoId],
+  const task = useMemo(
+    () => tasks.find((t) => t.id === selectedTaskId) || null,
+    [tasks, selectedTaskId],
   );
 
-  if (!selectedTodoId || !todo) return null;
+  if (!selectedTaskId || !task) return null;
 
-  const statusConf = STATUS_CONFIG[todo.status] || STATUS_CONFIG.OPEN;
-  const priorityConf = PRIORITY_CONFIG[todo.priority] || PRIORITY_CONFIG.MEDIUM;
+  const statusConf = STATUS_CONFIG[task.status] || STATUS_CONFIG.OPEN;
+  const priorityConf = PRIORITY_CONFIG[task.priority] || PRIORITY_CONFIG.MEDIUM;
   const StatusIcon = statusConf.icon;
 
   // Find pending link for current user
-  const myPendingLink = todo.threadLinks.find(
+  const myPendingLink = task.threadLinks.find(
     (l) => l.toUserId === user?.id && l.status === 'PENDING',
   );
 
@@ -64,7 +64,7 @@ export function TaskDetailPanel() {
   const handleStatusChange = async (newStatus: string) => {
     if (!currentWorkspace) return;
     try {
-      await updateTodo(todo.id, { status: newStatus } as any);
+      await updateTask(task.id, { status: newStatus } as any);
       await fetchGraphData(currentWorkspace.id);
     } catch (error) {
       console.error('Failed to connect thread:', error);
@@ -77,7 +77,7 @@ export function TaskDetailPanel() {
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <h3 className="text-sm font-semibold text-foreground">Task Detail</h3>
         <button
-          onClick={() => selectTodo(null)}
+          onClick={() => selectTask(null)}
           className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         >
           <X className="h-4 w-4" />
@@ -88,9 +88,9 @@ export function TaskDetailPanel() {
       <div className="flex-1 overflow-y-auto p-4 space-y-5">
         {/* Title */}
         <div>
-          <h2 className="text-base font-semibold text-foreground">{todo.title}</h2>
-          {todo.description && (
-            <p className="mt-1 text-sm text-muted-foreground">{todo.description}</p>
+          <h2 className="text-base font-semibold text-foreground">{task.title}</h2>
+          {task.description && (
+            <p className="mt-1 text-sm text-muted-foreground">{task.description}</p>
           )}
         </div>
 
@@ -105,7 +105,7 @@ export function TaskDetailPanel() {
                   key={key}
                   onClick={() => handleStatusChange(key)}
                   className={`flex items-center gap-1 rounded-md border px-2 py-1 text-xs transition-colors ${
-                    todo.status === key
+                    task.status === key
                       ? 'border-accent bg-accent text-accent-foreground'
                       : 'border-border text-muted-foreground hover:border-accent'
                   }`}
@@ -131,11 +131,11 @@ export function TaskDetailPanel() {
         </div>
 
         {/* Due Date */}
-        {todo.dueDate && (
+        {task.dueDate && (
           <div className="space-y-1.5">
             <span className="text-xs font-medium text-muted-foreground">Due Date</span>
             <span className="block text-sm text-foreground">
-              {new Date(todo.dueDate).toLocaleDateString()}
+              {new Date(task.dueDate).toLocaleDateString()}
             </span>
           </div>
         )}
@@ -145,9 +145,9 @@ export function TaskDetailPanel() {
           <span className="text-xs font-medium text-muted-foreground">Assignee</span>
           <div className="flex items-center gap-2">
             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
-              {todo.assignee.name?.charAt(0).toUpperCase() || '?'}
+              {task.assignee.name?.charAt(0).toUpperCase() || '?'}
             </span>
-            <span className="text-sm text-foreground">{todo.assignee.name}</span>
+            <span className="text-sm text-foreground">{task.assignee.name}</span>
           </div>
         </div>
 
@@ -156,18 +156,18 @@ export function TaskDetailPanel() {
           <span className="text-xs font-medium text-muted-foreground">Creator</span>
           <div className="flex items-center gap-2">
             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-[10px] font-medium text-muted-foreground">
-              {todo.creator.name?.charAt(0).toUpperCase() || '?'}
+              {task.creator.name?.charAt(0).toUpperCase() || '?'}
             </span>
-            <span className="text-sm text-foreground">{todo.creator.name}</span>
+            <span className="text-sm text-foreground">{task.creator.name}</span>
           </div>
         </div>
 
         {/* Thread chain */}
-        {todo.threadLinks.length > 0 && (
+        {task.threadLinks.length > 0 && (
           <div className="space-y-2">
             <span className="text-xs font-medium text-muted-foreground">Thread Chain</span>
             <div className="space-y-1.5">
-              {todo.threadLinks.map((link) => (
+              {task.threadLinks.map((link) => (
                 <div
                   key={link.id}
                   className="flex items-center gap-2 rounded-md border border-border p-2"

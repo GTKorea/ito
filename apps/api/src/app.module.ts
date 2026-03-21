@@ -6,7 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { WorkspacesModule } from './workspaces/workspaces.module';
 import { TeamsModule } from './teams/teams.module';
-import { TodosModule } from './todos/todos.module';
+import { TasksModule } from './tasks/tasks.module';
 import { ThreadsModule } from './threads/threads.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { WsEventsModule } from './websocket/ws.module';
@@ -28,7 +28,7 @@ import { SharedSpacesModule } from './shared-spaces/shared-spaces.module';
     UsersModule,
     WorkspacesModule,
     TeamsModule,
-    TodosModule,
+    TasksModule,
     ThreadsModule,
     NotificationsModule,
     ActivityModule,

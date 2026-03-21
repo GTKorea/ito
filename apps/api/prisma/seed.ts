@@ -8,7 +8,7 @@ async function main() {
 
   // ── Clean existing data ──────────────────────
   await prisma.$executeRawUnsafe(
-    `TRUNCATE TABLE "CalendarIntegration", "File", "Activity", "Notification", "ThreadLink", "Todo", "TeamMember", "Team", "SlackUser", "SlackWorkspace", "WorkspaceMember", "WorkspaceInvite", "Workspace", "RefreshToken", "User" CASCADE`,
+    `TRUNCATE TABLE "CalendarIntegration", "File", "Activity", "Notification", "ThreadLink", "Task", "TeamMember", "Team", "SlackUser", "SlackWorkspace", "WorkspaceMember", "WorkspaceInvite", "Workspace", "RefreshToken", "User" CASCADE`,
   );
 
   // ── Users (6명) ──────────────────────────────
@@ -102,8 +102,8 @@ async function main() {
   const daysAgo = (n: number) => new Date(Date.now() - n * 86400000);
   const daysLater = (n: number) => new Date(Date.now() + n * 86400000);
 
-  // ── Todos — Case 1: Simple (no thread) ───────
-  const todo1 = await prisma.todo.create({
+  // ── Tasks — Case 1: Simple (no thread) ───────
+  const task1= await prisma.task.create({
     data: {
       title: '프로젝트 README 작성',
       description: '새로운 프로젝트의 README.md를 작성합니다.',
@@ -118,7 +118,7 @@ async function main() {
     },
   });
 
-  const todo2 = await prisma.todo.create({
+  const task2= await prisma.task.create({
     data: {
       title: 'CI/CD 파이프라인 설정',
       description: 'GitHub Actions로 자동 배포 설정',
@@ -133,7 +133,7 @@ async function main() {
   });
 
   // ── Case 2: Simple thread chain (A → B, completed) ──
-  const todo3 = await prisma.todo.create({
+  const task3= await prisma.task.create({
     data: {
       title: '디자인 리뷰 요청',
       description: 'v2 디자인 시안을 리뷰해주세요.',
@@ -150,7 +150,7 @@ async function main() {
 
   await prisma.threadLink.create({
     data: {
-      todoId: todo3.id,
+      taskId: task3.id,
       fromUserId: alice.id,
       toUserId: diana.id,
       status: 'COMPLETED',
@@ -161,7 +161,7 @@ async function main() {
   });
 
   // ── Case 3: Active chain (A → B → C, B forwarded, C pending) ──
-  const todo4 = await prisma.todo.create({
+  const task4= await prisma.task.create({
     data: {
       title: 'API 엔드포인트 리팩터링',
       description: 'REST API의 응답 구조를 통일합니다.',
@@ -178,7 +178,7 @@ async function main() {
   await prisma.threadLink.createMany({
     data: [
       {
-        todoId: todo4.id,
+        taskId: task4.id,
         fromUserId: alice.id,
         toUserId: bob.id,
         status: 'FORWARDED',
@@ -186,7 +186,7 @@ async function main() {
         message: 'Bob, 이거 먼저 봐줄 수 있어?',
       },
       {
-        todoId: todo4.id,
+        taskId: task4.id,
         fromUserId: bob.id,
         toUserId: charlie.id,
         status: 'PENDING',
@@ -197,7 +197,7 @@ async function main() {
   });
 
   // ── Case 4: Long chain (A → B → C → D, snap-back in progress) ──
-  const todo5 = await prisma.todo.create({
+  const task5= await prisma.task.create({
     data: {
       title: '보안 감사 리포트',
       description: '분기별 보안 감사 결과를 정리합니다.',
@@ -213,21 +213,21 @@ async function main() {
   await prisma.threadLink.createMany({
     data: [
       {
-        todoId: todo5.id,
+        taskId: task5.id,
         fromUserId: bob.id,
         toUserId: alice.id,
         status: 'FORWARDED',
         chainIndex: 0,
       },
       {
-        todoId: todo5.id,
+        taskId: task5.id,
         fromUserId: alice.id,
         toUserId: diana.id,
         status: 'FORWARDED',
         chainIndex: 1,
       },
       {
-        todoId: todo5.id,
+        taskId: task5.id,
         fromUserId: diana.id,
         toUserId: charlie.id,
         status: 'PENDING',
@@ -238,7 +238,7 @@ async function main() {
   });
 
   // ── Case 5: Circular chain (A → B → A) ──────
-  const todo6 = await prisma.todo.create({
+  const task6= await prisma.task.create({
     data: {
       title: '상호 코드리뷰',
       description: 'Alice와 Bob이 서로 코드리뷰를 진행합니다.',
@@ -255,14 +255,14 @@ async function main() {
   await prisma.threadLink.createMany({
     data: [
       {
-        todoId: todo6.id,
+        taskId: task6.id,
         fromUserId: alice.id,
         toUserId: bob.id,
         status: 'FORWARDED',
         chainIndex: 0,
       },
       {
-        todoId: todo6.id,
+        taskId: task6.id,
         fromUserId: bob.id,
         toUserId: alice.id,
         status: 'PENDING',
@@ -272,8 +272,8 @@ async function main() {
     ],
   });
 
-  // ── Case 6: Blocked todo ─────────────────────
-  const todo7 = await prisma.todo.create({
+  // ── Case 6: Blocked task ─────────────────────
+  const task7= await prisma.task.create({
     data: {
       title: '결제 시스템 마이그레이션',
       description: '기존 결제 시스템을 새 API로 이전합니다. 외부 업체 응답 대기 중.',
@@ -287,8 +287,8 @@ async function main() {
     },
   });
 
-  // ── Case 7: Cancelled todo ───────────────────
-  await prisma.todo.create({
+  // ── Case 7: Cancelled task ───────────────────
+  await prisma.task.create({
     data: {
       title: '[취소됨] 레거시 API 제거',
       description: '요구사항 변경으로 취소',
@@ -300,8 +300,8 @@ async function main() {
     },
   });
 
-  // ── Case 8: Many todos for calendar spread ───
-  const calendarTodos = [];
+  // ── Case 8: Many tasks for calendar spread ───
+  const calendarTasks = [];
   const titles = [
     '주간 스탠드업 정리', '기능 스펙 초안', 'DB 인덱스 최적화',
     '사용자 피드백 분석', 'A/B 테스트 설계', '모바일 대응 점검',
@@ -313,8 +313,8 @@ async function main() {
     const dayOffset = Math.floor(i / 3) * 2; // spread across days
     const creator = users[i % 4]; // rotate among first 4 users
     const completed = i < 10;
-    calendarTodos.push(
-      prisma.todo.create({
+    calendarTasks.push(
+      prisma.task.create({
         data: {
           title: titles[i],
           status: completed ? 'COMPLETED' : 'OPEN',
@@ -330,11 +330,11 @@ async function main() {
       }),
     );
   }
-  await Promise.all(calendarTodos);
-  console.log('✅ 23 todos created (various statuses, threads, calendar spread)');
+  await Promise.all(calendarTasks);
+  console.log('✅ 23 tasks created (various statuses, threads, calendar spread)');
 
-  // ── ws2 todos ────────────────────────────────
-  await prisma.todo.create({
+  // ── ws2 tasks ────────────────────────────────
+  await prisma.task.create({
     data: {
       title: '사이드 프로젝트 아이디어 정리',
       status: 'OPEN',
@@ -345,7 +345,7 @@ async function main() {
       dueDate: daysLater(14),
     },
   });
-  await prisma.todo.create({
+  await prisma.task.create({
     data: {
       title: '프로토타입 v1 만들기',
       status: 'IN_PROGRESS',
@@ -365,7 +365,7 @@ async function main() {
         type: 'THREAD_RECEIVED',
         title: '새 스레드가 연결되었습니다',
         body: 'Bob이 "API 엔드포인트 리팩터링" 태스크를 연결했습니다.',
-        data: { todoId: todo4.id, fromUserName: 'Bob Park' },
+        data: { taskId: task4.id, fromUserName: 'Bob Park' },
         createdAt: daysAgo(3),
       },
       {
@@ -373,15 +373,15 @@ async function main() {
         type: 'THREAD_SNAPPED',
         title: '스레드가 되돌아왔습니다',
         body: 'Charlie가 "보안 감사 리포트"를 완료하여 돌아왔습니다.',
-        data: { todoId: todo5.id, fromUserName: 'Charlie Lee' },
+        data: { taskId: task5.id, fromUserName: 'Charlie Lee' },
         createdAt: daysAgo(1),
       },
       {
         userId: diana.id,
-        type: 'TODO_ASSIGNED',
+        type: 'TASK_ASSIGNED',
         title: '새 태스크가 할당되었습니다',
         body: '"디자인 리뷰 요청" 태스크가 할당되었습니다.',
-        data: { todoId: todo3.id },
+        data: { taskId: task3.id },
         createdAt: daysAgo(5),
         read: true,
       },
@@ -390,15 +390,15 @@ async function main() {
         type: 'THREAD_RECEIVED',
         title: '새 스레드가 연결되었습니다',
         body: 'Bob이 태스크를 연결했습니다.',
-        data: { todoId: todo4.id, fromUserName: 'Bob Park' },
+        data: { taskId: task4.id, fromUserName: 'Bob Park' },
         createdAt: daysAgo(2),
       },
       {
         userId: alice.id,
-        type: 'TODO_COMPLETED',
+        type: 'TASK_COMPLETED',
         title: '태스크가 완료되었습니다',
         body: '"디자인 리뷰 요청"이 완료되었습니다.',
-        data: { todoId: todo3.id },
+        data: { taskId: task3.id },
         read: true,
         createdAt: daysAgo(1),
       },
@@ -417,12 +417,12 @@ async function main() {
         type: 'THREAD_RECEIVED',
         title: '스레드 연결',
         body: 'Bob이 "상호 코드리뷰"를 다시 연결했습니다.',
-        data: { todoId: todo6.id, fromUserName: 'Bob Park' },
+        data: { taskId: task6.id, fromUserName: 'Bob Park' },
         createdAt: new Date(),
       },
       {
         userId: alice.id,
-        type: 'TODO_ASSIGNED',
+        type: 'TASK_ASSIGNED',
         title: '새 태스크',
         body: '새로운 태스크 "성능 벤치마크"가 할당되었습니다.',
         createdAt: new Date(),
@@ -438,18 +438,18 @@ async function main() {
         workspaceId: ws1.id,
         userId: alice.id,
         action: 'created',
-        entityType: 'todo',
-        entityId: todo1.id,
-        metadata: { title: todo1.title },
+        entityType: 'task',
+        entityId: task1.id,
+        metadata: { title: task1.title },
         createdAt: daysAgo(7),
       },
       {
         workspaceId: ws1.id,
         userId: alice.id,
         action: 'completed',
-        entityType: 'todo',
-        entityId: todo1.id,
-        metadata: { title: todo1.title },
+        entityType: 'task',
+        entityId: task1.id,
+        metadata: { title: task1.title },
         createdAt: daysAgo(2),
       },
       {
@@ -457,8 +457,8 @@ async function main() {
         userId: alice.id,
         action: 'connected',
         entityType: 'thread',
-        entityId: todo4.id,
-        metadata: { title: todo4.title, toUser: 'Bob Park' },
+        entityId: task4.id,
+        metadata: { title: task4.title, toUser: 'Bob Park' },
         createdAt: daysAgo(4),
       },
       {
@@ -466,17 +466,17 @@ async function main() {
         userId: bob.id,
         action: 'connected',
         entityType: 'thread',
-        entityId: todo4.id,
-        metadata: { title: todo4.title, toUser: 'Charlie Lee' },
+        entityId: task4.id,
+        metadata: { title: task4.title, toUser: 'Charlie Lee' },
         createdAt: daysAgo(3),
       },
       {
         workspaceId: ws1.id,
         userId: bob.id,
         action: 'created',
-        entityType: 'todo',
-        entityId: todo5.id,
-        metadata: { title: todo5.title },
+        entityType: 'task',
+        entityId: task5.id,
+        metadata: { title: task5.title },
         createdAt: daysAgo(5),
       },
       {
@@ -484,8 +484,8 @@ async function main() {
         userId: diana.id,
         action: 'resolved',
         entityType: 'thread',
-        entityId: todo3.id,
-        metadata: { title: todo3.title },
+        entityId: task3.id,
+        metadata: { title: task3.title },
         createdAt: daysAgo(1),
       },
       {
@@ -531,7 +531,7 @@ async function main() {
   console.log('   • 6 users (4 roles: OWNER, ADMIN, MEMBER, GUEST)');
   console.log('   • 2 workspaces (Krow Studio + Side Project)');
   console.log('   • 3 teams (Development, Design, Operations)');
-  console.log('   • 25 todos across all statuses + priorities');
+  console.log('   • 25 tasks across all statuses + priorities');
   console.log('   • Thread chains: simple, multi-hop, circular, snap-back');
   console.log('   • 8 notifications (mixed read/unread)');
   console.log('   • 8 activity logs');

@@ -13,7 +13,7 @@ interface ChatUser {
 export interface ChatMessage {
   id: string;
   content: string;
-  todoId: string;
+  taskId: string;
   senderId: string;
   sender: ChatUser;
   createdAt: string;
@@ -21,131 +21,131 @@ export interface ChatMessage {
 }
 
 interface ChatState {
-  // Messages keyed by todoId
-  messagesByTodo: Record<string, ChatMessage[]>;
-  // Loading state per todo
-  loadingByTodo: Record<string, boolean>;
-  // Cursor for pagination per todo
-  cursorsByTodo: Record<string, string | null>;
-  // Whether more messages exist per todo
-  hasMoreByTodo: Record<string, boolean>;
-  // Currently active chat todoId
-  activeTodoId: string | null;
+  // Messages keyed by taskId
+  messagesByTask: Record<string, ChatMessage[]>;
+  // Loading state per task
+  loadingByTask: Record<string, boolean>;
+  // Cursor for pagination per task
+  cursorsByTask: Record<string, string | null>;
+  // Whether more messages exist per task
+  hasMoreByTask: Record<string, boolean>;
+  // Currently active chat taskId
+  activeTaskId: string | null;
 
-  openChat: (todoId: string) => void;
+  openChat: (taskId: string) => void;
   closeChat: () => void;
-  fetchMessages: (todoId: string) => Promise<void>;
-  fetchMoreMessages: (todoId: string) => Promise<void>;
-  sendMessage: (todoId: string, content: string) => Promise<void>;
-  addMessage: (todoId: string, message: ChatMessage) => void;
-  joinRoom: (todoId: string) => void;
-  leaveRoom: (todoId: string) => void;
+  fetchMessages: (taskId: string) => Promise<void>;
+  fetchMoreMessages: (taskId: string) => Promise<void>;
+  sendMessage: (taskId: string, content: string) => Promise<void>;
+  addMessage: (taskId: string, message: ChatMessage) => void;
+  joinRoom: (taskId: string) => void;
+  leaveRoom: (taskId: string) => void;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
-  messagesByTodo: {},
-  loadingByTodo: {},
-  cursorsByTodo: {},
-  hasMoreByTodo: {},
-  activeTodoId: null,
+  messagesByTask: {},
+  loadingByTask: {},
+  cursorsByTask: {},
+  hasMoreByTask: {},
+  activeTaskId: null,
 
-  openChat: (todoId: string) => {
-    set({ activeTodoId: todoId });
-    get().joinRoom(todoId);
+  openChat: (taskId: string) => {
+    set({ activeTaskId: taskId });
+    get().joinRoom(taskId);
     // Fetch if not already loaded
-    if (!get().messagesByTodo[todoId]) {
-      get().fetchMessages(todoId);
+    if (!get().messagesByTask[taskId]) {
+      get().fetchMessages(taskId);
     }
   },
 
   closeChat: () => {
-    const todoId = get().activeTodoId;
-    if (todoId) get().leaveRoom(todoId);
-    set({ activeTodoId: null });
+    const taskId = get().activeTaskId;
+    if (taskId) get().leaveRoom(taskId);
+    set({ activeTaskId: null });
   },
 
-  fetchMessages: async (todoId: string) => {
+  fetchMessages: async (taskId: string) => {
     set((state) => ({
-      loadingByTodo: { ...state.loadingByTodo, [todoId]: true },
+      loadingByTask: { ...state.loadingByTask, [taskId]: true },
     }));
     try {
-      const { data } = await api.get(`/todos/${todoId}/messages`, {
+      const { data } = await api.get(`/tasks/${taskId}/messages`, {
         params: { limit: '50' },
       });
       set((state) => ({
-        messagesByTodo: {
-          ...state.messagesByTodo,
+        messagesByTask: {
+          ...state.messagesByTask,
           // Reverse so oldest first for display
-          [todoId]: [...data.messages].reverse(),
+          [taskId]: [...data.messages].reverse(),
         },
-        cursorsByTodo: {
-          ...state.cursorsByTodo,
-          [todoId]: data.nextCursor,
+        cursorsByTask: {
+          ...state.cursorsByTask,
+          [taskId]: data.nextCursor,
         },
-        hasMoreByTodo: {
-          ...state.hasMoreByTodo,
-          [todoId]: data.hasMore,
+        hasMoreByTask: {
+          ...state.hasMoreByTask,
+          [taskId]: data.hasMore,
         },
-        loadingByTodo: { ...state.loadingByTodo, [todoId]: false },
+        loadingByTask: { ...state.loadingByTask, [taskId]: false },
       }));
     } catch {
       set((state) => ({
-        loadingByTodo: { ...state.loadingByTodo, [todoId]: false },
+        loadingByTask: { ...state.loadingByTask, [taskId]: false },
       }));
     }
   },
 
-  fetchMoreMessages: async (todoId: string) => {
-    const cursor = get().cursorsByTodo[todoId];
-    if (!cursor || get().loadingByTodo[todoId]) return;
+  fetchMoreMessages: async (taskId: string) => {
+    const cursor = get().cursorsByTask[taskId];
+    if (!cursor || get().loadingByTask[taskId]) return;
 
     set((state) => ({
-      loadingByTodo: { ...state.loadingByTodo, [todoId]: true },
+      loadingByTask: { ...state.loadingByTask, [taskId]: true },
     }));
     try {
-      const { data } = await api.get(`/todos/${todoId}/messages`, {
+      const { data } = await api.get(`/tasks/${taskId}/messages`, {
         params: { cursor, limit: '50' },
       });
       set((state) => ({
-        messagesByTodo: {
-          ...state.messagesByTodo,
+        messagesByTask: {
+          ...state.messagesByTask,
           // Prepend older messages (reversed) before existing
-          [todoId]: [
+          [taskId]: [
             ...[...data.messages].reverse(),
-            ...(state.messagesByTodo[todoId] || []),
+            ...(state.messagesByTask[taskId] || []),
           ],
         },
-        cursorsByTodo: {
-          ...state.cursorsByTodo,
-          [todoId]: data.nextCursor,
+        cursorsByTask: {
+          ...state.cursorsByTask,
+          [taskId]: data.nextCursor,
         },
-        hasMoreByTodo: {
-          ...state.hasMoreByTodo,
-          [todoId]: data.hasMore,
+        hasMoreByTask: {
+          ...state.hasMoreByTask,
+          [taskId]: data.hasMore,
         },
-        loadingByTodo: { ...state.loadingByTodo, [todoId]: false },
+        loadingByTask: { ...state.loadingByTask, [taskId]: false },
       }));
     } catch {
       set((state) => ({
-        loadingByTodo: { ...state.loadingByTodo, [todoId]: false },
+        loadingByTask: { ...state.loadingByTask, [taskId]: false },
       }));
     }
   },
 
-  sendMessage: async (todoId: string, content: string) => {
+  sendMessage: async (taskId: string, content: string) => {
     try {
-      const { data } = await api.post(`/todos/${todoId}/messages`, {
+      const { data } = await api.post(`/tasks/${taskId}/messages`, {
         content,
       });
       // The server broadcasts via WebSocket, but we also add it
       // optimistically to avoid duplication we check if it already exists
       set((state) => {
-        const existing = state.messagesByTodo[todoId] || [];
+        const existing = state.messagesByTask[taskId] || [];
         if (existing.some((m) => m.id === data.id)) return state;
         return {
-          messagesByTodo: {
-            ...state.messagesByTodo,
-            [todoId]: [...existing, data],
+          messagesByTask: {
+            ...state.messagesByTask,
+            [taskId]: [...existing, data],
           },
         };
       });
@@ -154,31 +154,31 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
   },
 
-  addMessage: (todoId: string, message: ChatMessage) => {
+  addMessage: (taskId: string, message: ChatMessage) => {
     set((state) => {
-      const existing = state.messagesByTodo[todoId] || [];
+      const existing = state.messagesByTask[taskId] || [];
       // Deduplicate
       if (existing.some((m) => m.id === message.id)) return state;
       return {
-        messagesByTodo: {
-          ...state.messagesByTodo,
-          [todoId]: [...existing, message],
+        messagesByTask: {
+          ...state.messagesByTask,
+          [taskId]: [...existing, message],
         },
       };
     });
   },
 
-  joinRoom: (todoId: string) => {
+  joinRoom: (taskId: string) => {
     const socket = getSocket();
     if (socket) {
-      socket.emit('joinTodoChat', { todoId });
+      socket.emit('joinTaskChat', { taskId });
     }
   },
 
-  leaveRoom: (todoId: string) => {
+  leaveRoom: (taskId: string) => {
     const socket = getSocket();
     if (socket) {
-      socket.emit('leaveTodoChat', { todoId });
+      socket.emit('leaveTaskChat', { taskId });
     }
   },
 }));
@@ -192,6 +192,6 @@ export function setupChatListeners() {
   socket.off('newMessage');
 
   socket.on('newMessage', (message: ChatMessage) => {
-    useChatStore.getState().addMessage(message.todoId, message);
+    useChatStore.getState().addMessage(message.taskId, message);
   });
 }

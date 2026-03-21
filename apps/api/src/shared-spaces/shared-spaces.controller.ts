@@ -17,7 +17,7 @@ import {
   CreateSharedSpaceDto,
   UpdateSharedSpaceDto,
   InviteWorkspaceDto,
-  CreateSharedSpaceTodoDto,
+  CreateSharedSpaceTaskDto,
 } from './dto/shared-space.dto';
 
 @ApiTags('shared-spaces')
@@ -103,23 +103,23 @@ export class SharedSpacesController {
     );
   }
 
-  @Get(':id/todos')
-  @ApiOperation({ summary: 'Get todos in shared space' })
-  getTodos(
+  @Get(':id/tasks')
+  @ApiOperation({ summary: 'Get tasks in shared space' })
+  getTasks(
     @Param('id') id: string,
     @Headers('x-workspace-id') workspaceId: string,
   ) {
-    return this.sharedSpacesService.getTodos(id, workspaceId);
+    return this.sharedSpacesService.getTasks(id, workspaceId);
   }
 
-  @Post(':id/todos')
-  @ApiOperation({ summary: 'Create todo in shared space' })
-  createTodo(
+  @Post(':id/tasks')
+  @ApiOperation({ summary: 'Create task in shared space' })
+  createTask(
     @Param('id') id: string,
-    @Body() dto: CreateSharedSpaceTodoDto,
+    @Body() dto: CreateSharedSpaceTaskDto,
     @CurrentUser('id') userId: string,
     @Headers('x-workspace-id') workspaceId: string,
   ) {
-    return this.sharedSpacesService.createTodo(id, dto, userId, workspaceId);
+    return this.sharedSpacesService.createTask(id, dto, userId, workspaceId);
   }
 }

@@ -11,7 +11,7 @@ import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { AdminGuard } from './admin.guard';
 import { AdminService } from './admin.service';
-import { PaginationQueryDto, AdminTodoQueryDto } from './dto/admin-query.dto';
+import { PaginationQueryDto, AdminTaskQueryDto } from './dto/admin-query.dto';
 import { AdminUpdateUserDto } from './dto/update-user.dto';
 
 @ApiTags('admin')
@@ -57,10 +57,10 @@ export class AdminController {
     return this.adminService.getWorkspaceDetail(id);
   }
 
-  @Get('todos')
-  @ApiOperation({ summary: 'List all todos (paginated, filterable)' })
-  getTodos(@Query() query: AdminTodoQueryDto) {
-    return this.adminService.getTodos(query);
+  @Get('tasks')
+  @ApiOperation({ summary: 'List all tasks (paginated, filterable)' })
+  getTasks(@Query() query: AdminTaskQueryDto) {
+    return this.adminService.getTasks(query);
   }
 
   @Get('activities')

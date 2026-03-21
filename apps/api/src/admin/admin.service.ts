@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
-import { PaginationQueryDto, AdminTodoQueryDto } from './dto/admin-query.dto';
+import { PaginationQueryDto, AdminTaskQueryDto } from './dto/admin-query.dto';
 import { AdminUpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
@@ -16,38 +16,38 @@ export class AdminService {
     const [
       totalUsers,
       totalWorkspaces,
-      totalTodos,
+      totalTasks,
       totalThreads,
       activeUsers,
-      todosByStatus,
+      tasksByStatus,
     ] = await Promise.all([
       this.prisma.user.count(),
       this.prisma.workspace.count(),
-      this.prisma.todo.count(),
+      this.prisma.task.count(),
       this.prisma.threadLink.count(),
       this.prisma.user.count({
         where: {
           updatedAt: { gte: sevenDaysAgo },
         },
       }),
-      this.prisma.todo.groupBy({
+      this.prisma.task.groupBy({
         by: ['status'],
         _count: { status: true },
       }),
     ]);
 
     const statusCounts: Record<string, number> = {};
-    for (const item of todosByStatus) {
+    for (const item of tasksByStatus) {
       statusCounts[item.status] = item._count.status;
     }
 
     return {
       totalUsers,
       totalWorkspaces,
-      totalTodos,
+      totalTasks,
       totalThreads,
       activeUsers,
-      todosByStatus: statusCounts,
+      tasksByStatus: statusCounts,
     };
   }
 
@@ -84,8 +84,8 @@ export class AdminService {
           createdAt: true,
           _count: {
             select: {
-              todosCreated: true,
-              todosAssigned: true,
+              tasksCreated: true,
+              tasksAssigned: true,
               workspaceMembers: true,
             },
           },
@@ -128,7 +128,7 @@ export class AdminService {
             },
           },
         },
-        todosCreated: {
+        tasksCreated: {
           select: { id: true, title: true, status: true, createdAt: true },
           orderBy: { createdAt: 'desc' },
           take: 10,
@@ -138,7 +138,7 @@ export class AdminService {
             id: true,
             status: true,
             createdAt: true,
-            todo: { select: { id: true, title: true } },
+            task: { select: { id: true, title: true } },
             toUser: { select: { id: true, name: true } },
           },
           orderBy: { createdAt: 'desc' },
@@ -146,8 +146,8 @@ export class AdminService {
         },
         _count: {
           select: {
-            todosCreated: true,
-            todosAssigned: true,
+            tasksCreated: true,
+            tasksAssigned: true,
             threadLinksFrom: true,
             threadLinksTo: true,
             workspaceMembers: true,
@@ -217,7 +217,7 @@ export class AdminService {
           _count: {
             select: {
               members: true,
-              todos: true,
+              tasks: true,
               teams: true,
             },
           },
@@ -260,7 +260,7 @@ export class AdminService {
           },
           orderBy: { joinedAt: 'asc' },
         },
-        todos: {
+        tasks: {
           select: {
             id: true,
             title: true,
@@ -275,7 +275,7 @@ export class AdminService {
         _count: {
           select: {
             members: true,
-            todos: true,
+            tasks: true,
             teams: true,
             activities: true,
           },
@@ -287,9 +287,9 @@ export class AdminService {
     return workspace;
   }
 
-  // ──────────── Todos ────────────
+  // ──────────── Tasks ────────────
 
-  async getTodos(query: AdminTodoQueryDto) {
+  async getTasks(query: AdminTaskQueryDto) {
     const { page = 1, limit = 10, search, sortBy, sortOrder = 'desc', status, workspaceId } = query;
     const skip = (page - 1) * limit;
 
@@ -311,8 +311,8 @@ export class AdminService {
       orderBy.createdAt = 'desc';
     }
 
-    const [todos, total] = await Promise.all([
-      this.prisma.todo.findMany({
+    const [tasks, total] = await Promise.all([
+      this.prisma.task.findMany({
         where,
         select: {
           id: true,
@@ -332,11 +332,11 @@ export class AdminService {
         skip,
         take: limit,
       }),
-      this.prisma.todo.count({ where }),
+      this.prisma.task.count({ where }),
     ]);
 
     return {
-      data: todos,
+      data: tasks,
       total,
       page,
       limit,

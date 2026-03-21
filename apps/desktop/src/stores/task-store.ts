@@ -22,7 +22,7 @@ interface ThreadLink {
   createdAt: string;
 }
 
-interface Todo {
+interface Task {
   id: string;
   title: string;
   description?: string;
@@ -35,7 +35,7 @@ interface Todo {
   createdAt: string;
 }
 
-interface CalendarTodo {
+interface CalendarTask {
   id: string;
   title: string;
   status: string;
@@ -47,8 +47,8 @@ interface CalendarTodo {
 }
 
 interface CalendarData {
-  completed: CalendarTodo[];
-  upcoming: CalendarTodo[];
+  completed: CalendarTask[];
+  upcoming: CalendarTask[];
 }
 
 export interface CalendarEvent {
@@ -62,24 +62,24 @@ export interface CalendarEvent {
   source: 'google' | 'outlook';
 }
 
-interface TodoState {
-  actionRequired: Todo[];
-  waiting: Todo[];
-  completed: Todo[];
+interface TaskState {
+  actionRequired: Task[];
+  waiting: Task[];
+  completed: Task[];
   isLoading: boolean;
   calendarData: CalendarData | null;
   calendarLoading: boolean;
   calendarEvents: CalendarEvent[];
   calendarEventsLoading: boolean;
-  fetchCategorizedTodos: (workspaceId: string) => Promise<void>;
-  fetchCalendarTodos: (workspaceId: string, start: string, end: string) => Promise<void>;
+  fetchCategorizedTasks: (workspaceId: string) => Promise<void>;
+  fetchCalendarTasks: (workspaceId: string, start: string, end: string) => Promise<void>;
   fetchCalendarEvents: (start: string, end: string) => Promise<void>;
-  createTodo: (workspaceId: string, title: string, description?: string, priority?: string, dueDate?: string) => Promise<Todo>;
-  updateTodo: (id: string, data: Partial<Todo>) => Promise<void>;
-  deleteTodo: (id: string) => Promise<void>;
-  connectChain: (todoId: string, userIds: string[]) => Promise<any>;
-  connectThread: (todoId: string, toUserId: string, message?: string) => Promise<void>;
-  connectMultiThread: (todoId: string, toUserIds: string[], message?: string) => Promise<void>;
+  createTask: (workspaceId: string, title: string, description?: string, priority?: string, dueDate?: string) => Promise<Task>;
+  updateTask: (id: string, data: Partial<Task>) => Promise<void>;
+  deleteTask: (id: string) => Promise<void>;
+  connectChain: (taskId: string, userIds: string[]) => Promise<any>;
+  connectThread: (taskId: string, toUserId: string, message?: string) => Promise<void>;
+  connectMultiThread: (taskId: string, toUserIds: string[], message?: string) => Promise<void>;
   resolveThread: (threadLinkId: string) => Promise<void>;
   declineThread: (threadLinkId: string, reason?: string) => Promise<void>;
 }
@@ -88,20 +88,20 @@ function getWorkspaceId(): string | undefined {
   return useWorkspaceStore.getState().currentWorkspace?.id;
 }
 
-/** Move a todo from actionRequired to waiting (used by connect operations) */
-function moveToWaiting(state: Pick<TodoState, 'actionRequired' | 'waiting'>, todoId: string, updatedData?: Partial<Todo>) {
-  const todo = state.actionRequired.find((t) => t.id === todoId);
+/** Move a task from actionRequired to waiting (used by connect operations) */
+function moveToWaiting(state: Pick<TaskState, 'actionRequired' | 'waiting'>, taskId: string, updatedData?: Partial<Task>) {
+  const task = state.actionRequired.find((t) => t.id === taskId);
   return {
-    actionRequired: state.actionRequired.filter((t) => t.id !== todoId),
-    waiting: todo ? [...state.waiting, { ...todo, ...updatedData }] : state.waiting,
+    actionRequired: state.actionRequired.filter((t) => t.id !== taskId),
+    waiting: task ? [...state.waiting, { ...task, ...updatedData }] : state.waiting,
   };
 }
 
-async function refetchCategorized(set: (partial: Partial<TodoState>) => void) {
+async function refetchCategorized(set: (partial: Partial<TaskState>) => void) {
   const workspaceId = getWorkspaceId();
   if (!workspaceId) return;
   try {
-    const { data } = await api.get(`/workspaces/${workspaceId}/todos/categorized`);
+    const { data } = await api.get(`/workspaces/${workspaceId}/tasks/categorized`);
     set({
       actionRequired: data.actionRequired,
       waiting: data.waiting,
@@ -112,7 +112,7 @@ async function refetchCategorized(set: (partial: Partial<TodoState>) => void) {
   }
 }
 
-export const useTodoStore = create<TodoState>((set) => ({
+export const useTaskStore = create<TaskState>((set) => ({
   actionRequired: [],
   waiting: [],
   completed: [],
@@ -122,10 +122,10 @@ export const useTodoStore = create<TodoState>((set) => ({
   calendarEvents: [],
   calendarEventsLoading: false,
 
-  fetchCalendarTodos: async (workspaceId, start, end) => {
+  fetchCalendarTasks: async (workspaceId, start, end) => {
     set({ calendarLoading: true });
     try {
-      const { data } = await api.get(`/workspaces/${workspaceId}/todos/calendar`, {
+      const { data } = await api.get(`/workspaces/${workspaceId}/tasks/calendar`, {
         params: { start, end },
       });
       set({ calendarData: data, calendarLoading: false });
@@ -144,10 +144,10 @@ export const useTodoStore = create<TodoState>((set) => ({
     }
   },
 
-  fetchCategorizedTodos: async (workspaceId) => {
+  fetchCategorizedTasks: async (workspaceId) => {
     set({ isLoading: true });
     try {
-      const { data } = await api.get(`/workspaces/${workspaceId}/todos/categorized`);
+      const { data } = await api.get(`/workspaces/${workspaceId}/tasks/categorized`);
       set({
         actionRequired: data.actionRequired,
         waiting: data.waiting,
@@ -159,8 +159,8 @@ export const useTodoStore = create<TodoState>((set) => ({
     }
   },
 
-  createTodo: async (workspaceId, title, description, priority, dueDate) => {
-    const { data } = await api.post(`/workspaces/${workspaceId}/todos`, {
+  createTask: async (workspaceId, title, description, priority, dueDate) => {
+    const { data } = await api.post(`/workspaces/${workspaceId}/tasks`, {
       title,
       description,
       priority,
@@ -171,9 +171,9 @@ export const useTodoStore = create<TodoState>((set) => ({
     return data;
   },
 
-  updateTodo: async (id, updateData) => {
-    const { data } = await api.patch(`/todos/${id}`, updateData);
-    const updateInList = (list: Todo[]) =>
+  updateTask: async (id, updateData) => {
+    const { data } = await api.patch(`/tasks/${id}`, updateData);
+    const updateInList = (list: Task[]) =>
       list.map((t) => (t.id === id ? data : t));
 
     if (updateData.status === 'COMPLETED') {
@@ -192,8 +192,8 @@ export const useTodoStore = create<TodoState>((set) => ({
     }
   },
 
-  deleteTodo: async (id) => {
-    await api.delete(`/todos/${id}`);
+  deleteTask: async (id) => {
+    await api.delete(`/tasks/${id}`);
     set((state) => ({
       actionRequired: state.actionRequired.filter((t) => t.id !== id),
       waiting: state.waiting.filter((t) => t.id !== id),
@@ -201,28 +201,28 @@ export const useTodoStore = create<TodoState>((set) => ({
     }));
   },
 
-  connectChain: async (todoId: string, userIds: string[]) => {
-    const res = await api.post(`/todos/${todoId}/connect-chain`, { userIds });
-    set((state) => moveToWaiting(state, todoId, res.data));
+  connectChain: async (taskId: string, userIds: string[]) => {
+    const res = await api.post(`/tasks/${taskId}/connect-chain`, { userIds });
+    set((state) => moveToWaiting(state, taskId, res.data));
     return res.data;
   },
 
-  connectThread: async (todoId, toUserId, message) => {
-    const { data } = await api.post(`/todos/${todoId}/connect`, { toUserId, message });
-    set((state) => moveToWaiting(state, todoId, data.todo || data));
+  connectThread: async (taskId, toUserId, message) => {
+    const { data } = await api.post(`/tasks/${taskId}/connect`, { toUserId, message });
+    set((state) => moveToWaiting(state, taskId, data.task || data));
     trackEvent('thread_connected');
   },
 
-  connectMultiThread: async (todoId, toUserIds, message) => {
-    const { data } = await api.post(`/todos/${todoId}/connect`, { toUserIds, message });
-    const updatedTodo = data.todo || data;
+  connectMultiThread: async (taskId, toUserIds, message) => {
+    const { data } = await api.post(`/tasks/${taskId}/connect`, { toUserIds, message });
+    const updatedTask = data.task || data;
     set((state) => {
       if (toUserIds.length === 1) {
-        return moveToWaiting(state, todoId, updatedTodo);
+        return moveToWaiting(state, taskId, updatedTask);
       }
       // Multi-connect: update in place (assignee stays with sender for parallel)
       return {
-        actionRequired: state.actionRequired.map((t) => t.id === todoId ? { ...t, ...updatedTodo } : t),
+        actionRequired: state.actionRequired.map((t) => t.id === taskId ? { ...t, ...updatedTask } : t),
       };
     });
     trackEvent('thread_connected');

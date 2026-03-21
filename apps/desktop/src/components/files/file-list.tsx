@@ -15,7 +15,7 @@ interface FileItem {
 }
 
 interface FileListProps {
-  todoId: string;
+  taskId: string;
   refreshKey: number;
 }
 
@@ -30,18 +30,18 @@ function FileIcon({ mimeType }: { mimeType: string }) {
   return <FileText className="h-4 w-4 text-muted-foreground" />;
 }
 
-export function FileList({ todoId, refreshKey }: FileListProps) {
+export function FileList({ taskId, refreshKey }: FileListProps) {
   const [files, setFiles] = useState<FileItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
 
   useEffect(() => {
     api
-      .get(`/files/todo/${todoId}`)
+      .get(`/files/task/${taskId}`)
       .then(({ data }) => setFiles(data))
       .catch((e) => console.error('Failed to load files:', e))
       .finally(() => setIsLoading(false));
-  }, [todoId, refreshKey]);
+  }, [taskId, refreshKey]);
 
   const handleDelete = async (id: string) => {
     try {

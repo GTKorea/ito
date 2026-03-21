@@ -51,7 +51,7 @@ export default function TermsPage() {
               ito(糸)는 실(Thread) 기반 협업 태스크 관리 SaaS입니다. 사용자는 태스크를 생성하고 팀원에게 실로 연결(위임)하며,
               완료 시 자동으로 원래 요청자에게 되돌려받는 체인 구조로 업무를 관리할 수 있습니다.
             </p>
-            <p>주요 기능: 태스크(Todo) 생성 및 관리, 실(Thread) 위임 및 체인, 워크스페이스 및 팀 관리, Slack·Google Calendar 연동, 실시간 알림.</p>
+            <p>주요 기능: 태스크(Task) 생성 및 관리, 실(Thread) 위임 및 체인, 워크스페이스 및 팀 관리, Slack·Google Calendar 연동, 실시간 알림.</p>
           </section>
 
           {/* Section 2 */}

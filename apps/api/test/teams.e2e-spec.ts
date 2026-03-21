@@ -171,8 +171,8 @@ describe('Teams (e2e)', () => {
     });
   });
 
-  describe('Team Todos', () => {
-    it('should create a todo with teamId', async () => {
+  describe('Team Tasks', () => {
+    it('should create a task with teamId', async () => {
       const { owner, ws } = await setupWorkspaceWithMember();
 
       // Create team
@@ -182,17 +182,17 @@ describe('Teams (e2e)', () => {
         .send({ name: 'Dev Team' })
         .expect(201);
 
-      // Create todo with teamId
-      const todoRes = await request(app.getHttpServer())
-        .post(`/workspaces/${ws.id}/todos`)
+      // Create task with teamId
+      const taskRes = await request(app.getHttpServer())
+        .post(`/workspaces/${ws.id}/tasks`)
         .set('Authorization', `Bearer ${owner.accessToken}`)
         .send({ title: 'Team Task', teamId: teamRes.body.id })
         .expect(201);
 
-      expect(todoRes.body.title).toBe('Team Task');
+      expect(taskRes.body.title).toBe('Team Task');
     });
 
-    it('should get team todos', async () => {
+    it('should get team tasks', async () => {
       const { owner, ws } = await setupWorkspaceWithMember();
 
       // Create team
@@ -202,28 +202,28 @@ describe('Teams (e2e)', () => {
         .send({ name: 'Dev Team' })
         .expect(201);
 
-      // Create todo with teamId
+      // Create task with teamId
       await request(app.getHttpServer())
-        .post(`/workspaces/${ws.id}/todos`)
+        .post(`/workspaces/${ws.id}/tasks`)
         .set('Authorization', `Bearer ${owner.accessToken}`)
         .send({ title: 'Team Task 1', teamId: teamRes.body.id })
         .expect(201);
 
-      // Create todo without teamId
+      // Create task without teamId
       await request(app.getHttpServer())
-        .post(`/workspaces/${ws.id}/todos`)
+        .post(`/workspaces/${ws.id}/tasks`)
         .set('Authorization', `Bearer ${owner.accessToken}`)
         .send({ title: 'Personal Task' })
         .expect(201);
 
-      // Get team todos
-      const todosRes = await request(app.getHttpServer())
-        .get(`/workspaces/${ws.id}/teams/${teamRes.body.id}/todos`)
+      // Get team tasks
+      const tasksRes = await request(app.getHttpServer())
+        .get(`/workspaces/${ws.id}/teams/${teamRes.body.id}/tasks`)
         .set('Authorization', `Bearer ${owner.accessToken}`)
         .expect(200);
 
-      expect(todosRes.body).toHaveLength(1);
-      expect(todosRes.body[0].title).toBe('Team Task 1');
+      expect(tasksRes.body).toHaveLength(1);
+      expect(tasksRes.body[0].title).toBe('Team Task 1');
     });
 
     it('should get team dashboard', async () => {
@@ -236,9 +236,9 @@ describe('Teams (e2e)', () => {
         .send({ name: 'Dev Team' })
         .expect(201);
 
-      // Create a team todo
+      // Create a team task
       await request(app.getHttpServer())
-        .post(`/workspaces/${ws.id}/todos`)
+        .post(`/workspaces/${ws.id}/tasks`)
         .set('Authorization', `Bearer ${owner.accessToken}`)
         .send({ title: 'Dashboard Task', teamId: teamRes.body.id })
         .expect(201);
@@ -253,7 +253,7 @@ describe('Teams (e2e)', () => {
       expect(dashRes.body).toHaveProperty('members');
       expect(dashRes.body).toHaveProperty('totals');
       expect(dashRes.body.members).toHaveLength(1);
-      expect(dashRes.body.totals.activeTodos).toBe(1);
+      expect(dashRes.body.totals.activeTasks).toBe(1);
     });
   });
 
@@ -294,7 +294,7 @@ describe('Teams (e2e)', () => {
       expect(member?.role).toBe('GUEST');
     });
 
-    it('should block GUEST from creating todos', async () => {
+    it('should block GUEST from creating tasks', async () => {
       const owner = await registerTestUser(app);
       const guest = await registerTestUser(app);
       const ws = await createTestWorkspace(app, owner.accessToken);
@@ -311,9 +311,9 @@ describe('Teams (e2e)', () => {
         .set('Authorization', `Bearer ${guest.accessToken}`)
         .expect(201);
 
-      // GUEST should not be able to create todos
+      // GUEST should not be able to create tasks
       await request(app.getHttpServer())
-        .post(`/workspaces/${ws.id}/todos`)
+        .post(`/workspaces/${ws.id}/tasks`)
         .set('Authorization', `Bearer ${guest.accessToken}`)
         .send({ title: 'Guest Task' })
         .expect(403);

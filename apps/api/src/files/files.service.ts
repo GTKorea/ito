@@ -18,7 +18,7 @@ export class FilesService {
   async upload(
     file: Express.Multer.File,
     uploaderId: string,
-    todoId?: string,
+    taskId?: string,
     threadLinkId?: string,
   ) {
     await mkdir(UPLOADS_DIR, { recursive: true });
@@ -36,7 +36,7 @@ export class FilesService {
         size: file.size,
         mimeType: file.mimetype,
         uploaderId,
-        ...(todoId ? { todoId } : {}),
+        ...(taskId ? { taskId } : {}),
         ...(threadLinkId ? { threadLinkId } : {}),
       },
     });
@@ -67,9 +67,9 @@ export class FilesService {
     return file;
   }
 
-  async findByTodo(todoId: string) {
+  async findByTask(taskId: string) {
     return this.prisma.file.findMany({
-      where: { todoId },
+      where: { taskId },
       orderBy: { createdAt: 'desc' },
     });
   }

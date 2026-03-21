@@ -70,7 +70,7 @@
     "workspaceName": "Nom de l'Espace de Travail",
     "workspaceNamePlaceholder": "ex. Mon Équipe"
   },
-  "todos": {
+  "tasks": {
     "noTasksYet": "Pas encore de tâches",
     "createNewToStart": "Créez une nouvelle tâche pour commencer",
     "completed": "Terminées",
@@ -474,8 +474,8 @@
       "THREAD_SNAPPED": "Thread revenu",
       "THREAD_COMPLETED": "Thread terminé",
       "WORKSPACE_INVITE": "Invitation workspace",
-      "TODO_ASSIGNED": "Tâche assignée",
-      "TODO_COMPLETED": "Tâche terminée",
+      "TASK_ASSIGNED": "Tâche assignée",
+      "TASK_COMPLETED": "Tâche terminée",
       "THREAD_DECLINED": "Fil refusé",
       "SHARED_SPACE_INVITE": "Invitation espace partagé"
     }
@@ -563,11 +563,11 @@
           "name": "Invitation",
           "description": "Vous avez été invité à rejoindre un espace de travail."
         },
-        "todoAssigned": {
+        "taskAssigned": {
           "name": "Tâche assignée",
           "description": "Une tâche vous a été assignée."
         },
-        "todoCompleted": {
+        "taskCompleted": {
           "name": "Tâche terminée",
           "description": "Une tâche que vous avez créée ou à laquelle vous participiez est terminée."
         }
@@ -588,10 +588,10 @@
     "accessDenied": "Accès administrateur requis",
     "totalUsers": "Total utilisateurs",
     "totalWorkspaces": "Total espaces",
-    "totalTodos": "Total tâches",
+    "totalTasks": "Total tâches",
     "totalThreads": "Total fils",
     "activeThisWeek": "actifs cette semaine",
-    "todosByStatus": "Tâches par statut",
+    "tasksByStatus": "Tâches par statut",
     "status_OPEN": "Ouvert",
     "status_IN_PROGRESS": "En cours",
     "status_BLOCKED": "Bloqué",
@@ -601,13 +601,13 @@
     "noActivity": "Pas d'activité",
     "manageUsers": "Gérer les utilisateurs",
     "manageWorkspaces": "Gérer les espaces",
-    "manageTodos": "Gérer les tâches",
+    "manageTasks": "Gérer les tâches",
     "users": "Utilisateurs",
     "workspaces": "Espaces",
-    "todos": "Tâches",
+    "tasks": "Tâches",
     "searchUsers": "Rechercher par nom ou email...",
     "searchWorkspaces": "Rechercher par nom ou slug...",
-    "searchTodos": "Rechercher par titre...",
+    "searchTasks": "Rechercher par titre...",
     "name": "Nom",
     "email": "Email",
     "role": "Rôle",
@@ -616,7 +616,7 @@
     "members": "Membres",
     "teamsCount": "Équipes",
     "created": "Créé",
-    "todoTitle": "Titre",
+    "taskTitle": "Titre",
     "status": "Statut",
     "priority": "Priorité",
     "assignee": "Assigné",
@@ -651,17 +651,17 @@
     "sendInvite": "Send Invite",
     "inviteSent": "Invite sent! Share this link with the workspace admin:",
     "workspaces": "workspaces",
-    "todos": "todos",
+    "tasks": "tasks",
     "members": "members",
     "threads": "threads",
     "participatingWorkspaces": "Participating Workspaces",
-    "sharedTodos": "Shared Todos",
-    "noTodosYet": "No shared todos yet",
-    "createFirstTodo": "Create the first shared todo",
-    "newTodo": "New Todo",
-    "createTodo": "Create Shared Todo",
-    "todoTitle": "Title",
-    "todoTitlePlaceholder": "What needs to be done?",
-    "todoDescriptionPlaceholder": "Add details..."
+    "sharedTasks": "Shared Tasks",
+    "noTasksYet": "No shared tasks yet",
+    "createFirstTask": "Create the first shared task",
+    "newTask": "New Task",
+    "createTask": "Create Shared Task",
+    "taskTitle": "Title",
+    "taskTitlePlaceholder": "What needs to be done?",
+    "taskDescriptionPlaceholder": "Add details..."
   }
 }

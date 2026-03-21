@@ -1,7 +1,7 @@
 import { IsString, IsOptional, IsEnum, IsDateString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-export class CreateTodoDto {
+export class CreateTaskDto {
   @ApiProperty({ example: 'Review design mockups' })
   @IsString()
   title: string;
@@ -21,13 +21,13 @@ export class CreateTodoDto {
   @IsDateString()
   dueDate?: string;
 
-  @ApiPropertyOptional({ description: 'Team ID to assign this todo to' })
+  @ApiPropertyOptional({ description: 'Team ID to assign this task to' })
   @IsOptional()
   @IsString()
   teamId?: string;
 }
 
-export class UpdateTodoDto {
+export class UpdateTaskDto {
   @IsOptional()
   @IsString()
   title?: string;

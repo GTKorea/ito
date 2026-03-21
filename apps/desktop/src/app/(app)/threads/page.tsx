@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { api } from '@/lib/api-client';
-import { useTodoStore } from '@/stores/todo-store';
+import { useTaskStore } from '@/stores/task-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 import { useAuthStore } from '@/stores/auth-store';
 import { Button } from '@/components/ui/button';
@@ -58,7 +58,7 @@ interface ThreadLink {
   status: string;
   chainIndex: number;
   createdAt: string;
-  todo: {
+  task: {
     id: string;
     title: string;
     priority: string;
@@ -155,7 +155,7 @@ export default function ThreadsPage() {
   const [showDecline, setShowDecline] = useState<string | null>(null);
   const [declineReason, setDeclineReason] = useState('');
   const [isDeclining, setIsDeclining] = useState(false);
-  const { resolveThread, declineThread } = useTodoStore();
+  const { resolveThread, declineThread } = useTaskStore();
   const { currentWorkspace } = useWorkspaceStore();
   const { user } = useAuthStore();
   const t = useTranslations('threads');
@@ -252,7 +252,7 @@ export default function ThreadsPage() {
         id: key,
         source: link.fromUser!.id,
         target: link.toUser!.id,
-        label: link.todo.title.length > 20 ? link.todo.title.slice(0, 20) + '…' : link.todo.title,
+        label: link.task.title.length > 20 ? link.task.title.slice(0, 20) + '…' : link.task.title,
         labelStyle: { fill: 'hsl(var(--muted-foreground))', fontSize: 9 },
         labelBgStyle: { fill: 'hsl(var(--card))', fillOpacity: 0.9 },
         labelBgPadding: [4, 2] as [number, number],
@@ -427,7 +427,7 @@ export default function ThreadsPage() {
                 </div>
 
                 <div className="rounded-md bg-accent/50 px-3 py-2">
-                  <p className="text-sm font-medium">{link.todo.title}</p>
+                  <p className="text-sm font-medium">{link.task.title}</p>
                 </div>
 
                 {link.message && (

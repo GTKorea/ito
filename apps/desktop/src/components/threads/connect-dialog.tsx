@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { useTodoStore } from '@/stores/todo-store';
+import { useTaskStore } from '@/stores/task-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 import { api } from '@/lib/api-client';
 import {
@@ -26,17 +26,17 @@ interface User {
 }
 
 interface ConnectDialogProps {
-  todoId: string;
+  taskId: string;
   onClose: () => void;
 }
 
-export function ConnectDialog({ todoId, onClose }: ConnectDialogProps) {
+export function ConnectDialog({ taskId, onClose }: ConnectDialogProps) {
   const [search, setSearch] = useState('');
   const [members, setMembers] = useState<User[]>([]);
   const [selected, setSelected] = useState<User[]>([]);
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { connectThread, connectMultiThread, fetchCategorizedTodos } = useTodoStore();
+  const { connectThread, connectMultiThread, fetchCategorizedTasks } = useTaskStore();
   const { currentWorkspace } = useWorkspaceStore();
   const t = useTranslations('threads');
   const tc = useTranslations('common');
@@ -94,16 +94,16 @@ export function ConnectDialog({ todoId, onClose }: ConnectDialogProps) {
     try {
       if (selected.length === 1) {
         // Single connect — backward compatible
-        await connectThread(todoId, selected[0].id, message || undefined);
+        await connectThread(taskId, selected[0].id, message || undefined);
       } else {
         // Multi-connect
         await connectMultiThread(
-          todoId,
+          taskId,
           selected.map((u) => u.id),
           message || undefined,
         );
       }
-      await fetchCategorizedTodos(currentWorkspace.id);
+      await fetchCategorizedTasks(currentWorkspace.id);
       onClose();
     } catch (error) {
       console.error('Failed to connect thread:', error);
