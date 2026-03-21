@@ -64,13 +64,13 @@ export class SlackController {
     if (error) {
       this.logger.warn(`Slack OAuth error: ${error}`);
       return res.redirect(
-        `${frontendUrl}/settings/integrations?slack=error&reason=${encodeURIComponent(error)}`,
+        `${frontendUrl}/settings?slack=error&reason=${encodeURIComponent(error)}`,
       );
     }
 
     if (!code) {
       return res.redirect(
-        `${frontendUrl}/settings/integrations?slack=error&reason=missing_code`,
+        `${frontendUrl}/settings?slack=error&reason=missing_code`,
       );
     }
 
@@ -87,7 +87,7 @@ export class SlackController {
 
     if (!workspaceId) {
       return res.redirect(
-        `${frontendUrl}/settings/integrations?slack=error&reason=missing_workspace`,
+        `${frontendUrl}/settings?slack=error&reason=missing_workspace`,
       );
     }
 
@@ -100,12 +100,12 @@ export class SlackController {
         `Slack OAuth success: ${result.slackTeamName} (${result.slackTeamId})`,
       );
       return res.redirect(
-        `${frontendUrl}/settings/integrations?slack=success&team=${encodeURIComponent(result.slackTeamName)}`,
+        `${frontendUrl}/settings?slack=success&team=${encodeURIComponent(result.slackTeamName)}`,
       );
     } catch (err) {
       this.logger.error('Slack OAuth callback failed', err);
       return res.redirect(
-        `${frontendUrl}/settings/integrations?slack=error&reason=oauth_failed`,
+        `${frontendUrl}/settings?slack=error&reason=oauth_failed`,
       );
     }
   }
