@@ -482,7 +482,7 @@ export default function HelpPage() {
             </p>
 
             <div className="space-y-2">
-              {(['threadReceived', 'threadSnapped', 'threadCompleted', 'workspaceInvite', 'todoAssigned', 'todoCompleted'] as const).map((type) => (
+              {(['threadReceived', 'threadSnapped', 'threadCompleted', 'workspaceInvite', 'taskAssigned', 'taskCompleted'] as const).map((type) => (
                 <div key={type} className="flex items-start gap-3 rounded-md border border-border bg-background/50 px-3 py-2.5">
                   <Bell className="h-3.5 w-3.5 shrink-0 text-primary mt-0.5" />
                   <div>
