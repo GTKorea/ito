@@ -40,24 +40,8 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
 
-  const frontendUrl = configService.get<string>('FRONTEND_URL');
-  const allowedOrigins = frontendUrl
-    ? frontendUrl.split(',').map((u) => u.trim())
-    : [];
   app.enableCors({
-    origin: (origin, callback) => {
-      // 서버간 요청 (origin 없음) 허용
-      if (!origin) return callback(null, true);
-      // 설정된 프론트엔드 URL 허용
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-      // Tauri 데스크탑 앱 허용
-      if (origin.startsWith('tauri://') || origin.startsWith('https://tauri.')) {
-        return callback(null, true);
-      }
-      // allowedOrigins가 비어있으면 모든 origin 허용 (개발용)
-      if (allowedOrigins.length === 0) return callback(null, true);
-      callback(null, false);
-    },
+    origin: true,
     credentials: true,
   });
 

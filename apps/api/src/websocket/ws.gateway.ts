@@ -10,18 +10,7 @@ import { ConfigService } from '@nestjs/config';
 
 @WebSocketGateway({
   cors: {
-    origin: (origin: string, callback: (err: Error | null, allow?: boolean) => void) => {
-      if (!origin) return callback(null, true);
-      const allowed = process.env.FRONTEND_URL
-        ? process.env.FRONTEND_URL.split(',').map((u) => u.trim())
-        : [];
-      if (allowed.includes(origin)) return callback(null, true);
-      if (origin.startsWith('tauri://') || origin.startsWith('https://tauri.')) {
-        return callback(null, true);
-      }
-      if (allowed.length === 0) return callback(null, true);
-      callback(null, false);
-    },
+    origin: true,
     credentials: true,
   },
 })
