@@ -39,8 +39,10 @@ import {
   Youtube,
   Dribbble,
   Figma,
+  Hash,
   type LucideIcon,
 } from 'lucide-react';
+import { useWorkspaceStore } from '@/stores/workspace-store';
 import { NotificationSettings } from '@/components/settings/notification-settings';
 
 const SOCIAL_PLATFORMS: { value: string; label: string; icon: LucideIcon; placeholder: string }[] = [
@@ -66,6 +68,7 @@ interface CalendarIntegration {
 
 export default function SettingsPage() {
   const { user, uploadAvatar } = useAuthStore();
+  const { currentWorkspace } = useWorkspaceStore();
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const { locale, setLocale } = useLocaleStore();
   const t = useTranslations('settings');
@@ -86,7 +89,11 @@ export default function SettingsPage() {
   const [calendarLoading, setCalendarLoading] = useState(false);
   const [disconnecting, setDisconnecting] = useState<string | null>(null);
 
-  // Fetch calendar integrations
+  // Slack integration state
+  const [slackStatus, setSlackStatus] = useState<{ connected: boolean; teamName?: string } | null>(null);
+  const [slackLoading, setSlackLoading] = useState(false);
+
+  // Fetch calendar integrations + Slack status
   useEffect(() => {
     const fetchCalendar = async () => {
       setCalendarLoading(true);
@@ -101,6 +108,22 @@ export default function SettingsPage() {
     };
     fetchCalendar();
   }, []);
+
+  useEffect(() => {
+    if (!currentWorkspace?.id) return;
+    const fetchSlack = async () => {
+      setSlackLoading(true);
+      try {
+        const { data } = await api.get(`/slack/status?workspaceId=${currentWorkspace.id}`);
+        setSlackStatus(data);
+      } catch {
+        setSlackStatus({ connected: false });
+      } finally {
+        setSlackLoading(false);
+      }
+    };
+    fetchSlack();
+  }, [currentWorkspace?.id]);
 
   const handleSaveProfile = async () => {
     setIsSaving(true);
@@ -134,6 +157,12 @@ export default function SettingsPage() {
     const updated = [...socialLinks];
     updated[index] = { ...updated[index], [field]: value };
     setSocialLinks(updated);
+  };
+
+  const handleConnectSlack = () => {
+    if (!currentWorkspace?.id) return;
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3011';
+    window.location.href = `${apiUrl}/slack/install?workspaceId=${currentWorkspace.id}`;
   };
 
   const handleConnectCalendar = (provider: 'google' | 'outlook') => {
@@ -496,6 +525,53 @@ export default function SettingsPage() {
               </div>
             </div>
           )}
+        </section>
+
+        <Separator />
+
+        {/* Slack Integration */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Hash className="h-4 w-4 text-muted-foreground" />
+            <h2 className="text-sm font-semibold">{t('slackIntegration')}</h2>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {t('slackDescription')}
+          </p>
+
+          <div className="flex items-center justify-between rounded-md border border-border px-3 py-2.5">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded bg-purple-500/10">
+                <Hash className="h-4 w-4 text-purple-400" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Slack</p>
+                <p className="text-[10px] text-muted-foreground">
+                  {slackLoading
+                    ? '...'
+                    : slackStatus?.connected
+                      ? t('slackConnected', { team: slackStatus.teamName || 'Slack' })
+                      : t('slackDisconnected')}
+                </p>
+              </div>
+            </div>
+            {!slackStatus?.connected && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleConnectSlack}
+                disabled={slackLoading || !currentWorkspace}
+              >
+                {t('addToSlack')}
+              </Button>
+            )}
+            {slackStatus?.connected && (
+              <div className="flex items-center gap-1.5 text-xs text-green-400">
+                <Check className="h-3.5 w-3.5" />
+                {t('connected')}
+              </div>
+            )}
+          </div>
         </section>
 
         <Separator />

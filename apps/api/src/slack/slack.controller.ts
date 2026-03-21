@@ -7,12 +7,14 @@ import {
   Res,
   Logger,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Request, Response } from 'express';
 import { SlackService } from './slack.service';
 import { SlackCommandDto } from './dto/slack-command.dto';
 import { SlackEventDto } from './dto/slack-event.dto';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
 @Controller('slack')
 export class SlackController {
@@ -26,20 +28,33 @@ export class SlackController {
   // ──────────────────── OAuth Install Flow ────────────────────
 
   @Get('install')
-  install(@Res() res: Response) {
+  install(
+    @Query('workspaceId') workspaceId: string,
+    @Res() res: Response,
+  ) {
     if (!this.slackService.isOAuthConfigured()) {
       return res
         .status(HttpStatus.SERVICE_UNAVAILABLE)
         .json({ error: 'Slack OAuth is not configured' });
     }
 
-    const installUrl = this.slackService.getInstallUrl();
+    if (!workspaceId) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ error: 'workspaceId query parameter is required' });
+    }
+
+    const state = Buffer.from(JSON.stringify({ workspaceId })).toString(
+      'base64url',
+    );
+    const installUrl = this.slackService.getInstallUrl(state);
     return res.redirect(installUrl);
   }
 
   @Get('oauth/callback')
   async oauthCallback(
     @Query('code') code: string,
+    @Query('state') state: string,
     @Query('error') error: string,
     @Res() res: Response,
   ) {
@@ -59,8 +74,28 @@ export class SlackController {
       );
     }
 
+    // Decode workspaceId from state
+    let workspaceId: string | undefined;
     try {
-      const result = await this.slackService.handleOAuthCallback(code);
+      const decoded = JSON.parse(
+        Buffer.from(state || '', 'base64url').toString('utf8'),
+      );
+      workspaceId = decoded.workspaceId;
+    } catch {
+      // state parsing failed
+    }
+
+    if (!workspaceId) {
+      return res.redirect(
+        `${frontendUrl}/settings/integrations?slack=error&reason=missing_workspace`,
+      );
+    }
+
+    try {
+      const result = await this.slackService.handleOAuthCallback(
+        code,
+        workspaceId,
+      );
       this.logger.log(
         `Slack OAuth success: ${result.slackTeamName} (${result.slackTeamId})`,
       );
@@ -73,6 +108,27 @@ export class SlackController {
         `${frontendUrl}/settings/integrations?slack=error&reason=oauth_failed`,
       );
     }
+  }
+
+  // ──────────────────── Status ────────────────────
+
+  @Get('status')
+  @UseGuards(JwtAuthGuard)
+  async getStatus(@Query('workspaceId') workspaceId: string) {
+    if (!workspaceId) {
+      return { connected: false };
+    }
+
+    const slackWorkspace = await this.slackService.getSlackWorkspaceByItoWorkspace(workspaceId);
+    if (!slackWorkspace) {
+      return { connected: false };
+    }
+
+    return {
+      connected: true,
+      teamName: slackWorkspace.slackTeamName,
+      slackTeamId: slackWorkspace.slackTeamId,
+    };
   }
 
   // ──────────────────── Events & Commands ────────────────────
@@ -101,8 +157,12 @@ export class SlackController {
 
     // Handle events asynchronously
     if (body.type === 'event_callback' && body.event) {
-      this.logger.log(`Received Slack event: ${body.event.type}`);
-      // Future: handle specific event types here
+      const eventType = body.event.type;
+      this.logger.log(`Received Slack event: ${eventType}`);
+
+      if (eventType === 'app_uninstalled' && body.team_id) {
+        await this.slackService.handleAppUninstalled(body.team_id);
+      }
     }
 
     return res.status(HttpStatus.OK).json({ ok: true });
@@ -135,7 +195,7 @@ export class SlackController {
       this.logger.error('Error handling Slack command', error);
       return res.status(HttpStatus.OK).json({
         response_type: 'ephemeral',
-        text: ':x: \uBA85\uB839\uC5B4 \uCC98\uB9AC \uC911 \uC624\uB958\uAC00 \uBC1C\uC0DD\uD588\uC2B5\uB2C8\uB2E4.',
+        text: ':x: 명령어 처리 중 오류가 발생했습니다.',
       });
     }
   }

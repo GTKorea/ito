@@ -23,6 +23,7 @@
       "bot": [
         "commands",
         "chat:write",
+        "im:write",
         "users:read",
         "users:read.email"
       ]
@@ -35,7 +36,8 @@
     "event_subscriptions": {
       "request_url": "https://api.itothread.com/slack/events",
       "bot_events": [
-        "app_mention"
+        "app_mention",
+        "app_uninstalled"
       ]
     },
     "org_deploy_enabled": false,

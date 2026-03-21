@@ -54,7 +54,7 @@ API_URL=https://api.itothread.com
    API_URL=https://<your-tunnel>
    ```
 
-4. Visit `http://localhost:3011/slack/install` — you should be redirected to Slack's OAuth consent screen.
+4. Visit `http://localhost:3011/slack/install?workspaceId=<your-workspace-id>` — you should be redirected to Slack's OAuth consent screen. (Or use the "Add to Slack" button in Settings.)
 
 5. Authorize the app. You should be redirected back to your frontend at `/settings/integrations?slack=success`.
 
@@ -63,25 +63,36 @@ API_URL=https://api.itothread.com
    cd apps/api && npx prisma studio
    ```
 
+7. Test slash commands in Slack: `/ito help` — the first time a user runs a command, their Slack account is auto-linked to their ito account by email.
+
 ### Production
 
 1. Ensure `API_URL=https://api.itothread.com` is set in production environment.
 2. Confirm the Slack app's redirect URL is `https://api.itothread.com/slack/oauth/callback`.
-3. Visit `https://api.itothread.com/slack/install` to test the flow.
+3. Use the "Add to Slack" button on the Settings page, or visit `https://api.itothread.com/slack/install?workspaceId=<id>`.
 
 ## 4. How It Works
 
 The install flow follows Slack's OAuth v2 spec:
 
-1. User visits `GET /slack/install`
-2. Server redirects to `https://slack.com/oauth/v2/authorize` with client ID and scopes
+1. User clicks "Add to Slack" on the Settings page (or visits `GET /slack/install?workspaceId=<id>`)
+2. Server encodes `workspaceId` into the OAuth `state` parameter and redirects to `https://slack.com/oauth/v2/authorize`
 3. User authorizes in Slack
-4. Slack redirects to `GET /slack/oauth/callback?code=...`
-5. Server exchanges the code for a bot access token via `oauth.v2.access`
-6. Server creates/updates a `SlackWorkspace` record with the team's bot token
+4. Slack redirects to `GET /slack/oauth/callback?code=...&state=...`
+5. Server decodes `workspaceId` from `state`, exchanges the code for a bot token via `oauth.v2.access`
+6. Server creates/updates a `SlackWorkspace` record linked to the ito workspace
 7. User is redirected to the frontend success page
 
 Each workspace that installs the app gets its own bot token stored in `SlackWorkspace.accessToken`. Slash commands and event handlers automatically use the per-workspace token.
+
+### Auto-linking Slack users
+
+When a Slack user first runs `/ito create` or `/ito list`, the system automatically:
+1. Fetches the Slack user's email via `users.info`
+2. Matches it to an existing ito user
+3. Creates a `SlackUser` mapping
+
+This means users don't need to manually link accounts — it happens transparently on first use.
 
 ## 5. Slack App Directory Submission
 

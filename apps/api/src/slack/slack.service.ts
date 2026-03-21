@@ -10,6 +10,7 @@ const SLACK_OAUTH_AUTHORIZE_URL = 'https://slack.com/oauth/v2/authorize';
 const SLACK_OAUTH_BOT_SCOPES = [
   'commands',
   'chat:write',
+  'im:write',
   'users:read',
   'users:read.email',
 ];
@@ -66,6 +67,12 @@ export class SlackService implements OnModuleInit {
     return this.enabled;
   }
 
+  async getSlackWorkspaceByItoWorkspace(workspaceId: string) {
+    return this.prisma.slackWorkspace.findFirst({
+      where: { workspaceId },
+    });
+  }
+
   // ──────────────────── OAuth Install Flow ────────────────────
 
   isOAuthConfigured(): boolean {
@@ -93,9 +100,18 @@ export class SlackService implements OnModuleInit {
 
   async handleOAuthCallback(
     code: string,
+    workspaceId: string,
   ): Promise<{ slackTeamId: string; slackTeamName: string }> {
     if (!this.clientId || !this.clientSecret) {
       throw new Error('Slack OAuth credentials are not configured');
+    }
+
+    // Validate the ito workspace exists
+    const workspace = await this.prisma.workspace.findUnique({
+      where: { id: workspaceId },
+    });
+    if (!workspace) {
+      throw new Error('Invalid workspace ID');
     }
 
     const tempClient = new WebClient();
@@ -128,6 +144,7 @@ export class SlackService implements OnModuleInit {
         accessToken: botToken,
         botUserId: botUserId || null,
         scope: scope || null,
+        workspaceId,
       },
       create: {
         slackTeamId: teamId,
@@ -135,14 +152,12 @@ export class SlackService implements OnModuleInit {
         accessToken: botToken,
         botUserId: botUserId || null,
         scope: scope || null,
-        // workspaceId will need to be linked later by the user
-        // For now, we create a placeholder that can be updated
-        workspaceId: '', // Will be set when user links to an ito workspace
+        workspaceId,
       },
     });
 
     this.logger.log(
-      `Slack workspace installed: ${teamName} (${teamId})`,
+      `Slack workspace installed: ${teamName} (${teamId}) → ito workspace ${workspaceId}`,
     );
 
     return { slackTeamId: teamId, slackTeamName: teamName };
@@ -234,19 +249,41 @@ export class SlackService implements OnModuleInit {
     notification: { type: string; title: string; data?: any },
   ): Promise<void> {
     const slackUser = await this.findSlackUser(userId);
-    if (!slackUser || !slackUser.slackChannelId) return;
+    if (!slackUser) return;
 
     const client = await this.getClientForTeam(
       slackUser.slackWorkspace.slackTeamId,
     );
     if (!client) return;
 
+    // Auto-open DM channel if not yet stored
+    let channelId = slackUser.slackChannelId;
+    if (!channelId) {
+      try {
+        const dm = await client.conversations.open({
+          users: slackUser.slackUserId,
+        });
+        channelId = dm.channel?.id || null;
+        if (channelId) {
+          await this.prisma.slackUser.update({
+            where: { id: slackUser.id },
+            data: { slackChannelId: channelId },
+          });
+        }
+      } catch (error) {
+        this.logger.error(
+          `Failed to open DM channel for Slack user ${slackUser.slackUserId}`,
+          error,
+        );
+        return;
+      }
+    }
+
+    if (!channelId) return;
+
     const text = this.formatNotification(notification);
     try {
-      await client.chat.postMessage({
-        channel: slackUser.slackChannelId,
-        text,
-      });
+      await client.chat.postMessage({ channel: channelId, text });
     } catch (error) {
       this.logger.error(
         `Failed to send Slack notification to user ${userId}`,
@@ -260,6 +297,96 @@ export class SlackService implements OnModuleInit {
       where: { userId },
       include: { slackWorkspace: true },
     });
+  }
+
+  // ──────────────────── SlackUser Linking ────────────────────
+
+  /**
+   * Auto-match a Slack user to an ito user by email.
+   * Called when a user first interacts via slash command and has no mapping yet.
+   */
+  async autoLinkSlackUser(
+    slackTeamId: string,
+    slackUserId: string,
+  ): Promise<{ userId: string; slackWorkspaceId: string } | null> {
+    const slackWorkspace = await this.prisma.slackWorkspace.findUnique({
+      where: { slackTeamId },
+    });
+    if (!slackWorkspace) return null;
+
+    // Check if already linked
+    const existing = await this.prisma.slackUser.findUnique({
+      where: {
+        slackUserId_slackWorkspaceId: {
+          slackUserId,
+          slackWorkspaceId: slackWorkspace.id,
+        },
+      },
+    });
+    if (existing) return { userId: existing.userId, slackWorkspaceId: slackWorkspace.id };
+
+    // Look up Slack user's email via the API
+    const client = new WebClient(slackWorkspace.accessToken);
+    let email: string | undefined;
+    try {
+      const info = await client.users.info({ user: slackUserId });
+      email = info.user?.profile?.email;
+    } catch (error) {
+      this.logger.warn(`Failed to fetch Slack user info for ${slackUserId}`, error);
+      return null;
+    }
+
+    if (!email) return null;
+
+    // Match with ito user by email
+    const itoUser = await this.prisma.user.findUnique({
+      where: { email },
+    });
+    if (!itoUser) return null;
+
+    // Verify the ito user is a member of the linked workspace
+    const membership = await this.prisma.workspaceMember.findUnique({
+      where: {
+        userId_workspaceId: {
+          userId: itoUser.id,
+          workspaceId: slackWorkspace.workspaceId,
+        },
+      },
+    });
+    if (!membership) return null;
+
+    // Create the SlackUser mapping
+    const slackUser = await this.prisma.slackUser.create({
+      data: {
+        slackUserId,
+        slackWorkspaceId: slackWorkspace.id,
+        userId: itoUser.id,
+      },
+    });
+
+    this.logger.log(
+      `Auto-linked Slack user ${slackUserId} → ito user ${itoUser.email}`,
+    );
+
+    return { userId: slackUser.userId, slackWorkspaceId: slackWorkspace.id };
+  }
+
+  // ──────────────────── App Uninstall ────────────────────
+
+  async handleAppUninstalled(slackTeamId: string): Promise<void> {
+    const slackWorkspace = await this.prisma.slackWorkspace.findUnique({
+      where: { slackTeamId },
+    });
+    if (!slackWorkspace) return;
+
+    // Cascade delete will remove related SlackUser records
+    await this.prisma.slackWorkspace.delete({
+      where: { id: slackWorkspace.id },
+    });
+
+    this.logger.log(
+      `Slack workspace uninstalled: ${slackWorkspace.slackTeamName} (${slackTeamId})`,
+    );
   }
 
   private formatNotification(notification: {
@@ -490,7 +617,7 @@ export class SlackService implements OnModuleInit {
     });
     if (!slackWorkspace) return null;
 
-    const slackUser = await this.prisma.slackUser.findUnique({
+    let slackUser = await this.prisma.slackUser.findUnique({
       where: {
         slackUserId_slackWorkspaceId: {
           slackUserId,
@@ -499,6 +626,22 @@ export class SlackService implements OnModuleInit {
       },
       include: { slackWorkspace: true },
     });
+
+    // Auto-link if not yet mapped
+    if (!slackUser) {
+      const linked = await this.autoLinkSlackUser(slackTeamId, slackUserId);
+      if (linked) {
+        slackUser = await this.prisma.slackUser.findUnique({
+          where: {
+            slackUserId_slackWorkspaceId: {
+              slackUserId,
+              slackWorkspaceId: slackWorkspace.id,
+            },
+          },
+          include: { slackWorkspace: true },
+        });
+      }
+    }
 
     return slackUser;
   }
