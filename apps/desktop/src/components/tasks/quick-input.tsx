@@ -300,6 +300,54 @@ export function QuickInput() {
 
   const selectedPriority = PRIORITY_OPTIONS.find((p) => p.value === priority);
 
+  // Render highlighted input text with styled @ and > characters
+  const renderHighlightedInput = (text: string) => {
+    if (!text) return null;
+    // Split by special tokens: @mention and ' > '
+    const parts: { text: string; type: 'normal' | 'at' | 'chain' | 'mention' }[] = [];
+    let i = 0;
+    while (i < text.length) {
+      // Check for ' > ' chain separator
+      if (i + 2 < text.length && text.substring(i, i + 3) === ' > ') {
+        parts.push({ text: ' > ', type: 'chain' });
+        i += 3;
+        continue;
+      }
+      // Check for @mention
+      if (text[i] === '@') {
+        // Collect the full @username
+        let end = i + 1;
+        while (end < text.length && text[end] !== ' ' && text[end] !== '>') {
+          end++;
+        }
+        parts.push({ text: text.substring(i, end), type: 'at' });
+        i = end;
+        continue;
+      }
+      // Normal text
+      let end = i + 1;
+      while (end < text.length && text[end] !== '@' && !(end + 2 < text.length && text.substring(end, end + 3) === ' > ')) {
+        end++;
+      }
+      parts.push({ text: text.substring(i, end), type: 'normal' });
+      i = end;
+    }
+
+    return parts.map((part, idx) => {
+      if (part.type === 'chain') {
+        return (
+          <span key={idx} className="text-violet-400 font-medium">{part.text}</span>
+        );
+      }
+      if (part.type === 'at') {
+        return (
+          <span key={idx} className="text-blue-400 font-medium">{part.text}</span>
+        );
+      }
+      return <span key={idx} className="text-foreground">{part.text}</span>;
+    });
+  };
+
   if (!currentWorkspace) return null;
 
   return (
@@ -343,22 +391,18 @@ export function QuickInput() {
         'transition-all duration-300',
         isFocused && 'bg-card/80 border-border shadow-xl',
       )}>
-        {/* Toolbar — slides in when focused */}
+        {/* Toolbar — always visible */}
         <div
-          className={cn(
-            'grid transition-all duration-200 ease-out',
-            isFocused ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0',
-          )}
+          className="transition-all duration-200 ease-out"
           onMouseDown={handleToolbarMouseDown}
         >
-          <div className="overflow-hidden">
             <div className="flex items-center gap-0.5 px-3 py-1.5 border-b border-border/30">
               {/* @ Mention button */}
               <button
                 type="button"
                 onClick={() => insertAtCursor('@')}
                 title="Mention (@)"
-                className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+                className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors cursor-pointer"
               >
                 <AtSign className="h-3.5 w-3.5" />
               </button>
@@ -368,7 +412,7 @@ export function QuickInput() {
                 type="button"
                 onClick={() => insertAtCursor(' > @')}
                 title="Chain (>)"
-                className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+                className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors cursor-pointer"
               >
                 <ChevronRight className="h-3.5 w-3.5" />
               </button>
@@ -384,6 +428,7 @@ export function QuickInput() {
                   title="Priority"
                   className={cn(
                     'flex h-7 w-7 items-center justify-center rounded-md transition-colors',
+                    'cursor-pointer',
                     priority
                       ? `${selectedPriority?.color}`
                       : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
@@ -428,6 +473,7 @@ export function QuickInput() {
                   title="Due date"
                   className={cn(
                     'flex h-7 w-7 items-center justify-center rounded-md transition-colors',
+                    'cursor-pointer',
                     dueDate
                       ? 'text-blue-400'
                       : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
@@ -448,7 +494,6 @@ export function QuickInput() {
                 />
               </div>
             </div>
-          </div>
         </div>
 
         {/* Badges row — shows selected priority/due date */}
@@ -468,7 +513,7 @@ export function QuickInput() {
                   type="button"
                   onClick={() => setPriority(null)}
                   onMouseDown={handleToolbarMouseDown}
-                  className="ml-0.5 hover:opacity-70"
+                  className="ml-0.5 hover:opacity-70 cursor-pointer"
                 >
                   x
                 </button>
@@ -482,7 +527,7 @@ export function QuickInput() {
                   type="button"
                   onClick={() => setDueDate(null)}
                   onMouseDown={handleToolbarMouseDown}
-                  className="ml-0.5 hover:opacity-70"
+                  className="ml-0.5 hover:opacity-70 cursor-pointer"
                 >
                   x
                 </button>
@@ -493,19 +538,32 @@ export function QuickInput() {
 
         {/* Input row */}
         <div className="flex items-center gap-2 px-4 py-2.5">
-          <input
-            ref={inputRef}
-            data-quick-input
-            type="text"
-            value={input}
-            onChange={(e) => handleInputChange(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-            placeholder={t('quickInputPlaceholder')}
-            disabled={isSubmitting}
-            className="h-8 flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none disabled:opacity-50"
-          />
+          <div className="relative flex-1 h-8">
+            {/* Highlight overlay */}
+            <div
+              aria-hidden
+              className="absolute inset-0 flex items-center text-sm pointer-events-none whitespace-pre overflow-hidden"
+            >
+              <span className="text-transparent">{!input && t('quickInputPlaceholder')}</span>
+              {renderHighlightedInput(input)}
+            </div>
+            <input
+              ref={inputRef}
+              data-quick-input
+              type="text"
+              value={input}
+              onChange={(e) => handleInputChange(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              placeholder={t('quickInputPlaceholder')}
+              disabled={isSubmitting}
+              className={cn(
+                "relative h-8 w-full bg-transparent text-sm placeholder:text-muted-foreground/60 focus:outline-none disabled:opacity-50",
+                input ? "text-transparent caret-foreground" : "text-foreground",
+              )}
+            />
+          </div>
           <button
             onClick={handleSubmit}
             disabled={!input.trim() || isSubmitting}
