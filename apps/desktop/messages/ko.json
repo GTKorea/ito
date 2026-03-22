@@ -118,7 +118,8 @@
     "declineDescription": "이 실을 거절하면 보낸 사람에게 태스크가 돌아갑니다.",
     "declineReasonPlaceholder": "거절 사유 (선택)",
     "moreActions": "더 보기",
-    "quickInputPlaceholder": "새 태스크... ( > @유저 로 바로 연결)"
+    "quickInputPlaceholder": "새 태스크... ( > @유저 로 바로 연결)",
+    "resolveBlocker": "블로커 해제"
   },
   "threads": {
     "title": "스레드",
@@ -139,7 +140,12 @@
     "parallelConnect": "{count}명 (동시 연결)",
     "connectMultiple": "{count}명에게 연결",
     "parallelGroup": "병렬 스레드",
-    "groupProgress": "{completed}/{total} 완료"
+    "groupProgress": "{completed}/{total} 완료",
+    "person": "사람",
+    "blocker": "블로커",
+    "addBlocker": "블로커 추가",
+    "blockerDescription": "이 태스크를 막고 있는 외부 의존성을 등록하세요. 블로커가 해소되면 직접 해제할 수 있습니다.",
+    "blockerPlaceholder": "예: 메타 개발자콘솔 승인 대기중"
   },
   "teams": {
     "title": "팀",

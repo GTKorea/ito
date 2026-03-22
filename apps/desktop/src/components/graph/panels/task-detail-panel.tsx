@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { X, Link2, CheckCircle2, Circle, Clock, AlertCircle, Ban } from 'lucide-react';
+import { X, Link2, CheckCircle2, Circle, Clock, AlertCircle, Ban, ShieldAlert } from 'lucide-react';
 import { useGraphStore, type TaskGraphTask } from '../task-graph-store';
 import { useAuthStore } from '@/stores/auth-store';
 import { useTaskStore } from '@/stores/task-store';
@@ -32,7 +32,7 @@ const LINK_STATUS_COLORS: Record<string, string> = {
 export function TaskDetailPanel() {
   const { selectedTaskId, selectTask, tasks, fetchGraphData } = useGraphStore();
   const { user } = useAuthStore();
-  const { resolveThread, updateTask } = useTaskStore();
+  const { resolveThread, resolveBlocker, updateTask } = useTaskStore();
   const { currentWorkspace } = useWorkspaceStore();
 
   const task = useMemo(
@@ -48,7 +48,12 @@ export function TaskDetailPanel() {
 
   // Find pending link for current user
   const myPendingLink = task.threadLinks.find(
-    (l) => l.toUserId === user?.id && l.status === 'PENDING',
+    (l) => l.toUserId === user?.id && l.status === 'PENDING' && l.type !== 'BLOCKER',
+  );
+
+  // Find pending blocker created by current user
+  const myPendingBlocker = task.threadLinks.find(
+    (l) => l.type === 'BLOCKER' && l.fromUserId === user?.id && l.status === 'PENDING',
   );
 
   const handleResolve = async () => {
@@ -58,6 +63,16 @@ export function TaskDetailPanel() {
       await fetchGraphData(currentWorkspace.id);
     } catch (error) {
       console.error('Failed to update task:', error);
+    }
+  };
+
+  const handleResolveBlocker = async () => {
+    if (!myPendingBlocker || !currentWorkspace) return;
+    try {
+      await resolveBlocker(myPendingBlocker.id);
+      await fetchGraphData(currentWorkspace.id);
+    } catch (error) {
+      console.error('Failed to resolve blocker:', error);
     }
   };
 
@@ -172,20 +187,35 @@ export function TaskDetailPanel() {
                   key={link.id}
                   className="flex items-center gap-2 rounded-md border border-border p-2"
                 >
-                  <Link2
-                    className="h-3.5 w-3.5 flex-shrink-0"
-                    style={{ color: LINK_STATUS_COLORS[link.status] || '#666' }}
-                  />
+                  {link.type === 'BLOCKER' ? (
+                    <ShieldAlert
+                      className="h-3.5 w-3.5 flex-shrink-0"
+                      style={{ color: link.status === 'COMPLETED' ? '#22C55E' : '#EF4444' }}
+                    />
+                  ) : (
+                    <Link2
+                      className="h-3.5 w-3.5 flex-shrink-0"
+                      style={{ color: LINK_STATUS_COLORS[link.status] || '#666' }}
+                    />
+                  )}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1 text-xs">
-                      <span className="font-medium text-foreground truncate">
-                        {link.fromUser.name}
-                      </span>
-                      <span className="text-muted-foreground">&rarr;</span>
-                      <span className="font-medium text-foreground truncate">
-                        {link.toUser.name}
-                      </span>
-                    </div>
+                    {link.type === 'BLOCKER' ? (
+                      <div className="text-xs">
+                        <span className="font-medium text-red-400">
+                          {link.blockerNote}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1 text-xs">
+                        <span className="font-medium text-foreground truncate">
+                          {link.fromUser.name}
+                        </span>
+                        <span className="text-muted-foreground">&rarr;</span>
+                        <span className="font-medium text-foreground truncate">
+                          {link.toUser?.name || '?'}
+                        </span>
+                      </div>
+                    )}
                     {link.message && (
                       <p className="mt-0.5 text-[10px] text-muted-foreground truncate">
                         {link.message}
@@ -196,7 +226,7 @@ export function TaskDetailPanel() {
                     className="flex-shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-medium text-white"
                     style={{ backgroundColor: LINK_STATUS_COLORS[link.status] || '#666' }}
                   >
-                    {link.status}
+                    {link.type === 'BLOCKER' ? (link.status === 'COMPLETED' ? 'RESOLVED' : 'BLOCKED') : link.status}
                   </span>
                 </div>
               ))}
@@ -206,6 +236,15 @@ export function TaskDetailPanel() {
 
         {/* Actions */}
         <div className="space-y-2">
+          {myPendingBlocker && (
+            <button
+              onClick={handleResolveBlocker}
+              className="flex w-full items-center justify-center gap-2 rounded-md bg-orange-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-700"
+            >
+              <ShieldAlert className="h-4 w-4" />
+              Resolve Blocker
+            </button>
+          )}
           {myPendingLink && (
             <button
               onClick={handleResolve}

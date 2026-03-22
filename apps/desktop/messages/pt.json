@@ -118,7 +118,8 @@
     "declineDescription": "Recusar esta thread devolverá a tarefa ao remetente.",
     "declineReasonPlaceholder": "Motivo da recusa (opcional)",
     "moreActions": "Mais ações",
-    "quickInputPlaceholder": "Nova tarefa... ( > @usuário para conectar diretamente)"
+    "quickInputPlaceholder": "Nova tarefa... ( > @usuário para conectar diretamente)",
+    "resolveBlocker": "Resolver bloqueador"
   },
   "threads": {
     "title": "Threads",
@@ -139,7 +140,12 @@
     "parallelConnect": "{count} pessoas (paralelo)",
     "connectMultiple": "Conectar {count} pessoas",
     "parallelGroup": "Threads paralelas",
-    "groupProgress": "{completed}/{total} concluídos"
+    "groupProgress": "{completed}/{total} concluídos",
+    "person": "Pessoa",
+    "blocker": "Bloqueador",
+    "addBlocker": "Adicionar bloqueador",
+    "blockerDescription": "Registre uma dependência externa que está bloqueando esta tarefa. Você pode resolvê-la quando o bloqueio for removido.",
+    "blockerPlaceholder": "ex: Aguardando aprovação do console de desenvolvedores da Meta"
   },
   "teams": {
     "title": "Equipes",

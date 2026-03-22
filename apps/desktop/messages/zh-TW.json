@@ -118,7 +118,8 @@
     "declineDescription": "拒絕此線程後，任務將返回給發送者。",
     "declineReasonPlaceholder": "拒絕原因（選填）",
     "moreActions": "更多操作",
-    "quickInputPlaceholder": "新任務... ( > @使用者 直接連接)"
+    "quickInputPlaceholder": "新任務... ( > @使用者 直接連接)",
+    "resolveBlocker": "解除阻擋"
   },
   "threads": {
     "title": "執行緒",
@@ -139,7 +140,12 @@
     "parallelConnect": "{count} 人（並行）",
     "connectMultiple": "連接 {count} 人",
     "parallelGroup": "並行執行緒",
-    "groupProgress": "{completed}/{total} 已完成"
+    "groupProgress": "{completed}/{total} 已完成",
+    "person": "成員",
+    "blocker": "阻擋項",
+    "addBlocker": "新增阻擋項",
+    "blockerDescription": "登記阻擋此任務的外部依賴。阻擋解除後您可以自行標記完成。",
+    "blockerPlaceholder": "例：等待Meta開發者控制台審批"
   },
   "teams": {
     "title": "團隊",

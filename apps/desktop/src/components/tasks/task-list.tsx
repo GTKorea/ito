@@ -15,7 +15,9 @@ interface User {
 interface ThreadLink {
   id: string;
   fromUser: User;
-  toUser: User;
+  toUser: User | null;
+  type?: 'PERSON' | 'BLOCKER';
+  blockerNote?: string;
   message?: string;
   status: string;
   chainIndex: number;

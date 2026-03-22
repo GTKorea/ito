@@ -14,7 +14,9 @@ interface User {
 interface ThreadLink {
   id: string;
   fromUser: User;
-  toUser: User;
+  toUser: User | null;
+  type: 'PERSON' | 'BLOCKER';
+  blockerNote?: string;
   message?: string;
   status: string;
   chainIndex: number;
@@ -80,6 +82,8 @@ interface TaskState {
   connectChain: (taskId: string, userIds: string[]) => Promise<any>;
   connectThread: (taskId: string, toUserId: string, message?: string) => Promise<void>;
   connectMultiThread: (taskId: string, toUserIds: string[], message?: string) => Promise<void>;
+  connectBlocker: (taskId: string, blockerNote: string) => Promise<void>;
+  resolveBlocker: (threadLinkId: string) => Promise<void>;
   resolveThread: (threadLinkId: string) => Promise<void>;
   declineThread: (threadLinkId: string, reason?: string) => Promise<void>;
 }
@@ -226,6 +230,26 @@ export const useTaskStore = create<TaskState>((set) => ({
       };
     });
     trackEvent('thread_connected');
+  },
+
+  connectBlocker: async (taskId, blockerNote) => {
+    await api.post(`/tasks/${taskId}/block`, { blockerNote });
+    // Move task to waiting (blocked state)
+    set((state) => {
+      const task = state.actionRequired.find((t) => t.id === taskId);
+      return {
+        actionRequired: state.actionRequired.filter((t) => t.id !== taskId),
+        waiting: task ? [...state.waiting, { ...task, status: 'BLOCKED' }] : state.waiting,
+      };
+    });
+    trackEvent('blocker_connected');
+    await refetchCategorized(set);
+  },
+
+  resolveBlocker: async (threadLinkId) => {
+    await api.post(`/thread-links/${threadLinkId}/resolve-blocker`);
+    trackEvent('blocker_resolved');
+    await refetchCategorized(set);
   },
 
   resolveThread: async (threadLinkId) => {

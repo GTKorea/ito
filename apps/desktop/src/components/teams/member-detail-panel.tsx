@@ -31,7 +31,7 @@ interface MemberSummary {
     id: string;
     status: string;
     fromUser: { id: string; name: string };
-    toUser: { id: string; name: string };
+    toUser: { id: string; name: string } | null;
     task: { id: string; title: string };
   }>;
   recentActivity: Array<{
@@ -211,7 +211,7 @@ export function MemberDetailPanel({ userId, onClose }: MemberDetailPanelProps) {
                   <div className="flex items-center gap-1.5 text-xs">
                     <span className="text-muted-foreground">{thread.fromUser.name}</span>
                     <span className="text-muted-foreground/50">→</span>
-                    <span className="text-muted-foreground">{thread.toUser.name}</span>
+                    <span className="text-muted-foreground">{thread.toUser?.name || 'Blocker'}</span>
                     <Badge
                       variant="secondary"
                       className={cn(

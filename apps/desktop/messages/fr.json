@@ -118,7 +118,8 @@
     "declineDescription": "Refuser ce fil renverra la tâche à l'expéditeur.",
     "declineReasonPlaceholder": "Motif du refus (facultatif)",
     "moreActions": "Plus d'actions",
-    "quickInputPlaceholder": "Nouvelle tâche... ( > @utilisateur pour connecter)"
+    "quickInputPlaceholder": "Nouvelle tâche... ( > @utilisateur pour connecter)",
+    "resolveBlocker": "Résoudre le bloqueur"
   },
   "threads": {
     "title": "Fils",
@@ -139,7 +140,12 @@
     "parallelConnect": "{count} personnes (parallèle)",
     "connectMultiple": "Connecter {count} personnes",
     "parallelGroup": "Fils parallèles",
-    "groupProgress": "{completed}/{total} terminés"
+    "groupProgress": "{completed}/{total} terminés",
+    "person": "Personne",
+    "blocker": "Bloqueur",
+    "addBlocker": "Ajouter un bloqueur",
+    "blockerDescription": "Enregistrez une dépendance externe qui bloque cette tâche. Vous pourrez la résoudre vous-même une fois le bloqueur levé.",
+    "blockerPlaceholder": "ex : En attente de l'approbation de la console développeur Meta"
   },
   "teams": {
     "title": "Équipes",

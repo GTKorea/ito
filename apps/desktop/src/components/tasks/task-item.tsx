@@ -35,6 +35,7 @@ import {
   X,
   MessageCircle,
   User,
+  ShieldAlert,
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
@@ -63,7 +64,9 @@ interface TaskItemProps {
     threadLinks: Array<{
       id: string;
       fromUser: { id: string; name: string; avatarUrl?: string };
-      toUser: { id: string; name: string; avatarUrl?: string };
+      toUser: { id: string; name: string; avatarUrl?: string } | null;
+      type?: 'PERSON' | 'BLOCKER';
+      blockerNote?: string;
       message?: string;
       status: string;
       chainIndex: number;
@@ -81,7 +84,7 @@ export function TaskItem({ task, onSelect, section }: TaskItemProps) {
   const [showDecline, setShowDecline] = useState(false);
   const [isDeclining, setIsDeclining] = useState(false);
   const [declineReason, setDeclineReason] = useState('');
-  const { updateTask, deleteTask, resolveThread, declineThread } = useTaskStore();
+  const { updateTask, deleteTask, resolveThread, resolveBlocker, declineThread } = useTaskStore();
   const { user } = useAuthStore();
   const t = useTranslations('tasks');
   const tc = useTranslations('common');
@@ -138,12 +141,19 @@ export function TaskItem({ task, onSelect, section }: TaskItemProps) {
   const assigneeId = task.assignee?.id;
   const pendingLink = section === 'actionRequired' && assigneeId && user?.id
     ? task.threadLinks.find(
-        (l) => l.status === 'PENDING' && l.toUser.id === assigneeId && assigneeId === user.id,
+        (l) => l.status === 'PENDING' && l.toUser?.id === assigneeId && assigneeId === user.id && l.type !== 'BLOCKER',
       )
     : undefined;
 
-  // Show Done button for self-assigned tasks (no pending thread link)
-  const canComplete = section === 'actionRequired' && isAssignee && !pendingLink && task.status !== 'COMPLETED';
+  // Find pending blocker links that I created (I can self-resolve)
+  const pendingBlocker = section === 'actionRequired' && user?.id
+    ? task.threadLinks.find(
+        (l) => l.status === 'PENDING' && l.type === 'BLOCKER' && l.fromUser.id === user.id,
+      )
+    : undefined;
+
+  // Show Done button for self-assigned tasks (no pending thread link or blocker)
+  const canComplete = section === 'actionRequired' && isAssignee && !pendingLink && !pendingBlocker && task.status !== 'COMPLETED';
 
   return (
     <div className="group rounded-lg border border-border bg-card p-3 hover:border-border/80 transition-colors">
@@ -191,6 +201,16 @@ export function TaskItem({ task, onSelect, section }: TaskItemProps) {
             </div>
           )}
 
+          {/* Blocker indicator */}
+          {pendingBlocker && (
+            <div className="flex items-center gap-1 mt-1">
+              <ShieldAlert className="h-3 w-3 text-red-400" />
+              <span className="text-[10px] text-red-400 truncate max-w-[200px]">
+                {pendingBlocker.blockerNote}
+              </span>
+            </div>
+          )}
+
           {task.description && (
             <p className="text-xs text-muted-foreground mt-0.5 truncate">
               {task.description}
@@ -227,6 +247,28 @@ export function TaskItem({ task, onSelect, section }: TaskItemProps) {
               <Check className="h-3.5 w-3.5 mr-1" />
               {tc('done')}
             </Button>
+          )}
+          {pendingBlocker && (
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 text-xs text-orange-500 hover:text-orange-400"
+                    disabled={isResolving}
+                    onClick={async () => {
+                      setIsResolving(true);
+                      try { await resolveBlocker(pendingBlocker.id); } catch { setIsResolving(false); }
+                    }}
+                  />
+                }
+              >
+                <Check className="h-3.5 w-3.5 mr-1" />
+                {isResolving ? t('resolving') : t('resolveBlocker')}
+              </TooltipTrigger>
+              <TooltipContent>{pendingBlocker.blockerNote}</TooltipContent>
+            </Tooltip>
           )}
           {pendingLink && (
             <>

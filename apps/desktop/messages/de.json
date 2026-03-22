@@ -118,7 +118,8 @@
     "declineDescription": "Wenn Sie diesen Thread ablehnen, wird die Aufgabe an den Absender zurückgegeben.",
     "declineReasonPlaceholder": "Ablehnungsgrund (optional)",
     "moreActions": "Weitere Aktionen",
-    "quickInputPlaceholder": "Neue Aufgabe... ( > @Benutzer zum direkten Verbinden)"
+    "quickInputPlaceholder": "Neue Aufgabe... ( > @Benutzer zum direkten Verbinden)",
+    "resolveBlocker": "Blocker auflösen"
   },
   "threads": {
     "title": "Threads",
@@ -139,7 +140,12 @@
     "parallelConnect": "{count} Personen (parallel)",
     "connectMultiple": "{count} Personen verbinden",
     "parallelGroup": "Parallele Threads",
-    "groupProgress": "{completed}/{total} abgeschlossen"
+    "groupProgress": "{completed}/{total} abgeschlossen",
+    "person": "Person",
+    "blocker": "Blocker",
+    "addBlocker": "Blocker hinzufügen",
+    "blockerDescription": "Registrieren Sie eine externe Abhängigkeit, die diese Aufgabe blockiert. Sie können sie selbst auflösen, wenn der Blocker beseitigt ist.",
+    "blockerPlaceholder": "z.B. Warten auf Meta-Entwicklerkonsole-Genehmigung"
   },
   "teams": {
     "title": "Teams",

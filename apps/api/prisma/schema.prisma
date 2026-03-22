@@ -206,7 +206,9 @@ model ThreadLink {
   id         String           @id @default(cuid())
   taskId     String
   fromUserId String
-  toUserId   String
+  toUserId   String?
+  type       ThreadLinkType   @default(PERSON)
+  blockerNote String?
   message    String?
   status     ThreadLinkStatus @default(PENDING)
   chainIndex Int
@@ -217,13 +219,18 @@ model ThreadLink {
 
   task     Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
   fromUser User   @relation("ThreadLinkSender", fields: [fromUserId], references: [id])
-  toUser   User   @relation("ThreadLinkReceiver", fields: [toUserId], references: [id])
+  toUser   User?  @relation("ThreadLinkReceiver", fields: [toUserId], references: [id])
   files    File[]
 
   @@index([taskId, chainIndex])
   @@index([toUserId, status])
   @@index([fromUserId])
   @@index([groupId])
+}
+
+enum ThreadLinkType {
+  PERSON
+  BLOCKER
 }
 
 enum ThreadLinkStatus {

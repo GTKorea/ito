@@ -118,7 +118,8 @@
     "declineDescription": "Rechazar este hilo devolverá la tarea al remitente.",
     "declineReasonPlaceholder": "Motivo del rechazo (opcional)",
     "moreActions": "Más acciones",
-    "quickInputPlaceholder": "Nueva tarea... ( > @usuario para conectar directamente)"
+    "quickInputPlaceholder": "Nueva tarea... ( > @usuario para conectar directamente)",
+    "resolveBlocker": "Resolver bloqueante"
   },
   "threads": {
     "title": "Hilos",
@@ -139,7 +140,12 @@
     "parallelConnect": "{count} personas (paralelo)",
     "connectMultiple": "Conectar {count} personas",
     "parallelGroup": "Hilos paralelos",
-    "groupProgress": "{completed}/{total} completados"
+    "groupProgress": "{completed}/{total} completados",
+    "person": "Persona",
+    "blocker": "Bloqueante",
+    "addBlocker": "Agregar bloqueante",
+    "blockerDescription": "Registra una dependencia externa que bloquea esta tarea. Puedes resolverla tú mismo cuando el bloqueo se elimine.",
+    "blockerPlaceholder": "ej: Esperando aprobación de la consola de desarrolladores de Meta"
   },
   "teams": {
     "title": "Equipos",

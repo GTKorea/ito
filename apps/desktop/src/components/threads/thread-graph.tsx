@@ -25,9 +25,11 @@ interface User {
 interface ThreadLink {
   id: string;
   fromUser: User;
-  toUser: User;
+  toUser: User | null;
   fromUserId?: string;
-  toUserId?: string;
+  toUserId?: string | null;
+  type?: 'PERSON' | 'BLOCKER';
+  blockerNote?: string;
   message?: string;
   status: string;
   chainIndex: number;
@@ -133,10 +135,10 @@ export function ThreadGraph({ links, creator }: ThreadGraphProps) {
   const { initialNodes, initialEdges } = useMemo(() => {
     if (!links || links.length === 0) return { initialNodes: [], initialEdges: [] };
 
-    // Determine the current assignee: toUser of the last PENDING link
-    const pendingLinks = links.filter((l) => l.status === 'PENDING');
+    // Determine the current assignee: toUser of the last PENDING person link
+    const pendingLinks = links.filter((l) => l.status === 'PENDING' && l.toUser);
     const currentAssigneeId = pendingLinks.length > 0
-      ? pendingLinks[pendingLinks.length - 1].toUser.id
+      ? pendingLinks[pendingLinks.length - 1].toUser!.id
       : null;
 
     // Collect unique users
@@ -144,7 +146,7 @@ export function ThreadGraph({ links, creator }: ThreadGraphProps) {
     usersMap.set(creator.id, creator);
     links.forEach((link) => {
       if (!usersMap.has(link.fromUser.id)) usersMap.set(link.fromUser.id, link.fromUser);
-      if (!usersMap.has(link.toUser.id)) usersMap.set(link.toUser.id, link.toUser);
+      if (link.toUser && !usersMap.has(link.toUser.id)) usersMap.set(link.toUser.id, link.toUser);
     });
 
     const nodes: Node<UserNodeData>[] = Array.from(usersMap.values()).map((user) => ({
@@ -158,14 +160,14 @@ export function ThreadGraph({ links, creator }: ThreadGraphProps) {
       },
     }));
 
-    const edges: Edge[] = links.map((link) => {
+    const edges: Edge[] = links.filter((link) => link.toUser).map((link) => {
       const color = STATUS_COLORS[link.status] || '#555';
       const isPending = link.status === 'PENDING';
 
       return {
         id: link.id,
         source: link.fromUser.id,
-        target: link.toUser.id,
+        target: link.toUser!.id,
         label: `${link.chainIndex}`,
         labelStyle: { fill: '#E0E0E0', fontSize: 10, fontWeight: 600 },
         labelBgStyle: { fill: '#1A1A1A', fillOpacity: 0.95 },

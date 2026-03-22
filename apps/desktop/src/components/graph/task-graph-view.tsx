@@ -197,32 +197,58 @@ function buildGraph(
       let prevNodeId = creatorNodeId;
 
       for (const link of sortedLinks) {
-        const toNodeId = `${task.id}::${link.toUser.id}`;
+        const isBlocker = link.type === 'BLOCKER';
+        const toNodeId = isBlocker
+          ? `${task.id}::blocker-${link.id}`
+          : `${task.id}::${link.toUser!.id}`;
 
         // Only add node if not already added (handles A→B→A cycles)
         if (!nodes.find((n) => n.id === toNodeId)) {
-          nodes.push({
-            id: toNodeId,
-            type: 'taskNode',
-            position: { x: 0, y: 0 },
-            data: {
-              title: task.title,
-              status: task.status,
-              priority: task.priority,
-              assigneeName: link.toUser.name,
-              assigneeInitial: link.toUser.name?.charAt(0).toUpperCase() || '?',
-              chainTotal,
-              chainCompleted,
-              dueDate: task.dueDate,
-              hasPendingAction: link.toUserId === userId && link.status === 'PENDING',
-              isSelected: task.id === selectedTaskId,
-            },
-          });
+          if (isBlocker) {
+            // Blocker node
+            nodes.push({
+              id: toNodeId,
+              type: 'taskNode',
+              position: { x: 0, y: 0 },
+              data: {
+                title: task.title,
+                status: 'BLOCKED',
+                priority: task.priority,
+                assigneeName: link.blockerNote || 'Blocker',
+                assigneeInitial: '!',
+                chainTotal,
+                chainCompleted,
+                dueDate: task.dueDate,
+                hasPendingAction: link.fromUserId === userId && link.status === 'PENDING',
+                isSelected: task.id === selectedTaskId,
+              },
+            });
+          } else {
+            nodes.push({
+              id: toNodeId,
+              type: 'taskNode',
+              position: { x: 0, y: 0 },
+              data: {
+                title: task.title,
+                status: task.status,
+                priority: task.priority,
+                assigneeName: link.toUser!.name,
+                assigneeInitial: link.toUser!.name?.charAt(0).toUpperCase() || '?',
+                chainTotal,
+                chainCompleted,
+                dueDate: task.dueDate,
+                hasPendingAction: link.toUserId === userId && link.status === 'PENDING',
+                isSelected: task.id === selectedTaskId,
+              },
+            });
+          }
         }
 
-        // Edge from previous person to this person
+        // Edge from previous person to this person/blocker
         const fromName = link.fromUser.name.split(' ')[0];
-        const toName = link.toUser.name.split(' ')[0];
+        const toName = isBlocker
+          ? (link.blockerNote?.substring(0, 15) || 'Blocker')
+          : link.toUser!.name.split(' ')[0];
         edges.push({
           id: `chain-${link.id}`,
           source: prevNodeId,
@@ -230,7 +256,7 @@ function buildGraph(
           type: 'threadEdge',
           data: {
             linkStatus: link.status,
-            label: `${fromName} → ${toName}`,
+            label: isBlocker ? `${fromName} → ⚠️` : `${fromName} → ${toName}`,
             isCollaboration: false,
           },
         });

@@ -76,7 +76,7 @@ export class ThreadsService {
     for (const link of task.threadLinks) {
       if (link.status === 'PENDING' || link.status === 'FORWARDED') {
         usersInActiveChain.add(link.fromUserId);
-        usersInActiveChain.add(link.toUserId);
+        if (link.toUserId) usersInActiveChain.add(link.toUserId);
       }
     }
     // Also add the task creator if they are still part of the active chain
@@ -147,6 +147,7 @@ export class ThreadsService {
 
     // Notify all target users
     for (const link of threadLinks) {
+      if (!link.toUserId) continue; // Skip blocker links (no recipient)
       await this.notificationsService.create({
         userId: link.toUserId,
         type: 'THREAD_RECEIVED',
@@ -447,7 +448,7 @@ export class ThreadsService {
     for (const link of task.threadLinks) {
       if (link.status === 'PENDING' || link.status === 'FORWARDED') {
         usersInActiveChain.add(link.fromUserId);
-        usersInActiveChain.add(link.toUserId);
+        if (link.toUserId) usersInActiveChain.add(link.toUserId);
       }
     }
     for (const userId of userIds) {
@@ -627,6 +628,147 @@ export class ThreadsService {
       }
       return { ...task, myRole };
     });
+  }
+
+  /**
+   * Connect a blocker (external dependency) to a task.
+   * The task becomes BLOCKED and the creator can self-resolve when the blocker is cleared.
+   */
+  async connectBlocker(
+    taskId: string,
+    fromUserId: string,
+    blockerNote: string,
+  ) {
+    if (!blockerNote || blockerNote.trim().length === 0) {
+      throw new BadRequestException('Blocker note is required');
+    }
+
+    const task = await this.prisma.task.findUnique({
+      where: { id: taskId },
+      include: { threadLinks: { orderBy: { chainIndex: 'asc' } } },
+    });
+
+    if (!task) throw new NotFoundException('Task not found');
+
+    if (task.assigneeId !== fromUserId) {
+      throw new ForbiddenException(
+        'Only the current assignee can add a blocker',
+      );
+    }
+
+    const nextIndex = task.threadLinks.length;
+    if (nextIndex >= MAX_CHAIN_DEPTH) {
+      throw new BadRequestException(
+        `Thread chain cannot exceed ${MAX_CHAIN_DEPTH} connections`,
+      );
+    }
+
+    // Mark current user's pending link as FORWARDED if exists
+    const currentLink = task.threadLinks.find(
+      (l) => l.toUserId === fromUserId && l.status === 'PENDING',
+    );
+
+    const threadLink = await this.prisma.$transaction(async (tx) => {
+      if (currentLink) {
+        await tx.threadLink.update({
+          where: { id: currentLink.id },
+          data: { status: 'FORWARDED' },
+        });
+      }
+
+      const link = await tx.threadLink.create({
+        data: {
+          taskId,
+          fromUserId,
+          toUserId: null,
+          type: 'BLOCKER',
+          blockerNote: blockerNote.trim(),
+          chainIndex: nextIndex,
+          status: 'PENDING',
+        },
+        include: {
+          fromUser: { select: { id: true, name: true } },
+        },
+      });
+
+      // Mark task as BLOCKED
+      await tx.task.update({
+        where: { id: taskId },
+        data: { status: 'BLOCKED' },
+      });
+
+      return link;
+    });
+
+    await this.activityService.log({
+      workspaceId: task.workspaceId,
+      userId: fromUserId,
+      action: 'BLOCKED',
+      entityType: 'ThreadLink',
+      entityId: threadLink.id,
+      metadata: { taskId, blockerNote: blockerNote.trim() },
+    });
+
+    return threadLink;
+  }
+
+  /**
+   * Resolve a blocker — the creator self-resolves when the external dependency is cleared.
+   */
+  async resolveBlocker(threadLinkId: string, userId: string) {
+    const link = await this.prisma.threadLink.findUnique({
+      where: { id: threadLinkId },
+      include: {
+        task: { include: { threadLinks: { orderBy: { chainIndex: 'asc' } } } },
+      },
+    });
+
+    if (!link) throw new NotFoundException('Thread link not found');
+    if (link.type !== 'BLOCKER') {
+      throw new BadRequestException('This link is not a blocker');
+    }
+    if (link.fromUserId !== userId) {
+      throw new ForbiddenException('Only the blocker creator can resolve it');
+    }
+    if (link.status !== 'PENDING') {
+      throw new BadRequestException('This blocker is not pending');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      // Mark blocker as completed
+      await tx.threadLink.update({
+        where: { id: link.id },
+        data: { status: 'COMPLETED', resolvedAt: new Date() },
+      });
+
+      // Restore previous forwarded link if exists
+      const previousLink = link.task.threadLinks.find(
+        (l) => l.toUserId === userId && l.status === 'FORWARDED',
+      );
+      if (previousLink) {
+        await tx.threadLink.update({
+          where: { id: previousLink.id },
+          data: { status: 'PENDING' },
+        });
+      }
+
+      // Restore task to IN_PROGRESS
+      await tx.task.update({
+        where: { id: link.taskId },
+        data: { status: 'IN_PROGRESS' },
+      });
+    });
+
+    await this.activityService.log({
+      workspaceId: link.task.workspaceId,
+      userId,
+      action: 'RESOLVED',
+      entityType: 'ThreadLink',
+      entityId: threadLinkId,
+      metadata: { taskId: link.taskId, blockerNote: link.blockerNote },
+    });
+
+    return { message: 'Blocker resolved' };
   }
 
   /**

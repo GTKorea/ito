@@ -118,7 +118,8 @@
     "declineDescription": "このスレッドを拒否すると、送信者にタスクが戻ります。",
     "declineReasonPlaceholder": "拒否理由（任意）",
     "moreActions": "その他",
-    "quickInputPlaceholder": "新しいタスク... ( > @ユーザー で直接接続)"
+    "quickInputPlaceholder": "新しいタスク... ( > @ユーザー で直接接続)",
+    "resolveBlocker": "ブロッカー解除"
   },
   "threads": {
     "title": "スレッド",
@@ -139,7 +140,12 @@
     "parallelConnect": "{count}人（並列）",
     "connectMultiple": "{count}人に接続",
     "parallelGroup": "並列スレッド",
-    "groupProgress": "{completed}/{total} 完了"
+    "groupProgress": "{completed}/{total} 完了",
+    "person": "メンバー",
+    "blocker": "ブロッカー",
+    "addBlocker": "ブロッカー追加",
+    "blockerDescription": "このタスクをブロックしている外部依存を登録します。ブロッカーが解消されたら自分で解除できます。",
+    "blockerPlaceholder": "例：Meta開発者コンソールの承認待ち"
   },
   "teams": {
     "title": "チーム",

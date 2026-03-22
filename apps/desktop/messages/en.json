@@ -118,7 +118,8 @@
     "declineDescription": "Declining this thread will return the task to the sender.",
     "declineReasonPlaceholder": "Reason for declining (optional)",
     "moreActions": "More actions",
-    "quickInputPlaceholder": "New task... ( > @user to connect directly)"
+    "quickInputPlaceholder": "New task... ( > @user to connect directly)",
+    "resolveBlocker": "Resolve Blocker"
   },
   "threads": {
     "title": "Threads",
@@ -139,7 +140,12 @@
     "parallelConnect": "{count} people (parallel)",
     "connectMultiple": "Connect {count} people",
     "parallelGroup": "Parallel threads",
-    "groupProgress": "{completed}/{total} completed"
+    "groupProgress": "{completed}/{total} completed",
+    "person": "Person",
+    "blocker": "Blocker",
+    "addBlocker": "Add Blocker",
+    "blockerDescription": "Register an external dependency that is blocking this task. You can resolve it yourself when the blocker is cleared.",
+    "blockerPlaceholder": "e.g., Waiting for Meta developer console approval"
   },
   "teams": {
     "title": "Teams",

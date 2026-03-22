@@ -273,7 +273,7 @@ export class ChatService {
       if (task.assigneeId) participantIds.add(task.assigneeId);
       for (const link of task.threadLinks) {
         participantIds.add(link.fromUserId);
-        participantIds.add(link.toUserId);
+        if (link.toUserId) participantIds.add(link.toUserId);
       }
       // Remove sender
       participantIds.delete(userId);

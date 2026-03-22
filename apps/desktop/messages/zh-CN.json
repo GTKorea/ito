@@ -118,7 +118,8 @@
     "declineDescription": "拒绝此线程后，任务将返回给发送者。",
     "declineReasonPlaceholder": "拒绝原因（可选）",
     "moreActions": "更多操作",
-    "quickInputPlaceholder": "新任务... ( > @用户 直接连接)"
+    "quickInputPlaceholder": "新任务... ( > @用户 直接连接)",
+    "resolveBlocker": "解除阻塞"
   },
   "threads": {
     "title": "线程",
@@ -139,7 +140,12 @@
     "parallelConnect": "{count} 人（并行）",
     "connectMultiple": "连接 {count} 人",
     "parallelGroup": "并行线程",
-    "groupProgress": "{completed}/{total} 已完成"
+    "groupProgress": "{completed}/{total} 已完成",
+    "person": "成员",
+    "blocker": "阻塞项",
+    "addBlocker": "添加阻塞项",
+    "blockerDescription": "登记阻塞此任务的外部依赖。阻塞解除后您可以自行标记完成。",
+    "blockerPlaceholder": "例：等待Meta开发者控制台审批"
   },
   "teams": {
     "title": "团队",

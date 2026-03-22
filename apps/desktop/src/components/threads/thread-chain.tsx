@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { ShieldAlert } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface User {
@@ -14,7 +15,9 @@ interface User {
 interface ThreadLink {
   id: string;
   fromUser: User;
-  toUser: User;
+  toUser: User | null;
+  type?: 'PERSON' | 'BLOCKER';
+  blockerNote?: string;
   message?: string;
   status: string;
   chainIndex: number;
@@ -98,14 +101,24 @@ export function ThreadChain({ links, creator }: ThreadChainProps) {
 
       {segments.map((segment, i) => {
         if (segment.type === 'single') {
+          const link = segment.link;
+          const isBlocker = link.type === 'BLOCKER';
+
           return (
-            <div key={segment.link.id} className="flex items-center">
-              <ChainLine status={segment.link.status} message={segment.link.message} />
-              <ChainNode
-                user={segment.link.toUser}
-                label={segment.link.status.toLowerCase()}
-                statusClass={statusColor[segment.link.status]}
-              />
+            <div key={link.id} className="flex items-center">
+              <ChainLine status={link.status} message={link.message} />
+              {isBlocker ? (
+                <BlockerNode
+                  note={link.blockerNote || ''}
+                  status={link.status}
+                />
+              ) : (
+                <ChainNode
+                  user={link.toUser!}
+                  label={link.status.toLowerCase()}
+                  statusClass={statusColor[link.status]}
+                />
+              )}
             </div>
           );
         }
@@ -136,16 +149,20 @@ function ParallelBranch({ segment }: { segment: ParallelSegment }) {
         {/* Vertical line on the left connecting branches */}
         <div className="absolute left-0 top-3 bottom-3 w-0.5 bg-border/40 rounded-full" />
 
-        {segment.links.map((link, idx) => (
+        {segment.links.map((link) => (
           <div key={link.id} className="flex items-center pl-2">
             {/* Short horizontal branch line */}
             <div className={cn('h-0.5 w-3', lineColor[link.status] || 'bg-border')} />
-            <ChainNode
-              user={link.toUser}
-              label={link.status.toLowerCase()}
-              statusClass={statusColor[link.status]}
-              compact
-            />
+            {link.type === 'BLOCKER' ? (
+              <BlockerNode note={link.blockerNote || ''} status={link.status} compact />
+            ) : (
+              <ChainNode
+                user={link.toUser!}
+                label={link.status.toLowerCase()}
+                statusClass={statusColor[link.status]}
+                compact
+              />
+            )}
             {/* Status indicator dot */}
             <div className={cn('h-1.5 w-1.5 rounded-full ml-1', statusDot[link.status])} />
           </div>
@@ -169,6 +186,51 @@ function ChainLine({ status, message }: { status: string; message?: string }) {
       {message && (
         <span className="text-[9px] text-muted-foreground mt-0.5 max-w-16 truncate">
           {message}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function BlockerNode({
+  note,
+  status,
+  compact,
+}: {
+  note: string;
+  status: string;
+  compact?: boolean;
+}) {
+  const isResolved = status === 'COMPLETED';
+  return (
+    <div className={cn('flex flex-col items-center gap-1', compact && 'gap-0.5')}>
+      <div
+        className={cn(
+          'rounded-lg border p-1.5 flex items-center gap-1',
+          isResolved
+            ? 'border-green-500/50 bg-green-500/10'
+            : 'border-red-500/50 bg-red-500/10',
+        )}
+      >
+        <ShieldAlert className={cn(
+          compact ? 'h-3.5 w-3.5' : 'h-4 w-4',
+          isResolved ? 'text-green-500' : 'text-red-500',
+        )} />
+      </div>
+      <span className={cn(
+        'text-muted-foreground truncate',
+        compact ? 'text-[8px] max-w-16' : 'text-[10px] max-w-20',
+      )}
+        title={note}
+      >
+        {note}
+      </span>
+      {!compact && (
+        <span className={cn(
+          'text-[8px] font-medium',
+          isResolved ? 'text-green-500' : 'text-red-500',
+        )}>
+          {isResolved ? 'resolved' : 'blocked'}
         </span>
       )}
     </div>

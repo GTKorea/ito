@@ -13,6 +13,7 @@ import { WorkspaceMemberGuard } from '../common/guards/workspace-member.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ThreadsService } from './threads.service';
 import { ConnectThreadDto } from './dto/connect-thread.dto';
+import { ConnectBlockerDto } from './dto/connect-blocker.dto';
 import { ConnectChainDto } from './dto/connect-chain.dto';
 
 @ApiTags('threads')
@@ -37,6 +38,25 @@ export class ThreadsController {
       toUserIds,
       dto.message,
     );
+  }
+
+  @Post('tasks/:taskId/block')
+  @ApiOperation({ summary: 'Add a blocker (external dependency) to a task' })
+  connectBlocker(
+    @Param('taskId') taskId: string,
+    @Body() dto: ConnectBlockerDto,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.threadsService.connectBlocker(taskId, userId, dto.blockerNote);
+  }
+
+  @Post('thread-links/:id/resolve-blocker')
+  @ApiOperation({ summary: 'Resolve a blocker (self-resolve by creator)' })
+  resolveBlocker(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.threadsService.resolveBlocker(id, userId);
   }
 
   @Post('tasks/:taskId/connect-chain')
