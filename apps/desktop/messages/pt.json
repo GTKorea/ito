@@ -60,7 +60,8 @@
     "more": "Mais",
     "admin": "Admin",
     "sharedSpaces": "Shared Spaces",
-    "collapse": "Recolher"
+    "collapse": "Recolher",
+    "newGroup": "Novo grupo"
   },
   "workspace": {
     "myTasks": "Minhas Tarefas",
@@ -112,6 +113,7 @@
     "statusInProgress": "Em andamento",
     "statusBlocked": "Bloqueado",
     "statusCompleted": "Concluído",
+    "statusCancelled": "Cancelado",
     "decline": "Recusar",
     "declining": "Recusando...",
     "declineTitle": "Recusar thread",
@@ -119,7 +121,8 @@
     "declineReasonPlaceholder": "Motivo da recusa (opcional)",
     "moreActions": "Mais ações",
     "quickInputPlaceholder": "Nova tarefa... ( > @usuário para conectar diretamente)",
-    "resolveBlocker": "Resolver bloqueador"
+    "resolveBlocker": "Resolver bloqueador",
+    "resolveThread": "Resolver thread"
   },
   "threads": {
     "title": "Threads",
@@ -590,6 +593,33 @@
       "tipLabel": "Dica:",
       "tip": "Você receberá uma notificação toda vez que um thread voltar para você. Verifique a página de Notificações."
     },
+    "blockers": {
+      "title": "Bloqueadores",
+      "description": "Registre dependências externas que bloqueiam sua tarefa. A tarefa é movida para 'Aguardando' até que o bloqueador seja resolvido.",
+      "step1": "Abra uma tarefa, clique em 'Conectar' e mude para a aba 'Bloqueador'",
+      "step2": "Descreva a dependência externa (ex. 'Aguardando revisão de design')",
+      "step3": "Quando o bloqueador for resolvido, clique no botão 'Resolver bloqueador' na tarefa",
+      "noteLabel": "Nota:",
+      "note": "Apenas a pessoa que criou o bloqueador pode resolvê-lo."
+    },
+    "taskGroups": {
+      "title": "Grupos de tarefas",
+      "description": "Organize tarefas em grupos, similar aos canais do Slack. Os grupos aparecem na barra lateral sob 'Minhas tarefas'.",
+      "step1": "Clique no '+' abaixo de 'Minhas tarefas' na barra lateral para criar um novo grupo",
+      "step2": "Clique no nome de um grupo para ver apenas as tarefas desse grupo",
+      "step3": "Clique em 'Minhas tarefas' para ver todas as tarefas independentemente do grupo"
+    },
+    "slack": {
+      "title": "Integração com Slack",
+      "description": "Use o comando /ito no Slack para criar e gerenciar tarefas diretamente do chat.",
+      "commands": {
+        "create": { "syntax": "/ito nome da tarefa", "description": "Criar nova tarefa" },
+        "chain": { "syntax": "/ito tarefa > @usuário1 > @usuário2", "description": "Criar tarefa e conectar cadeia de threads" },
+        "list": { "syntax": "/ito list", "description": "Ver lista de tarefas" },
+        "link": { "syntax": "/ito link", "description": "Vincular conta do Slack ao ito" },
+        "help": { "syntax": "/ito help", "description": "Mostrar comandos disponíveis" }
+      }
+    },
     "notifications": {
       "title": "Notificações",
       "description": "ito envia notificações em tempo real para que você não perca atualizações importantes. As notificações chegam no app, por e-mail ou pelo Slack.",
@@ -764,5 +794,19 @@
       "step2": "Convidar membros para o espaço de trabalho",
       "step3": "Conectar threads às suas tarefas"
     }
+  },
+  "groups": {
+    "newGroup": "Novo grupo",
+    "groupName": "Nome do grupo",
+    "groupDescription": "Descrição",
+    "createGroup": "Criar grupo",
+    "deleteGroup": "Excluir grupo",
+    "deleteConfirm": "Tem certeza de que deseja excluir este grupo? As tarefas do grupo não serão excluídas.",
+    "members": "Membros",
+    "addMember": "Adicionar membro",
+    "removeMember": "Remover membro",
+    "noGroups": "Nenhum grupo",
+    "tasks": "Tarefas",
+    "allTasks": "Todas as tarefas"
   }
 }

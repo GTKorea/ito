@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useTaskStore } from '@/stores/task-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
+import { useTaskGroupStore } from '@/stores/task-group-store';
 import { useOnboardingStore } from '@/stores/onboarding-store';
 import { OnboardingWizard } from '@/components/onboarding/onboarding-wizard';
 
@@ -20,9 +21,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Plus, Building2, ArrowUpDown } from 'lucide-react';
+import { Plus, Building2, ArrowUpDown, ArrowLeft, Hash } from 'lucide-react';
 import { QuickInput } from '@/components/tasks/quick-input';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 function CreateWorkspacePrompt() {
   const { createWorkspace } = useWorkspaceStore();
@@ -85,6 +87,7 @@ function CreateWorkspacePrompt() {
 export default function WorkspacePage() {
   const { currentWorkspace, isLoading: wsLoading } = useWorkspaceStore();
   const { actionRequired, waiting, completed, isLoading, fetchCategorizedTasks } = useTaskStore();
+  const { groups } = useTaskGroupStore();
   const { checkAndStartWizard } = useOnboardingStore();
   const [showCreate, setShowCreate] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
@@ -94,12 +97,16 @@ export default function WorkspacePage() {
   const searchParams = useSearchParams();
   const t = useTranslations('workspace');
   const tt = useTranslations('tasks');
+  const tg = useTranslations('groups');
+
+  const groupId = searchParams.get('group');
+  const currentGroup = groupId ? groups.find((g) => g.id === groupId) : null;
 
   useEffect(() => {
     if (currentWorkspace) {
-      fetchCategorizedTasks(currentWorkspace.id);
+      fetchCategorizedTasks(currentWorkspace.id, groupId || undefined);
     }
-  }, [currentWorkspace, fetchCategorizedTasks]);
+  }, [currentWorkspace, fetchCategorizedTasks, groupId]);
 
   // Trigger onboarding wizard on first workspace visit
   useEffect(() => {
@@ -169,11 +176,32 @@ export default function WorkspacePage() {
     <div className="flex h-full flex-col">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-4 md:px-6 py-3">
-        <div>
-          <h1 className="text-lg md:text-xl font-semibold">{t('myTasks')}</h1>
-          <p className="text-xs text-muted-foreground">
-            {t('tasksAssignedToYou')}
-          </p>
+        <div className="flex items-center gap-2">
+          {currentGroup && (
+            <Link
+              href="/workspace"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+          )}
+          <div>
+            <h1 className="text-lg md:text-xl font-semibold flex items-center gap-2">
+              {currentGroup ? (
+                <>
+                  <Hash className="h-4 w-4 text-muted-foreground" />
+                  {currentGroup.name}
+                </>
+              ) : (
+                t('myTasks')
+              )}
+            </h1>
+            <p className="text-xs text-muted-foreground">
+              {currentGroup
+                ? `${currentGroup._count.tasks} ${tg('tasks').toLowerCase()}`
+                : t('tasksAssignedToYou')}
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Button

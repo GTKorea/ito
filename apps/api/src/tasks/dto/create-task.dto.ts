@@ -25,6 +25,11 @@ export class CreateTaskDto {
   @IsOptional()
   @IsString()
   teamId?: string;
+
+  @ApiPropertyOptional({ description: 'Task Group ID to assign this task to' })
+  @IsOptional()
+  @IsString()
+  taskGroupId?: string;
 }
 
 export class UpdateTaskDto {
@@ -51,4 +56,8 @@ export class UpdateTaskDto {
   @IsOptional()
   @IsString()
   teamId?: string;
+
+  @IsOptional()
+  @IsString()
+  taskGroupId?: string;
 }

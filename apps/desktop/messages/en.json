@@ -60,7 +60,8 @@
     "more": "More",
     "admin": "Admin",
     "sharedSpaces": "Shared Spaces",
-    "collapse": "Collapse"
+    "collapse": "Collapse",
+    "newGroup": "New Group"
   },
   "workspace": {
     "myTasks": "My Tasks",
@@ -112,6 +113,7 @@
     "statusInProgress": "In Progress",
     "statusBlocked": "Blocked",
     "statusCompleted": "Completed",
+    "statusCancelled": "Cancelled",
     "decline": "Decline",
     "declining": "Declining...",
     "declineTitle": "Decline Thread",
@@ -119,7 +121,8 @@
     "declineReasonPlaceholder": "Reason for declining (optional)",
     "moreActions": "More actions",
     "quickInputPlaceholder": "New task... ( > @user to connect directly)",
-    "resolveBlocker": "Resolve Blocker"
+    "resolveBlocker": "Resolve Blocker",
+    "resolveThread": "Resolve Thread"
   },
   "threads": {
     "title": "Threads",
@@ -590,6 +593,48 @@
       "tipLabel": "Tip:",
       "tip": "You will receive a notification every time a thread snaps back to you. Check the Notifications page to stay on top of your tasks."
     },
+    "blockers": {
+      "title": "Blockers",
+      "description": "Register external dependencies that block your task. The task moves to 'Waiting' until you resolve the blocker.",
+      "step1": "Open a task and click 'Connect', then switch to 'Blocker' tab",
+      "step2": "Describe the external dependency (e.g., 'Waiting for design review')",
+      "step3": "When the blocker is resolved, click the 'Resolve Blocker' button on the task",
+      "noteLabel": "Note:",
+      "note": "Only the person who created the blocker can resolve it."
+    },
+    "taskGroups": {
+      "title": "Task Groups",
+      "description": "Organize tasks into groups, similar to Slack channels. Groups appear in the sidebar under 'My Tasks'.",
+      "step1": "Click the '+' button under 'My Tasks' in the sidebar to create a new group",
+      "step2": "Click a group name to view only tasks in that group",
+      "step3": "Click 'My Tasks' to see all tasks regardless of group"
+    },
+    "slack": {
+      "title": "Slack Integration",
+      "description": "Use the /ito command in Slack to create and manage tasks directly from your chat.",
+      "commands": {
+        "create": {
+          "syntax": "/ito task name",
+          "description": "Create a new task"
+        },
+        "chain": {
+          "syntax": "/ito task > @user1 > @user2",
+          "description": "Create a task and connect a thread chain"
+        },
+        "list": {
+          "syntax": "/ito list",
+          "description": "View your task list"
+        },
+        "link": {
+          "syntax": "/ito link",
+          "description": "Link your Slack account to ito"
+        },
+        "help": {
+          "syntax": "/ito help",
+          "description": "Show available commands"
+        }
+      }
+    },
     "notifications": {
       "title": "Notifications",
       "description": "ito sends real-time notifications so you never miss important updates. Notifications appear in-app and can also be sent via email or Slack.",
@@ -764,5 +809,19 @@
       "step2": "Invite team members to your workspace",
       "step3": "Connect threads to your tasks"
     }
+  },
+  "groups": {
+    "newGroup": "New Group",
+    "groupName": "Group Name",
+    "groupDescription": "Description",
+    "createGroup": "Create Group",
+    "deleteGroup": "Delete Group",
+    "deleteConfirm": "Are you sure you want to delete this group? Tasks in this group will not be deleted.",
+    "members": "Members",
+    "addMember": "Add Member",
+    "removeMember": "Remove Member",
+    "noGroups": "No groups yet",
+    "tasks": "Tasks",
+    "allTasks": "All Tasks"
   }
 }

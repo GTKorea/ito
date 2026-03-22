@@ -60,7 +60,8 @@
     "more": "その他",
     "admin": "管理者",
     "sharedSpaces": "Shared Spaces",
-    "collapse": "折りたたむ"
+    "collapse": "折りたたむ",
+    "newGroup": "新しいグループ"
   },
   "workspace": {
     "myTasks": "マイタスク",
@@ -112,6 +113,7 @@
     "statusInProgress": "進行中",
     "statusBlocked": "ブロック中",
     "statusCompleted": "完了",
+    "statusCancelled": "キャンセル",
     "decline": "拒否",
     "declining": "拒否中...",
     "declineTitle": "スレッド拒否",
@@ -119,7 +121,8 @@
     "declineReasonPlaceholder": "拒否理由（任意）",
     "moreActions": "その他",
     "quickInputPlaceholder": "新しいタスク... ( > @ユーザー で直接接続)",
-    "resolveBlocker": "ブロッカー解除"
+    "resolveBlocker": "ブロッカー解除",
+    "resolveThread": "スレッド解除"
   },
   "threads": {
     "title": "スレッド",
@@ -590,6 +593,48 @@
       "tipLabel": "ヒント：",
       "tip": "スレッドが戻るたびに通知を受け取ります。通知ページでタスクを確認しましょう。"
     },
+    "blockers": {
+      "title": "ブロッカー",
+      "description": "タスクをブロックする外部依存関係を登録します。ブロッカーを解除するまでタスクは「待機中」に移動します。",
+      "step1": "タスクを開き、「接続」をクリックしてから「ブロッカー」タブに切り替えます",
+      "step2": "外部依存関係を説明してください（例：「デザインレビュー待ち」）",
+      "step3": "ブロッカーが解決されたら、タスクの「ブロッカー解除」ボタンをクリックします",
+      "noteLabel": "注意：",
+      "note": "ブロッカーを作成した人のみが解除できます。"
+    },
+    "taskGroups": {
+      "title": "タスクグループ",
+      "description": "タスクをグループに整理します。Slackチャンネルと同様の構造で、サイドバーの「マイタスク」の下に表示されます。",
+      "step1": "サイドバーの「マイタスク」の下にある「+」ボタンをクリックして新しいグループを作成します",
+      "step2": "グループ名をクリックすると、そのグループのタスクのみが表示されます",
+      "step3": "「マイタスク」をクリックすると、グループに関係なくすべてのタスクが表示されます"
+    },
+    "slack": {
+      "title": "Slack連携",
+      "description": "Slackで/itoコマンドを使用して、チャットから直接タスクを作成・管理できます。",
+      "commands": {
+        "create": {
+          "syntax": "/ito タスク名",
+          "description": "新しいタスクを作成"
+        },
+        "chain": {
+          "syntax": "/ito タスク > @ユーザー1 > @ユーザー2",
+          "description": "タスク作成＋スレッドチェーン接続"
+        },
+        "list": {
+          "syntax": "/ito list",
+          "description": "タスク一覧を表示"
+        },
+        "link": {
+          "syntax": "/ito link",
+          "description": "Slackアカウントをitoにリンク"
+        },
+        "help": {
+          "syntax": "/ito help",
+          "description": "利用可能なコマンドを表示"
+        }
+      }
+    },
     "notifications": {
       "title": "通知",
       "description": "itoはリアルタイム通知で重要な更新を見逃しません。アプリ内通知に加え、メールやSlackでも受け取れます。",
@@ -764,5 +809,19 @@
       "step2": "チームメンバーをワークスペースに招待する",
       "step3": "タスクにスレッドを接続する"
     }
+  },
+  "groups": {
+    "newGroup": "新しいグループ",
+    "groupName": "グループ名",
+    "groupDescription": "説明",
+    "createGroup": "グループを作成",
+    "deleteGroup": "グループを削除",
+    "deleteConfirm": "このグループを削除してもよろしいですか？グループ内のタスクは削除されません。",
+    "members": "メンバー",
+    "addMember": "メンバーを追加",
+    "removeMember": "メンバーを削除",
+    "noGroups": "グループがありません",
+    "tasks": "タスク",
+    "allTasks": "すべてのタスク"
   }
 }

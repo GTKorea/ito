@@ -35,6 +35,7 @@ export class TasksService {
         assigneeId: userId,
         workspaceId,
         teamId: dto.teamId || undefined,
+        taskGroupId: dto.taskGroupId || undefined,
       },
       include: {
         creator: { select: { id: true, name: true, avatarUrl: true } },
@@ -157,17 +158,21 @@ export class TasksService {
     return updated;
   }
 
-  async findCategorized(workspaceId: string, userId: string) {
-    const allTasks = await this.prisma.task.findMany({
-      where: {
-        workspaceId,
-        OR: [
+  async findCategorized(workspaceId: string, userId: string, taskGroupId?: string) {
+    const where: any = {
+      workspaceId,
+      OR: [
           { creatorId: userId },
           { assigneeId: userId },
           { threadLinks: { some: { fromUserId: userId } } },
           { threadLinks: { some: { toUserId: userId } } },
         ],
-      },
+    };
+    if (taskGroupId) {
+      where.taskGroupId = taskGroupId;
+    }
+    const allTasks = await this.prisma.task.findMany({
+      where,
       include: TASK_INCLUDE_FULL,
       orderBy: [{ priority: 'asc' }, { createdAt: 'desc' }],
     });
@@ -180,7 +185,10 @@ export class TasksService {
       const isActive = !['COMPLETED', 'CANCELLED'].includes(task.status);
       const isAssignee = task.assigneeId === userId;
 
-      if (isActive && isAssignee) {
+      if (isActive && isAssignee && task.status === 'BLOCKED') {
+        // BLOCKED tasks go to waiting (external dependency)
+        waiting.push(task);
+      } else if (isActive && isAssignee) {
         actionRequired.push(task);
       } else if (isActive && !isAssignee) {
         const isCreator = task.creatorId === userId;

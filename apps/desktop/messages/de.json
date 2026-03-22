@@ -60,7 +60,8 @@
     "more": "Mehr",
     "admin": "Admin",
     "sharedSpaces": "Shared Spaces",
-    "collapse": "Einklappen"
+    "collapse": "Einklappen",
+    "newGroup": "Neue Gruppe"
   },
   "workspace": {
     "myTasks": "Meine Aufgaben",
@@ -112,6 +113,7 @@
     "statusInProgress": "In Bearbeitung",
     "statusBlocked": "Blockiert",
     "statusCompleted": "Abgeschlossen",
+    "statusCancelled": "Abgebrochen",
     "decline": "Ablehnen",
     "declining": "Ablehnung...",
     "declineTitle": "Thread ablehnen",
@@ -119,7 +121,8 @@
     "declineReasonPlaceholder": "Ablehnungsgrund (optional)",
     "moreActions": "Weitere Aktionen",
     "quickInputPlaceholder": "Neue Aufgabe... ( > @Benutzer zum direkten Verbinden)",
-    "resolveBlocker": "Blocker auflösen"
+    "resolveBlocker": "Blocker auflösen",
+    "resolveThread": "Thread auflösen"
   },
   "threads": {
     "title": "Threads",
@@ -590,6 +593,33 @@
       "tipLabel": "Tipp:",
       "tip": "Sie erhalten jedes Mal eine Benachrichtigung, wenn ein Thread zu Ihnen zurückkehrt. Prüfen Sie die Benachrichtigungsseite."
     },
+    "blockers": {
+      "title": "Blocker",
+      "description": "Registrieren Sie externe Abhängigkeiten, die Ihre Aufgabe blockieren. Die Aufgabe wird in 'Wartend' verschoben, bis der Blocker gelöst ist.",
+      "step1": "Öffnen Sie eine Aufgabe, klicken Sie auf 'Verbinden' und wechseln Sie zum Tab 'Blocker'",
+      "step2": "Beschreiben Sie die externe Abhängigkeit (z.B. 'Warte auf Design-Review')",
+      "step3": "Wenn der Blocker gelöst ist, klicken Sie auf 'Blocker lösen' bei der Aufgabe",
+      "noteLabel": "Hinweis:",
+      "note": "Nur die Person, die den Blocker erstellt hat, kann ihn lösen."
+    },
+    "taskGroups": {
+      "title": "Aufgabengruppen",
+      "description": "Organisieren Sie Aufgaben in Gruppen, ähnlich wie Slack-Kanäle. Gruppen erscheinen in der Seitenleiste unter 'Meine Aufgaben'.",
+      "step1": "Klicken Sie auf '+' unter 'Meine Aufgaben' in der Seitenleiste, um eine neue Gruppe zu erstellen",
+      "step2": "Klicken Sie auf einen Gruppennamen, um nur Aufgaben dieser Gruppe anzuzeigen",
+      "step3": "Klicken Sie auf 'Meine Aufgaben', um alle Aufgaben unabhängig von Gruppen anzuzeigen"
+    },
+    "slack": {
+      "title": "Slack-Integration",
+      "description": "Verwenden Sie den /ito-Befehl in Slack, um Aufgaben direkt aus dem Chat zu erstellen und zu verwalten.",
+      "commands": {
+        "create": { "syntax": "/ito Aufgabenname", "description": "Neue Aufgabe erstellen" },
+        "chain": { "syntax": "/ito Aufgabe > @Benutzer1 > @Benutzer2", "description": "Aufgabe erstellen und Thread-Kette verbinden" },
+        "list": { "syntax": "/ito list", "description": "Aufgabenliste anzeigen" },
+        "link": { "syntax": "/ito link", "description": "Slack-Konto mit ito verknüpfen" },
+        "help": { "syntax": "/ito help", "description": "Verfügbare Befehle anzeigen" }
+      }
+    },
     "notifications": {
       "title": "Benachrichtigungen",
       "description": "ito sendet Echtzeit-Benachrichtigungen, damit Sie keine wichtigen Updates verpassen. Benachrichtigungen kommen in der App, per E-Mail oder per Slack.",
@@ -764,5 +794,19 @@
       "step2": "Teammitglieder in den Workspace einladen",
       "step3": "Threads mit Aufgaben verbinden"
     }
+  },
+  "groups": {
+    "newGroup": "Neue Gruppe",
+    "groupName": "Gruppenname",
+    "groupDescription": "Beschreibung",
+    "createGroup": "Gruppe erstellen",
+    "deleteGroup": "Gruppe löschen",
+    "deleteConfirm": "Möchten Sie diese Gruppe wirklich löschen? Aufgaben in dieser Gruppe werden nicht gelöscht.",
+    "members": "Mitglieder",
+    "addMember": "Mitglied hinzufügen",
+    "removeMember": "Mitglied entfernen",
+    "noGroups": "Keine Gruppen vorhanden",
+    "tasks": "Aufgaben",
+    "allTasks": "Alle Aufgaben"
   }
 }

@@ -145,8 +145,8 @@ export function TaskItem({ task, onSelect, section }: TaskItemProps) {
       )
     : undefined;
 
-  // Find pending blocker links that I created (I can self-resolve)
-  const pendingBlocker = section === 'actionRequired' && user?.id
+  // Find pending blocker links that I created (I can self-resolve) — show in both actionRequired and waiting
+  const pendingBlocker = (section === 'actionRequired' || section === 'waiting') && user?.id
     ? task.threadLinks.find(
         (l) => l.status === 'PENDING' && l.type === 'BLOCKER' && l.fromUser.id === user.id,
       )

@@ -18,6 +18,7 @@ import { CalendarModule } from './calendar/calendar.module';
 import { AdminModule } from './admin/admin.module';
 import { ChatModule } from './chat/chat.module';
 import { SharedSpacesModule } from './shared-spaces/shared-spaces.module';
+import { TaskGroupsModule } from './task-groups/task-groups.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { SharedSpacesModule } from './shared-spaces/shared-spaces.module';
     AdminModule,
     ChatModule,
     SharedSpacesModule,
+    TaskGroupsModule,
   ],
 })
 export class AppModule {}

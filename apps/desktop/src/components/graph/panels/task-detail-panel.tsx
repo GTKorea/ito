@@ -2,24 +2,25 @@
 
 import { useMemo } from 'react';
 import { X, Link2, CheckCircle2, Circle, Clock, AlertCircle, Ban, ShieldAlert } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useGraphStore, type TaskGraphTask } from '../task-graph-store';
 import { useAuthStore } from '@/stores/auth-store';
 import { useTaskStore } from '@/stores/task-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 
-const STATUS_CONFIG: Record<string, { label: string; icon: typeof Circle; color: string }> = {
-  OPEN: { label: 'Open', icon: Circle, color: '#666' },
-  IN_PROGRESS: { label: 'In Progress', icon: Clock, color: '#3B82F6' },
-  BLOCKED: { label: 'Blocked', icon: AlertCircle, color: '#EF4444' },
-  COMPLETED: { label: 'Completed', icon: CheckCircle2, color: '#22C55E' },
-  CANCELLED: { label: 'Cancelled', icon: Ban, color: '#666' },
+const STATUS_CONFIG: Record<string, { labelKey: string; icon: typeof Circle; color: string }> = {
+  OPEN: { labelKey: 'statusOpen', icon: Circle, color: '#666' },
+  IN_PROGRESS: { labelKey: 'statusInProgress', icon: Clock, color: '#3B82F6' },
+  BLOCKED: { labelKey: 'statusBlocked', icon: AlertCircle, color: '#EF4444' },
+  COMPLETED: { labelKey: 'statusCompleted', icon: CheckCircle2, color: '#22C55E' },
+  CANCELLED: { labelKey: 'statusCancelled', icon: Ban, color: '#666' },
 };
 
-const PRIORITY_CONFIG: Record<string, { label: string; color: string }> = {
-  URGENT: { label: 'Urgent', color: '#EF4444' },
-  HIGH: { label: 'High', color: '#F97316' },
-  MEDIUM: { label: 'Medium', color: '#3B82F6' },
-  LOW: { label: 'Low', color: '#9CA3AF' },
+const PRIORITY_CONFIG: Record<string, { labelKey: string; color: string }> = {
+  URGENT: { labelKey: 'urgent', color: '#EF4444' },
+  HIGH: { labelKey: 'high', color: '#F97316' },
+  MEDIUM: { labelKey: 'medium', color: '#3B82F6' },
+  LOW: { labelKey: 'low', color: '#9CA3AF' },
 };
 
 const LINK_STATUS_COLORS: Record<string, string> = {
@@ -30,6 +31,7 @@ const LINK_STATUS_COLORS: Record<string, string> = {
 };
 
 export function TaskDetailPanel() {
+  const t = useTranslations('tasks');
   const { selectedTaskId, selectTask, tasks, fetchGraphData } = useGraphStore();
   const { user } = useAuthStore();
   const { resolveThread, resolveBlocker, updateTask } = useTaskStore();
@@ -90,7 +92,7 @@ export function TaskDetailPanel() {
     <div className="fixed right-0 top-0 z-50 flex h-screen w-[380px] flex-col border-l border-border bg-card shadow-2xl animate-in slide-in-from-right duration-200">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
-        <h3 className="text-sm font-semibold text-foreground">Task Detail</h3>
+        <h3 className="text-sm font-semibold text-foreground">{t('taskDetail')}</h3>
         <button
           onClick={() => selectTask(null)}
           className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
@@ -111,7 +113,7 @@ export function TaskDetailPanel() {
 
         {/* Status */}
         <div className="space-y-1.5">
-          <span className="text-xs font-medium text-muted-foreground">Status</span>
+          <span className="text-xs font-medium text-muted-foreground">{t('status')}</span>
           <div className="flex flex-wrap gap-1.5">
             {Object.entries(STATUS_CONFIG).map(([key, conf]) => {
               const Icon = conf.icon;
@@ -126,7 +128,7 @@ export function TaskDetailPanel() {
                   }`}
                 >
                   <Icon className="h-3 w-3" style={{ color: conf.color }} />
-                  {conf.label}
+                  {t(conf.labelKey)}
                 </button>
               );
             })}
@@ -135,20 +137,20 @@ export function TaskDetailPanel() {
 
         {/* Priority */}
         <div className="space-y-1.5">
-          <span className="text-xs font-medium text-muted-foreground">Priority</span>
+          <span className="text-xs font-medium text-muted-foreground">{t('priority')}</span>
           <div className="flex items-center gap-1.5">
             <span
               className="h-2.5 w-2.5 rounded-full"
               style={{ backgroundColor: priorityConf.color }}
             />
-            <span className="text-sm text-foreground">{priorityConf.label}</span>
+            <span className="text-sm text-foreground">{t(priorityConf.labelKey)}</span>
           </div>
         </div>
 
         {/* Due Date */}
         {task.dueDate && (
           <div className="space-y-1.5">
-            <span className="text-xs font-medium text-muted-foreground">Due Date</span>
+            <span className="text-xs font-medium text-muted-foreground">{t('dueDate')}</span>
             <span className="block text-sm text-foreground">
               {new Date(task.dueDate).toLocaleDateString()}
             </span>
@@ -157,7 +159,7 @@ export function TaskDetailPanel() {
 
         {/* Assignee */}
         <div className="space-y-1.5">
-          <span className="text-xs font-medium text-muted-foreground">Assignee</span>
+          <span className="text-xs font-medium text-muted-foreground">{t('assignee')}</span>
           <div className="flex items-center gap-2">
             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
               {task.assignee.name?.charAt(0).toUpperCase() || '?'}
@@ -168,7 +170,7 @@ export function TaskDetailPanel() {
 
         {/* Creator */}
         <div className="space-y-1.5">
-          <span className="text-xs font-medium text-muted-foreground">Creator</span>
+          <span className="text-xs font-medium text-muted-foreground">{t('creator')}</span>
           <div className="flex items-center gap-2">
             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-[10px] font-medium text-muted-foreground">
               {task.creator.name?.charAt(0).toUpperCase() || '?'}
@@ -180,7 +182,7 @@ export function TaskDetailPanel() {
         {/* Thread chain */}
         {task.threadLinks.length > 0 && (
           <div className="space-y-2">
-            <span className="text-xs font-medium text-muted-foreground">Thread Chain</span>
+            <span className="text-xs font-medium text-muted-foreground">{t('threadChain')}</span>
             <div className="space-y-1.5">
               {task.threadLinks.map((link) => (
                 <div
@@ -239,19 +241,19 @@ export function TaskDetailPanel() {
           {myPendingBlocker && (
             <button
               onClick={handleResolveBlocker}
-              className="flex w-full items-center justify-center gap-2 rounded-md bg-orange-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-700"
+              className="flex w-full items-center justify-center gap-2 rounded-md bg-orange-500/15 text-orange-400 border border-orange-500/30 hover:bg-orange-500/25 px-3 py-2 text-sm font-medium transition-colors"
             >
               <ShieldAlert className="h-4 w-4" />
-              Resolve Blocker
+              {t('resolveBlocker')}
             </button>
           )}
           {myPendingLink && (
             <button
               onClick={handleResolve}
-              className="flex w-full items-center justify-center gap-2 rounded-md bg-green-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700"
+              className="flex w-full items-center justify-center gap-2 rounded-md bg-green-500/15 text-green-400 border border-green-500/30 hover:bg-green-500/25 px-3 py-2 text-sm font-medium transition-colors"
             >
               <CheckCircle2 className="h-4 w-4" />
-              Resolve Thread
+              {t('resolveThread')}
             </button>
           )}
         </div>

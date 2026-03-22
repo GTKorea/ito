@@ -60,7 +60,8 @@
     "more": "더보기",
     "admin": "관리자",
     "sharedSpaces": "공유 스페이스",
-    "collapse": "접기"
+    "collapse": "접기",
+    "newGroup": "새 그룹"
   },
   "workspace": {
     "myTasks": "내 태스크",
@@ -112,6 +113,7 @@
     "statusInProgress": "진행 중",
     "statusBlocked": "차단됨",
     "statusCompleted": "완료됨",
+    "statusCancelled": "취소됨",
     "decline": "거절",
     "declining": "거절 중...",
     "declineTitle": "실 거절",
@@ -119,7 +121,8 @@
     "declineReasonPlaceholder": "거절 사유 (선택)",
     "moreActions": "더 보기",
     "quickInputPlaceholder": "새 태스크... ( > @유저 로 바로 연결)",
-    "resolveBlocker": "블로커 해제"
+    "resolveBlocker": "블로커 해제",
+    "resolveThread": "스레드 해제"
   },
   "threads": {
     "title": "스레드",
@@ -590,6 +593,48 @@
       "tipLabel": "팁:",
       "tip": "스레드가 되돌아올 때마다 알림을 받습니다. 알림 페이지에서 태스크를 확인하세요."
     },
+    "blockers": {
+      "title": "블로커",
+      "description": "태스크를 차단하는 외부 의존성을 등록합니다. 블로커를 해제할 때까지 태스크는 '대기중'으로 이동합니다.",
+      "step1": "태스크를 열고 '연결'을 클릭한 후, '블로커' 탭으로 전환하세요",
+      "step2": "외부 의존성을 설명하세요 (예: '디자인 리뷰 대기 중')",
+      "step3": "블로커가 해결되면, 태스크의 '블로커 해제' 버튼을 클릭하세요",
+      "noteLabel": "참고:",
+      "note": "블로커를 생성한 사람만 해제할 수 있습니다."
+    },
+    "taskGroups": {
+      "title": "태스크 그룹",
+      "description": "태스크를 그룹으로 정리합니다. Slack 채널과 유사한 구조로, 사이드바의 '내 태스크' 아래에 표시됩니다.",
+      "step1": "사이드바에서 '내 태스크' 아래의 '+' 버튼을 클릭하여 새 그룹을 만드세요",
+      "step2": "그룹 이름을 클릭하면 해당 그룹의 태스크만 표시됩니다",
+      "step3": "'내 태스크'를 클릭하면 그룹에 관계없이 모든 태스크를 볼 수 있습니다"
+    },
+    "slack": {
+      "title": "Slack 연동",
+      "description": "Slack에서 /ito 명령어를 사용하여 채팅에서 직접 태스크를 생성하고 관리하세요.",
+      "commands": {
+        "create": {
+          "syntax": "/ito 태스크이름",
+          "description": "새 태스크 생성"
+        },
+        "chain": {
+          "syntax": "/ito 태스크 > @유저1 > @유저2",
+          "description": "태스크 생성 + 실 체인 연결"
+        },
+        "list": {
+          "syntax": "/ito list",
+          "description": "내 태스크 목록 보기"
+        },
+        "link": {
+          "syntax": "/ito link",
+          "description": "Slack 계정을 ito에 연결"
+        },
+        "help": {
+          "syntax": "/ito help",
+          "description": "사용 가능한 명령어 보기"
+        }
+      }
+    },
     "notifications": {
       "title": "알림",
       "description": "ito는 실시간 알림으로 중요한 업데이트를 놓치지 않게 합니다. 인앱 알림은 물론 이메일, Slack으로도 받을 수 있습니다.",
@@ -764,5 +809,19 @@
       "step2": "팀원을 워크스페이스에 초대하세요",
       "step3": "태스크에 실(Thread)을 연결하세요"
     }
+  },
+  "groups": {
+    "newGroup": "새 그룹",
+    "groupName": "그룹 이름",
+    "groupDescription": "설명",
+    "createGroup": "그룹 만들기",
+    "deleteGroup": "그룹 삭제",
+    "deleteConfirm": "이 그룹을 삭제하시겠습니까? 그룹의 태스크는 삭제되지 않습니다.",
+    "members": "멤버",
+    "addMember": "멤버 추가",
+    "removeMember": "멤버 제거",
+    "noGroups": "그룹이 없습니다",
+    "tasks": "태스크",
+    "allTasks": "전체 태스크"
   }
 }

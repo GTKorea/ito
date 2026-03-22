@@ -1,8 +1,9 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WebClient } from '@slack/web-api';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { TasksService } from '../tasks/tasks.service';
+import { ThreadsService } from '../threads/threads.service';
 import { SlackCommandDto } from './dto/slack-command.dto';
 import * as crypto from 'crypto';
 
@@ -31,6 +32,7 @@ export class SlackService implements OnModuleInit {
     private configService: ConfigService,
     private prisma: PrismaService,
     private tasksService: TasksService,
+    @Optional() private threadsService: ThreadsService,
   ) {}
 
   onModuleInit() {
@@ -477,43 +479,44 @@ export class SlackService implements OnModuleInit {
   async handleCommand(
     payload: SlackCommandDto,
   ): Promise<{ response_type?: string; text?: string; blocks?: any[] }> {
-    const parts = payload.text.trim().split(/\s+/);
-    const subcommand = parts[0]?.toLowerCase() || 'help';
-    const args = parts.slice(1).join(' ');
+    const text = payload.text.trim();
+    if (!text) return this.handleHelpCommand();
 
+    const parts = text.split(/\s+/);
+    const subcommand = parts[0]?.toLowerCase();
+
+    // Handle known subcommands
     switch (subcommand) {
-      case 'create':
-        return this.handleCreateCommand(payload, args);
       case 'list':
         return this.handleListCommand(payload);
       case 'link':
-        return this.handleLinkCommand(payload, args);
-      case 'connect':
-        return {
-          response_type: 'ephemeral',
-          text: ':construction: `connect` \uBA85\uB839\uC5B4\uB294 \uC900\uBE44 \uC911\uC785\uB2C8\uB2E4 (Coming soon)',
-        };
-      case 'resolve':
-        return {
-          response_type: 'ephemeral',
-          text: ':construction: `resolve` \uBA85\uB839\uC5B4\uB294 \uC900\uBE44 \uC911\uC785\uB2C8\uB2E4 (Coming soon)',
-        };
-      default:
+        return this.handleLinkCommand(payload, parts.slice(1).join(' '));
+      case 'help':
         return this.handleHelpCommand();
     }
+
+    // Everything else: treat as task creation with optional chain
+    // Syntax: /ito <태스크 제목> > @유저1 > @유저2
+    return this.handleTaskCreationWithChain(payload, text);
   }
 
-  private async handleCreateCommand(
+  private async handleTaskCreationWithChain(
     payload: SlackCommandDto,
-    title: string,
+    text: string,
   ): Promise<{ response_type: string; text: string }> {
+    // Split by ' > ' to get segments
+    const segments = text.split(/\s*>\s*/);
+    const title = segments[0]?.trim();
+    const mentionSegments = segments.slice(1).map((s) => s.trim()).filter(Boolean);
+
     if (!title) {
       return {
         response_type: 'ephemeral',
-        text: ':warning: \uD0DC\uC2A4\uD06C \uC774\uB984\uC744 \uC785\uB825\uD574\uC8FC\uC138\uC694. \uC608: `/ito create \uB9AC\uD3EC\uD2B8 \uC791\uC131`',
+        text: ':warning: 태스크 이름을 입력해주세요. 예: `/ito 리포트 작성` 또는 `/ito 리포트 작성 > @유저`',
       };
     }
 
+    // Resolve the command invoker
     const mapping = await this.resolveSlackUser(
       payload.team_id,
       payload.user_id,
@@ -525,6 +528,57 @@ export class SlackService implements OnModuleInit {
       };
     }
 
+    // If no chain users, just create the task
+    if (mentionSegments.length === 0) {
+      return this.createTaskOnly(mapping, title);
+    }
+
+    // Resolve all Slack mentions to ito user IDs
+    const chainUserIds: string[] = [];
+    for (const mention of mentionSegments) {
+      const userId = await this.resolveSlackMention(payload.team_id, mention);
+      if (!userId) {
+        return {
+          response_type: 'ephemeral',
+          text: `:warning: ${mention}의 ito 계정이 연결되어 있지 않습니다. \`/ito link <코드>\`로 계정을 연결해주세요.`,
+        };
+      }
+      chainUserIds.push(userId);
+    }
+
+    // Create task + connect chain
+    try {
+      const task = await this.tasksService.create(
+        { title },
+        mapping.slackWorkspace.workspaceId,
+        mapping.userId,
+      );
+
+      if (this.threadsService) {
+        await this.threadsService.connectChain(task.id, mapping.userId, chainUserIds);
+      } else {
+        this.logger.warn('ThreadsService not available, skipping chain connection');
+      }
+
+      const chainDisplay = mentionSegments.join(' → ');
+      return {
+        response_type: 'ephemeral',
+        text: `:white_check_mark: 태스크가 생성되었습니다: *${task.title}*\n:thread: 체인: 나 → ${chainDisplay}`,
+      };
+    } catch (error) {
+      this.logger.error('Failed to create task with chain from Slack command', error);
+      const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
+      return {
+        response_type: 'ephemeral',
+        text: `:x: 태스크 생성에 실패했습니다: ${errorMessage}`,
+      };
+    }
+  }
+
+  private async createTaskOnly(
+    mapping: { userId: string; slackWorkspace: { workspaceId: string } },
+    title: string,
+  ): Promise<{ response_type: string; text: string }> {
     try {
       const task = await this.tasksService.create(
         { title },
@@ -534,15 +588,33 @@ export class SlackService implements OnModuleInit {
 
       return {
         response_type: 'ephemeral',
-        text: `:white_check_mark: \uD0DC\uC2A4\uD06C\uAC00 \uC0DD\uC131\uB418\uC5C8\uC2B5\uB2C8\uB2E4: *${task.title}*`,
+        text: `:white_check_mark: 태스크가 생성되었습니다: *${task.title}*`,
       };
     } catch (error) {
       this.logger.error('Failed to create task from Slack command', error);
       return {
         response_type: 'ephemeral',
-        text: ':x: \uD0DC\uC2A4\uD06C \uC0DD\uC131\uC5D0 \uC2E4\uD328\uD588\uC2B5\uB2C8\uB2E4. \uB2E4\uC2DC \uC2DC\uB3C4\uD574\uC8FC\uC138\uC694.',
+        text: ':x: 태스크 생성에 실패했습니다. 다시 시도해주세요.',
       };
     }
+  }
+
+  private async resolveSlackMention(
+    slackTeamId: string,
+    mentionText: string,
+  ): Promise<string | null> {
+    // Parse <@UXXXXXX> format
+    const match = mentionText.match(/<@(U[A-Z0-9]+)>/);
+    if (!match) return null;
+    const slackUserId = match[1];
+
+    const slackUser = await this.prisma.slackUser.findFirst({
+      where: {
+        slackUserId,
+        slackWorkspace: { slackTeamId },
+      },
+    });
+    return slackUser?.userId || null;
   }
 
   private async handleListCommand(
@@ -555,7 +627,7 @@ export class SlackService implements OnModuleInit {
     if (!mapping) {
       return {
         response_type: 'ephemeral',
-        text: ':x: Slack \uACC4\uC815\uC774 ito\uC640 \uC5F0\uB3D9\uB418\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4.',
+        text: ':x: Slack 계정이 ito와 연동되지 않았습니다.',
       };
     }
 
@@ -569,7 +641,7 @@ export class SlackService implements OnModuleInit {
       if (tasks.length === 0) {
         return {
           response_type: 'ephemeral',
-          text: ':clipboard: \uBC30\uC815\uB41C \uD0DC\uC2A4\uD06C\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.',
+          text: ':clipboard: 배정된 태스크가 없습니다.',
         };
       }
 
@@ -586,7 +658,7 @@ export class SlackService implements OnModuleInit {
           type: 'header',
           text: {
             type: 'plain_text',
-            text: ':clipboard: \uB0B4 \uD0DC\uC2A4\uD06C \uBAA9\uB85D',
+            text: ':clipboard: 내 태스크 목록',
           },
         },
         { type: 'divider' },
@@ -615,7 +687,7 @@ export class SlackService implements OnModuleInit {
           elements: [
             {
               type: 'mrkdwn',
-              text: `... \uC678 ${tasks.length - 10}\uAC1C\uC758 \uD0DC\uC2A4\uD06C\uAC00 \uB354 \uC788\uC2B5\uB2C8\uB2E4`,
+              text: `... 외 ${tasks.length - 10}개의 태스크가 더 있습니다`,
             },
           ],
         });
@@ -624,13 +696,13 @@ export class SlackService implements OnModuleInit {
       return {
         response_type: 'ephemeral',
         blocks,
-        text: `\uBC30\uC815\uB41C \uD0DC\uC2A4\uD06C ${tasks.length}\uAC1C`,
+        text: `배정된 태스크 ${tasks.length}개`,
       };
     } catch (error) {
       this.logger.error('Failed to list tasks from Slack command', error);
       return {
         response_type: 'ephemeral',
-        text: ':x: \uD0DC\uC2A4\uD06C \uBAA9\uB85D \uC870\uD68C\uC5D0 \uC2E4\uD328\uD588\uC2B5\uB2C8\uB2E4.',
+        text: ':x: 태스크 목록 조회에 실패했습니다.',
       };
     }
   }
@@ -661,7 +733,7 @@ export class SlackService implements OnModuleInit {
 
     return {
       response_type: 'ephemeral',
-      text: ':white_check_mark: ito 계정과 Slack이 성공적으로 연동되었습니다! 이제 `/ito create`, `/ito list` 명령어를 사용할 수 있습니다.',
+      text: ':white_check_mark: ito 계정과 Slack이 성공적으로 연동되었습니다! 이제 `/ito <태스크명>`, `/ito list` 명령어를 사용할 수 있습니다.',
     };
   }
 
@@ -672,13 +744,13 @@ export class SlackService implements OnModuleInit {
   } {
     return {
       response_type: 'ephemeral',
-      text: 'ito Slack \uBA85\uB839\uC5B4 \uB3C4\uC6C0\uB9D0',
+      text: 'ito Slack 명령어 도움말',
       blocks: [
         {
           type: 'header',
           text: {
             type: 'plain_text',
-            text: ':thread: ito \uBA85\uB839\uC5B4',
+            text: ':thread: ito 명령어',
           },
         },
         { type: 'divider' },
@@ -687,11 +759,10 @@ export class SlackService implements OnModuleInit {
           text: {
             type: 'mrkdwn',
             text: [
-              '`/ito link <코드>` — ito 계정 연동 (설정에서 코드 발급)',
-              '`/ito create <태스크명>` — 새 태스크 생성',
+              '`/ito <태스크 제목>` — 태스크 생성',
+              '`/ito <태스크 제목> > @유저1 > @유저2` — 태스크 생성 + 체인 연결',
               '`/ito list` — 내 태스크 목록',
-              '`/ito connect @user` — 실 연결 (준비 중)',
-              '`/ito resolve` — 실 완료 (준비 중)',
+              '`/ito link <코드>` — 계정 연결',
               '`/ito help` — 도움말',
             ].join('\n'),
           },

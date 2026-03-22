@@ -273,7 +273,7 @@ export function ConnectDialog({ taskId, onClose }: ConnectDialogProps) {
             <Button
               onClick={handleConnect}
               disabled={isLoading}
-              className={cn('w-full', mode === 'blocker' && 'bg-red-600 hover:bg-red-700')}
+              className={cn('w-full', mode === 'blocker' && 'bg-red-500/15 text-red-400 border border-red-500/30 hover:bg-red-500/25')}
             >
               {mode === 'blocker' ? (
                 <ShieldAlert className="mr-2 h-4 w-4" />

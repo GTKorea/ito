@@ -60,7 +60,8 @@
     "more": "更多",
     "admin": "管理員",
     "sharedSpaces": "Shared Spaces",
-    "collapse": "收合"
+    "collapse": "收合",
+    "newGroup": "新增群組"
   },
   "workspace": {
     "myTasks": "我的任務",
@@ -112,6 +113,7 @@
     "statusInProgress": "進行中",
     "statusBlocked": "已封鎖",
     "statusCompleted": "已完成",
+    "statusCancelled": "已取消",
     "decline": "拒絕",
     "declining": "拒絕中...",
     "declineTitle": "拒絕線程",
@@ -119,7 +121,8 @@
     "declineReasonPlaceholder": "拒絕原因（選填）",
     "moreActions": "更多操作",
     "quickInputPlaceholder": "新任務... ( > @使用者 直接連接)",
-    "resolveBlocker": "解除阻擋"
+    "resolveBlocker": "解除阻擋",
+    "resolveThread": "解除執行緒"
   },
   "threads": {
     "title": "執行緒",
@@ -590,6 +593,33 @@
       "tipLabel": "提示：",
       "tip": "每次線程回彈給您時都會收到通知。在通知頁面查看您的任務。"
     },
+    "blockers": {
+      "title": "阻擋項",
+      "description": "註冊阻擋任務的外部依賴。阻擋項解除前，任務將移至「等待中」。",
+      "step1": "開啟任務，點選「連接」，然後切換到「阻擋項」標籤",
+      "step2": "描述外部依賴（例如：「等待設計審查」）",
+      "step3": "阻擋項解決後，點選任務上的「解除阻擋」按鈕",
+      "noteLabel": "注意：",
+      "note": "只有建立阻擋項的人才能解除。"
+    },
+    "taskGroups": {
+      "title": "任務群組",
+      "description": "將任務整理到群組中，類似於Slack頻道。群組顯示在側邊欄「我的任務」下方。",
+      "step1": "點選側邊欄「我的任務」下方的「+」按鈕建立新群組",
+      "step2": "點選群組名稱僅檢視該群組的任務",
+      "step3": "點選「我的任務」檢視所有任務，不受群組限制"
+    },
+    "slack": {
+      "title": "Slack整合",
+      "description": "在Slack中使用/ito指令直接從聊天建立和管理任務。",
+      "commands": {
+        "create": { "syntax": "/ito 任務名", "description": "建立新任務" },
+        "chain": { "syntax": "/ito 任務 > @使用者1 > @使用者2", "description": "建立任務並連接線程鏈" },
+        "list": { "syntax": "/ito list", "description": "檢視任務清單" },
+        "link": { "syntax": "/ito link", "description": "將Slack帳戶關聯到ito" },
+        "help": { "syntax": "/ito help", "description": "顯示可用指令" }
+      }
+    },
     "notifications": {
       "title": "通知",
       "description": "ito 透過即時通知讓您不錯過重要更新。支援應用內通知、電子郵件和 Slack 通知。",
@@ -764,5 +794,19 @@
       "step2": "邀請團隊成員到工作區",
       "step3": "為任務連接線程"
     }
+  },
+  "groups": {
+    "newGroup": "新增群組",
+    "groupName": "群組名稱",
+    "groupDescription": "描述",
+    "createGroup": "建立群組",
+    "deleteGroup": "刪除群組",
+    "deleteConfirm": "確定要刪除此群組嗎？群組中的任務不會被刪除。",
+    "members": "成員",
+    "addMember": "新增成員",
+    "removeMember": "移除成員",
+    "noGroups": "尚無群組",
+    "tasks": "任務",
+    "allTasks": "全部任務"
   }
 }

@@ -12,6 +12,7 @@ import { CommandPalette } from '@/components/layout/command-palette';
 import { TopHeader } from '@/components/layout/top-header';
 import { OnboardingOverlay } from '@/components/onboarding/onboarding-overlay';
 import { cn } from '@/lib/utils';
+import { isTauri } from '@/lib/platform';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading, fetchUser } = useAuthStore();
@@ -20,6 +21,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { isMobile, isTablet } = useMediaQuery();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
+  const [isTauriEnv, setIsTauriEnv] = useState(false);
+
+  useEffect(() => {
+    setIsTauriEnv(isTauri());
+  }, []);
 
   useEffect(() => {
     // Only fetch if not already authenticated (avoid overriding login() state on mount)
@@ -59,7 +65,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         />
       )}
       <main className={cn('flex-1 flex flex-col overflow-hidden', isMobile && 'pb-16')}>
-        {!isMobile && <TopHeader />}
+        {!isMobile && isTauriEnv && <TopHeader />}
         <div className="flex-1 overflow-auto">
           {children}
         </div>

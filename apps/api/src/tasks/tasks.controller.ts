@@ -40,8 +40,9 @@ export class TasksController {
   findCategorized(
     @Param('workspaceId') workspaceId: string,
     @CurrentUser('id') userId: string,
+    @Query('taskGroupId') taskGroupId?: string,
   ) {
-    return this.tasksService.findCategorized(workspaceId, userId);
+    return this.tasksService.findCategorized(workspaceId, userId, taskGroupId);
   }
 
   @Get('workspaces/:workspaceId/tasks/calendar')

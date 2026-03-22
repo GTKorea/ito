@@ -14,6 +14,9 @@ import {
   CheckCircle2,
   Circle,
   ArrowDown,
+  ShieldAlert,
+  Hash,
+  MessageSquare,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
@@ -466,6 +469,73 @@ export default function HelpPage() {
                 <span className="font-medium text-primary">{t('snapback.tipLabel')}</span>{' '}
                 {t('snapback.tip')}
               </p>
+            </div>
+          </div>
+        </Section>
+
+        {/* Blockers */}
+        <Section
+          id="blockers"
+          icon={<ShieldAlert className="h-4 w-4 text-red-400" />}
+          title={t('blockers.title')}
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {t('blockers.description')}
+            </p>
+            <div className="space-y-2.5">
+              <StepItem number={1}>{t('blockers.step1')}</StepItem>
+              <StepItem number={2}>{t('blockers.step2')}</StepItem>
+              <StepItem number={3}>{t('blockers.step3')}</StepItem>
+            </div>
+            <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-3">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                <span className="font-medium text-red-400">{t('blockers.noteLabel')}</span>{' '}
+                {t('blockers.note')}
+              </p>
+            </div>
+          </div>
+        </Section>
+
+        {/* Task Groups */}
+        <Section
+          id="task-groups"
+          icon={<Hash className="h-4 w-4 text-primary" />}
+          title={t('taskGroups.title')}
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {t('taskGroups.description')}
+            </p>
+            <div className="space-y-2.5">
+              <StepItem number={1}>{t('taskGroups.step1')}</StepItem>
+              <StepItem number={2}>{t('taskGroups.step2')}</StepItem>
+              <StepItem number={3}>{t('taskGroups.step3')}</StepItem>
+            </div>
+          </div>
+        </Section>
+
+        {/* Slack Integration */}
+        <Section
+          id="slack"
+          icon={<MessageSquare className="h-4 w-4 text-primary" />}
+          title={t('slack.title')}
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {t('slack.description')}
+            </p>
+            <div className="space-y-2">
+              {(['create', 'chain', 'list', 'link', 'help'] as const).map((cmd) => (
+                <div key={cmd} className="flex items-start gap-3 rounded-md border border-border bg-background/50 px-3 py-2.5">
+                  <code className="shrink-0 text-xs font-mono text-primary mt-0.5">
+                    {t(`slack.commands.${cmd}.syntax`)}
+                  </code>
+                  <p className="text-[11px] text-muted-foreground">
+                    {t(`slack.commands.${cmd}.description`)}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         </Section>

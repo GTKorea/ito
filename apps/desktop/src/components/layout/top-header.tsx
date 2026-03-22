@@ -54,6 +54,7 @@ export function TopHeader() {
     <header
       className={cn(
         'flex h-12 shrink-0 items-center gap-1 border-b border-border px-3',
+        tauri && 'pl-[70px]',
       )}
       {...(tauri ? { 'data-tauri-drag-region': '' } : {})}
     >

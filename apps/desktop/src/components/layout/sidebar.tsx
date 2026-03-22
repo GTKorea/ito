@@ -1,7 +1,8 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import {
   CheckSquare,
@@ -17,10 +18,14 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Globe,
+  Hash,
+  Plus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth-store';
 import { useNotificationStore } from '@/stores/notification-store';
+import { useWorkspaceStore } from '@/stores/workspace-store';
+import { useTaskGroupStore } from '@/stores/task-group-store';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -31,9 +36,9 @@ import { UserProfilePopover } from '@/components/user/user-profile-popover';
 
 const navItems = [
   { href: '/workspace', icon: CheckSquare, labelKey: 'myTasks' as const },
-  { href: '/threads', icon: Link2, labelKey: 'threads' as const },
   { href: '/shared-spaces', icon: Globe, labelKey: 'sharedSpaces' as const },
   { href: '/graph', icon: Network, labelKey: 'graph' as const },
+  { href: '/threads', icon: Link2, labelKey: 'threads' as const },
   { href: '/teams', icon: Users, labelKey: 'teams' as const },
   { href: '/activity', icon: ActivityIcon, labelKey: 'activity' as const },
   { href: '/calendar', icon: CalendarDays, labelKey: 'calendar' as const },
@@ -46,9 +51,21 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { user, logout } = useAuthStore();
   const { unreadCount } = useNotificationStore();
+  const { currentWorkspace } = useWorkspaceStore();
+  const { groups, fetchGroups, createGroup } = useTaskGroupStore();
   const t = useTranslations('sidebar');
+
+  const [showNewGroup, setShowNewGroup] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+
+  useEffect(() => {
+    if (currentWorkspace) {
+      fetchGroups(currentWorkspace.id);
+    }
+  }, [currentWorkspace, fetchGroups]);
 
   return (
     <aside
@@ -71,7 +88,9 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
       {/* Navigation */}
       <nav className={cn('flex-1 space-y-0.5', collapsed ? 'p-1.5' : 'p-2')}>
         {navItems.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+          const isActive = item.href === '/workspace'
+            ? pathname === item.href && !searchParams.get('group')
+            : pathname === item.href || pathname.startsWith(item.href + '/');
 
           const linkContent = (
             <Link
@@ -103,7 +122,62 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
             );
           }
 
-          return linkContent;
+          return (
+            <div key={item.labelKey}>
+              {linkContent}
+              {!collapsed && item.labelKey === 'myTasks' && (
+                <div className="ml-4 space-y-0.5 mt-0.5">
+                  {groups.map((group) => (
+                    <Link
+                      key={group.id}
+                      href={`/workspace?group=${group.id}`}
+                      className={cn(
+                        'flex items-center gap-1.5 rounded-md px-2 py-1 text-xs transition-colors',
+                        searchParams.get('group') === group.id
+                          ? 'bg-accent text-accent-foreground'
+                          : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
+                      )}
+                    >
+                      <Hash className="h-3 w-3 shrink-0" />
+                      <span className="truncate">{group.name}</span>
+                      <span className="ml-auto text-[10px] text-muted-foreground/60">{group._count.tasks}</span>
+                    </Link>
+                  ))}
+                  {showNewGroup ? (
+                    <form
+                      className="flex items-center gap-1 px-2"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        if (newGroupName.trim() && currentWorkspace) {
+                          createGroup(currentWorkspace.id, newGroupName.trim());
+                          setNewGroupName('');
+                          setShowNewGroup(false);
+                        }
+                      }}
+                    >
+                      <Hash className="h-3 w-3 text-muted-foreground shrink-0" />
+                      <input
+                        className="flex-1 bg-transparent text-xs outline-none placeholder:text-muted-foreground/50 py-1"
+                        placeholder={t('newGroup')}
+                        value={newGroupName}
+                        onChange={(e) => setNewGroupName(e.target.value)}
+                        onBlur={() => { setShowNewGroup(false); setNewGroupName(''); }}
+                        autoFocus
+                      />
+                    </form>
+                  ) : (
+                    <button
+                      className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors w-full"
+                      onClick={() => setShowNewGroup(true)}
+                    >
+                      <Plus className="h-3 w-3" />
+                      <span>{t('newGroup')}</span>
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          );
         })}
 
         <Separator className="my-2" />

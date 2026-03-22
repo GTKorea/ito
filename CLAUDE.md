@@ -16,13 +16,18 @@ ito/
 │   ├── api/                 # NestJS 11 백엔드
 │   │   ├── src/
 │   │   │   ├── auth/        # 인증 (JWT, OAuth)
-│   │   │   ├── todos/       # 태스크 CRUD
-│   │   │   ├── threads/     # 실 체인 (connect/resolve)
+│   │   │   ├── tasks/       # 태스크 CRUD
+│   │   │   ├── threads/     # 실 체인 (connect/resolve/blocker)
+│   │   │   ├── task-groups/ # 태스크 그룹 (Slack 채널 유사 구조)
 │   │   │   ├── workspaces/  # 워크스페이스 + 초대
+│   │   │   ├── shared-spaces/ # 크로스-워크스페이스 협업
 │   │   │   ├── users/       # 사용자 관리
 │   │   │   ├── notifications/ # 알림
 │   │   │   ├── activities/  # 활동 로그
 │   │   │   ├── files/       # 파일 업로드
+│   │   │   ├── chat/        # 태스크별 채팅
+│   │   │   ├── slack/       # Slack 통합 (/ito 명령어)
+│   │   │   ├── calendar/    # 캘린더 통합 (Google)
 │   │   │   ├── email/       # Resend 이메일
 │   │   │   └── websocket/   # Socket.IO 실시간
 │   │   ├── prisma/          # DB 스키마 + 마이그레이션
@@ -77,9 +82,18 @@ npx prisma studio         # DB GUI
 ### Frontend (apps/desktop)
 - **Next.js 16** — Static Export (`output: 'export'`)
 - **Tauri v2** — 데스크톱 앱 래퍼
-- **Zustand v5** — 상태 관리 (auth, todo, workspace, notification 스토어)
+- **Zustand v5** — 상태 관리 (auth, task, task-group, workspace, notification 스토어)
 - **Tailwind CSS v4** + **shadcn/ui** — 다크 테마 UI
 - **shadcn/ui v4** — base-ui 기반, `asChild` 대신 `render` prop 사용
+
+### i18n
+- **next-intl** — 9개 로케일 지원 (en, ko, ja, zh-CN, zh-TW, de, es, fr, pt)
+- 메시지 파일: `apps/desktop/messages/*.json`
+- 새 기능 추가 시 반드시 모든 로케일에 번역 키 추가
+
+### 플랫폼 분기
+- **웹** (Vercel): 상단 헤더(`TopHeader`) 숨김 — `isTauri()` false일 때
+- **데스크탑** (Tauri): 커스텀 타이틀바 — `decorations: false`, `data-tauri-drag-region`, macOS 왼쪽 70px 패딩
 
 ### 디자인 톤
 - Linear 영감 다크 테마
@@ -96,11 +110,32 @@ npx prisma studio         # DB GUI
 5. B가 resolve → A에게 snap-back
 6. A가 Todo를 `COMPLETED`로 변경하면 최종 완료
 
+### 블로커 (외부 의존성)
+- ThreadLink에 `type` 필드 추가: `PERSON` (기본) | `BLOCKER`
+- `BLOCKER` 타입은 `toUserId`가 null, `blockerNote`에 메모 저장
+- 블로커 등록 시 태스크 상태가 `BLOCKED`로 변경, '대기중' 섹션으로 이동
+- 블로커 해제는 생성자만 가능 (`POST /thread-links/:id/resolve-blocker`)
+
+### 태스크 그룹
+- Slack 채널과 유사한 구조로 태스크를 그룹화
+- `TaskGroup` + `TaskGroupMember` 모델
+- 워크스페이스/공유스페이스 양쪽에서 생성 가능
+- 사이드바에서 그룹 클릭 → 해당 그룹 태스크만 필터링 (`/workspace?group=xxx`)
+- '내 태스크' 클릭 → 전체 태스크 (그룹 무관)
+
 ### 주요 제약조건
 - 자기 자신에게 실 연결 불가
 - 현재 assignee만 다음 사람에게 연결 가능
 - **활성 링크(PENDING/FORWARDED)**에 포함된 사람에게만 순환 연결 불가 (COMPLETED 링크의 유저에게는 재연결 가능)
 - 최대 체인 깊이: 20
+
+### Slack 통합
+- `/ito <태스크이름>` — 태스크 생성
+- `/ito <태스크이름> > @유저1 > @유저2` — 태스크 생성 + 체인 연결
+- `/ito list` — 내 태스크 목록
+- `/ito link` — Slack-ito 계정 연결
+- `/ito help` — 도움말
+- Slack 멘션(`<@UXXXXXX>`)을 SlackUser 테이블 통해 ito 사용자로 해석
 
 ### 초대 시스템
 - `POST /workspaces/:id/invite` → WorkspaceInvite 생성 (7일 만료) + 이메일 발송 (Resend) + 가입 유저에게 WORKSPACE_INVITE 알림
@@ -113,12 +148,20 @@ npx prisma studio         # DB GUI
 |------|----------|
 | User | email, passwordHash, googleId, githubId, avatarUrl |
 | Workspace | name, slug (unique) |
-| Todo | status (OPEN/IN_PROGRESS/BLOCKED/COMPLETED/CANCELLED), priority, dueDate, creatorId, assigneeId |
-| ThreadLink | todoId, fromUserId, toUserId, status (PENDING/FORWARDED/COMPLETED), chainIndex |
+| Task | status (OPEN/IN_PROGRESS/BLOCKED/COMPLETED/CANCELLED), priority, dueDate, creatorId, assigneeId, taskGroupId? |
+| ThreadLink | taskId, fromUserId, toUserId?, type (PERSON/BLOCKER), blockerNote?, status (PENDING/FORWARDED/COMPLETED/CANCELLED), chainIndex |
+| TaskGroup | name, workspaceId?, sharedSpaceId?, createdById |
+| TaskGroupMember | taskGroupId, userId (@@unique) |
 | WorkspaceInvite | workspaceId, email, token (unique), expiresAt |
-| Notification | type (THREAD_RECEIVED/THREAD_SNAPPED/THREAD_COMPLETED/WORKSPACE_INVITE/TODO_ASSIGNED/TODO_COMPLETED), read, data (JSON) |
+| SharedSpace | name, createdById |
+| SharedSpaceParticipant | sharedSpaceId, workspaceId, role |
+| Notification | type (THREAD_RECEIVED/THREAD_SNAPPED/THREAD_COMPLETED/THREAD_DECLINED/WORKSPACE_INVITE/SHARED_SPACE_INVITE/...), read, data (JSON) |
 | Activity | action, entityType, entityId, metadata (JSON) |
-| File | filename, url, size, mimeType, todoId?, threadLinkId? |
+| File | filename, url, size, mimeType, taskId?, threadLinkId?, chatMessageId? |
+| ChatMessage | content, taskId, senderId, parentId? (threaded replies) |
+| SlackWorkspace | slackTeamId, accessToken, workspaceId |
+| SlackUser | slackUserId, slackWorkspaceId, userId |
+| CalendarIntegration | userId, provider, accessToken, calendarIds |
 
 ## 테스트
 

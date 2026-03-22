@@ -43,6 +43,8 @@ model User {
   calendarIntegrations CalendarIntegration[]
   chatMessages         ChatMessage[]
   sharedSpacesCreated  SharedSpace[]
+  taskGroupsCreated    TaskGroup[]
+  taskGroupMembers     TaskGroupMember[]
 }
 
 model RefreshToken {
@@ -74,6 +76,7 @@ model Workspace {
   activities             Activity[]
   slackWorkspaces        SlackWorkspace[]
   sharedSpaceParticipants SharedSpaceParticipant[]
+  taskGroups             TaskGroup[]
 }
 
 model WorkspaceMember {
@@ -165,6 +168,7 @@ model Task {
   workspaceId   String
   teamId        String?
   sharedSpaceId String?
+  taskGroupId   String?
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -175,6 +179,7 @@ model Task {
   workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   team        Team?        @relation(fields: [teamId], references: [id], onDelete: SetNull)
   sharedSpace SharedSpace? @relation(fields: [sharedSpaceId], references: [id], onDelete: SetNull)
+  taskGroup   TaskGroup?   @relation(fields: [taskGroupId], references: [id], onDelete: SetNull)
 
   threadLinks   ThreadLink[]
   files         File[]
@@ -185,6 +190,7 @@ model Task {
   @@index([workspaceId])
   @@index([teamId])
   @@index([sharedSpaceId])
+  @@index([taskGroupId])
 }
 
 enum TaskStatus {
@@ -410,6 +416,7 @@ model SharedSpace {
   participants SharedSpaceParticipant[]
   tasks        Task[]
   invites      SharedSpaceInvite[]
+  taskGroups   TaskGroup[]
 
   @@index([createdById])
 }
@@ -464,4 +471,39 @@ model CalendarIntegration {
 
   @@unique([userId, provider])
   @@index([userId])
+}
+
+// ──────────────────── Task Groups ────────────────────
+
+model TaskGroup {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  workspaceId   String?
+  sharedSpaceId String?
+  createdById   String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  workspace   Workspace?   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  sharedSpace SharedSpace? @relation(fields: [sharedSpaceId], references: [id], onDelete: Cascade)
+  createdBy   User         @relation(fields: [createdById], references: [id])
+  members     TaskGroupMember[]
+  tasks       Task[]
+
+  @@index([workspaceId])
+  @@index([sharedSpaceId])
+}
+
+model TaskGroupMember {
+  id          String   @id @default(cuid())
+  taskGroupId String
+  userId      String
+  joinedAt    DateTime @default(now())
+
+  taskGroup TaskGroup @relation(fields: [taskGroupId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([taskGroupId, userId])
+  @@index([taskGroupId])
 }
