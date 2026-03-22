@@ -52,4 +52,4 @@ WORKDIR /app/apps/api
 
 EXPOSE 3011
 
-CMD ["node", "dist/src/main"]
+CMD ["node", "dist/main"]

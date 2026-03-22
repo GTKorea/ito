@@ -320,7 +320,10 @@ export function QuickInput() {
         while (end < text.length && text[end] !== ' ' && text[end] !== '>') {
           end++;
         }
-        parts.push({ text: text.substring(i, end), type: 'at' });
+        const mentionText = text.substring(i, end);
+        const username = mentionText.substring(1);
+        const isResolved = resolvedUsersRef.current.has(username);
+        parts.push({ text: mentionText, type: isResolved ? 'at' : 'normal' });
         i = end;
         continue;
       }
@@ -336,7 +339,11 @@ export function QuickInput() {
     return parts.map((part, idx) => {
       if (part.type === 'chain') {
         return (
-          <span key={idx} className="text-violet-400 font-medium">{part.text}</span>
+          <span key={idx} className="font-medium">
+            <span className="text-transparent">{' '}</span>
+            <span className="text-amber-400/80">{'›'}</span>
+            <span className="text-transparent">{' '}</span>
+          </span>
         );
       }
       if (part.type === 'at') {
@@ -384,7 +391,7 @@ export function QuickInput() {
 
       {/* Card-style input with toolbar */}
       <div className={cn(
-        'rounded-xl overflow-hidden',
+        'rounded-xl',
         'bg-card/40 backdrop-blur-md',
         'border border-border/50',
         'shadow-lg',
