@@ -103,6 +103,8 @@
     "unassigned": "미할당",
     "saving": "저장 중...",
     "saveChanges": "변경사항 저장",
+    "saved": "변경사항이 저장되었습니다",
+    "saveFailed": "저장에 실패했습니다",
     "threadChain": "스레드 체인",
     "attachments": "첨부 파일",
     "chat": "채팅",
@@ -221,6 +223,10 @@
     "notConnected": "연결되지 않음",
     "disconnect": "연결 해제",
     "connectCalendar": "연결",
+    "selectCalendar": "캘린더 선택",
+    "noCalendars": "캘린더를 찾을 수 없습니다",
+    "loadingCalendars": "캘린더 목록 불러오는 중...",
+    "default": "기본",
     "members": "멤버",
     "membersDescription": "{name}의 멤버",
     "you": "나",
@@ -490,7 +496,10 @@
     "creating": "생성 중...",
     "create": "생성",
     "googleEvent": "Google 캘린더",
-    "noWorkspace": "캘린더를 보려면 워크스페이스를 선택하세요"
+    "noWorkspace": "캘린더를 보려면 워크스페이스를 선택하세요",
+    "upcoming": "예정",
+    "completed": "완료",
+    "noTasks": "이 날에는 태스크가 없습니다"
   },
   "notificationSettings": {
     "description": "각 이벤트 유형에 대한 알림 방식을 선택하세요.",

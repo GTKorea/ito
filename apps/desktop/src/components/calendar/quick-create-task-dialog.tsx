@@ -37,7 +37,10 @@ export function QuickCreateTaskDialog({
     if (!title.trim() || !currentWorkspace) return;
     setIsCreating(true);
     try {
-      await createTask(currentWorkspace.id, title, undefined, undefined, date.toISOString().slice(0, 10));
+      const yyyy = date.getFullYear();
+      const mm = String(date.getMonth() + 1).padStart(2, '0');
+      const dd = String(date.getDate()).padStart(2, '0');
+      await createTask(currentWorkspace.id, title, undefined, undefined, `${yyyy}-${mm}-${dd}`);
       setTitle('');
       onOpenChange(false);
       onCreated?.();

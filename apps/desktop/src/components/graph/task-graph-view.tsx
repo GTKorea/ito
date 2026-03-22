@@ -144,119 +144,98 @@ function buildGraph(
       )
     : tasks;
 
-  const nodes: Node<TaskNodeData>[] = filtered.map((task) => {
+  const nodes: Node<TaskNodeData>[] = [];
+  const edges: Edge<ThreadEdgeData>[] = [];
+
+  for (const task of filtered) {
     const chainTotal = task.threadLinks.length;
     const chainCompleted = task.threadLinks.filter((l) => l.status === 'COMPLETED').length;
-    const hasPendingAction = task.threadLinks.some(
-      (l) => l.toUserId === userId && l.status === 'PENDING',
-    );
+    const sortedLinks = [...task.threadLinks].sort((a, b) => a.chainIndex - b.chainIndex);
 
-    return {
-      id: task.id,
-      type: 'taskNode',
-      position: { x: 0, y: 0 },
-      data: {
-        title: task.title,
-        status: task.status,
-        priority: task.priority,
-        assigneeName: task.assignee.name,
-        assigneeInitial: task.assignee.name?.charAt(0).toUpperCase() || '?',
-        chainTotal,
-        chainCompleted,
-        dueDate: task.dueDate,
-        hasPendingAction,
-        isSelected: task.id === selectedTaskId,
-      },
-    };
-  });
+    if (sortedLinks.length === 0) {
+      // No thread chain — single node for the creator/assignee
+      nodes.push({
+        id: task.id,
+        type: 'taskNode',
+        position: { x: 0, y: 0 },
+        data: {
+          title: task.title,
+          status: task.status,
+          priority: task.priority,
+          assigneeName: task.creator.name,
+          assigneeInitial: task.creator.name?.charAt(0).toUpperCase() || '?',
+          chainTotal,
+          chainCompleted,
+          dueDate: task.dueDate,
+          hasPendingAction: false,
+          isSelected: task.id === selectedTaskId,
+        },
+      });
+    } else {
+      // Build chain: creator → link[0].toUser → link[1].toUser → ...
+      // First node: the creator (fromUser of the first link)
+      const firstFrom = sortedLinks[0].fromUser;
+      const creatorNodeId = `${task.id}::${firstFrom.id}`;
+      nodes.push({
+        id: creatorNodeId,
+        type: 'taskNode',
+        position: { x: 0, y: 0 },
+        data: {
+          title: task.title,
+          status: task.status,
+          priority: task.priority,
+          assigneeName: firstFrom.name,
+          assigneeInitial: firstFrom.name?.charAt(0).toUpperCase() || '?',
+          chainTotal,
+          chainCompleted,
+          dueDate: task.dueDate,
+          hasPendingAction: false,
+          isSelected: task.id === selectedTaskId,
+        },
+      });
 
-  const edges: Edge<ThreadEdgeData>[] = [];
-  const taskIds = new Set(filtered.map((t) => t.id));
+      let prevNodeId = creatorNodeId;
 
-  // Within each task, create edges between consecutive thread link users
-  for (const task of filtered) {
-    for (const link of task.threadLinks) {
-      // Only create intra-task edges if both source/target tasks are the same
-      // We create edges from taskId perspective — each link creates an edge to this task
-      // from a conceptual "chain step" perspective, but since our nodes are tasks,
-      // we skip intra-task link edges (they are shown in the detail panel).
-    }
-  }
+      for (const link of sortedLinks) {
+        const toNodeId = `${task.id}::${link.toUser.id}`;
 
-  // Between tasks: create edges if they share users in the thread chain
-  const taskUserMap = new Map<string, Set<string>>();
-  for (const task of filtered) {
-    const users = new Set<string>();
-    users.add(task.creatorId);
-    users.add(task.assigneeId);
-    for (const link of task.threadLinks) {
-      users.add(link.fromUserId);
-      users.add(link.toUserId);
-    }
-    taskUserMap.set(task.id, users);
-  }
-
-  // Create thread chain edges: connect tasks linked through thread chains
-  // For each task with thread links, create edges to represent the task flow
-  for (const task of filtered) {
-    if (task.threadLinks.length === 0) continue;
-
-    // Find other tasks that share the last link's toUser as creator or have a chain from them
-    for (const otherTask of filtered) {
-      if (otherTask.id === task.id) continue;
-
-      // Connect if the assignee of one task is the creator of another
-      // (suggesting a workflow relationship)
-      for (const link of task.threadLinks) {
-        if (
-          link.toUserId === otherTask.creatorId &&
-          link.status !== 'CANCELLED'
-        ) {
-          const edgeId = `collab-${task.id}-${otherTask.id}`;
-          if (!edges.find((e) => e.id === edgeId)) {
-            edges.push({
-              id: edgeId,
-              source: task.id,
-              target: otherTask.id,
-              type: 'threadEdge',
-              data: {
-                linkStatus: link.status,
-                label: '',
-                isCollaboration: true,
-              },
-            });
-          }
+        // Only add node if not already added (handles A→B→A cycles)
+        if (!nodes.find((n) => n.id === toNodeId)) {
+          nodes.push({
+            id: toNodeId,
+            type: 'taskNode',
+            position: { x: 0, y: 0 },
+            data: {
+              title: task.title,
+              status: task.status,
+              priority: task.priority,
+              assigneeName: link.toUser.name,
+              assigneeInitial: link.toUser.name?.charAt(0).toUpperCase() || '?',
+              chainTotal,
+              chainCompleted,
+              dueDate: task.dueDate,
+              hasPendingAction: link.toUserId === userId && link.status === 'PENDING',
+              isSelected: task.id === selectedTaskId,
+            },
+          });
         }
-      }
-    }
-  }
 
-  // Also create explicit thread edges between tasks in the same chain
-  // For each thread link, find if the toUser has tasks that are linked
-  for (const task of filtered) {
-    for (const link of task.threadLinks) {
-      // Find any other task where this link connects meaningfully
-      for (const otherTask of filtered) {
-        if (otherTask.id === task.id) continue;
-        // If the linked user is the assignee of another task
-        if (link.toUserId === otherTask.assigneeId && link.status !== 'CANCELLED') {
-          const edgeId = `thread-${link.id}-${otherTask.id}`;
-          if (!edges.find((e) => e.id === edgeId)) {
-            const fromName = link.fromUser.name.split(' ')[0];
-            const toName = link.toUser.name.split(' ')[0];
-            edges.push({
-              id: edgeId,
-              source: task.id,
-              target: otherTask.id,
-              type: 'threadEdge',
-              data: {
-                linkStatus: link.status,
-                label: `${fromName} → ${toName}`,
-                isCollaboration: false,
-              },
-            });
-          }
-        }
+        // Edge from previous person to this person
+        const fromName = link.fromUser.name.split(' ')[0];
+        const toName = link.toUser.name.split(' ')[0];
+        edges.push({
+          id: `chain-${link.id}`,
+          source: prevNodeId,
+          target: toNodeId,
+          type: 'threadEdge',
+          data: {
+            linkStatus: link.status,
+            label: `${fromName} → ${toName}`,
+            isCollaboration: false,
+          },
+        });
+
+        prevNodeId = toNodeId;
       }
     }
   }
@@ -320,7 +299,9 @@ export function TaskGraphView({ workspaceId }: TaskGraphViewProps) {
 
   const onNodeClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
-      selectTask(node.id);
+      // Node ID may be "{taskId}::{userId}" for chain nodes, extract taskId
+      const taskId = node.id.includes('::') ? node.id.split('::')[0] : node.id;
+      selectTask(taskId);
     },
     [selectTask],
   );

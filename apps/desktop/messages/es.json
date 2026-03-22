@@ -103,6 +103,8 @@
     "unassigned": "Sin asignar",
     "saving": "Guardando...",
     "saveChanges": "Guardar Cambios",
+    "saved": "Cambios guardados",
+    "saveFailed": "Error al guardar",
     "threadChain": "Cadena de Hilos",
     "attachments": "Archivos adjuntos",
     "chat": "Chat",
@@ -221,6 +223,10 @@
     "notConnected": "No conectado",
     "disconnect": "Desconectar",
     "connectCalendar": "Conectar",
+    "selectCalendar": "Seleccionar calendario",
+    "noCalendars": "No se encontraron calendarios",
+    "loadingCalendars": "Cargando calendarios...",
+    "default": "Predeterminado",
     "members": "Miembros",
     "membersDescription": "Miembros de {name}",
     "you": "tú",
@@ -490,7 +496,10 @@
     "creating": "Creating...",
     "create": "Create",
     "googleEvent": "Google Calendar",
-    "noWorkspace": "Selecciona un espacio de trabajo para ver el calendario"
+    "noWorkspace": "Selecciona un espacio de trabajo para ver el calendario",
+    "upcoming": "Próximo",
+    "completed": "Completado",
+    "noTasks": "No hay tareas para este día"
   },
   "notificationSettings": {
     "description": "Elige cómo quieres ser notificado para cada tipo de evento.",

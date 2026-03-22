@@ -25,6 +25,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { TaskDetail } from '@/components/tasks/task-detail';
 
 interface SharedSpaceDetailProps {
   sharedSpaceId: string;
@@ -48,6 +49,8 @@ export function SharedSpaceDetail({ sharedSpaceId, onBack }: SharedSpaceDetailPr
 
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [drawerVisible, setDrawerVisible] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newDescription, setNewDescription] = useState('');
   const [inviteSlug, setInviteSlug] = useState('');
@@ -76,6 +79,16 @@ export function SharedSpaceDetail({ sharedSpaceId, onBack }: SharedSpaceDetailPr
     } catch {
       // handle error
     }
+  };
+
+  const handleSelectTask = (taskId: string) => {
+    setSelectedTaskId(taskId);
+    requestAnimationFrame(() => setDrawerVisible(true));
+  };
+
+  const handleCloseTask = () => {
+    setDrawerVisible(false);
+    setTimeout(() => setSelectedTaskId(null), 200);
   };
 
   const handleCopyLink = () => {
@@ -205,7 +218,8 @@ export function SharedSpaceDetail({ sharedSpaceId, onBack }: SharedSpaceDetailPr
               {tasks.map((task) => (
                 <div
                   key={task.id}
-                  className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-accent/30 transition-colors"
+                  className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-accent/30 transition-colors cursor-pointer"
+                  onClick={() => handleSelectTask(task.id)}
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
@@ -298,6 +312,33 @@ export function SharedSpaceDetail({ sharedSpaceId, onBack }: SharedSpaceDetailPr
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Task Detail Backdrop */}
+      {selectedTaskId && (
+        <div
+          className={cn(
+            'fixed inset-0 z-40 transition-opacity duration-200',
+            drawerVisible ? 'bg-black/30 opacity-100' : 'opacity-0 pointer-events-none',
+          )}
+          onClick={handleCloseTask}
+        />
+      )}
+
+      {/* Task Detail Slide-over */}
+      <div
+        className={cn(
+          'fixed right-0 top-0 z-50 h-full w-full md:w-[420px] transition-transform duration-200 ease-out',
+          drawerVisible ? 'translate-x-0' : 'translate-x-full',
+          !selectedTaskId && 'pointer-events-none',
+        )}
+      >
+        {selectedTaskId && (
+          <TaskDetail
+            taskId={selectedTaskId}
+            onClose={handleCloseTask}
+          />
+        )}
+      </div>
 
       {/* Invite Workspace Dialog */}
       {showInvite && (

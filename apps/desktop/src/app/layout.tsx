@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { LocaleProvider } from "@/components/locale-provider";
 import { PostHogProvider } from "@/components/posthog-provider";
 import { TauriDeepLinkListener } from "@/components/tauri-deep-link-listener";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const inter = Inter({
@@ -41,6 +42,7 @@ export default function RootLayout({
         <PostHogProvider>
           <LocaleProvider>
             <TooltipProvider>{children}</TooltipProvider>
+            <Toaster theme="dark" position="bottom-right" richColors />
           </LocaleProvider>
         </PostHogProvider>
       </body>

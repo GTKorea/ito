@@ -103,6 +103,8 @@
     "unassigned": "未指派",
     "saving": "儲存中...",
     "saveChanges": "儲存變更",
+    "saved": "變更已儲存",
+    "saveFailed": "儲存失敗",
     "threadChain": "執行緒鏈",
     "attachments": "附件",
     "chat": "聊天",
@@ -221,6 +223,10 @@
     "notConnected": "未連接",
     "disconnect": "中斷連接",
     "connectCalendar": "連接",
+    "selectCalendar": "選擇日曆",
+    "noCalendars": "找不到日曆",
+    "loadingCalendars": "正在載入日曆...",
+    "default": "預設",
     "members": "成員",
     "membersDescription": "{name} 的成員",
     "you": "你",
@@ -490,7 +496,10 @@
     "creating": "Creating...",
     "create": "Create",
     "googleEvent": "Google Calendar",
-    "noWorkspace": "請選擇工作區以查看日曆"
+    "noWorkspace": "請選擇工作區以查看日曆",
+    "upcoming": "即將到來",
+    "completed": "已完成",
+    "noTasks": "當天沒有任務"
   },
   "notificationSettings": {
     "description": "選擇每種事件類型的通知方式。",

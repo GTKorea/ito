@@ -69,12 +69,12 @@ API_URL=https://api.itothread.com
 FRONTEND_URL=https://itothread.com
 ```
 
-| 변수 | 설명 |
-|------|------|
-| `GOOGLE_CALENDAR_CLIENT_ID` | Google OAuth 클라이언트 ID |
-| `GOOGLE_CALENDAR_CLIENT_SECRET` | Google OAuth 클라이언트 시크릿 |
-| `API_URL` | API 서버 URL (콜백 리다이렉트 URI 구성에 사용) |
-| `FRONTEND_URL` | 프론트엔드 URL (웹 OAuth 완료 후 리다이렉트 대상) |
+| 변수                            | 설명                                              |
+| ------------------------------- | ------------------------------------------------- |
+| `GOOGLE_CALENDAR_CLIENT_ID`     | Google OAuth 클라이언트 ID                        |
+| `GOOGLE_CALENDAR_CLIENT_SECRET` | Google OAuth 클라이언트 시크릿                    |
+| `API_URL`                       | API 서버 URL (콜백 리다이렉트 URI 구성에 사용)    |
+| `FRONTEND_URL`                  | 프론트엔드 URL (웹 OAuth 완료 후 리다이렉트 대상) |
 
 ## 4. 연동 방법
 
@@ -139,10 +139,12 @@ Content-Type: application/json
 
 1. **토큰 만료**: 장시간 사용하지 않으면 토큰이 만료될 수 있습니다. Settings에서 Disconnect 후 다시 Connect를 시도하세요.
 2. **디버그 엔드포인트로 확인**:
+
    ```bash
    GET /calendar/debug
    Authorization: Bearer <access-token>
    ```
+
    응답에 포함되는 정보:
    - `integrations`: 연결된 캘린더 목록
    - `googleEventsCount`: 이번 달 Google 이벤트 수

@@ -142,25 +142,16 @@ export function TaskItem({ task, onSelect, section }: TaskItemProps) {
       )
     : undefined;
 
-  // Status toggle: only in actionRequired section, and cannot revert COMPLETED
-  const canToggleStatus = section === 'actionRequired' && isAssignee && task.status !== 'COMPLETED';
+  // Show Done button for self-assigned tasks (no pending thread link)
+  const canComplete = section === 'actionRequired' && isAssignee && !pendingLink && task.status !== 'COMPLETED';
 
   return (
     <div className="group rounded-lg border border-border bg-card p-3 hover:border-border/80 transition-colors">
       <div className="flex items-center gap-3">
-        {/* Status icon / toggle */}
+        {/* Status icon (display only) */}
         <Tooltip>
           <TooltipTrigger
-            render={
-              <button
-                onClick={() => {
-                  if (!canToggleStatus) return;
-                  updateTask(task.id, { status: 'COMPLETED' });
-                }}
-                className={cn('shrink-0', !canToggleStatus && 'cursor-default opacity-50')}
-                disabled={!canToggleStatus}
-              />
-            }
+            render={<span className="shrink-0" />}
           >
             {statusIcons[task.status] || statusIcons.OPEN}
           </TooltipTrigger>
@@ -226,6 +217,17 @@ export function TaskItem({ task, onSelect, section }: TaskItemProps) {
 
         {/* Actions */}
         <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+          {canComplete && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 text-xs text-green-500 hover:text-green-400"
+              onClick={() => updateTask(task.id, { status: 'COMPLETED' })}
+            >
+              <Check className="h-3.5 w-3.5 mr-1" />
+              {tc('done')}
+            </Button>
+          )}
           {pendingLink && (
             <>
               <Button

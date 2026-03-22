@@ -103,6 +103,8 @@
     "unassigned": "未割り当て",
     "saving": "保存中...",
     "saveChanges": "変更を保存",
+    "saved": "変更が保存されました",
+    "saveFailed": "保存に失敗しました",
     "threadChain": "スレッドチェーン",
     "attachments": "添付ファイル",
     "chat": "チャット",
@@ -221,6 +223,10 @@
     "notConnected": "未接続",
     "disconnect": "切断",
     "connectCalendar": "接続",
+    "selectCalendar": "カレンダーを選択",
+    "noCalendars": "カレンダーが見つかりません",
+    "loadingCalendars": "カレンダー一覧を読み込み中...",
+    "default": "デフォルト",
     "members": "メンバー",
     "membersDescription": "{name}のメンバー",
     "you": "あなた",
@@ -490,7 +496,10 @@
     "creating": "Creating...",
     "create": "Create",
     "googleEvent": "Google Calendar",
-    "noWorkspace": "カレンダーを表示するにはワークスペースを選択してください"
+    "noWorkspace": "カレンダーを表示するにはワークスペースを選択してください",
+    "upcoming": "予定",
+    "completed": "完了",
+    "noTasks": "この日にはタスクがありません"
   },
   "notificationSettings": {
     "description": "各イベントタイプの通知方法を選択してください。",

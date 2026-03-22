@@ -63,7 +63,7 @@ interface CalendarIntegration {
   id: string;
   provider: string;
   syncEnabled: boolean;
-  calendarId?: string;
+  calendarIds: string[];
   createdAt: string;
 }
 
@@ -89,6 +89,10 @@ export default function SettingsPage() {
   const [calendarIntegrations, setCalendarIntegrations] = useState<CalendarIntegration[]>([]);
   const [calendarLoading, setCalendarLoading] = useState(false);
   const [disconnecting, setDisconnecting] = useState<string | null>(null);
+
+  const [googleCalendars, setGoogleCalendars] = useState<{ id: string; summary: string; primary: boolean }[]>([]);
+  const [calendarsLoading, setCalendarsLoading] = useState(false);
+  const [calendarSaving, setCalendarSaving] = useState(false);
 
   // Desktop detection
   const [isDesktop, setIsDesktop] = useState(false);
@@ -118,6 +122,47 @@ export default function SettingsPage() {
     };
     fetchCalendar();
   }, []);
+
+  // Fetch Google calendar list when connected
+  useEffect(() => {
+    if (!isCalendarConnected('google')) {
+      setGoogleCalendars([]);
+      return;
+    }
+    const fetchCalendars = async () => {
+      setCalendarsLoading(true);
+      try {
+        const { data } = await api.get('/calendar/google/calendars');
+        setGoogleCalendars(data);
+      } catch {
+        // May fail if token expired
+      } finally {
+        setCalendarsLoading(false);
+      }
+    };
+    fetchCalendars();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [calendarIntegrations]);
+
+  const handleCalendarToggle = async (calendarId: string) => {
+    const integration = getCalendarIntegration('google');
+    if (!integration) return;
+    const current = integration.calendarIds || [];
+    const calendarIds = current.includes(calendarId)
+      ? current.filter((id) => id !== calendarId)
+      : [...current, calendarId];
+    setCalendarSaving(true);
+    try {
+      const { data } = await api.patch(`/calendar/integrations/${integration.id}`, { calendarIds });
+      setCalendarIntegrations((prev) =>
+        prev.map((c) => (c.id === data.id ? data : c)),
+      );
+    } catch (error) {
+      console.error('Failed to update calendar:', error);
+    } finally {
+      setCalendarSaving(false);
+    }
+  };
 
   useEffect(() => {
     setIsDesktop(isTauri());
@@ -569,6 +614,47 @@ export default function SettingsPage() {
                   </Button>
                 )}
               </div>
+
+              {/* Google Calendar selector (multi) */}
+              {isCalendarConnected('google') && (
+                <div className="ml-11 space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">{t('selectCalendar')}</Label>
+                  {calendarsLoading ? (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground py-1">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      {t('loadingCalendars')}
+                    </div>
+                  ) : (
+                    <div className="space-y-1 rounded-md border border-border p-2 max-h-48 overflow-y-auto">
+                      {googleCalendars.map((cal) => {
+                        const selected = getCalendarIntegration('google')?.calendarIds || [];
+                        const isSelected = selected.includes(cal.id);
+                        return (
+                          <label
+                            key={cal.id}
+                            className="flex items-center gap-2 rounded px-2 py-1.5 text-sm cursor-pointer hover:bg-accent/50 transition-colors"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => handleCalendarToggle(cal.id)}
+                              disabled={calendarSaving}
+                              className="h-3.5 w-3.5 rounded border-border accent-primary"
+                            />
+                            <span className="flex-1 truncate">{cal.summary}</span>
+                            {cal.primary && (
+                              <span className="text-[10px] text-muted-foreground shrink-0">({t('default')})</span>
+                            )}
+                          </label>
+                        );
+                      })}
+                      {googleCalendars.length === 0 && (
+                        <p className="text-xs text-muted-foreground px-2 py-1">{t('noCalendars')}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Outlook Calendar */}
               <div className="flex items-center justify-between rounded-md border border-border px-3 py-2.5">

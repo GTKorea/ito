@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { X, Save, Link2, Paperclip, List, Network, MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 import { ChatPanel } from '@/components/chat/chat-panel';
 
 const statuses = ['OPEN', 'IN_PROGRESS', 'BLOCKED', 'COMPLETED', 'CANCELLED'];
@@ -71,11 +72,11 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
         priority,
         dueDate: dueDate || undefined,
       });
-      // Refetch to get updated data
-      const { data } = await api.get(`/tasks/${taskId}`);
-      setTask(data);
+      toast.success(t('saved'));
+      onClose();
     } catch (error) {
       console.error('Failed to update task:', error);
+      toast.error(t('saveFailed'));
     } finally {
       setIsSaving(false);
     }

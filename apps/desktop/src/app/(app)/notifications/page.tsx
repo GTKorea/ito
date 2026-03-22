@@ -14,6 +14,7 @@ import {
   Link2,
   ArrowLeftRight,
   UserPlus,
+  Globe,
   XCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -27,6 +28,7 @@ const typeIcons: Record<string, React.ReactNode> = {
   TASK_COMPLETED: <Check className="h-4 w-4 text-green-500" />,
   TASK_ASSIGNED: <UserPlus className="h-4 w-4 text-blue-500" />,
   WORKSPACE_INVITE: <UserPlus className="h-4 w-4 text-purple-500" />,
+  SHARED_SPACE_INVITE: <Globe className="h-4 w-4 text-purple-500" />,
 };
 
 export default function NotificationsPage() {
@@ -93,6 +95,8 @@ export default function NotificationsPage() {
 
                 if (n.type === 'WORKSPACE_INVITE' && n.data?.token) {
                   router.push(`/invite?token=${n.data.token}`);
+                } else if (n.type === 'SHARED_SPACE_INVITE' && n.data?.token) {
+                  router.push(`/shared-spaces/join?token=${n.data.token}`);
                 } else if (n.data?.taskId) {
                   router.push(`/workspace?task=${n.data.taskId}`);
                 }

@@ -241,7 +241,7 @@ export class CalendarService implements OnModuleInit {
         id: true,
         provider: true,
         syncEnabled: true,
-        calendarId: true,
+        calendarIds: true,
         createdAt: true,
       },
     });
@@ -306,7 +306,7 @@ export class CalendarService implements OnModuleInit {
   async updateIntegration(
     id: string,
     userId: string,
-    data: { calendarId?: string; syncEnabled?: boolean },
+    data: { calendarIds?: string[]; syncEnabled?: boolean },
   ) {
     const integration = await this.prisma.calendarIntegration.findUnique({
       where: { id },
@@ -325,7 +325,7 @@ export class CalendarService implements OnModuleInit {
         id: true,
         provider: true,
         syncEnabled: true,
-        calendarId: true,
+        calendarIds: true,
         createdAt: true,
       },
     });
@@ -401,20 +401,35 @@ export class CalendarService implements OnModuleInit {
       });
 
       const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-      const response = await calendar.events.list({
-        calendarId: integration.calendarId || 'primary',
-        timeMin,
-        timeMax,
-        singleEvents: true,
-        orderBy: 'startTime',
-        maxResults: 100,
-      });
+      const calendarIds = integration.calendarIds.length > 0
+        ? integration.calendarIds
+        : ['primary'];
 
-      this.logger.log(
-        `Fetched ${response.data.items?.length || 0} Google Calendar events for user ${userId}`,
+      const allEvents = await Promise.all(
+        calendarIds.map(async (calId) => {
+          try {
+            const response = await calendar.events.list({
+              calendarId: calId,
+              timeMin,
+              timeMax,
+              singleEvents: true,
+              orderBy: 'startTime',
+              maxResults: 100,
+            });
+            return response.data.items || [];
+          } catch (err) {
+            this.logger.warn(`Failed to fetch events from calendar ${calId}`, err);
+            return [];
+          }
+        }),
       );
 
-      return (response.data.items || []).map((event) => ({
+      const events = allEvents.flat();
+      this.logger.log(
+        `Fetched ${events.length} Google Calendar events from ${calendarIds.length} calendar(s) for user ${userId}`,
+      );
+
+      return events.map((event) => ({
         id: event.id,
         title: event.summary || '',
         description: event.description || '',
@@ -430,7 +445,7 @@ export class CalendarService implements OnModuleInit {
         googleEnabled: this.googleEnabled,
         hasAccessToken: !!integration.accessToken,
         hasRefreshToken: !!integration.refreshToken,
-        calendarId: integration.calendarId || 'primary',
+        calendarIds: integration.calendarIds,
         error:
           error instanceof Error
             ? { message: error.message, stack: error.stack }
@@ -491,7 +506,7 @@ export class CalendarService implements OnModuleInit {
     integration: {
       accessToken: string;
       refreshToken: string;
-      calendarId?: string | null;
+      calendarIds: string[];
     },
     task: { title: string; description?: string; dueDate: Date },
   ) {
@@ -515,7 +530,7 @@ export class CalendarService implements OnModuleInit {
 
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
     await calendar.events.insert({
-      calendarId: integration.calendarId || 'primary',
+      calendarId: integration.calendarIds[0] || 'primary',
       requestBody: {
         summary: task.title,
         description: task.description || '',

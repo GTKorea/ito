@@ -447,7 +447,7 @@ model CalendarIntegration {
   provider     String  // 'google' | 'outlook'
   accessToken  String
   refreshToken String
-  calendarId   String?
+  calendarIds  String[]  @default([])
   syncEnabled  Boolean @default(true)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

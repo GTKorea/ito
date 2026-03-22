@@ -1,12 +1,15 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useTaskStore } from '@/stores/task-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 import { CalendarView } from '@/components/calendar/calendar-view';
 import { QuickCreateTaskDialog } from '@/components/calendar/quick-create-task-dialog';
+import { DayDetailDialog } from '@/components/calendar/day-detail-dialog';
+import { TaskDetail } from '@/components/tasks/task-detail';
 import { CalendarDays } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { cn } from '@/lib/utils';
 
 
 export default function CalendarPage() {
@@ -18,6 +21,19 @@ export default function CalendarPage() {
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
   const [createDate, setCreateDate] = useState<Date | null>(null);
+  const [detailDate, setDetailDate] = useState<Date | null>(null);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [drawerVisible, setDrawerVisible] = useState(false);
+
+  const handleSelectTask = (taskId: string) => {
+    setSelectedTaskId(taskId);
+    setDrawerVisible(true);
+  };
+
+  const handleCloseTask = () => {
+    setDrawerVisible(false);
+    setTimeout(() => setSelectedTaskId(null), 200);
+  };
 
   const handleMonthChange = useCallback((newYear: number, newMonth: number) => {
     setYear(newYear);
@@ -69,10 +85,72 @@ export default function CalendarPage() {
             isLoading={calendarLoading}
             externalEvents={calendarEvents}
             onCreateTask={(date) => setCreateDate(date)}
+            onDayClick={(date) => setDetailDate(date)}
           />
         )}
       </div>
 
+
+      {detailDate && (
+        <DayDetailDialog
+          date={detailDate}
+          open={!!detailDate}
+          onOpenChange={(open) => { if (!open) setDetailDate(null); }}
+          completedTasks={(calendarData?.completed || []).filter((task) => {
+            if (!task.completedAt) return false;
+            const d = new Date(task.completedAt);
+            return d.getFullYear() === detailDate.getFullYear() &&
+              d.getMonth() === detailDate.getMonth() &&
+              d.getDate() === detailDate.getDate();
+          })}
+          upcomingTasks={(calendarData?.upcoming || []).filter((task) => {
+            if (!task.dueDate) return false;
+            const d = new Date(task.dueDate);
+            return d.getFullYear() === detailDate.getFullYear() &&
+              d.getMonth() === detailDate.getMonth() &&
+              d.getDate() === detailDate.getDate();
+          })}
+          externalEvents={(calendarEvents || []).filter((event) => {
+            if (!event.start) return false;
+            const d = new Date(event.start);
+            return d.getFullYear() === detailDate.getFullYear() &&
+              d.getMonth() === detailDate.getMonth() &&
+              d.getDate() === detailDate.getDate();
+          })}
+          onCreateTask={(date) => {
+            setDetailDate(null);
+            setCreateDate(date);
+          }}
+          onTaskClick={handleSelectTask}
+        />
+      )}
+
+      {/* Task Detail Backdrop — above the dialog overlay (z-50) */}
+      {selectedTaskId && (
+        <div
+          className={cn(
+            'fixed inset-0 z-[60] transition-opacity duration-200',
+            drawerVisible ? 'bg-black/30 opacity-100' : 'opacity-0 pointer-events-none',
+          )}
+          onClick={handleCloseTask}
+        />
+      )}
+
+      {/* Task Detail Slide-over */}
+      <div
+        className={cn(
+          'fixed right-0 top-0 z-[70] h-full w-full md:w-[420px] transition-transform duration-200 ease-out',
+          drawerVisible ? 'translate-x-0' : 'translate-x-full',
+          !selectedTaskId && 'pointer-events-none',
+        )}
+      >
+        {selectedTaskId && (
+          <TaskDetail
+            taskId={selectedTaskId}
+            onClose={handleCloseTask}
+          />
+        )}
+      </div>
 
       {createDate && (
         <QuickCreateTaskDialog

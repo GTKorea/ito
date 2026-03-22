@@ -25,6 +25,7 @@ interface CalendarViewProps {
   isLoading: boolean;
   externalEvents?: CalendarEvent[];
   onCreateTask?: (date: Date) => void;
+  onDayClick?: (date: Date) => void;
 }
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -75,6 +76,7 @@ export function CalendarView({
   isLoading,
   externalEvents,
   onCreateTask,
+  onDayClick,
 }: CalendarViewProps) {
   const today = useMemo(() => new Date(), []);
   const days = useMemo(() => getDaysInMonth(year, month), [year, month]);
@@ -209,6 +211,7 @@ export function CalendarView({
                   upcomingTasks={dayTasks.upcoming}
                   externalEvents={dayExternalEvents}
                   onCreateTask={onCreateTask}
+                  onDayClick={onDayClick}
                 />
               );
             })}

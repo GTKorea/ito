@@ -316,7 +316,7 @@ export class CalendarController {
   @Patch('integrations/:id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update a calendar integration (calendarId, syncEnabled)' })
+  @ApiOperation({ summary: 'Update a calendar integration (calendarIds, syncEnabled)' })
   updateIntegration(
     @Param('id') id: string,
     @CurrentUser('id') userId: string,

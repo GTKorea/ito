@@ -64,7 +64,7 @@ export const useGraphStore = create<GraphState>((set, get) => ({
   statusFilter: [],
   priorityFilter: [],
   searchQuery: '',
-  layoutMode: 'force',
+  layoutMode: 'hierarchy',
   selectedTaskId: null,
 
   fetchGraphData: async (workspaceId: string) => {

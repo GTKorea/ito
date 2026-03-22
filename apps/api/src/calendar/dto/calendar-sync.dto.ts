@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsBoolean } from 'class-validator';
+import { IsString, IsOptional, IsBoolean, IsArray } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CalendarSyncDto {
@@ -7,8 +7,9 @@ export class CalendarSyncDto {
   @IsBoolean()
   syncEnabled?: boolean;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ type: [String] })
   @IsOptional()
-  @IsString()
-  calendarId?: string;
+  @IsArray()
+  @IsString({ each: true })
+  calendarIds?: string[];
 }

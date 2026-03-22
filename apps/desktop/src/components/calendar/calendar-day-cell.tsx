@@ -25,6 +25,7 @@ interface CalendarDayCellProps {
   upcomingTasks: TaskItem[];
   externalEvents?: CalendarEventType[];
   onCreateTask?: (date: Date) => void;
+  onDayClick?: (date: Date) => void;
 }
 
 export function CalendarDayCell({
@@ -35,6 +36,7 @@ export function CalendarDayCell({
   upcomingTasks,
   externalEvents,
   onCreateTask,
+  onDayClick,
 }: CalendarDayCellProps) {
   const [expanded, setExpanded] = useState(false);
   const totalItems = completedTasks.length + upcomingTasks.length;
@@ -48,7 +50,7 @@ export function CalendarDayCell({
         isToday && 'bg-primary/5',
         expanded && 'bg-accent/30',
       )}
-      onClick={() => totalItems > 0 && setExpanded(!expanded)}
+      onClick={() => onDayClick?.(date)}
     >
       {/* Day number */}
       <div className="flex items-center justify-between mb-1">
