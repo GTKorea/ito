@@ -1,9 +1,9 @@
 import { Injectable, Logger, OnModuleInit, Optional } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { WebClient } from '@slack/web-api';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { TasksService } from '../tasks/tasks.service';
-import { ThreadsService } from '../threads/threads.service';
 import { SlackCommandDto } from './dto/slack-command.dto';
 import * as crypto from 'crypto';
 
@@ -28,14 +28,25 @@ export class SlackService implements OnModuleInit {
   private clientId: string | null = null;
   private clientSecret: string | null = null;
 
+  private threadsService: any = null;
+
   constructor(
+    private moduleRef: ModuleRef,
     private configService: ConfigService,
     private prisma: PrismaService,
     private tasksService: TasksService,
-    @Optional() private threadsService: ThreadsService,
   ) {}
 
   onModuleInit() {
+    // Lazy-resolve ThreadsService to avoid circular dependency
+    // (SlackModule → ThreadsModule → NotificationsModule → SlackModule)
+    try {
+      const { ThreadsService } = require('../threads/threads.service');
+      this.threadsService = this.moduleRef.get(ThreadsService, { strict: false });
+    } catch {
+      this.logger.warn('ThreadsService not available');
+    }
+
     const botToken = this.configService.get<string>('SLACK_BOT_TOKEN');
     const signingSecret = this.configService.get<string>(
       'SLACK_SIGNING_SECRET',
