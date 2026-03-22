@@ -97,5 +97,6 @@ export const useAuthStore = create<AuthState>((set) => ({
     disconnectWs();
     resetUser();
     set({ user: null, isAuthenticated: false });
+    window.location.href = '/login';
   },
 }));

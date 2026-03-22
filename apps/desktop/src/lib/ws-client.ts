@@ -29,6 +29,12 @@ export function getSocket(): Socket | null {
   return socket;
 }
 
+export function reconnectWs(newToken: string): Socket {
+  socket?.disconnect();
+  socket = null;
+  return connectWs(newToken);
+}
+
 export function disconnectWs() {
   socket?.disconnect();
   socket = null;
