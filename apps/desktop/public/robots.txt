@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+Disallow: /workspace
+Disallow: /threads
+Disallow: /notifications
+Disallow: /settings
+Disallow: /activity
+Disallow: /calendar
+Disallow: /graph
+Disallow: /teams
+Disallow: /workspace-settings
+Disallow: /shared-spaces
+Disallow: /callback
+
+Sitemap: https://itothread.com/sitemap.xml

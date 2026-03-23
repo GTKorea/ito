@@ -9,10 +9,11 @@ import { Textarea } from '@/components/ui/textarea';
 
 interface CreateTaskProps {
   workspaceId: string;
+  taskGroupId?: string;
   onClose: () => void;
 }
 
-export function CreateTask({ workspaceId, onClose }: CreateTaskProps) {
+export function CreateTask({ workspaceId, taskGroupId, onClose }: CreateTaskProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState('MEDIUM');
@@ -37,6 +38,7 @@ export function CreateTask({ workspaceId, onClose }: CreateTaskProps) {
       description || undefined,
       priority,
       dueDate || undefined,
+      taskGroupId,
     );
     onClose();
   };

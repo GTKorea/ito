@@ -41,7 +41,7 @@
     "signInLink": "サインイン"
   },
   "sidebar": {
-    "myTasks": "マイタスク",
+    "myTasks": "タスク",
     "threads": "スレッド",
     "teams": "チーム",
     "activity": "アクティビティ",
@@ -61,7 +61,9 @@
     "admin": "管理者",
     "sharedSpaces": "Shared Spaces",
     "collapse": "折りたたむ",
-    "newGroup": "新しいグループ"
+    "newGroup": "新しいグループ",
+    "internal": "内部",
+    "all": "すべて"
   },
   "workspace": {
     "myTasks": "マイタスク",
@@ -822,6 +824,15 @@
     "removeMember": "メンバーを削除",
     "noGroups": "グループがありません",
     "tasks": "タスク",
-    "allTasks": "すべてのタスク"
+    "allTasks": "すべてのタスク",
+    "inviteMembers": "メンバーを招待",
+    "searchMembers": "名前またはメールで検索...",
+    "noMembersFound": "メンバーが見つかりません",
+    "creating": "作成中..."
+  },
+  "meta": {
+    "title": "ito - スレッドベースのタスクコラボレーション",
+    "description": "スレッドでチームメンバーをつなぎ、タスクを引き渡し、自動で戻す新しいタスク管理ツール",
+    "keywords": "タスク管理, チームコラボレーション, プロジェクト管理, タスク委任, ワークフロー自動化"
   }
 }

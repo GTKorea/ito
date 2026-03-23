@@ -22,6 +22,7 @@ interface TaskGroupState {
 
   fetchGroups: (workspaceId: string) => Promise<void>;
   fetchSharedSpaceGroups: (sharedSpaceId: string) => Promise<void>;
+  fetchAllSharedSpaceGroups: (spaceIds: string[]) => Promise<void>;
   createGroup: (workspaceId: string, name: string, description?: string) => Promise<TaskGroup>;
   createSharedSpaceGroup: (sharedSpaceId: string, name: string, description?: string) => Promise<TaskGroup>;
   updateGroup: (id: string, data: { name?: string; description?: string }) => Promise<void>;
@@ -58,6 +59,10 @@ export const useTaskGroupStore = create<TaskGroupState>((set, get) => ({
     } catch {
       // silent
     }
+  },
+
+  fetchAllSharedSpaceGroups: async (spaceIds) => {
+    await Promise.all(spaceIds.map((id) => get().fetchSharedSpaceGroups(id)));
   },
 
   createGroup: async (workspaceId, name, description) => {

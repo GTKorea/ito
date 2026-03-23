@@ -41,7 +41,7 @@
     "signInLink": "登录"
   },
   "sidebar": {
-    "myTasks": "我的任务",
+    "myTasks": "任务",
     "threads": "线程",
     "teams": "团队",
     "activity": "动态",
@@ -61,7 +61,9 @@
     "admin": "管理员",
     "sharedSpaces": "Shared Spaces",
     "collapse": "收起",
-    "newGroup": "新建分组"
+    "newGroup": "新建分组",
+    "internal": "内部",
+    "all": "全部"
   },
   "workspace": {
     "myTasks": "我的任务",
@@ -807,6 +809,15 @@
     "removeMember": "移除成员",
     "noGroups": "暂无分组",
     "tasks": "任务",
-    "allTasks": "全部任务"
+    "allTasks": "全部任务",
+    "inviteMembers": "邀请成员",
+    "searchMembers": "按名称或邮箱搜索...",
+    "noMembersFound": "未找到成员",
+    "creating": "创建中..."
+  },
+  "meta": {
+    "title": "ito - 基于线程的任务协作",
+    "description": "用线程连接团队成员，交接任务，自动回收。全新的团队协作方式。",
+    "keywords": "任务管理, 团队协作, 项目管理, 任务委派, 工作流自动化"
   }
 }

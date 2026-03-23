@@ -20,12 +20,15 @@ import {
   Globe,
   Hash,
   Plus,
+  ChevronRight,
+  ChevronDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth-store';
 import { useNotificationStore } from '@/stores/notification-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 import { useTaskGroupStore } from '@/stores/task-group-store';
+import { useSharedSpaceStore } from '@/stores/shared-space-store';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -33,6 +36,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { ThemeToggle } from '@/components/layout/theme-toggle';
 import { WorkspaceSwitcher } from '@/components/layout/workspace-switcher';
 import { UserProfilePopover } from '@/components/user/user-profile-popover';
+import { CreateGroupDialog } from '@/components/groups/create-group-dialog';
 
 const navItems = [
   { href: '/workspace', icon: CheckSquare, labelKey: 'myTasks' as const },
@@ -55,17 +59,43 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
   const { user, logout } = useAuthStore();
   const { unreadCount } = useNotificationStore();
   const { currentWorkspace } = useWorkspaceStore();
-  const { groups, fetchGroups, createGroup } = useTaskGroupStore();
+  const { groups, sharedSpaceGroups, fetchGroups, fetchAllSharedSpaceGroups } = useTaskGroupStore();
+  const { sharedSpaces, fetchSharedSpaces } = useSharedSpaceStore();
   const t = useTranslations('sidebar');
+  const tg = useTranslations('groups');
 
-  const [showNewGroup, setShowNewGroup] = useState(false);
-  const [newGroupName, setNewGroupName] = useState('');
+  const [showCreateGroupDialog, setShowCreateGroupDialog] = useState(false);
+  const [createGroupContext, setCreateGroupContext] = useState<{ workspaceId?: string; sharedSpaceId?: string }>({});
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
 
+  const toggleSection = (sectionId: string) => {
+    setCollapsedSections((prev) => ({ ...prev, [sectionId]: !prev[sectionId] }));
+  };
+
+  // Fetch workspace groups
   useEffect(() => {
     if (currentWorkspace) {
       fetchGroups(currentWorkspace.id);
     }
   }, [currentWorkspace, fetchGroups]);
+
+  // Fetch shared spaces and their groups
+  useEffect(() => {
+    if (currentWorkspace) {
+      fetchSharedSpaces();
+    }
+  }, [currentWorkspace, fetchSharedSpaces]);
+
+  useEffect(() => {
+    if (sharedSpaces.length > 0) {
+      fetchAllSharedSpaceGroups(sharedSpaces.map((s) => s.id));
+    }
+  }, [sharedSpaces, fetchAllSharedSpaceGroups]);
+
+  const handleOpenCreateGroup = (workspaceId?: string, sharedSpaceId?: string) => {
+    setCreateGroupContext({ workspaceId, sharedSpaceId });
+    setShowCreateGroupDialog(true);
+  };
 
   return (
     <aside
@@ -86,7 +116,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
       )}
 
       {/* Navigation */}
-      <nav className={cn('flex-1 space-y-0.5', collapsed ? 'p-1.5' : 'p-2')}>
+      <nav className={cn('flex-1 space-y-0.5 overflow-y-auto', collapsed ? 'p-1.5' : 'p-2')}>
         {navItems.map((item) => {
           const isActive = item.href === '/workspace'
             ? pathname === item.href && !searchParams.get('group')
@@ -127,53 +157,98 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
               {linkContent}
               {!collapsed && item.labelKey === 'myTasks' && (
                 <div className="ml-4 space-y-0.5 mt-0.5">
-                  {groups.map((group) => (
-                    <Link
-                      key={group.id}
-                      href={`/workspace?group=${group.id}`}
-                      className={cn(
-                        'flex items-center gap-1.5 rounded-md px-2 py-1 text-xs transition-colors',
-                        searchParams.get('group') === group.id
-                          ? 'bg-accent text-accent-foreground'
-                          : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
-                      )}
-                    >
-                      <Hash className="h-3 w-3 shrink-0" />
-                      <span className="truncate">{group.name}</span>
-                      <span className="ml-auto text-[10px] text-muted-foreground/60">{group._count.tasks}</span>
-                    </Link>
-                  ))}
-                  {showNewGroup ? (
-                    <form
-                      className="flex items-center gap-1 px-2"
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        if (newGroupName.trim() && currentWorkspace) {
-                          createGroup(currentWorkspace.id, newGroupName.trim());
-                          setNewGroupName('');
-                          setShowNewGroup(false);
-                        }
-                      }}
-                    >
-                      <Hash className="h-3 w-3 text-muted-foreground shrink-0" />
-                      <input
-                        className="flex-1 bg-transparent text-xs outline-none placeholder:text-muted-foreground/50 py-1"
-                        placeholder={t('newGroup')}
-                        value={newGroupName}
-                        onChange={(e) => setNewGroupName(e.target.value)}
-                        onBlur={() => { setShowNewGroup(false); setNewGroupName(''); }}
-                        autoFocus
-                      />
-                    </form>
-                  ) : (
+                  {/* Shared Space sections */}
+                  {sharedSpaces.map((space) => {
+                    const spaceGroups = sharedSpaceGroups[space.id] || [];
+                    const isCollapsed = collapsedSections[space.id];
+                    return (
+                      <div key={space.id} className="mt-1.5">
+                        <button
+                          onClick={() => toggleSection(space.id)}
+                          className="flex items-center gap-1 w-full text-[11px] uppercase tracking-wider text-muted-foreground/50 hover:text-muted-foreground px-2 pt-1.5 pb-0.5 transition-colors"
+                        >
+                          {isCollapsed ? (
+                            <ChevronRight className="h-3 w-3 shrink-0" />
+                          ) : (
+                            <ChevronDown className="h-3 w-3 shrink-0" />
+                          )}
+                          <span className="truncate">{space.name}</span>
+                        </button>
+                        {!isCollapsed && spaceGroups.map((group) => (
+                          <Link
+                            key={group.id}
+                            href={`/shared-spaces?id=${space.id}&group=${group.id}`}
+                            className={cn(
+                              'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
+                              searchParams.get('group') === group.id
+                                ? 'bg-accent text-accent-foreground'
+                                : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
+                            )}
+                          >
+                            <Hash className="h-3.5 w-3.5 shrink-0" />
+                            <span className="truncate">{group.name}</span>
+                            <span className="ml-auto text-xs text-muted-foreground/60">{group._count.tasks}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    );
+                  })}
+
+                  {/* Internal section */}
+                  <div className="mt-1.5">
                     <button
-                      className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors w-full"
-                      onClick={() => setShowNewGroup(true)}
+                      onClick={() => toggleSection('internal')}
+                      className="flex items-center gap-1 w-full text-[11px] uppercase tracking-wider text-muted-foreground/50 hover:text-muted-foreground px-2 pt-1.5 pb-0.5 transition-colors"
                     >
-                      <Plus className="h-3 w-3" />
-                      <span>{t('newGroup')}</span>
+                      {collapsedSections['internal'] ? (
+                        <ChevronRight className="h-3 w-3 shrink-0" />
+                      ) : (
+                        <ChevronDown className="h-3 w-3 shrink-0" />
+                      )}
+                      <span>{t('internal')}</span>
                     </button>
-                  )}
+                    {!collapsedSections['internal'] && (
+                      <>
+                        {/* All internal tasks */}
+                        <Link
+                          href="/workspace"
+                          className={cn(
+                            'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
+                            pathname === '/workspace' && !searchParams.get('group')
+                              ? 'bg-accent text-accent-foreground'
+                              : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
+                          )}
+                        >
+                          <span className="truncate">{t('all')}</span>
+                        </Link>
+                        {/* Workspace groups */}
+                        {groups.map((group) => (
+                          <Link
+                            key={group.id}
+                            href={`/workspace?group=${group.id}`}
+                            className={cn(
+                              'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
+                              searchParams.get('group') === group.id
+                                ? 'bg-accent text-accent-foreground'
+                                : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
+                            )}
+                          >
+                            <Hash className="h-3.5 w-3.5 shrink-0" />
+                            <span className="truncate">{group.name}</span>
+                            <span className="ml-auto text-xs text-muted-foreground/60">{group._count.tasks}</span>
+                          </Link>
+                        ))}
+                        {/* New group button */}
+                        <button
+                          className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground/50 hover:text-muted-foreground transition-colors w-full"
+                          onClick={() => currentWorkspace && handleOpenCreateGroup(currentWorkspace.id)}
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                          <span>{t('newGroup')}</span>
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -381,6 +456,15 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
           )}
         </div>
       </div>
+
+      {/* Create Group Dialog */}
+      {showCreateGroupDialog && (
+        <CreateGroupDialog
+          workspaceId={createGroupContext.workspaceId}
+          sharedSpaceId={createGroupContext.sharedSpaceId}
+          onClose={() => setShowCreateGroupDialog(false)}
+        />
+      )}
     </aside>
   );
 }

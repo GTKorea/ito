@@ -41,7 +41,7 @@
     "signInLink": "Iniciar sesión"
   },
   "sidebar": {
-    "myTasks": "Mis Tareas",
+    "myTasks": "Tareas",
     "threads": "Hilos",
     "teams": "Equipos",
     "activity": "Actividad",
@@ -61,7 +61,9 @@
     "admin": "Admin",
     "sharedSpaces": "Shared Spaces",
     "collapse": "Contraer",
-    "newGroup": "Nuevo grupo"
+    "newGroup": "Nuevo grupo",
+    "internal": "Interno",
+    "all": "Todos"
   },
   "workspace": {
     "myTasks": "Mis Tareas",
@@ -807,6 +809,15 @@
     "removeMember": "Eliminar miembro",
     "noGroups": "No hay grupos",
     "tasks": "Tareas",
-    "allTasks": "Todas las tareas"
+    "allTasks": "Todas las tareas",
+    "inviteMembers": "Invitar miembros",
+    "searchMembers": "Buscar por nombre o correo...",
+    "noMembersFound": "No se encontraron miembros",
+    "creating": "Creando..."
+  },
+  "meta": {
+    "title": "ito - Colaboración de tareas basada en hilos",
+    "description": "Conecta compañeros con hilos, delega tareas y recíbelas automáticamente de vuelta.",
+    "keywords": "gestión de tareas, colaboración en equipo, gestión de proyectos, delegación de tareas, automatización de flujos"
   }
 }

@@ -41,7 +41,7 @@
     "signInLink": "登入"
   },
   "sidebar": {
-    "myTasks": "我的任務",
+    "myTasks": "任務",
     "threads": "執行緒",
     "teams": "團隊",
     "activity": "動態",
@@ -61,7 +61,9 @@
     "admin": "管理員",
     "sharedSpaces": "Shared Spaces",
     "collapse": "收合",
-    "newGroup": "新增群組"
+    "newGroup": "新增群組",
+    "internal": "內部",
+    "all": "全部"
   },
   "workspace": {
     "myTasks": "我的任務",
@@ -807,6 +809,15 @@
     "removeMember": "移除成員",
     "noGroups": "尚無群組",
     "tasks": "任務",
-    "allTasks": "全部任務"
+    "allTasks": "全部任務",
+    "inviteMembers": "邀請成員",
+    "searchMembers": "按名稱或郵箱搜尋...",
+    "noMembersFound": "找不到成員",
+    "creating": "建立中..."
+  },
+  "meta": {
+    "title": "ito - 基於線程的任務協作",
+    "description": "用線程連結團隊成員，交接任務，自動回收。全新的團隊協作方式。",
+    "keywords": "任務管理, 團隊協作, 專案管理, 任務委派, 工作流自動化"
   }
 }

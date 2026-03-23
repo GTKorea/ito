@@ -24,7 +24,11 @@ const PRIORITY_OPTIONS = [
   { value: 'LOW', label: 'Low', color: 'text-blue-400', bg: 'bg-blue-500/15', dot: 'bg-blue-400' },
 ] as const;
 
-export function QuickInput() {
+interface QuickInputProps {
+  taskGroupId?: string;
+}
+
+export function QuickInput({ taskGroupId }: QuickInputProps) {
   const t = useTranslations('tasks');
   const [input, setInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -176,6 +180,7 @@ export function QuickInput() {
         undefined,
         priority ?? undefined,
         dueDate ?? undefined,
+        taskGroupId,
       );
 
       if (parsed.chain.length > 0) {
@@ -203,7 +208,7 @@ export function QuickInput() {
       }
 
       // Refresh the task list
-      await fetchCategorizedTasks(currentWorkspace.id);
+      await fetchCategorizedTasks(currentWorkspace.id, taskGroupId);
       setInput('');
       setPriority(null);
       setDueDate(null);

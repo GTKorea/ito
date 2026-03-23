@@ -228,6 +228,7 @@ export default function WorkspacePage() {
         {showCreate && (
           <CreateTask
             workspaceId={currentWorkspace.id}
+            taskGroupId={groupId || undefined}
             onClose={() => setShowCreate(false)}
           />
         )}
@@ -247,7 +248,7 @@ export default function WorkspacePage() {
       </div>
 
       {/* Quick Input */}
-      <QuickInput />
+      <QuickInput taskGroupId={groupId || undefined} />
 
       {/* Backdrop */}
       {selectedTaskId && (

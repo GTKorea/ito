@@ -41,7 +41,7 @@
     "signInLink": "Entrar"
   },
   "sidebar": {
-    "myTasks": "Minhas Tarefas",
+    "myTasks": "Tarefas",
     "threads": "Threads",
     "teams": "Equipes",
     "activity": "Atividade",
@@ -61,7 +61,9 @@
     "admin": "Admin",
     "sharedSpaces": "Shared Spaces",
     "collapse": "Recolher",
-    "newGroup": "Novo grupo"
+    "newGroup": "Novo grupo",
+    "internal": "Interno",
+    "all": "Todos"
   },
   "workspace": {
     "myTasks": "Minhas Tarefas",
@@ -807,6 +809,15 @@
     "removeMember": "Remover membro",
     "noGroups": "Nenhum grupo",
     "tasks": "Tarefas",
-    "allTasks": "Todas as tarefas"
+    "allTasks": "Todas as tarefas",
+    "inviteMembers": "Convidar membros",
+    "searchMembers": "Pesquisar por nome ou e-mail...",
+    "noMembersFound": "Nenhum membro encontrado",
+    "creating": "Criando..."
+  },
+  "meta": {
+    "title": "ito - Colaboração de tarefas baseada em threads",
+    "description": "Conecte colegas com threads, delegue tarefas e receba-as automaticamente de volta.",
+    "keywords": "gestão de tarefas, colaboração em equipe, gestão de projetos, delegação de tarefas, automação de fluxos"
   }
 }

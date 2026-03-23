@@ -41,7 +41,7 @@
     "signInLink": "Anmelden"
   },
   "sidebar": {
-    "myTasks": "Meine Aufgaben",
+    "myTasks": "Aufgaben",
     "threads": "Threads",
     "teams": "Teams",
     "activity": "Aktivität",
@@ -61,7 +61,9 @@
     "admin": "Admin",
     "sharedSpaces": "Shared Spaces",
     "collapse": "Einklappen",
-    "newGroup": "Neue Gruppe"
+    "newGroup": "Neue Gruppe",
+    "internal": "Intern",
+    "all": "Alle"
   },
   "workspace": {
     "myTasks": "Meine Aufgaben",
@@ -807,6 +809,15 @@
     "removeMember": "Mitglied entfernen",
     "noGroups": "Keine Gruppen vorhanden",
     "tasks": "Aufgaben",
-    "allTasks": "Alle Aufgaben"
+    "allTasks": "Alle Aufgaben",
+    "inviteMembers": "Mitglieder einladen",
+    "searchMembers": "Nach Name oder E-Mail suchen...",
+    "noMembersFound": "Keine Mitglieder gefunden",
+    "creating": "Wird erstellt..."
+  },
+  "meta": {
+    "title": "ito - Thread-basierte Aufgabenzusammenarbeit",
+    "description": "Verbinden Sie Teammitglieder mit Threads, übergeben Sie Aufgaben und erhalten Sie sie automatisch zurück.",
+    "keywords": "Aufgabenverwaltung, Teamzusammenarbeit, Projektmanagement, Aufgabendelegation, Workflow-Automatisierung"
   }
 }

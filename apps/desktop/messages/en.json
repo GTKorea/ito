@@ -41,7 +41,7 @@
     "signInLink": "Sign in"
   },
   "sidebar": {
-    "myTasks": "My Tasks",
+    "myTasks": "Tasks",
     "threads": "Threads",
     "teams": "Teams",
     "activity": "Activity",
@@ -61,7 +61,9 @@
     "admin": "Admin",
     "sharedSpaces": "Shared Spaces",
     "collapse": "Collapse",
-    "newGroup": "New Group"
+    "newGroup": "New Group",
+    "internal": "Internal",
+    "all": "All"
   },
   "workspace": {
     "myTasks": "My Tasks",
@@ -822,6 +824,15 @@
     "removeMember": "Remove Member",
     "noGroups": "No groups yet",
     "tasks": "Tasks",
-    "allTasks": "All Tasks"
+    "allTasks": "All Tasks",
+    "inviteMembers": "Invite Members",
+    "searchMembers": "Search by name or email...",
+    "noMembersFound": "No members found",
+    "creating": "Creating..."
+  },
+  "meta": {
+    "title": "ito - Thread-based Task Collaboration",
+    "description": "Connect teammates with threads, hand off tasks, and automatically get them back. A new way to manage teamwork.",
+    "keywords": "task management, team collaboration, thread-based, project management, task delegation, workflow automation"
   }
 }

@@ -41,7 +41,7 @@
     "signInLink": "Se connecter"
   },
   "sidebar": {
-    "myTasks": "Mes Tâches",
+    "myTasks": "Tâches",
     "threads": "Fils",
     "teams": "Équipes",
     "activity": "Activité",
@@ -61,7 +61,9 @@
     "admin": "Admin",
     "sharedSpaces": "Shared Spaces",
     "collapse": "Réduire",
-    "newGroup": "Nouveau groupe"
+    "newGroup": "Nouveau groupe",
+    "internal": "Interne",
+    "all": "Tout"
   },
   "workspace": {
     "myTasks": "Mes Tâches",
@@ -807,6 +809,15 @@
     "removeMember": "Retirer un membre",
     "noGroups": "Aucun groupe",
     "tasks": "Tâches",
-    "allTasks": "Toutes les tâches"
+    "allTasks": "Toutes les tâches",
+    "inviteMembers": "Inviter des membres",
+    "searchMembers": "Rechercher par nom ou e-mail...",
+    "noMembersFound": "Aucun membre trouvé",
+    "creating": "Création..."
+  },
+  "meta": {
+    "title": "ito - Collaboration de tâches basée sur les fils",
+    "description": "Connectez vos coéquipiers par des fils, déléguez des tâches et récupérez-les automatiquement.",
+    "keywords": "gestion des tâches, collaboration d'équipe, gestion de projet, délégation de tâches, automatisation des flux"
   }
 }

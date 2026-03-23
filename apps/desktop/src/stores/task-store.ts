@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import { api } from '@/lib/api-client';
 import { trackEvent } from '@/lib/analytics';
 import { useWorkspaceStore } from './workspace-store';
+import { useTaskGroupStore } from './task-group-store';
 
 interface User {
   id: string;
@@ -76,7 +77,7 @@ interface TaskState {
   fetchCategorizedTasks: (workspaceId: string, taskGroupId?: string) => Promise<void>;
   fetchCalendarTasks: (workspaceId: string, start: string, end: string) => Promise<void>;
   fetchCalendarEvents: (start: string, end: string) => Promise<void>;
-  createTask: (workspaceId: string, title: string, description?: string, priority?: string, dueDate?: string) => Promise<Task>;
+  createTask: (workspaceId: string, title: string, description?: string, priority?: string, dueDate?: string, taskGroupId?: string) => Promise<Task>;
   updateTask: (id: string, data: Partial<Task>) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
   connectChain: (taskId: string, userIds: string[]) => Promise<any>;
@@ -165,14 +166,32 @@ export const useTaskStore = create<TaskState>((set) => ({
     }
   },
 
-  createTask: async (workspaceId, title, description, priority, dueDate) => {
+  createTask: async (workspaceId, title, description, priority, dueDate, taskGroupId) => {
     const { data } = await api.post(`/workspaces/${workspaceId}/tasks`, {
       title,
       description,
       priority,
       dueDate,
+      taskGroupId,
     });
     set((state) => ({ actionRequired: [data, ...state.actionRequired] }));
+    // Optimistic update: increment group task count in sidebar
+    if (taskGroupId) {
+      const groupStore = useTaskGroupStore.getState();
+      useTaskGroupStore.setState({
+        groups: groupStore.groups.map((g) =>
+          g.id === taskGroupId ? { ...g, _count: { ...g._count, tasks: g._count.tasks + 1 } } : g
+        ),
+        sharedSpaceGroups: Object.fromEntries(
+          Object.entries(groupStore.sharedSpaceGroups).map(([spaceId, groups]) => [
+            spaceId,
+            groups.map((g) =>
+              g.id === taskGroupId ? { ...g, _count: { ...g._count, tasks: g._count.tasks + 1 } } : g
+            ),
+          ])
+        ),
+      });
+    }
     trackEvent('task_created', { workspaceId });
     return data;
   },
