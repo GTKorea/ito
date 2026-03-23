@@ -124,7 +124,39 @@
     "moreActions": "その他",
     "quickInputPlaceholder": "新しいタスク... ( > @ユーザー で直接接続)",
     "resolveBlocker": "ブロッカー解除",
-    "resolveThread": "スレッド解除"
+    "resolveThread": "スレッド解除",
+    "sortByCustom": "カスタム",
+    "dragToReorder": "ドラッグして並び替え",
+    "selectedCount": "{count}件選択中",
+    "moveTo": "移動...",
+    "clearSelection": "クリア",
+    "moveToWorkspace": "ワークスペース",
+    "moveToGroup": "グループ",
+    "noGroup": "グループなし",
+    "moveSuccess": "{count}件のタスクを移動しました",
+    "moveError": "タスクの移動に失敗しました",
+    "moveDialogTitle": "タスクを移動",
+    "cannotMoveActiveChain": "アクティブなスレッドチェーン",
+    "assigneeNotMember": "担当者が移動先のワークスペースのメンバーではありません",
+    "movableCount": "{count}件移動可能",
+    "blockedCount": "{count}件移動不可",
+    "confirmMove": "{count}件を移動",
+    "back": "戻る",
+    "groupHashHint": "グループに割り当て (#)",
+    "assignToGroup": "グループメンバー全員に接続",
+    "assignToWorkspace": "ワークスペースメンバー全員に接続",
+    "voteTask": "投票",
+    "castVote": "投票する",
+    "changeVote": "投票を変更",
+    "voteResults": "結果",
+    "voteSubmitted": "投票しました",
+    "voteError": "投票に失敗しました",
+    "voteComplete": "完了",
+    "voteApprove": "賛成",
+    "voteReject": "反対",
+    "voteAbstain": "保留",
+    "voteCommentPlaceholder": "コメントを追加（任意）",
+    "votedCount": "{voted}/{total} 投票済み"
   },
   "threads": {
     "title": "スレッド",
@@ -297,7 +329,9 @@
   "files": {
     "uploading": "アップロード中...",
     "dropFileHere": "ここにファイルをドロップするか",
-    "chooseFile": "ファイルを選択"
+    "chooseFile": "ファイルを選択",
+    "unsupportedPreview": "このファイル形式のプレビューには対応していません",
+    "download": "ダウンロード"
   },
   "landing": {
     "nav": {
@@ -727,7 +761,8 @@
     "loadMore": "以前のメッセージを読み込む",
     "send": "送信",
     "noRepliesYet": "まだ返信がありません",
-    "replyPlaceholder": "返信..."
+    "replyPlaceholder": "返信...",
+    "dropFilesHere": "ここにファイルをドロップ"
   },
   "sharedSpaces": {
     "title": "Shared Spaces",

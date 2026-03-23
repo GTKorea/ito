@@ -124,7 +124,39 @@
     "moreActions": "Más acciones",
     "quickInputPlaceholder": "Nueva tarea... ( > @usuario para conectar directamente)",
     "resolveBlocker": "Resolver bloqueante",
-    "resolveThread": "Resolver hilo"
+    "resolveThread": "Resolver hilo",
+    "sortByCustom": "Personalizado",
+    "dragToReorder": "Arrastrar para reordenar",
+    "selectedCount": "{count} seleccionados",
+    "moveTo": "Mover a...",
+    "clearSelection": "Limpiar",
+    "moveToWorkspace": "Espacio de trabajo",
+    "moveToGroup": "Grupo",
+    "noGroup": "Sin grupo",
+    "moveSuccess": "{count} tarea(s) movida(s)",
+    "moveError": "Error al mover tareas",
+    "moveDialogTitle": "Mover tareas",
+    "cannotMoveActiveChain": "Cadena de hilos activa",
+    "assigneeNotMember": "El asignado no es miembro del espacio de trabajo destino",
+    "movableCount": "{count} se pueden mover",
+    "blockedCount": "{count} no se pueden mover",
+    "confirmMove": "Mover {count}",
+    "back": "Atrás",
+    "groupHashHint": "Asignar a grupo (#)",
+    "assignToGroup": "Conectar con todos los miembros del grupo",
+    "assignToWorkspace": "Conectar con todos los miembros del espacio",
+    "voteTask": "Votación",
+    "castVote": "Votar",
+    "changeVote": "Cambiar voto",
+    "voteResults": "Resultados",
+    "voteSubmitted": "Voto enviado",
+    "voteError": "Error al votar",
+    "voteComplete": "Completado",
+    "voteApprove": "Aprobar",
+    "voteReject": "Rechazar",
+    "voteAbstain": "Abstenerse",
+    "voteCommentPlaceholder": "Agregar comentario (opcional)",
+    "votedCount": "{voted}/{total} votaron"
   },
   "threads": {
     "title": "Hilos",
@@ -297,7 +329,9 @@
   "files": {
     "uploading": "Subiendo...",
     "dropFileHere": "Arrastra un archivo aquí o",
-    "chooseFile": "Elegir Archivo"
+    "chooseFile": "Elegir Archivo",
+    "unsupportedPreview": "Vista previa no disponible para este tipo de archivo",
+    "download": "Descargar"
   },
   "landing": {
     "nav": {
@@ -615,11 +649,26 @@
       "title": "Integración con Slack",
       "description": "Use el comando /ito en Slack para crear y gestionar tareas directamente desde el chat.",
       "commands": {
-        "create": { "syntax": "/ito nombre de tarea", "description": "Crear una nueva tarea" },
-        "chain": { "syntax": "/ito tarea > @usuario1 > @usuario2", "description": "Crear tarea y conectar cadena de hilos" },
-        "list": { "syntax": "/ito list", "description": "Ver lista de tareas" },
-        "link": { "syntax": "/ito link", "description": "Vincular cuenta de Slack con ito" },
-        "help": { "syntax": "/ito help", "description": "Mostrar comandos disponibles" }
+        "create": {
+          "syntax": "/ito nombre de tarea",
+          "description": "Crear una nueva tarea"
+        },
+        "chain": {
+          "syntax": "/ito tarea > @usuario1 > @usuario2",
+          "description": "Crear tarea y conectar cadena de hilos"
+        },
+        "list": {
+          "syntax": "/ito list",
+          "description": "Ver lista de tareas"
+        },
+        "link": {
+          "syntax": "/ito link",
+          "description": "Vincular cuenta de Slack con ito"
+        },
+        "help": {
+          "syntax": "/ito help",
+          "description": "Mostrar comandos disponibles"
+        }
       }
     },
     "notifications": {
@@ -712,7 +761,8 @@
     "loadMore": "Cargar mensajes anteriores",
     "send": "Enviar",
     "noRepliesYet": "Aún no hay respuestas",
-    "replyPlaceholder": "Responder..."
+    "replyPlaceholder": "Responder...",
+    "dropFilesHere": "Suelta archivos aquí"
   },
   "sharedSpaces": {
     "title": "Shared Spaces",

@@ -19,6 +19,7 @@ import { AdminModule } from './admin/admin.module';
 import { ChatModule } from './chat/chat.module';
 import { SharedSpacesModule } from './shared-spaces/shared-spaces.module';
 import { TaskGroupsModule } from './task-groups/task-groups.module';
+import { VotesModule } from './votes/votes.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { TaskGroupsModule } from './task-groups/task-groups.module';
     ChatModule,
     SharedSpacesModule,
     TaskGroupsModule,
+    VotesModule,
   ],
 })
 export class AppModule {}

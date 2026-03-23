@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { useTaskStore } from '@/stores/task-store';
 import { useAuthStore } from '@/stores/auth-store';
 import { ThreadChain } from '@/components/threads/thread-chain';
@@ -36,6 +38,9 @@ import {
   MessageCircle,
   User,
   ShieldAlert,
+  Flag,
+  GripVertical,
+  Vote,
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
@@ -49,6 +54,12 @@ const statusIcons: Record<string, React.ReactNode> = {
   COMPLETED: <Check className="h-4 w-4 text-green-500" />,
 };
 
+const priorityConfig: Record<string, { color: string }> = {
+  URGENT: { color: 'text-red-400' },
+  HIGH: { color: 'text-orange-400' },
+  LOW: { color: 'text-blue-400' },
+};
+
 type TaskSection = 'actionRequired' | 'waiting' | 'completed';
 
 interface TaskItemProps {
@@ -59,6 +70,8 @@ interface TaskItemProps {
     status: string;
     priority: string;
     dueDate?: string;
+    type?: string;
+    voteConfig?: any;
     creator: { id: string; name: string; avatarUrl?: string };
     assignee?: { id: string; name: string; avatarUrl?: string };
     threadLinks: Array<{
@@ -75,9 +88,13 @@ interface TaskItemProps {
   };
   onSelect?: (id: string, openChat?: boolean) => void;
   section: TaskSection;
+  isDraggable?: boolean;
+  isSelecting?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: (id: string) => void;
 }
 
-export function TaskItem({ task, onSelect, section }: TaskItemProps) {
+export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, isSelected, onToggleSelect }: TaskItemProps) {
   const [showConnect, setShowConnect] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [isResolving, setIsResolving] = useState(false);
@@ -133,6 +150,22 @@ export function TaskItem({ task, onSelect, section }: TaskItemProps) {
     };
   }
 
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: task.id, disabled: !isDraggable });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : undefined,
+    zIndex: isDragging ? 50 : undefined,
+  };
+
   const hasThreads = task.threadLinks.length > 0;
   const dueDateInfo = getDueDateInfo(task.dueDate);
   const isAssignee = user?.id === task.assignee?.id;
@@ -156,8 +189,40 @@ export function TaskItem({ task, onSelect, section }: TaskItemProps) {
   const canComplete = section === 'actionRequired' && isAssignee && !pendingLink && !pendingBlocker && task.status !== 'COMPLETED';
 
   return (
-    <div className="group rounded-lg border border-border bg-card p-3 hover:border-border/80 transition-colors">
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        'group rounded-lg border border-border bg-card p-3 hover:border-border/80 transition-colors',
+        isSelected && 'bg-primary/5 border-primary/20',
+        isDragging && 'shadow-lg',
+      )}
+    >
       <div className="flex items-center gap-3">
+        {/* Selection checkbox */}
+        {(isSelecting || isSelected) && (
+          <button
+            className="shrink-0 flex items-center justify-center h-4 w-4 rounded border border-border hover:border-primary transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleSelect?.(task.id);
+            }}
+          >
+            {isSelected && <Check className="h-3 w-3 text-primary" />}
+          </button>
+        )}
+
+        {/* Drag handle */}
+        {isDraggable && !isSelecting && (
+          <button
+            className="shrink-0 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-60 transition-opacity touch-none"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="h-4 w-4 text-muted-foreground" />
+          </button>
+        )}
+
         {/* Status icon (display only) */}
         <Tooltip>
           <TooltipTrigger
@@ -171,6 +236,14 @@ export function TaskItem({ task, onSelect, section }: TaskItemProps) {
         {/* Content */}
         <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onSelect?.(task.id)}>
           <div className="flex items-center gap-2">
+            {priorityConfig[task.priority] && (
+              <Tooltip>
+                <TooltipTrigger render={<span className="shrink-0" />}>
+                  <Flag className={cn('h-3 w-3', priorityConfig[task.priority].color)} />
+                </TooltipTrigger>
+                <TooltipContent side="top">{t(task.priority.toLowerCase())}</TooltipContent>
+              </Tooltip>
+            )}
             <span
               className={cn(
                 'text-sm font-medium',
@@ -179,6 +252,12 @@ export function TaskItem({ task, onSelect, section }: TaskItemProps) {
             >
               {task.title}
             </span>
+            {task.type === 'VOTE' && (
+              <span className="inline-flex items-center gap-0.5 text-[10px] text-purple-400 bg-purple-400/10 px-1.5 py-0.5 rounded">
+                <Vote className="h-2.5 w-2.5" />
+                {t('voteTask')}
+              </span>
+            )}
             {hasThreads && (
               <Badge
                 variant="outline"

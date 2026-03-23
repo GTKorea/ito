@@ -1,7 +1,7 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { ActivityService } from '../activity/activity.service';
-import { CreateTaskDto, UpdateTaskDto } from './dto/create-task.dto';
+import { CreateTaskDto, UpdateTaskDto, BatchMoveTasksDto } from './dto/create-task.dto';
 
 /** Shared include for task queries with full thread link details */
 const TASK_INCLUDE_FULL = {
@@ -25,6 +25,13 @@ export class TasksService {
   ) {}
 
   async create(dto: CreateTaskDto, workspaceId: string, userId: string) {
+    // Get max order in workspace to place new task at the bottom
+    const maxOrder = await this.prisma.task.aggregate({
+      where: { workspaceId },
+      _max: { order: true },
+    });
+    const newOrder = (maxOrder._max.order ?? -1) + 1;
+
     const task = await this.prisma.task.create({
       data: {
         title: dto.title,
@@ -34,8 +41,11 @@ export class TasksService {
         creatorId: userId,
         assigneeId: userId,
         workspaceId,
+        type: dto.type || undefined,
+        voteConfig: dto.voteConfig || undefined,
         teamId: dto.teamId || undefined,
         taskGroupId: dto.taskGroupId || undefined,
+        order: newOrder,
       },
       include: {
         creator: { select: { id: true, name: true, avatarUrl: true } },
@@ -174,7 +184,7 @@ export class TasksService {
     const allTasks = await this.prisma.task.findMany({
       where,
       include: TASK_INCLUDE_FULL,
-      orderBy: [{ priority: 'asc' }, { createdAt: 'desc' }],
+      orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
     });
 
     const actionRequired: typeof allTasks = [];
@@ -272,5 +282,128 @@ export class TasksService {
     });
 
     return deleted;
+  }
+
+  async reorderTasks(workspaceId: string, userId: string, taskIds: string[]) {
+    // Verify all tasks belong to this workspace
+    const tasks = await this.prisma.task.findMany({
+      where: { id: { in: taskIds }, workspaceId },
+      select: { id: true },
+    });
+    if (tasks.length !== taskIds.length) {
+      throw new BadRequestException('Some tasks do not belong to this workspace');
+    }
+
+    // Update order for each task in a transaction
+    await this.prisma.$transaction(
+      taskIds.map((id, index) =>
+        this.prisma.task.update({
+          where: { id },
+          data: { order: index },
+        }),
+      ),
+    );
+
+    return { success: true };
+  }
+
+  async batchMoveCheck(userId: string, dto: BatchMoveTasksDto) {
+    const tasks = await this.prisma.task.findMany({
+      where: { id: { in: dto.taskIds } },
+      include: {
+        ...TASK_INCLUDE_FULL,
+        workspace: { select: { id: true, name: true } },
+      },
+    });
+
+    if (tasks.length === 0) {
+      throw new NotFoundException('No tasks found');
+    }
+
+    // Check user is member of target workspace
+    if (dto.workspaceId) {
+      const membership = await this.prisma.workspaceMember.findUnique({
+        where: {
+          workspaceId_userId: { workspaceId: dto.workspaceId, userId },
+        },
+      });
+      if (!membership) {
+        throw new ForbiddenException('You are not a member of the target workspace');
+      }
+    }
+
+    // Check target group belongs to target workspace
+    if (dto.taskGroupId) {
+      const targetWorkspaceId = dto.workspaceId || tasks[0]?.workspaceId;
+      const group = await this.prisma.taskGroup.findFirst({
+        where: { id: dto.taskGroupId, workspaceId: targetWorkspaceId },
+      });
+      if (!group) {
+        throw new BadRequestException('Target group does not belong to the target workspace');
+      }
+    }
+
+    const movable: typeof tasks = [];
+    const blocked: { task: typeof tasks[0]; reason: string }[] = [];
+
+    for (const task of tasks) {
+      // Check for active thread chains
+      const hasActiveChain = task.threadLinks.some(
+        (l) => l.status === 'PENDING' || l.status === 'FORWARDED',
+      );
+      if (hasActiveChain) {
+        blocked.push({ task, reason: 'ACTIVE_CHAIN' });
+        continue;
+      }
+
+      // Check assignee is member of target workspace (only for cross-workspace moves)
+      if (dto.workspaceId && dto.workspaceId !== task.workspaceId) {
+        const assigneeMembership = await this.prisma.workspaceMember.findUnique({
+          where: {
+            workspaceId_userId: { workspaceId: dto.workspaceId, userId: task.assigneeId },
+          },
+        });
+        if (!assigneeMembership) {
+          blocked.push({ task, reason: 'ASSIGNEE_NOT_MEMBER' });
+          continue;
+        }
+      }
+
+      movable.push(task);
+    }
+
+    return { movable, blocked };
+  }
+
+  async batchMoveExecute(userId: string, dto: BatchMoveTasksDto) {
+    const { movable } = await this.batchMoveCheck(userId, dto);
+
+    if (movable.length === 0) {
+      throw new BadRequestException('No tasks can be moved');
+    }
+
+    const movableIds = movable.map((t) => t.id);
+    const data: any = {};
+    if (dto.workspaceId) data.workspaceId = dto.workspaceId;
+    if (dto.taskGroupId !== undefined) data.taskGroupId = dto.taskGroupId || null;
+
+    await this.prisma.task.updateMany({
+      where: { id: { in: movableIds } },
+      data,
+    });
+
+    // Log activity for each moved task
+    for (const task of movable) {
+      await this.activityService.log({
+        workspaceId: dto.workspaceId || task.workspaceId,
+        userId,
+        action: 'UPDATED',
+        entityType: 'Task',
+        entityId: task.id,
+        metadata: { moved: true, targetWorkspaceId: dto.workspaceId, targetGroupId: dto.taskGroupId },
+      });
+    }
+
+    return { moved: movableIds.length };
   }
 }

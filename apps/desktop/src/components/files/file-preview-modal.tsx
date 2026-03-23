@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useCallback, useState } from 'react';
-import { X, ChevronLeft, ChevronRight, Download, FileText } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { X, ChevronLeft, ChevronRight, Download, Music } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { getFileTypeInfo, getFileUrl } from '@/lib/file-utils';
 
 interface FileItem {
   id: string;
@@ -24,17 +26,12 @@ function formatSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function getFileUrl(fileId: string) {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-  return `${baseUrl}/files/${fileId}/download`;
-}
-
 export function FilePreviewModal({ files, initialIndex, onClose }: FilePreviewModalProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const file = files[currentIndex];
-  const isImage = file?.mimeType?.startsWith('image/');
   const hasPrev = currentIndex > 0;
   const hasNext = currentIndex < files.length - 1;
+  const t = useTranslations('files');
 
   const handlePrev = useCallback(() => {
     if (hasPrev) setCurrentIndex((i) => i - 1);
@@ -55,6 +52,74 @@ export function FilePreviewModal({ files, initialIndex, onClose }: FilePreviewMo
   }, [onClose, handlePrev, handleNext]);
 
   if (!file) return null;
+
+  const renderContent = () => {
+    // PDF preview
+    if (file.mimeType === 'application/pdf') {
+      return (
+        <iframe
+          src={getFileUrl(file.id)}
+          className="w-full h-[80vh] rounded-lg"
+          title={file.filename}
+        />
+      );
+    }
+
+    // Video preview
+    if (file.mimeType.startsWith('video/')) {
+      return (
+        <video
+          controls
+          src={getFileUrl(file.id)}
+          className="max-w-full max-h-[80vh] rounded-lg"
+        />
+      );
+    }
+
+    // Audio preview
+    if (file.mimeType.startsWith('audio/')) {
+      return (
+        <div className="flex flex-col items-center gap-4 rounded-xl bg-[#1A1A1A] border border-border p-8 min-w-[300px]">
+          <Music className="h-16 w-16 text-cyan-500" />
+          <p className="text-sm font-medium text-foreground">{file.filename}</p>
+          <audio controls src={getFileUrl(file.id)} className="w-full max-w-md" />
+        </div>
+      );
+    }
+
+    // Image preview
+    if (file.mimeType.startsWith('image/')) {
+      return (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={getFileUrl(file.id)}
+          alt={file.filename}
+          className="max-h-[80vh] max-w-[80vw] object-contain rounded-lg"
+        />
+      );
+    }
+
+    // Fallback for other types
+    const info = getFileTypeInfo(file.mimeType);
+    const TypeIcon = info.icon;
+    return (
+      <div className="flex flex-col items-center gap-4 rounded-xl bg-[#1A1A1A] border border-border p-8 min-w-[300px]">
+        <TypeIcon className={`h-16 w-16 ${info.color}`} />
+        <div className="text-center">
+          <p className="text-sm font-medium text-foreground">{file.filename}</p>
+          <p className="text-xs text-muted-foreground mt-1">{formatSize(file.size)}</p>
+          <p className="text-xs text-muted-foreground mt-1">{t('unsupportedPreview')}</p>
+        </div>
+        <Button
+          size="sm"
+          onClick={() => window.open(getFileUrl(file.id), '_blank')}
+        >
+          <Download className="h-4 w-4 mr-1.5" />
+          {t('download')}
+        </Button>
+      </div>
+    );
+  };
 
   return (
     <div
@@ -86,7 +151,7 @@ export function FilePreviewModal({ files, initialIndex, onClose }: FilePreviewMo
           onClick={() => window.open(getFileUrl(file.id), '_blank')}
         >
           <Download className="h-3.5 w-3.5 mr-1" />
-          Download
+          {t('download')}
         </Button>
       </div>
 
@@ -116,29 +181,7 @@ export function FilePreviewModal({ files, initialIndex, onClose }: FilePreviewMo
 
       {/* Content */}
       <div className="flex items-center justify-center max-h-[85vh] max-w-[85vw]">
-        {isImage ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={getFileUrl(file.id)}
-            alt={file.filename}
-            className="max-h-[80vh] max-w-[80vw] object-contain rounded-lg"
-          />
-        ) : (
-          <div className="flex flex-col items-center gap-4 rounded-xl bg-[#1A1A1A] border border-border p-8 min-w-[300px]">
-            <FileText className="h-16 w-16 text-muted-foreground" />
-            <div className="text-center">
-              <p className="text-sm font-medium text-foreground">{file.filename}</p>
-              <p className="text-xs text-muted-foreground mt-1">{formatSize(file.size)}</p>
-            </div>
-            <Button
-              size="sm"
-              onClick={() => window.open(getFileUrl(file.id), '_blank')}
-            >
-              <Download className="h-4 w-4 mr-1.5" />
-              Download
-            </Button>
-          </div>
-        )}
+        {renderContent()}
       </div>
 
       {/* Index indicator */}

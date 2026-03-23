@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
-import { FileText, Image, Download, Trash2, Loader2, Eye } from 'lucide-react';
+import { Download, Trash2, Loader2, Eye } from 'lucide-react';
 import { FilePreviewModal } from './file-preview-modal';
+import { getFileTypeInfo, getFileUrl } from '@/lib/file-utils';
 
 interface FileItem {
   id: string;
@@ -26,8 +27,9 @@ function formatSize(bytes: number) {
 }
 
 function FileIcon({ mimeType }: { mimeType: string }) {
-  if (mimeType.startsWith('image/')) return <Image className="h-4 w-4 text-blue-500" />;
-  return <FileText className="h-4 w-4 text-muted-foreground" />;
+  const info = getFileTypeInfo(mimeType);
+  const Icon = info.icon;
+  return <Icon className={`h-4 w-4 ${info.color}`} />;
 }
 
 export function FileList({ taskId, refreshKey }: FileListProps) {
@@ -53,8 +55,7 @@ export function FileList({ taskId, refreshKey }: FileListProps) {
   };
 
   const handleDownload = (file: FileItem) => {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-    window.open(`${baseUrl}/files/${file.id}/download`, '_blank');
+    window.open(getFileUrl(file.id), '_blank');
   };
 
   if (isLoading) {
@@ -76,7 +77,16 @@ export function FileList({ taskId, refreshKey }: FileListProps) {
             className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm group cursor-pointer hover:border-border/80 transition-colors"
             onClick={() => setPreviewIndex(index)}
           >
-            <FileIcon mimeType={file.mimeType} />
+            {file.mimeType.startsWith('image/') ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={getFileUrl(file.id)}
+                alt={file.filename}
+                className="h-8 w-8 rounded object-cover shrink-0"
+              />
+            ) : (
+              <FileIcon mimeType={file.mimeType} />
+            )}
             <span className="flex-1 truncate text-xs">{file.filename}</span>
             <span className="text-[10px] text-muted-foreground shrink-0">
               {formatSize(file.size)}

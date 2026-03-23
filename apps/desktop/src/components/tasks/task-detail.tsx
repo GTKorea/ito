@@ -12,10 +12,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { X, Save, Link2, Paperclip, List, Network, MessageCircle } from 'lucide-react';
+import { X, Save, Link2, Paperclip, List, Network, MessageCircle, Vote } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { ChatPanel } from '@/components/chat/chat-panel';
+import { VotePanel } from '@/components/tasks/vote-panel';
+import { useAuthStore } from '@/stores/auth-store';
 
 const statuses = ['OPEN', 'IN_PROGRESS', 'BLOCKED', 'COMPLETED', 'CANCELLED'];
 const priorities = ['URGENT', 'HIGH', 'MEDIUM', 'LOW'];
@@ -28,6 +30,7 @@ interface TaskDetailProps {
 
 export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps) {
   const { updateTask } = useTaskStore();
+  const { user } = useAuthStore();
   const [task, setTask] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [title, setTitle] = useState('');
@@ -244,6 +247,21 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
             ) : (
               <ThreadChain links={task.threadLinks} creator={task.creator} />
             )}
+          </div>
+        )}
+
+        {/* Vote Panel */}
+        {task.type === 'VOTE' && task.voteConfig && (
+          <div className="space-y-2 border-t border-border pt-3">
+            <h3 className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-1">
+              <Vote className="h-3 w-3" />
+              {t('voteTask')}
+            </h3>
+            <VotePanel
+              taskId={task.id}
+              voteConfig={task.voteConfig}
+              isCreator={task.creator?.id === user?.id}
+            />
           </div>
         )}
 

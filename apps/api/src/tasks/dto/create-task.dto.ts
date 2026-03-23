@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsEnum, IsDateString } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsDateString, IsArray } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateTaskDto {
@@ -30,6 +30,15 @@ export class CreateTaskDto {
   @IsOptional()
   @IsString()
   taskGroupId?: string;
+
+  @ApiPropertyOptional({ enum: ['STANDARD', 'VOTE'] })
+  @IsOptional()
+  @IsEnum(['STANDARD', 'VOTE'])
+  type?: 'STANDARD' | 'VOTE';
+
+  @ApiPropertyOptional({ description: 'Vote configuration JSON' })
+  @IsOptional()
+  voteConfig?: any;
 }
 
 export class UpdateTaskDto {
@@ -57,6 +66,30 @@ export class UpdateTaskDto {
   @IsString()
   teamId?: string;
 
+  @IsOptional()
+  @IsString()
+  taskGroupId?: string;
+}
+
+export class ReorderTasksDto {
+  @ApiProperty({ description: 'Task IDs in desired order' })
+  @IsArray()
+  @IsString({ each: true })
+  taskIds: string[];
+}
+
+export class BatchMoveTasksDto {
+  @ApiProperty({ description: 'Task IDs to move' })
+  @IsArray()
+  @IsString({ each: true })
+  taskIds: string[];
+
+  @ApiPropertyOptional({ description: 'Target workspace ID' })
+  @IsOptional()
+  @IsString()
+  workspaceId?: string;
+
+  @ApiPropertyOptional({ description: 'Target task group ID (null to remove from group)' })
   @IsOptional()
   @IsString()
   taskGroupId?: string;

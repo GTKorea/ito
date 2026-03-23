@@ -124,7 +124,39 @@
     "moreActions": "More actions",
     "quickInputPlaceholder": "New task... ( > @user to connect directly)",
     "resolveBlocker": "Resolve Blocker",
-    "resolveThread": "Resolve Thread"
+    "resolveThread": "Resolve Thread",
+    "sortByCustom": "Custom",
+    "dragToReorder": "Drag to reorder",
+    "selectedCount": "{count} selected",
+    "moveTo": "Move to...",
+    "clearSelection": "Clear",
+    "moveToWorkspace": "Workspace",
+    "moveToGroup": "Group",
+    "noGroup": "No group",
+    "moveSuccess": "{count} task(s) moved successfully",
+    "moveError": "Failed to move tasks",
+    "moveDialogTitle": "Move Tasks",
+    "cannotMoveActiveChain": "Active thread chain",
+    "assigneeNotMember": "Assignee is not a member of target workspace",
+    "movableCount": "{count} movable",
+    "blockedCount": "{count} cannot be moved",
+    "confirmMove": "Move {count} task(s)",
+    "back": "Back",
+    "groupHashHint": "Assign to group (#)",
+    "assignToGroup": "Connect to all group members",
+    "assignToWorkspace": "Connect to all workspace members",
+    "voteTask": "Vote",
+    "castVote": "Cast Vote",
+    "changeVote": "Change Vote",
+    "voteResults": "Results",
+    "voteSubmitted": "Vote submitted",
+    "voteError": "Failed to submit vote",
+    "voteComplete": "Complete",
+    "voteApprove": "Approve",
+    "voteReject": "Reject",
+    "voteAbstain": "Abstain",
+    "voteCommentPlaceholder": "Add a comment (optional)",
+    "votedCount": "{voted}/{total} voted"
   },
   "threads": {
     "title": "Threads",
@@ -297,7 +329,9 @@
   "files": {
     "uploading": "Uploading...",
     "dropFileHere": "Drop a file here or",
-    "chooseFile": "Choose File"
+    "chooseFile": "Choose File",
+    "unsupportedPreview": "Preview not available for this file type",
+    "download": "Download"
   },
   "landing": {
     "nav": {
@@ -727,7 +761,8 @@
     "loadMore": "Load earlier messages",
     "send": "Send",
     "noRepliesYet": "No replies yet",
-    "replyPlaceholder": "Reply..."
+    "replyPlaceholder": "Reply...",
+    "dropFilesHere": "Drop files here"
   },
   "sharedSpaces": {
     "title": "Shared Spaces",

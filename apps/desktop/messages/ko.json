@@ -124,7 +124,39 @@
     "moreActions": "더 보기",
     "quickInputPlaceholder": "새 태스크... ( > @유저 로 바로 연결)",
     "resolveBlocker": "블로커 해제",
-    "resolveThread": "스레드 해제"
+    "resolveThread": "스레드 해제",
+    "sortByCustom": "사용자 지정",
+    "dragToReorder": "드래그하여 순서 변경",
+    "selectedCount": "{count}개 선택됨",
+    "moveTo": "이동...",
+    "clearSelection": "취소",
+    "moveToWorkspace": "워크스페이스",
+    "moveToGroup": "그룹",
+    "noGroup": "그룹 없음",
+    "moveSuccess": "{count}개 태스크 이동 완료",
+    "moveError": "태스크 이동 실패",
+    "moveDialogTitle": "태스크 이동",
+    "cannotMoveActiveChain": "활성 체인이 있는 태스크",
+    "assigneeNotMember": "담당자가 대상 워크스페이스의 멤버가 아닙니다",
+    "movableCount": "{count}개 이동 가능",
+    "blockedCount": "{count}개 이동 불가",
+    "confirmMove": "{count}개 이동",
+    "back": "뒤로",
+    "groupHashHint": "그룹에 할당 (#)",
+    "assignToGroup": "그룹 멤버 전원에게 연결",
+    "assignToWorkspace": "워크스페이스 멤버 전원에게 연결",
+    "voteTask": "투표",
+    "castVote": "투표하기",
+    "changeVote": "투표 변경",
+    "voteResults": "결과",
+    "voteSubmitted": "투표 완료",
+    "voteError": "투표 실패",
+    "voteComplete": "완료",
+    "voteApprove": "찬성",
+    "voteReject": "반대",
+    "voteAbstain": "보류",
+    "voteCommentPlaceholder": "코멘트 추가 (선택)",
+    "votedCount": "{voted}/{total} 투표 완료"
   },
   "threads": {
     "title": "스레드",
@@ -297,7 +329,9 @@
   "files": {
     "uploading": "업로드 중...",
     "dropFileHere": "여기에 파일을 끌어놓거나",
-    "chooseFile": "파일 선택"
+    "chooseFile": "파일 선택",
+    "unsupportedPreview": "이 파일 형식은 미리보기를 지원하지 않습니다",
+    "download": "다운로드"
   },
   "landing": {
     "nav": {
@@ -727,7 +761,8 @@
     "loadMore": "이전 메시지 불러오기",
     "send": "보내기",
     "noRepliesYet": "아직 답글이 없습니다",
-    "replyPlaceholder": "답글..."
+    "replyPlaceholder": "답글...",
+    "dropFilesHere": "여기에 파일을 놓으세요"
   },
   "sharedSpaces": {
     "title": "공유 스페이스",

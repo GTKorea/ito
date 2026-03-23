@@ -32,6 +32,9 @@ interface Task {
   status: string;
   priority: string;
   dueDate?: string;
+  order?: number;
+  type?: string;
+  voteConfig?: any;
   creator: User;
   assignee: User;
   threadLinks: ThreadLink[];
@@ -87,6 +90,10 @@ interface TaskState {
   resolveBlocker: (threadLinkId: string) => Promise<void>;
   resolveThread: (threadLinkId: string) => Promise<void>;
   declineThread: (threadLinkId: string, reason?: string) => Promise<void>;
+  reorderTasks: (workspaceId: string, taskIds: string[]) => Promise<void>;
+  silentRefetch: (workspaceId: string, taskGroupId?: string) => Promise<void>;
+  batchMoveCheck: (taskIds: string[], workspaceId?: string, taskGroupId?: string) => Promise<{ movable: Task[]; blocked: { task: Task; reason: string }[] }>;
+  batchMoveExecute: (taskIds: string[], workspaceId?: string, taskGroupId?: string) => Promise<void>;
 }
 
 function getWorkspaceId(): string | undefined {
@@ -163,6 +170,21 @@ export const useTaskStore = create<TaskState>((set) => ({
       });
     } catch {
       set({ isLoading: false });
+    }
+  },
+
+  silentRefetch: async (workspaceId, taskGroupId) => {
+    try {
+      const { data } = await api.get(`/workspaces/${workspaceId}/tasks/categorized`, {
+        params: taskGroupId ? { taskGroupId } : undefined,
+      });
+      set({
+        actionRequired: data.actionRequired,
+        waiting: data.waiting,
+        completed: data.completed,
+      });
+    } catch {
+      // silent fail
     }
   },
 
@@ -296,6 +318,41 @@ export const useTaskStore = create<TaskState>((set) => ({
     await api.post(`/thread-links/${threadLinkId}/decline`, { reason });
     trackEvent('thread_declined');
     // Refetch to get authoritative categorization
+    await refetchCategorized(set);
+  },
+
+  reorderTasks: async (workspaceId, taskIds) => {
+    // Optimistic: reorder actionRequired to match taskIds
+    set((state) => {
+      const taskMap = new Map(state.actionRequired.map((t) => [t.id, t]));
+      const reordered = taskIds
+        .map((id) => taskMap.get(id))
+        .filter(Boolean) as Task[];
+      // Keep any tasks not in taskIds at the end
+      const remaining = state.actionRequired.filter((t) => !taskIds.includes(t.id));
+      return { actionRequired: [...reordered, ...remaining] };
+    });
+    try {
+      await api.put(`/workspaces/${workspaceId}/tasks/reorder`, { taskIds });
+    } catch {
+      await refetchCategorized(set);
+    }
+  },
+
+  batchMoveCheck: async (taskIds, workspaceId, taskGroupId) => {
+    const { data } = await api.post('/tasks/batch-move/check', { taskIds, workspaceId, taskGroupId });
+    return data;
+  },
+
+  batchMoveExecute: async (taskIds, workspaceId, taskGroupId) => {
+    await api.post('/tasks/batch-move', { taskIds, workspaceId, taskGroupId });
+    // Optimistic: remove moved tasks from all lists
+    set((state) => ({
+      actionRequired: state.actionRequired.filter((t) => !taskIds.includes(t.id)),
+      waiting: state.waiting.filter((t) => !taskIds.includes(t.id)),
+      completed: state.completed.filter((t) => !taskIds.includes(t.id)),
+    }));
+    trackEvent('tasks_moved', { count: taskIds.length });
     await refetchCategorized(set);
   },
 }));

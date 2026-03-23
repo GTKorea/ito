@@ -84,6 +84,12 @@ export class TaskGroupsController {
     return this.taskGroupsService.delete(id, userId);
   }
 
+  @Get('task-groups/:id/members')
+  @ApiOperation({ summary: 'Get task group members' })
+  getMembers(@Param('id') id: string) {
+    return this.taskGroupsService.getMembers(id);
+  }
+
   @Post('task-groups/:id/members')
   @ApiOperation({ summary: 'Add member to task group' })
   addMember(

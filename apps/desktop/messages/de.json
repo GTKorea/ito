@@ -124,7 +124,39 @@
     "moreActions": "Weitere Aktionen",
     "quickInputPlaceholder": "Neue Aufgabe... ( > @Benutzer zum direkten Verbinden)",
     "resolveBlocker": "Blocker auflösen",
-    "resolveThread": "Thread auflösen"
+    "resolveThread": "Thread auflösen",
+    "sortByCustom": "Benutzerdefiniert",
+    "dragToReorder": "Ziehen zum Umordnen",
+    "selectedCount": "{count} ausgewählt",
+    "moveTo": "Verschieben...",
+    "clearSelection": "Auswahl aufheben",
+    "moveToWorkspace": "Workspace",
+    "moveToGroup": "Gruppe",
+    "noGroup": "Keine Gruppe",
+    "moveSuccess": "{count} Aufgabe(n) verschoben",
+    "moveError": "Fehler beim Verschieben",
+    "moveDialogTitle": "Aufgaben verschieben",
+    "cannotMoveActiveChain": "Aktive Thread-Kette",
+    "assigneeNotMember": "Zuständiger ist kein Mitglied des Ziel-Workspace",
+    "movableCount": "{count} verschiebbar",
+    "blockedCount": "{count} nicht verschiebbar",
+    "confirmMove": "{count} verschieben",
+    "back": "Zurück",
+    "groupHashHint": "Gruppe zuweisen (#)",
+    "assignToGroup": "Mit allen Gruppenmitgliedern verbinden",
+    "assignToWorkspace": "Mit allen Workspace-Mitgliedern verbinden",
+    "voteTask": "Abstimmung",
+    "castVote": "Abstimmen",
+    "changeVote": "Stimme ändern",
+    "voteResults": "Ergebnisse",
+    "voteSubmitted": "Abgestimmt",
+    "voteError": "Abstimmung fehlgeschlagen",
+    "voteComplete": "Abgeschlossen",
+    "voteApprove": "Zustimmen",
+    "voteReject": "Ablehnen",
+    "voteAbstain": "Enthalten",
+    "voteCommentPlaceholder": "Kommentar hinzufügen (optional)",
+    "votedCount": "{voted}/{total} abgestimmt"
   },
   "threads": {
     "title": "Threads",
@@ -297,7 +329,9 @@
   "files": {
     "uploading": "Hochladen...",
     "dropFileHere": "Datei hier ablegen oder",
-    "chooseFile": "Datei auswählen"
+    "chooseFile": "Datei auswählen",
+    "unsupportedPreview": "Vorschau für diesen Dateityp nicht verfügbar",
+    "download": "Herunterladen"
   },
   "landing": {
     "nav": {
@@ -615,11 +649,26 @@
       "title": "Slack-Integration",
       "description": "Verwenden Sie den /ito-Befehl in Slack, um Aufgaben direkt aus dem Chat zu erstellen und zu verwalten.",
       "commands": {
-        "create": { "syntax": "/ito Aufgabenname", "description": "Neue Aufgabe erstellen" },
-        "chain": { "syntax": "/ito Aufgabe > @Benutzer1 > @Benutzer2", "description": "Aufgabe erstellen und Thread-Kette verbinden" },
-        "list": { "syntax": "/ito list", "description": "Aufgabenliste anzeigen" },
-        "link": { "syntax": "/ito link", "description": "Slack-Konto mit ito verknüpfen" },
-        "help": { "syntax": "/ito help", "description": "Verfügbare Befehle anzeigen" }
+        "create": {
+          "syntax": "/ito Aufgabenname",
+          "description": "Neue Aufgabe erstellen"
+        },
+        "chain": {
+          "syntax": "/ito Aufgabe > @Benutzer1 > @Benutzer2",
+          "description": "Aufgabe erstellen und Thread-Kette verbinden"
+        },
+        "list": {
+          "syntax": "/ito list",
+          "description": "Aufgabenliste anzeigen"
+        },
+        "link": {
+          "syntax": "/ito link",
+          "description": "Slack-Konto mit ito verknüpfen"
+        },
+        "help": {
+          "syntax": "/ito help",
+          "description": "Verfügbare Befehle anzeigen"
+        }
       }
     },
     "notifications": {
@@ -712,7 +761,8 @@
     "loadMore": "Ältere Nachrichten laden",
     "send": "Senden",
     "noRepliesYet": "Noch keine Antworten",
-    "replyPlaceholder": "Antworten..."
+    "replyPlaceholder": "Antworten...",
+    "dropFilesHere": "Dateien hier ablegen"
   },
   "sharedSpaces": {
     "title": "Shared Spaces",

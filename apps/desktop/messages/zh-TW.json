@@ -124,7 +124,39 @@
     "moreActions": "更多操作",
     "quickInputPlaceholder": "新任務... ( > @使用者 直接連接)",
     "resolveBlocker": "解除阻擋",
-    "resolveThread": "解除執行緒"
+    "resolveThread": "解除執行緒",
+    "sortByCustom": "自訂",
+    "dragToReorder": "拖曳排序",
+    "selectedCount": "已選擇 {count} 個",
+    "moveTo": "移動到...",
+    "clearSelection": "清除",
+    "moveToWorkspace": "工作區",
+    "moveToGroup": "群組",
+    "noGroup": "無群組",
+    "moveSuccess": "成功移動 {count} 個任務",
+    "moveError": "任務移動失敗",
+    "moveDialogTitle": "移動任務",
+    "cannotMoveActiveChain": "存在活躍的線程鏈",
+    "assigneeNotMember": "負責人不是目標工作區的成員",
+    "movableCount": "{count} 個可移動",
+    "blockedCount": "{count} 個無法移動",
+    "confirmMove": "移動 {count} 個任務",
+    "back": "返回",
+    "groupHashHint": "分配到群組 (#)",
+    "assignToGroup": "連接到所有群組成員",
+    "assignToWorkspace": "連接到所有工作區成員",
+    "voteTask": "投票",
+    "castVote": "投票",
+    "changeVote": "更改投票",
+    "voteResults": "結果",
+    "voteSubmitted": "投票成功",
+    "voteError": "投票失敗",
+    "voteComplete": "完成",
+    "voteApprove": "贊成",
+    "voteReject": "反對",
+    "voteAbstain": "棄權",
+    "voteCommentPlaceholder": "添加評論（可選）",
+    "votedCount": "{voted}/{total} 已投票"
   },
   "threads": {
     "title": "執行緒",
@@ -297,7 +329,9 @@
   "files": {
     "uploading": "上傳中...",
     "dropFileHere": "將檔案拖放到此處或",
-    "chooseFile": "選擇檔案"
+    "chooseFile": "選擇檔案",
+    "unsupportedPreview": "此檔案類型不支援預覽",
+    "download": "下載"
   },
   "landing": {
     "nav": {
@@ -615,11 +649,26 @@
       "title": "Slack整合",
       "description": "在Slack中使用/ito指令直接從聊天建立和管理任務。",
       "commands": {
-        "create": { "syntax": "/ito 任務名", "description": "建立新任務" },
-        "chain": { "syntax": "/ito 任務 > @使用者1 > @使用者2", "description": "建立任務並連接線程鏈" },
-        "list": { "syntax": "/ito list", "description": "檢視任務清單" },
-        "link": { "syntax": "/ito link", "description": "將Slack帳戶關聯到ito" },
-        "help": { "syntax": "/ito help", "description": "顯示可用指令" }
+        "create": {
+          "syntax": "/ito 任務名",
+          "description": "建立新任務"
+        },
+        "chain": {
+          "syntax": "/ito 任務 > @使用者1 > @使用者2",
+          "description": "建立任務並連接線程鏈"
+        },
+        "list": {
+          "syntax": "/ito list",
+          "description": "檢視任務清單"
+        },
+        "link": {
+          "syntax": "/ito link",
+          "description": "將Slack帳戶關聯到ito"
+        },
+        "help": {
+          "syntax": "/ito help",
+          "description": "顯示可用指令"
+        }
       }
     },
     "notifications": {
@@ -712,7 +761,8 @@
     "loadMore": "載入更早的訊息",
     "send": "傳送",
     "noRepliesYet": "暫無回覆",
-    "replyPlaceholder": "回覆..."
+    "replyPlaceholder": "回覆...",
+    "dropFilesHere": "將檔案拖放到此處"
   },
   "sharedSpaces": {
     "title": "Shared Spaces",

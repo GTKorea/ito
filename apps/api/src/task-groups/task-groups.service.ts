@@ -113,6 +113,16 @@ export class TaskGroupsService {
     return this.prisma.taskGroup.delete({ where: { id } });
   }
 
+  async getMembers(groupId: string) {
+    const group = await this.prisma.taskGroup.findUnique({ where: { id: groupId } });
+    if (!group) throw new NotFoundException('Task group not found');
+    return this.prisma.taskGroupMember.findMany({
+      where: { taskGroupId: groupId },
+      include: { user: { select: { id: true, name: true, email: true, avatarUrl: true } } },
+      orderBy: { joinedAt: 'asc' },
+    });
+  }
+
   async addMember(groupId: string, userId: string) {
     const group = await this.prisma.taskGroup.findUnique({ where: { id: groupId } });
     if (!group) throw new NotFoundException('Task group not found');

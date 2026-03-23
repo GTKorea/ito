@@ -32,8 +32,8 @@ export class ThreadsService {
     if (toUserIds.length === 0) {
       throw new BadRequestException('At least one target user is required');
     }
-    if (toUserIds.length > 10) {
-      throw new BadRequestException('Cannot connect to more than 10 users at once');
+    if (toUserIds.length > 20) {
+      throw new BadRequestException('Cannot connect to more than 20 users at once');
     }
 
     // Check for duplicates in toUserIds

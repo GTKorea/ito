@@ -124,7 +124,39 @@
     "moreActions": "更多操作",
     "quickInputPlaceholder": "新任务... ( > @用户 直接连接)",
     "resolveBlocker": "解除阻塞",
-    "resolveThread": "解除线程"
+    "resolveThread": "解除线程",
+    "sortByCustom": "自定义",
+    "dragToReorder": "拖拽排序",
+    "selectedCount": "已选择 {count} 个",
+    "moveTo": "移动到...",
+    "clearSelection": "清除",
+    "moveToWorkspace": "工作区",
+    "moveToGroup": "分组",
+    "noGroup": "无分组",
+    "moveSuccess": "成功移动 {count} 个任务",
+    "moveError": "任务移动失败",
+    "moveDialogTitle": "移动任务",
+    "cannotMoveActiveChain": "存在活跃的线程链",
+    "assigneeNotMember": "负责人不是目标工作区的成员",
+    "movableCount": "{count} 个可移动",
+    "blockedCount": "{count} 个无法移动",
+    "confirmMove": "移动 {count} 个任务",
+    "back": "返回",
+    "groupHashHint": "分配到分组 (#)",
+    "assignToGroup": "连接到所有分组成员",
+    "assignToWorkspace": "连接到所有工作区成员",
+    "voteTask": "投票",
+    "castVote": "投票",
+    "changeVote": "更改投票",
+    "voteResults": "结果",
+    "voteSubmitted": "投票成功",
+    "voteError": "投票失败",
+    "voteComplete": "完成",
+    "voteApprove": "赞成",
+    "voteReject": "反对",
+    "voteAbstain": "弃权",
+    "voteCommentPlaceholder": "添加评论（可选）",
+    "votedCount": "{voted}/{total} 已投票"
   },
   "threads": {
     "title": "线程",
@@ -297,7 +329,9 @@
   "files": {
     "uploading": "上传中...",
     "dropFileHere": "将文件拖放到此处或",
-    "chooseFile": "选择文件"
+    "chooseFile": "选择文件",
+    "unsupportedPreview": "此文件类型不支持预览",
+    "download": "下载"
   },
   "landing": {
     "nav": {
@@ -597,29 +631,44 @@
     },
     "blockers": {
       "title": "阻塞项",
-      "description": "注册阻塞任务的外部依赖。阻塞项解除前，任务将移至\u201c等待中\u201d。",
-      "step1": "打开任务，点击\u201c连接\u201d，然后切换到\u201c阻塞项\u201d标签",
-      "step2": "描述外部依赖（例如：\u201c等待设计评审\u201d）",
-      "step3": "阻塞项解决后，点击任务上的\u201c解除阻塞\u201d按钮",
+      "description": "注册阻塞任务的外部依赖。阻塞项解除前，任务将移至“等待中”。",
+      "step1": "打开任务，点击“连接”，然后切换到“阻塞项”标签",
+      "step2": "描述外部依赖（例如：“等待设计评审”）",
+      "step3": "阻塞项解决后，点击任务上的“解除阻塞”按钮",
       "noteLabel": "注意：",
       "note": "只有创建阻塞项的人才能解除。"
     },
     "taskGroups": {
       "title": "任务分组",
-      "description": "将任务整理到分组中，类似于Slack频道。分组显示在侧边栏\u201c我的任务\u201d下方。",
-      "step1": "点击侧边栏\u201c我的任务\u201d下方的\u201c+\u201d按钮创建新分组",
+      "description": "将任务整理到分组中，类似于Slack频道。分组显示在侧边栏“我的任务”下方。",
+      "step1": "点击侧边栏“我的任务”下方的“+”按钮创建新分组",
       "step2": "点击分组名称仅查看该分组的任务",
-      "step3": "点击\u201c我的任务\u201d查看所有任务，不受分组限制"
+      "step3": "点击“我的任务”查看所有任务，不受分组限制"
     },
     "slack": {
       "title": "Slack集成",
       "description": "在Slack中使用/ito命令直接从聊天创建和管理任务。",
       "commands": {
-        "create": { "syntax": "/ito 任务名", "description": "创建新任务" },
-        "chain": { "syntax": "/ito 任务 > @用户1 > @用户2", "description": "创建任务并连接线程链" },
-        "list": { "syntax": "/ito list", "description": "查看任务列表" },
-        "link": { "syntax": "/ito link", "description": "将Slack账户关联到ito" },
-        "help": { "syntax": "/ito help", "description": "显示可用命令" }
+        "create": {
+          "syntax": "/ito 任务名",
+          "description": "创建新任务"
+        },
+        "chain": {
+          "syntax": "/ito 任务 > @用户1 > @用户2",
+          "description": "创建任务并连接线程链"
+        },
+        "list": {
+          "syntax": "/ito list",
+          "description": "查看任务列表"
+        },
+        "link": {
+          "syntax": "/ito link",
+          "description": "将Slack账户关联到ito"
+        },
+        "help": {
+          "syntax": "/ito help",
+          "description": "显示可用命令"
+        }
       }
     },
     "notifications": {
@@ -712,7 +761,8 @@
     "loadMore": "加载更早的消息",
     "send": "发送",
     "noRepliesYet": "暂无回复",
-    "replyPlaceholder": "回复..."
+    "replyPlaceholder": "回复...",
+    "dropFilesHere": "将文件拖放到此处"
   },
   "sharedSpaces": {
     "title": "Shared Spaces",

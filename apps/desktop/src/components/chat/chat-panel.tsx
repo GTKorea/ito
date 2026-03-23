@@ -14,8 +14,10 @@ import {
   Paperclip,
   MessageSquare,
   FileIcon,
+  Upload,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getFileTypeInfo } from '@/lib/file-utils';
 import { ThreadPanel } from './thread-panel';
 
 interface ChatPanelProps {
@@ -99,6 +101,7 @@ export function ChatPanel({ taskId, onClose }: ChatPanelProps) {
   const [uploadedFiles, setUploadedFiles] = useState<ChatFile[]>([]);
   const [uploading, setUploading] = useState(false);
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
+  const [chatDragOver, setChatDragOver] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -170,6 +173,26 @@ export function ChatPanel({ taskId, onClose }: ChatPanelProps) {
     }
   };
 
+  const handleChatDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setChatDragOver(false);
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length === 0) return;
+
+    setUploading(true);
+    try {
+      for (const file of files) {
+        const result = await uploadChatFile(taskId, file);
+        setSelectedFiles((prev) => [...prev, file]);
+        setUploadedFiles((prev) => [...prev, result]);
+      }
+    } catch (err) {
+      console.error('Failed to upload file:', err);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const removeFile = (index: number) => {
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
     setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
@@ -226,20 +249,26 @@ export function ChatPanel({ taskId, onClose }: ChatPanelProps) {
                 />
               </a>
             ) : (
-              <a
-                href={`${API_URL}${file.url}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 rounded-md bg-[#2A2A2A] px-2 py-1.5 hover:bg-[#333] transition-colors"
-              >
-                <FileIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                <span className="text-[11px] text-[#CCCCCC] truncate">
-                  {file.filename}
-                </span>
-                <span className="text-[9px] text-muted-foreground shrink-0">
-                  {formatFileSize(file.size)}
-                </span>
-              </a>
+              (() => {
+                const info = getFileTypeInfo(file.mimeType);
+                const TypeIcon = info.icon;
+                return (
+                  <a
+                    href={`${API_URL}${file.url}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 rounded-md bg-[#2A2A2A] px-2 py-1.5 hover:bg-[#333] transition-colors"
+                  >
+                    <TypeIcon className={`h-3.5 w-3.5 shrink-0 ${info.color}`} />
+                    <span className="text-[11px] text-[#CCCCCC] truncate">
+                      {file.filename}
+                    </span>
+                    <span className="text-[9px] text-muted-foreground shrink-0">
+                      {formatFileSize(file.size)}
+                    </span>
+                  </a>
+                );
+              })()
             )}
           </div>
         ))}
@@ -252,10 +281,26 @@ export function ChatPanel({ taskId, onClose }: ChatPanelProps) {
       {/* Main chat area */}
       <div
         className={cn(
-          'flex h-full flex-col border-l border-border bg-[#0F0F0F]',
+          'relative flex h-full flex-col border-l border-border bg-[#0F0F0F]',
           threadParentMessage ? 'w-1/2' : 'w-full',
         )}
+        onDragOver={(e) => { e.preventDefault(); setChatDragOver(true); }}
+        onDragLeave={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+            setChatDragOver(false);
+          }
+        }}
+        onDrop={handleChatDrop}
       >
+        {/* Drag overlay */}
+        {chatDragOver && (
+          <div className="absolute inset-0 bg-primary/10 border-2 border-dashed border-primary/50 rounded-lg flex items-center justify-center z-10 pointer-events-none">
+            <div className="flex flex-col items-center gap-2 text-primary">
+              <Upload className="h-8 w-8" />
+              <p className="text-sm font-medium">{t('dropFilesHere')}</p>
+            </div>
+          </div>
+        )}
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <div className="flex items-center gap-2">

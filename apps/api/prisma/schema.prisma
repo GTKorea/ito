@@ -45,6 +45,7 @@ model User {
   sharedSpacesCreated  SharedSpace[]
   taskGroupsCreated    TaskGroup[]
   taskGroupMembers     TaskGroupMember[]
+  votes                Vote[]
 }
 
 model RefreshToken {
@@ -161,6 +162,8 @@ model Task {
   description String?
   status      TaskStatus @default(OPEN)
   priority    Priority   @default(MEDIUM)
+  type        TaskType   @default(STANDARD)
+  voteConfig  Json?
   dueDate     DateTime?
 
   creatorId     String
@@ -169,6 +172,8 @@ model Task {
   teamId        String?
   sharedSpaceId String?
   taskGroupId   String?
+
+  order       Int        @default(0)
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -182,6 +187,7 @@ model Task {
   taskGroup   TaskGroup?   @relation(fields: [taskGroupId], references: [id], onDelete: SetNull)
 
   threadLinks   ThreadLink[]
+  votes         Vote[]
   files         File[]
   chatMessages  ChatMessage[]
 
@@ -206,6 +212,26 @@ enum Priority {
   HIGH
   MEDIUM
   LOW
+}
+
+enum TaskType {
+  STANDARD
+  VOTE
+}
+
+model Vote {
+  id        String   @id @default(cuid())
+  taskId    String
+  userId    String
+  choice    String
+  comment   String?
+  createdAt DateTime @default(now())
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([taskId, userId])
+  @@index([taskId])
 }
 
 model ThreadLink {
@@ -273,6 +299,7 @@ enum NotificationType {
   TASK_COMPLETED
   SHARED_SPACE_INVITE
   CHAT_MESSAGE
+  VOTE_COMPLETE
 }
 
 model NotificationPreference {

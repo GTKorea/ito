@@ -3,10 +3,12 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useTaskStore } from '@/stores/task-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
+import { useTaskGroupStore } from '@/stores/task-group-store';
+import { useAuthStore } from '@/stores/auth-store';
 import { api } from '@/lib/api-client';
 import { parseQuickInput } from '@/lib/quick-input-parser';
 import { useTranslations } from 'next-intl';
-import { Send, Loader2, AtSign, ChevronRight, Flag, CalendarDays } from 'lucide-react';
+import { Send, Loader2, AtSign, ChevronRight, Flag, CalendarDays, ShieldAlert, Hash, Users } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 
@@ -33,10 +35,17 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
   const [input, setInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAutocomplete, setShowAutocomplete] = useState(false);
-  const [autocompleteResults, setAutocompleteResults] = useState<UserResult[]>([]);
+  const [autocompleteResults, setAutocompleteResults] = useState<(UserResult | { id: string; name: string; special: true; icon: 'group' | 'workspace' })[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [mentionQuery, setMentionQuery] = useState('');
   const [mentionStartPos, setMentionStartPos] = useState(-1);
+
+  // Group autocomplete state
+  const [showGroupAutocomplete, setShowGroupAutocomplete] = useState(false);
+  const [groupSuggestions, setGroupSuggestions] = useState<Array<{ id: string; name: string }>>([]);
+  const [groupAutocompleteIndex, setGroupAutocompleteIndex] = useState(0);
+  const [groupMentionStartPos, setGroupMentionStartPos] = useState(0);
+  const resolvedGroupRef = useRef<Map<string, string>>(new Map());
 
   const [isFocused, setIsFocused] = useState(false);
   const [priority, setPriority] = useState<string | null>(null);
@@ -51,8 +60,10 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const blurTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { createTask, connectChain, fetchCategorizedTasks } = useTaskStore();
+  const { createTask, connectChain, connectMultiThread, connectBlocker, silentRefetch } = useTaskStore();
   const { currentWorkspace } = useWorkspaceStore();
+  const { groups } = useTaskGroupStore();
+  const { user: currentUser } = useAuthStore();
 
   const searchUsers = useCallback(
     async (query: string) => {
@@ -64,7 +75,19 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
             ...(query.length > 0 ? { query } : {}),
           },
         });
-        setAutocompleteResults(data);
+
+        // Add special @group and @workspace suggestions
+        const specialSuggestions: (UserResult | { id: string; name: string; special: true; icon: 'group' | 'workspace' })[] = [];
+        const lowerQuery = query.toLowerCase();
+
+        if ('group'.startsWith(lowerQuery)) {
+          specialSuggestions.push({ id: '__group__', name: 'group', special: true as const, icon: 'group' as const });
+        }
+        if ('workspace'.startsWith(lowerQuery)) {
+          specialSuggestions.push({ id: '__workspace__', name: 'workspace', special: true as const, icon: 'workspace' as const });
+        }
+
+        setAutocompleteResults([...specialSuggestions, ...data]);
         setSelectedIndex(0);
       } catch {
         setAutocompleteResults([]);
@@ -73,12 +96,53 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
     [currentWorkspace],
   );
 
-  // Detect @ mentions in input
+  // Detect @ mentions and # group mentions in input
   const handleInputChange = (value: string) => {
     setInput(value);
 
     const cursorPos = inputRef.current?.selectionStart ?? value.length;
 
+    // --- # Group autocomplete detection ---
+    // Only look for # in the first segment (before any ' > ')
+    const firstSegmentEnd = value.indexOf(' > ');
+    const firstSegment = firstSegmentEnd === -1 ? value : value.substring(0, firstSegmentEnd);
+
+    if (cursorPos <= firstSegment.length) {
+      let hashPos = -1;
+      for (let i = cursorPos - 1; i >= 0; i--) {
+        if (value[i] === '#') {
+          hashPos = i;
+          break;
+        }
+        if (value[i] === ' ' && i < cursorPos - 1) {
+          // Allow spaces within the hash query for multi-word search? No — #(\S+) means no spaces
+          break;
+        }
+      }
+
+      if (hashPos >= 0) {
+        const query = value.substring(hashPos + 1, cursorPos);
+        if (query.length >= 0 && !query.includes(' ')) {
+          const lowerQuery = query.toLowerCase();
+          const filtered = groups.filter((g) =>
+            g.name.toLowerCase().startsWith(lowerQuery),
+          );
+          if (filtered.length > 0) {
+            setGroupSuggestions(filtered.map((g) => ({ id: g.id, name: g.name })));
+            setGroupMentionStartPos(hashPos);
+            setGroupAutocompleteIndex(0);
+            setShowGroupAutocomplete(true);
+            // Don't proceed to @ detection
+            setShowAutocomplete(false);
+            setMentionStartPos(-1);
+            return;
+          }
+        }
+      }
+    }
+    setShowGroupAutocomplete(false);
+
+    // --- @ mention detection ---
     // Find the last @ before cursor that isn't already completed
     let atPos = -1;
     for (let i = cursorPos - 1; i >= 0; i--) {
@@ -114,9 +178,14 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
     setMentionStartPos(-1);
   };
 
-  const selectUser = (user: UserResult) => {
-    // Store the user ID mapping
-    resolvedUsersRef.current.set(user.name, user.id);
+  const selectUser = (user: UserResult | { id: string; name: string; special: true; icon: string }) => {
+    if ('special' in user) {
+      // Special keyword like @group or @workspace
+      resolvedUsersRef.current.set(user.name, user.id);
+    } else {
+      // Store the user ID mapping
+      resolvedUsersRef.current.set(user.name, user.id);
+    }
 
     // Replace the @query with @Username
     const before = input.substring(0, mentionStartPos);
@@ -132,7 +201,50 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
     setTimeout(() => inputRef.current?.focus(), 0);
   };
 
+  const selectGroup = (group: { id: string; name: string }) => {
+    const before = input.substring(0, groupMentionStartPos);
+    const after = input.substring(inputRef.current?.selectionStart ?? input.length);
+    const newInput = before + '#' + group.name + after;
+    setInput(newInput);
+    resolvedGroupRef.current.set(group.name, group.id);
+    setShowGroupAutocomplete(false);
+    setTimeout(() => {
+      const newPos = before.length + group.name.length + 1;
+      inputRef.current?.focus();
+      inputRef.current?.setSelectionRange(newPos, newPos);
+    }, 0);
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Group autocomplete keyboard handling
+    if (showGroupAutocomplete && groupSuggestions.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setGroupAutocompleteIndex((prev) =>
+          prev < groupSuggestions.length - 1 ? prev + 1 : 0,
+        );
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setGroupAutocompleteIndex((prev) =>
+          prev > 0 ? prev - 1 : groupSuggestions.length - 1,
+        );
+        return;
+      }
+      if (e.key === 'Tab' || (e.key === 'Enter' && showGroupAutocomplete)) {
+        e.preventDefault();
+        selectGroup(groupSuggestions[groupAutocompleteIndex]);
+        return;
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setShowGroupAutocomplete(false);
+        return;
+      }
+    }
+
+    // User autocomplete keyboard handling
     if (showAutocomplete && autocompleteResults.length > 0) {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
@@ -160,7 +272,7 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
       }
     }
 
-    if (e.key === 'Enter' && !showAutocomplete) {
+    if (e.key === 'Enter' && !showAutocomplete && !showGroupAutocomplete) {
       e.preventDefault();
       handleSubmit();
     }
@@ -174,45 +286,90 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
 
     setIsSubmitting(true);
     try {
+      // Resolve group ID from #groupName
+      const effectiveGroupId = parsed.groupName
+        ? resolvedGroupRef.current.get(parsed.groupName) ||
+          groups.find((g) => g.name === parsed.groupName)?.id ||
+          taskGroupId
+        : taskGroupId;
+
       const task = await createTask(
         currentWorkspace.id,
         parsed.title,
         undefined,
         priority ?? undefined,
         dueDate ?? undefined,
-        taskGroupId,
+        effectiveGroupId,
       );
 
       if (parsed.chain.length > 0) {
-        // Resolve display names to user IDs
+        // Resolve display names to user IDs, handling special @group and @workspace
         const userIds: string[] = [];
         for (const name of parsed.chain) {
-          const userId = resolvedUsersRef.current.get(name);
-          if (!userId) {
-            // Try to search for the user by name
-            const { data } = await api.get('/users/search', {
-              params: { workspaceId: currentWorkspace.id, query: name },
-            });
-            if (data.length > 0) {
-              userIds.push(data[0].id);
-              resolvedUsersRef.current.set(name, data[0].id);
+          if (name === 'group') {
+            // Fetch current group members
+            const groupId = effectiveGroupId || taskGroupId;
+            if (groupId) {
+              try {
+                const { data } = await api.get(`/task-groups/${groupId}/members`);
+                const memberIds = data
+                  .map((m: any) => m.userId)
+                  .filter((id: string) => id !== currentUser?.id);
+                userIds.push(...memberIds);
+              } catch {
+                // silent — group members fetch failed
+              }
+            }
+          } else if (name === 'workspace') {
+            // Fetch workspace members
+            try {
+              const { data } = await api.get(`/workspaces/${currentWorkspace.id}/members`);
+              const memberIds = data
+                .map((m: any) => m.userId)
+                .filter((id: string) => id !== currentUser?.id);
+              userIds.push(...memberIds);
+            } catch {
+              // silent — workspace members fetch failed
             }
           } else {
-            userIds.push(userId);
+            const userId = resolvedUsersRef.current.get(name);
+            if (!userId) {
+              // Try to search for the user by name
+              const { data } = await api.get('/users/search', {
+                params: { workspaceId: currentWorkspace.id, query: name },
+              });
+              if (data.length > 0) {
+                userIds.push(data[0].id);
+                resolvedUsersRef.current.set(name, data[0].id);
+              }
+            } else {
+              userIds.push(userId);
+            }
           }
         }
 
-        if (userIds.length > 0) {
-          await connectChain(task.id, userIds);
+        // Deduplicate user IDs
+        const uniqueUserIds = [...new Set(userIds)];
+
+        if (uniqueUserIds.length > 1) {
+          // Parallel connect for multiple users
+          await connectMultiThread(task.id, uniqueUserIds);
+        } else if (uniqueUserIds.length === 1) {
+          await connectChain(task.id, uniqueUserIds);
         }
+      } else if (parsed.blockerNote) {
+        // No chain connections — create blocker
+        await connectBlocker(task.id, parsed.blockerNote);
       }
 
       // Refresh the task list
-      await fetchCategorizedTasks(currentWorkspace.id, taskGroupId);
+      await silentRefetch(currentWorkspace.id, taskGroupId);
       setInput('');
       setPriority(null);
       setDueDate(null);
       resolvedUsersRef.current.clear();
+      resolvedGroupRef.current.clear();
+      setTimeout(() => inputRef.current?.focus(), 0);
     } catch {
       // Error handled silently — could add toast notification here
     } finally {
@@ -234,7 +391,7 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
     setTimeout(() => {
       el.focus();
       el.setSelectionRange(newPos, newPos);
-      // Trigger autocomplete detection for @ insertions
+      // Trigger autocomplete detection for @ and # insertions
       handleInputChange(newValue);
     }, 0);
   };
@@ -305,17 +462,31 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
 
   const selectedPriority = PRIORITY_OPTIONS.find((p) => p.value === priority);
 
-  // Render highlighted input text with styled @ and > characters
+  // Render highlighted input text with styled @, #, and > characters
   const renderHighlightedInput = (text: string) => {
     if (!text) return null;
-    // Split by special tokens: @mention and ' > '
-    const parts: { text: string; type: 'normal' | 'at' | 'chain' | 'mention' }[] = [];
+    // Split by special tokens: @mention, #group, and ' > '
+    const parts: { text: string; type: 'normal' | 'at' | 'chain' | 'mention' | 'blocker' | 'group' | 'special' }[] = [];
     let i = 0;
     while (i < text.length) {
       // Check for ' > ' chain separator
       if (i + 2 < text.length && text.substring(i, i + 3) === ' > ') {
         parts.push({ text: ' > ', type: 'chain' });
         i += 3;
+        continue;
+      }
+      // Check for #groupName
+      if (text[i] === '#') {
+        let end = i + 1;
+        while (end < text.length && text[end] !== ' ' && text[end] !== '>') {
+          end++;
+        }
+        const groupText = text.substring(i, end);
+        const groupName = groupText.substring(1);
+        const isResolved = resolvedGroupRef.current.has(groupName) ||
+          groups.some((g) => g.name === groupName);
+        parts.push({ text: groupText, type: isResolved ? 'group' : 'normal' });
+        i = end;
         continue;
       }
       // Check for @mention
@@ -327,18 +498,35 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
         }
         const mentionText = text.substring(i, end);
         const username = mentionText.substring(1);
-        const isResolved = resolvedUsersRef.current.has(username);
-        parts.push({ text: mentionText, type: isResolved ? 'at' : 'normal' });
+        // Check for special keywords
+        if (username === 'group' || username === 'workspace') {
+          parts.push({ text: mentionText, type: 'special' });
+        } else {
+          const isResolved = resolvedUsersRef.current.has(username);
+          parts.push({ text: mentionText, type: isResolved ? 'at' : 'normal' });
+        }
         i = end;
         continue;
       }
       // Normal text
       let end = i + 1;
-      while (end < text.length && text[end] !== '@' && !(end + 2 < text.length && text.substring(end, end + 3) === ' > ')) {
+      while (end < text.length && text[end] !== '@' && text[end] !== '#' && !(end + 2 < text.length && text.substring(end, end + 3) === ' > ')) {
         end++;
       }
       parts.push({ text: text.substring(i, end), type: 'normal' });
       i = end;
+    }
+
+    // Post-process: normal text after a chain separator without @ is a blocker
+    for (let j = 0; j < parts.length; j++) {
+      if (
+        parts[j].type === 'normal' &&
+        j > 0 &&
+        parts[j - 1].type === 'chain' &&
+        !parts[j].text.startsWith('@')
+      ) {
+        parts[j].type = 'blocker';
+      }
     }
 
     return parts.map((part, idx) => {
@@ -356,6 +544,21 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
           <span key={idx} className="text-blue-400 font-medium">{part.text}</span>
         );
       }
+      if (part.type === 'group') {
+        return (
+          <span key={idx} className="text-green-400 font-medium">{part.text}</span>
+        );
+      }
+      if (part.type === 'special') {
+        return (
+          <span key={idx} className="text-purple-400 font-medium">{part.text}</span>
+        );
+      }
+      if (part.type === 'blocker') {
+        return (
+          <span key={idx} className="text-red-400 font-medium">{part.text}</span>
+        );
+      }
       return <span key={idx} className="text-foreground">{part.text}</span>;
     });
   };
@@ -364,33 +567,78 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
 
   return (
     <div className="relative px-8 pb-6 pt-4">
-      {/* Autocomplete dropdown — positioned above the input */}
-      {showAutocomplete && autocompleteResults.length > 0 && (
+      {/* Group autocomplete dropdown — positioned above the input */}
+      {showGroupAutocomplete && groupSuggestions.length > 0 && (
         <div className="absolute bottom-full left-8 right-8 mb-3 max-h-48 overflow-y-auto rounded-2xl border border-border bg-card/95 backdrop-blur-md shadow-2xl">
-          {autocompleteResults.map((user, index) => (
+          {groupSuggestions.map((group, index) => (
             <button
-              key={user.id}
-              onClick={() => selectUser(user)}
+              key={group.id}
+              onClick={() => selectGroup(group)}
               className={cn(
                 'flex w-full items-center gap-2.5 px-3.5 py-2.5 text-sm transition-colors',
-                index === selectedIndex
+                index === groupAutocompleteIndex
                   ? 'bg-accent text-accent-foreground'
                   : 'hover:bg-accent/50',
               )}
             >
-              <Avatar className="h-6 w-6" size="sm">
-                <AvatarFallback className="text-[9px] bg-secondary">
-                  {user.name.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+              <div className="flex h-6 w-6 items-center justify-center rounded-md bg-green-500/15">
+                <Hash className="h-3.5 w-3.5 text-green-400" />
+              </div>
               <div className="text-left min-w-0">
-                <p className="font-medium truncate">{user.name}</p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {user.email}
-                </p>
+                <p className="font-medium truncate">{group.name}</p>
               </div>
             </button>
           ))}
+        </div>
+      )}
+
+      {/* User autocomplete dropdown — positioned above the input */}
+      {showAutocomplete && autocompleteResults.length > 0 && (
+        <div className="absolute bottom-full left-8 right-8 mb-3 max-h-48 overflow-y-auto rounded-2xl border border-border bg-card/95 backdrop-blur-md shadow-2xl">
+          {autocompleteResults.map((item, index) => {
+            const isSpecial = 'special' in item;
+            return (
+              <button
+                key={item.id}
+                onClick={() => selectUser(item)}
+                className={cn(
+                  'flex w-full items-center gap-2.5 px-3.5 py-2.5 text-sm transition-colors',
+                  index === selectedIndex
+                    ? 'bg-accent text-accent-foreground'
+                    : 'hover:bg-accent/50',
+                )}
+              >
+                {isSpecial ? (
+                  <div className="flex h-6 w-6 items-center justify-center rounded-md bg-purple-500/15">
+                    <Users className="h-3.5 w-3.5 text-purple-400" />
+                  </div>
+                ) : (
+                  <Avatar className="h-6 w-6" size="sm">
+                    <AvatarFallback className="text-[9px] bg-secondary">
+                      {item.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                )}
+                <div className="text-left min-w-0">
+                  <p className={cn('font-medium truncate', isSpecial && 'text-purple-400')}>
+                    @{item.name}
+                  </p>
+                  {!isSpecial && 'email' in item && (
+                    <p className="text-xs text-muted-foreground truncate">
+                      {item.email}
+                    </p>
+                  )}
+                  {isSpecial && (
+                    <p className="text-xs text-muted-foreground truncate">
+                      {item.name === 'group'
+                        ? t('assignToGroup')
+                        : t('assignToWorkspace')}
+                    </p>
+                  )}
+                </div>
+              </button>
+            );
+          })}
         </div>
       )}
 
@@ -427,6 +675,26 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
                 className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors cursor-pointer"
               >
                 <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+
+              {/* Blocker button */}
+              <button
+                type="button"
+                onClick={() => insertAtCursor(' > ')}
+                title="Blocker"
+                className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors cursor-pointer"
+              >
+                <ShieldAlert className="h-3.5 w-3.5" />
+              </button>
+
+              {/* Group hash button */}
+              <button
+                type="button"
+                onClick={() => insertAtCursor('#')}
+                title={t('groupHashHint')}
+                className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors cursor-pointer"
+              >
+                <Hash className="h-3.5 w-3.5" />
               </button>
 
               {/* Priority button */}

@@ -21,10 +21,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Plus, Building2, ArrowUpDown, ArrowLeft, Hash } from 'lucide-react';
+import { Plus, Building2, ArrowUpDown, ArrowLeft, Hash, ArrowRightLeft } from 'lucide-react';
 import { QuickInput } from '@/components/tasks/quick-input';
+import { MoveTasksDialog } from '@/components/tasks/move-tasks-dialog';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+
+const PRIORITY_ORDER: Record<string, number> = {
+  URGENT: 0,
+  HIGH: 1,
+  MEDIUM: 2,
+  LOW: 3,
+};
 
 function CreateWorkspacePrompt() {
   const { createWorkspace } = useWorkspaceStore();
@@ -93,7 +101,21 @@ export default function WorkspacePage() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [openWithChat, setOpenWithChat] = useState(false);
-  const [sortBy, setSortBy] = useState<'priority' | 'dueDate'>('priority');
+  const [sortBy, setSortBy] = useState<'priority' | 'dueDate' | 'custom'>('priority');
+  const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set());
+  const [showMoveDialog, setShowMoveDialog] = useState(false);
+  const isSelecting = selectedTaskIds.size > 0;
+
+  const toggleTaskSelection = (taskId: string) => {
+    setSelectedTaskIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(taskId)) next.delete(taskId);
+      else next.add(taskId);
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelectedTaskIds(new Set());
   const searchParams = useSearchParams();
   const t = useTranslations('workspace');
   const tt = useTranslations('tasks');
@@ -101,6 +123,8 @@ export default function WorkspacePage() {
 
   const groupId = searchParams.get('group');
   const currentGroup = groupId ? groups.find((g) => g.id === groupId) : null;
+
+  useEffect(() => { clearSelection(); }, [groupId]);
 
   useEffect(() => {
     if (currentWorkspace) {
@@ -137,6 +161,7 @@ export default function WorkspacePage() {
   };
 
   const sortFn = useMemo(() => {
+    if (sortBy === 'custom') return null;
     if (sortBy === 'dueDate') {
       return (a: { dueDate?: string }, b: { dueDate?: string }) => {
         if (!a.dueDate && !b.dueDate) return 0;
@@ -145,19 +170,27 @@ export default function WorkspacePage() {
         return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
       };
     }
-    return null;
+    return (a: { priority: string; createdAt: string }, b: { priority: string; createdAt: string }) => {
+      const pa = PRIORITY_ORDER[a.priority] ?? 2;
+      const pb = PRIORITY_ORDER[b.priority] ?? 2;
+      if (pa !== pb) return pa - pb;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    };
   }, [sortBy]);
 
   const sortedActionRequired = useMemo(() => {
-    return sortFn ? [...actionRequired].sort(sortFn) : actionRequired;
+    if (!sortFn) return actionRequired;
+    return [...actionRequired].sort(sortFn);
   }, [actionRequired, sortFn]);
 
   const sortedWaiting = useMemo(() => {
-    return sortFn ? [...waiting].sort(sortFn) : waiting;
+    if (!sortFn) return waiting;
+    return [...waiting].sort(sortFn);
   }, [waiting, sortFn]);
 
   const sortedCompleted = useMemo(() => {
-    return sortFn ? [...completed].sort(sortFn) : completed;
+    if (!sortFn) return completed;
+    return [...completed].sort(sortFn);
   }, [completed, sortFn]);
 
   if (wsLoading) {
@@ -208,10 +241,10 @@ export default function WorkspacePage() {
             variant="ghost"
             size="sm"
             className="h-8 text-xs text-muted-foreground"
-            onClick={() => setSortBy(sortBy === 'priority' ? 'dueDate' : 'priority')}
+            onClick={() => setSortBy(sortBy === 'priority' ? 'dueDate' : sortBy === 'dueDate' ? 'custom' : 'priority')}
           >
             <ArrowUpDown className="mr-1 h-3.5 w-3.5" />
-            {sortBy === 'priority' ? tt('sortByPriority') : tt('sortByDueDate')}
+            {sortBy === 'priority' ? tt('sortByPriority') : sortBy === 'dueDate' ? tt('sortByDueDate') : tt('sortByCustom')}
           </Button>
           <kbd className="hidden sm:inline-flex h-5 items-center gap-0.5 rounded border border-border bg-muted px-1.5 text-[10px] text-muted-foreground">
             <span className="text-xs">&#8984;</span>K
@@ -243,9 +276,32 @@ export default function WorkspacePage() {
             waiting={sortedWaiting}
             completed={sortedCompleted}
             onSelectTask={handleSelectTask}
+            sortBy={sortBy}
+            workspaceId={currentWorkspace.id}
+            isSelecting={isSelecting}
+            selectedTaskIds={selectedTaskIds}
+            onToggleSelect={toggleTaskSelection}
           />
         )}
       </div>
+
+      {/* Selection Action Bar */}
+      {isSelecting && (
+        <div className="px-8 pb-2">
+          <div className="flex items-center justify-between rounded-xl bg-primary/10 border border-primary/20 px-4 py-2.5">
+            <span className="text-sm font-medium">{tt('selectedCount', { count: selectedTaskIds.size })}</span>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="outline" onClick={() => setShowMoveDialog(true)}>
+                <ArrowRightLeft className="mr-1 h-3.5 w-3.5" />
+                {tt('moveTo')}
+              </Button>
+              <Button size="sm" variant="ghost" onClick={clearSelection}>
+                {tt('clearSelection')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Quick Input */}
       <QuickInput taskGroupId={groupId || undefined} />
@@ -277,6 +333,17 @@ export default function WorkspacePage() {
           />
         )}
       </div>
+
+      {/* Move Tasks Dialog */}
+      {showMoveDialog && (
+        <MoveTasksDialog
+          open={showMoveDialog}
+          onClose={() => { setShowMoveDialog(false); clearSelection(); }}
+          selectedTaskIds={Array.from(selectedTaskIds)}
+          currentWorkspaceId={currentWorkspace.id}
+          currentGroupId={groupId || undefined}
+        />
+      )}
 
       {/* Onboarding Wizard */}
       <OnboardingWizard />

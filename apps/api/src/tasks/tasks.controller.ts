@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Get,
+  Put,
   Patch,
   Delete,
   Param,
@@ -14,7 +15,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { WorkspaceMemberGuard } from '../common/guards/workspace-member.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { TasksService } from './tasks.service';
-import { CreateTaskDto, UpdateTaskDto } from './dto/create-task.dto';
+import { CreateTaskDto, UpdateTaskDto, ReorderTasksDto, BatchMoveTasksDto } from './dto/create-task.dto';
 
 @ApiTags('tasks')
 @ApiBearerAuth()
@@ -96,5 +97,34 @@ export class TasksController {
   @ApiOperation({ summary: 'Delete a task' })
   delete(@Param('id') id: string, @CurrentUser('id') userId: string) {
     return this.tasksService.delete(id, userId);
+  }
+
+  @Put('workspaces/:workspaceId/tasks/reorder')
+  @UseGuards(WorkspaceMemberGuard)
+  @ApiOperation({ summary: 'Reorder tasks in workspace' })
+  reorder(
+    @Param('workspaceId') workspaceId: string,
+    @Body() dto: ReorderTasksDto,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.tasksService.reorderTasks(workspaceId, userId, dto.taskIds);
+  }
+
+  @Post('tasks/batch-move/check')
+  @ApiOperation({ summary: 'Check which tasks can be moved' })
+  batchMoveCheck(
+    @Body() dto: BatchMoveTasksDto,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.tasksService.batchMoveCheck(userId, dto);
+  }
+
+  @Post('tasks/batch-move')
+  @ApiOperation({ summary: 'Move tasks to different workspace/group' })
+  batchMove(
+    @Body() dto: BatchMoveTasksDto,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.tasksService.batchMoveExecute(userId, dto);
   }
 }
