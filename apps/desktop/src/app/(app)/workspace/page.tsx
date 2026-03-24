@@ -21,9 +21,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Plus, Building2, ArrowUpDown, ArrowLeft, Hash, ArrowRightLeft } from 'lucide-react';
+import { Plus, Building2, ArrowUpDown, ArrowLeft, Hash, ArrowRightLeft, Users, UserPlus, X } from 'lucide-react';
 import { QuickInput } from '@/components/tasks/quick-input';
 import { MoveTasksDialog } from '@/components/tasks/move-tasks-dialog';
+import { GroupMembersPopover } from '@/components/groups/group-members-popover';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
@@ -251,6 +252,9 @@ export default function WorkspacePage() {
                 : t('tasksAssignedToYou')}
             </p>
           </div>
+          {currentGroup && (
+            <GroupMembersPopover groupId={currentGroup.id} memberCount={currentGroup._count.members} />
+          )}
         </div>
         <div className="flex items-center gap-2">
           <Button
