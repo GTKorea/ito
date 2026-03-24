@@ -8,7 +8,7 @@ import { useAuthStore } from '@/stores/auth-store';
 import { api } from '@/lib/api-client';
 import { parseQuickInput } from '@/lib/quick-input-parser';
 import { useTranslations } from 'next-intl';
-import { Send, Loader2, AtSign, ChevronRight, Flag, CalendarDays, ShieldAlert, Hash, Users } from 'lucide-react';
+import { Send, Loader2, AtSign, ChevronRight, Flag, CalendarDays, ShieldAlert, Hash, Users, Vote } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 
@@ -51,6 +51,7 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
   const [priority, setPriority] = useState<string | null>(null);
   const [dueDate, setDueDate] = useState<string | null>(null);
   const [showPriorityMenu, setShowPriorityMenu] = useState(false);
+  const [isVoteMode, setIsVoteMode] = useState(false);
 
   // Map of display name -> user ID for resolved mentions
   const resolvedUsersRef = useRef<Map<string, string>>(new Map());
@@ -300,6 +301,8 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
         priority ?? undefined,
         dueDate ?? undefined,
         effectiveGroupId,
+        isVoteMode ? 'VOTE' : undefined,
+        isVoteMode ? { mode: 'approve_reject', options: ['approve', 'reject', 'abstain'], allowChange: true, anonymous: false } : undefined,
       );
 
       if (parsed.chain.length > 0) {
@@ -367,6 +370,7 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
       setInput('');
       setPriority(null);
       setDueDate(null);
+      setIsVoteMode(false);
       resolvedUsersRef.current.clear();
       resolvedGroupRef.current.clear();
       setTimeout(() => inputRef.current?.focus(), 0);
@@ -773,12 +777,45 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
                   tabIndex={-1}
                 />
               </div>
+
+              {/* Vote button */}
+              <button
+                type="button"
+                onClick={() => {
+                  setIsVoteMode((prev) => !prev);
+                  inputRef.current?.focus();
+                }}
+                title={t('voteTask')}
+                className={cn(
+                  'flex h-7 w-7 items-center justify-center rounded-md transition-colors',
+                  'cursor-pointer',
+                  isVoteMode
+                    ? 'text-purple-400 bg-purple-400/10'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
+                )}
+              >
+                <Vote className="h-3.5 w-3.5" />
+              </button>
             </div>
         </div>
 
         {/* Badges row — shows selected priority/due date */}
-        {(selectedPriority || dueDate) && (
+        {(selectedPriority || dueDate || isVoteMode) && (
           <div className="flex items-center gap-1.5 px-4 pt-2">
+            {isVoteMode && (
+              <span className="inline-flex items-center gap-1 rounded-md bg-purple-500/15 px-2 py-0.5 text-[11px] font-medium text-purple-400">
+                <Vote className="h-3 w-3" />
+                {t('voteTask')}
+                <button
+                  type="button"
+                  onClick={() => setIsVoteMode(false)}
+                  onMouseDown={handleToolbarMouseDown}
+                  className="ml-0.5 hover:opacity-70 cursor-pointer"
+                >
+                  x
+                </button>
+              </span>
+            )}
             {selectedPriority && (
               <span
                 className={cn(

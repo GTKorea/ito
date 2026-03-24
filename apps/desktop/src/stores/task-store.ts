@@ -80,7 +80,7 @@ interface TaskState {
   fetchCategorizedTasks: (workspaceId: string, taskGroupId?: string) => Promise<void>;
   fetchCalendarTasks: (workspaceId: string, start: string, end: string) => Promise<void>;
   fetchCalendarEvents: (start: string, end: string) => Promise<void>;
-  createTask: (workspaceId: string, title: string, description?: string, priority?: string, dueDate?: string, taskGroupId?: string) => Promise<Task>;
+  createTask: (workspaceId: string, title: string, description?: string, priority?: string, dueDate?: string, taskGroupId?: string, type?: string, voteConfig?: any) => Promise<Task>;
   updateTask: (id: string, data: Partial<Task>) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
   connectChain: (taskId: string, userIds: string[]) => Promise<any>;
@@ -188,13 +188,15 @@ export const useTaskStore = create<TaskState>((set) => ({
     }
   },
 
-  createTask: async (workspaceId, title, description, priority, dueDate, taskGroupId) => {
+  createTask: async (workspaceId, title, description, priority, dueDate, taskGroupId, type, voteConfig) => {
     const { data } = await api.post(`/workspaces/${workspaceId}/tasks`, {
       title,
       description,
       priority,
       dueDate,
       taskGroupId,
+      ...(type ? { type } : {}),
+      ...(voteConfig ? { voteConfig } : {}),
     });
     set((state) => ({ actionRequired: [data, ...state.actionRequired] }));
     // Optimistic update: increment group task count in sidebar
