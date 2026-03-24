@@ -1,7 +1,7 @@
 'use client';
 
-import { useCallback } from 'react';
-import { usePathname } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -23,15 +23,41 @@ const breadcrumbMap: Record<string, string> = {
 
 export function TopHeader() {
   const pathname = usePathname();
+  const router = useRouter();
   const t = useTranslations('sidebar');
+  const [navHistory, setNavHistory] = useState<string[]>([]);
+  const [navIndex, setNavIndex] = useState(-1);
+
+  // Track navigation history to enable/disable back/forward
+  useEffect(() => {
+    setNavHistory((prev) => {
+      const trimmed = prev.slice(0, navIndex + 1);
+      if (trimmed[trimmed.length - 1] === pathname) return prev;
+      const next = [...trimmed, pathname];
+      setNavIndex(next.length - 1);
+      return next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  const canGoBack = navIndex > 0;
+  const canGoForward = navIndex < navHistory.length - 1;
 
   const handleBack = useCallback(() => {
-    window.history.back();
-  }, []);
+    if (canGoBack) {
+      const prev = navHistory[navIndex - 1];
+      setNavIndex((i) => i - 1);
+      router.push(prev);
+    }
+  }, [canGoBack, navHistory, navIndex, router]);
 
   const handleForward = useCallback(() => {
-    window.history.forward();
-  }, []);
+    if (canGoForward) {
+      const next = navHistory[navIndex + 1];
+      setNavIndex((i) => i + 1);
+      router.push(next);
+    }
+  }, [canGoForward, navHistory, navIndex, router]);
 
   const handleSearch = useCallback(() => {
     document.dispatchEvent(
@@ -52,19 +78,24 @@ export function TopHeader() {
 
   return (
     <header
-      className={cn(
-        'flex h-12 shrink-0 items-center gap-1 border-b border-border px-3',
-        tauri && 'pl-[70px]',
-      )}
+      className="flex h-11 shrink-0 items-center border-b border-border/50 bg-card/50"
       {...(tauri ? { 'data-tauri-drag-region': '' } : {})}
+      style={tauri ? { WebkitAppRegion: 'drag' } as React.CSSProperties : undefined}
     >
+      <div className="w-3 shrink-0" />
       {/* Navigation buttons */}
-      <div className="flex items-center">
+      <div className="flex items-center gap-0.5">
         <Button
           variant="ghost"
           size="icon-sm"
           onClick={handleBack}
-          className="text-muted-foreground"
+          disabled={!canGoBack}
+          className={cn(
+            'h-7 w-7 rounded-md transition-colors',
+            canGoBack
+              ? 'text-muted-foreground hover:text-foreground'
+              : 'text-muted-foreground/30 cursor-default',
+          )}
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
@@ -72,7 +103,13 @@ export function TopHeader() {
           variant="ghost"
           size="icon-sm"
           onClick={handleForward}
-          className="text-muted-foreground"
+          disabled={!canGoForward}
+          className={cn(
+            'h-7 w-7 rounded-md transition-colors',
+            canGoForward
+              ? 'text-muted-foreground hover:text-foreground'
+              : 'text-muted-foreground/30 cursor-default',
+          )}
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
@@ -80,24 +117,24 @@ export function TopHeader() {
 
       {/* Breadcrumb */}
       {breadcrumbLabel && (
-        <span className="text-sm font-medium text-foreground ml-1">
+        <span className="text-[13px] font-medium text-foreground/80 ml-2 select-none">
           {breadcrumbLabel}
         </span>
       )}
 
-      {/* Spacer */}
+      {/* Spacer — draggable */}
       <div className="flex-1" {...(tauri ? { 'data-tauri-drag-region': '' } : {})} />
 
-      {/* Search button */}
+      {/* Search */}
       <Button
         variant="ghost"
         size="sm"
         onClick={handleSearch}
-        className="text-muted-foreground gap-2"
+        className="text-muted-foreground gap-1.5 mr-3 h-7 px-2 rounded-md hover:bg-muted/50"
       >
         <Search className="h-3.5 w-3.5" />
-        <span className="text-xs text-muted-foreground/70">Search...</span>
-        <kbd className="pointer-events-none ml-1 hidden h-5 select-none items-center gap-0.5 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground sm:inline-flex">
+        <span className="text-xs text-muted-foreground/60">Search...</span>
+        <kbd className="pointer-events-none ml-1 hidden h-5 select-none items-center gap-0.5 rounded border border-border/50 bg-muted/50 px-1.5 font-mono text-[10px] font-medium text-muted-foreground/60 sm:inline-flex">
           <span className="text-xs">&#8984;</span>K
         </kbd>
       </Button>

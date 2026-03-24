@@ -17,7 +17,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [pendingProvider, setPendingProvider] = useState<'google' | 'github' | null>(null);
   const [isDesktop, setIsDesktop] = useState(false);
-  const { login } = useAuthStore();
+  const { login, isAuthenticated } = useAuthStore();
   const router = useRouter();
   const t = useTranslations('auth');
   const tc = useTranslations('common');
@@ -31,6 +31,13 @@ export default function LoginPage() {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, []);
+
+  // 이미 로그인된 상태면 workspace로 리디렉트
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace('/workspace');
+    }
+  }, [isAuthenticated, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

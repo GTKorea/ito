@@ -24,6 +24,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { isTauri } from '@/lib/platform';
 import { useAuthStore } from '@/stores/auth-store';
 import { useNotificationStore } from '@/stores/notification-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
@@ -56,6 +57,7 @@ interface SidebarProps {
 export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const tauri = isTauri();
   const { user, logout } = useAuthStore();
   const { unreadCount } = useNotificationStore();
   const { currentWorkspace } = useWorkspaceStore();
@@ -104,6 +106,15 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
         collapsed ? 'w-16' : 'w-56',
       )}
     >
+      {/* macOS traffic light spacer + drag region */}
+      {tauri && (
+        <div
+          className="h-8 shrink-0"
+          data-tauri-drag-region
+          style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
+        />
+      )}
+
       {/* Workspace switcher */}
       {collapsed ? (
         <div className="flex h-12 items-center justify-center border-b border-border">
