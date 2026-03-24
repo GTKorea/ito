@@ -83,8 +83,8 @@ export function TopHeader() {
       style={tauri ? { WebkitAppRegion: 'drag' } as React.CSSProperties : undefined}
     >
       <div className="w-3 shrink-0" />
-      {/* Navigation buttons */}
-      <div className="flex items-center gap-0.5">
+      {/* Navigation buttons — no-drag to prevent blocking window drag */}
+      <div className="flex items-center gap-0.5" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
         <Button
           variant="ghost"
           size="icon-sm"
@@ -117,7 +117,7 @@ export function TopHeader() {
 
       {/* Breadcrumb */}
       {breadcrumbLabel && (
-        <span className="text-[13px] font-medium text-foreground/80 ml-2 select-none">
+        <span className="text-[13px] font-medium text-foreground/80 ml-2 select-none" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
           {breadcrumbLabel}
         </span>
       )}
@@ -125,12 +125,13 @@ export function TopHeader() {
       {/* Spacer — draggable */}
       <div className="flex-1" {...(tauri ? { 'data-tauri-drag-region': '' } : {})} />
 
-      {/* Search */}
+      {/* Search — no-drag */}
       <Button
         variant="ghost"
         size="sm"
         onClick={handleSearch}
         className="text-muted-foreground gap-1.5 mr-3 h-7 px-2 rounded-md hover:bg-muted/50"
+        style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
       >
         <Search className="h-3.5 w-3.5" />
         <span className="text-xs text-muted-foreground/60">Search...</span>

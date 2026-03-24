@@ -56,17 +56,42 @@ export default function LoginPage() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3011';
 
   const handleOAuth = async (provider: 'google' | 'github') => {
+    const state = crypto.randomUUID();
+
     if (isDesktop) {
-      const state = crypto.randomUUID();
       const url = `${API_URL}/auth/${provider}/init?from=${encodeURIComponent('ito://')}&state=${encodeURIComponent(state)}`;
 
+      // 데스크톱: 반드시 외부 브라우저로 열어야 함
       let shellOpened = false;
+
+      // 1차 시도: Tauri shell plugin
       try {
         const { open } = await import('@tauri-apps/plugin-shell');
         await open(url);
         shellOpened = true;
       } catch (err) {
-        console.warn('[OAuth] shell.open failed, falling back to webview navigation:', err);
+        console.warn('[OAuth] shell.open failed:', err);
+      }
+
+      // 2차 시도: Tauri invoke (shell plugin 없을 때)
+      if (!shellOpened) {
+        try {
+          const { invoke } = await import('@tauri-apps/api/core');
+          await invoke('plugin:shell|open', { path: url });
+          shellOpened = true;
+        } catch (err2) {
+          console.warn('[OAuth] invoke shell failed:', err2);
+        }
+      }
+
+      // 3차 시도: window.open (외부 팝업)
+      if (!shellOpened) {
+        try {
+          const popup = window.open(url, '_blank');
+          if (popup) shellOpened = true;
+        } catch (err3) {
+          console.warn('[OAuth] window.open failed:', err3);
+        }
       }
 
       if (shellOpened) {
@@ -99,11 +124,10 @@ export default function LoginPage() {
           setPendingProvider(null);
         }, 5 * 60 * 1000);
       } else {
-        // shell plugin 실패 → webview에서 직접 OAuth 진행 (웹 플로우 사용)
-        // from을 웹 origin으로 보내서 서버가 /callback으로 리디렉트하도록 함
+        // 모든 외부 브라우저 시도 실패 시에만 webview fallback
+        console.error('[OAuth] All external browser methods failed, using webview fallback');
         const webUrl = `${API_URL}/auth/${provider}/init?from=${encodeURIComponent(window.location.origin)}&state=${encodeURIComponent(state)}`;
         window.location.href = webUrl;
-        return;
       }
     } else {
       // Web: navigate directly, callback redirects back to this origin.
