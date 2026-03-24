@@ -4,7 +4,7 @@
   "version": "0.9.3",
   "identifier": "com.ito.app",
   "build": {
-    "frontendDist": "https://itothread.com",
+    "frontendDist": "../out",
     "devUrl": "http://localhost:3010",
     "beforeDevCommand": "pnpm dev",
     "beforeBuildCommand": "pnpm build"
