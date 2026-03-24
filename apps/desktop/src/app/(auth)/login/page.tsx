@@ -55,9 +55,11 @@ export default function LoginPage() {
       try {
         const { open } = await import('@tauri-apps/plugin-shell');
         await open(url);
-      } catch {
-        window.location.href = url;
-        return;
+      } catch (err) {
+        console.error('Failed to open external browser:', err);
+        // Fallback: try window.open with _blank to avoid navigating webview
+        window.open(url, '_blank');
+        // Do NOT use window.location.href as that navigates the app webview
       }
 
       setPendingProvider(provider);
