@@ -50,6 +50,7 @@ interface Task {
   order?: number;
   creator: User;
   assignee: User;
+  taskGroup?: { id: string; name: string } | null;
   threadLinks: ThreadLink[];
   createdAt: string;
   _count?: { files: number; chatMessages: number };

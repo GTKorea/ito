@@ -10,6 +10,7 @@ interface TaskGroup {
   workspaceId?: string;
   sharedSpaceId?: string;
   createdById: string;
+  isPrivate?: boolean;
   createdBy: { id: string; name: string; avatarUrl?: string };
   _count: { members: number; tasks: number };
 }

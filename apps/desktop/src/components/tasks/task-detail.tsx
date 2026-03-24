@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { ChatPanel } from '@/components/chat/chat-panel';
 import { VotePanel } from '@/components/tasks/vote-panel';
 import { useAuthStore } from '@/stores/auth-store';
@@ -53,6 +54,7 @@ interface TaskDetailProps {
 export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps) {
   const { updateTask } = useTaskStore();
   const { user } = useAuthStore();
+  const { isMobile } = useMediaQuery();
   const [task, setTask] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [title, setTitle] = useState('');
@@ -158,8 +160,22 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
 
   if (showChat) {
     return (
-      <div className="flex h-full w-full bg-[#0F0F0F]">
-        <ChatPanel taskId={taskId} onClose={() => setShowChat(false)} />
+      <div className="flex h-full w-full flex-col bg-[#0F0F0F]">
+        <div className="flex-1 min-h-0">
+          <ChatPanel taskId={taskId} onClose={() => setShowChat(false)} />
+        </div>
+        {isMobile && (
+          <div className="flex justify-center py-3 border-t border-border shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-10 w-10 rounded-full bg-accent/50"
+              onClick={onClose}
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+        )}
       </div>
     );
   }
@@ -458,6 +474,20 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
           </div>
         )}
       </div>
+
+      {/* Mobile: thumb-friendly close button at the bottom */}
+      {isMobile && (
+        <div className="flex justify-center py-3 border-t border-border shrink-0">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-10 w-10 rounded-full bg-accent/50"
+            onClick={onClose}
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

@@ -877,6 +877,7 @@
     "addMember": "멤버 추가",
     "removeMember": "멤버 제거",
     "noGroups": "그룹이 없습니다",
+    "myPrivateGroup": "내 태스크",
     "tasks": "태스크",
     "allTasks": "전체 태스크",
     "inviteMembers": "멤버 초대",

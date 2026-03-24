@@ -37,6 +37,7 @@ interface Task {
   voteConfig?: any;
   creator: User;
   assignee: User;
+  taskGroup?: { id: string; name: string } | null;
   threadLinks: ThreadLink[];
   createdAt: string;
 }

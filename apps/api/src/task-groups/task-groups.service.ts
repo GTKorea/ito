@@ -50,7 +50,16 @@ export class TaskGroupsService {
         workspaceId,
         members: { some: { userId } },
       },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        workspaceId: true,
+        sharedSpaceId: true,
+        createdById: true,
+        isPrivate: true,
+        createdAt: true,
+        updatedAt: true,
         _count: { select: { members: true, tasks: { where: { status: { notIn: ['COMPLETED', 'CANCELLED'] } } } } },
         createdBy: { select: { id: true, name: true, avatarUrl: true } },
       },
@@ -107,6 +116,9 @@ export class TaskGroupsService {
   async delete(id: string, userId: string) {
     const group = await this.prisma.taskGroup.findUnique({ where: { id } });
     if (!group) throw new NotFoundException('Task group not found');
+    if (group.isPrivate) {
+      throw new ForbiddenException('Cannot delete private groups');
+    }
     if (group.createdById !== userId) {
       throw new ForbiddenException('Only the creator can delete this group');
     }

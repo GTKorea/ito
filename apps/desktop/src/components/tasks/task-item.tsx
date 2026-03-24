@@ -44,10 +44,16 @@ import {
   ArrowDownFromLine,
   Paperclip,
   Bell,
+  Hash,
 } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useMediaQuery } from '@/hooks/use-media-query';
 
 // Status names are now translated via useTranslations
 
@@ -78,6 +84,7 @@ interface TaskItemProps {
     voteConfig?: any;
     creator: { id: string; name: string; avatarUrl?: string };
     assignee?: { id: string; name: string; avatarUrl?: string };
+    taskGroup?: { id: string; name: string } | null;
     threadLinks: Array<{
       id: string;
       fromUser: { id: string; name: string; avatarUrl?: string };
@@ -100,7 +107,15 @@ interface TaskItemProps {
   onToggleSelect?: (id: string) => void;
 }
 
-export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, isSelected, onToggleSelect }: TaskItemProps) {
+export function TaskItem({
+  task,
+  onSelect,
+  section,
+  isDraggable,
+  isSelecting,
+  isSelected,
+  onToggleSelect,
+}: TaskItemProps) {
   const [showConnect, setShowConnect] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [isResolving, setIsResolving] = useState(false);
@@ -111,8 +126,17 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
   const [showReminderInput, setShowReminderInput] = useState(false);
   const [reminderDate, setReminderDate] = useState('');
   const [reminderTime, setReminderTime] = useState('');
-  const { updateTask, deleteTask, resolveThread, resolveBlocker, declineThread, pullThread, pullCurrentAssignee } = useTaskStore();
+  const {
+    updateTask,
+    deleteTask,
+    resolveThread,
+    resolveBlocker,
+    declineThread,
+    pullThread,
+    pullCurrentAssignee,
+  } = useTaskStore();
   const { user } = useAuthStore();
+  const { isMobile } = useMediaQuery();
   const t = useTranslations('tasks');
   const tc = useTranslations('common');
   const statusNames: Record<string, string> = {
@@ -150,7 +174,9 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
     const now = new Date();
     now.setHours(0, 0, 0, 0);
     due.setHours(0, 0, 0, 0);
-    const diff = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    const diff = Math.ceil(
+      (due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+    );
     if (diff < 0) return { text: t('overdue'), color: 'text-red-500' };
     if (diff === 0) return { text: t('dueToday'), color: 'text-yellow-500' };
     if (diff === 1) return { text: t('dueTomorrow'), color: 'text-yellow-500' };
@@ -182,31 +208,53 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
 
   // Only show Done/Decline for pending links where I'm the recipient, and only in actionRequired section
   const assigneeId = task.assignee?.id;
-  const pendingLink = section === 'actionRequired' && assigneeId && user?.id
-    ? task.threadLinks.find(
-        (l) => l.status === 'PENDING' && l.toUser?.id === assigneeId && assigneeId === user.id && l.type !== 'BLOCKER',
-      )
-    : undefined;
+  const pendingLink =
+    section === 'actionRequired' && assigneeId && user?.id
+      ? task.threadLinks.find(
+          (l) =>
+            l.status === 'PENDING' &&
+            l.toUser?.id === assigneeId &&
+            assigneeId === user.id &&
+            l.type !== 'BLOCKER'
+        )
+      : undefined;
 
   // Find pending blocker links that I created (I can self-resolve) — show in both actionRequired and waiting
-  const pendingBlocker = (section === 'actionRequired' || section === 'waiting') && user?.id
-    ? task.threadLinks.find(
-        (l) => l.status === 'PENDING' && l.type === 'BLOCKER' && l.fromUser.id === user.id,
-      )
-    : undefined;
+  const pendingBlocker =
+    (section === 'actionRequired' || section === 'waiting') && user?.id
+      ? task.threadLinks.find(
+          (l) =>
+            l.status === 'PENDING' &&
+            l.type === 'BLOCKER' &&
+            l.fromUser.id === user.id
+        )
+      : undefined;
 
   // Show Done button for self-assigned tasks (no pending thread link or blocker)
-  const canComplete = section === 'actionRequired' && isAssignee && !pendingLink && !pendingBlocker && task.status !== 'COMPLETED';
+  const canComplete =
+    section === 'actionRequired' &&
+    isAssignee &&
+    !pendingLink &&
+    !pendingBlocker &&
+    task.status !== 'COMPLETED';
 
   // Pull thread logic: in waiting section, find a PENDING link where I'm the fromUser
-  const pullableLink = section === 'waiting' && user?.id
-    ? task.threadLinks.find(
-        (l) => l.status === 'PENDING' && l.fromUser.id === user.id && l.type !== 'BLOCKER',
-      )
-    : undefined;
+  const pullableLink =
+    section === 'waiting' && user?.id
+      ? task.threadLinks.find(
+          (l) =>
+            l.status === 'PENDING' &&
+            l.fromUser.id === user.id &&
+            l.type !== 'BLOCKER'
+        )
+      : undefined;
   // If no direct pullable link but task is forwarded down chain, use pullCurrentAssignee
-  const canPullAssignee = section === 'waiting' && user?.id && !pullableLink
-    && task.creator.id === user.id && task.assignee?.id !== user.id;
+  const canPullAssignee =
+    section === 'waiting' &&
+    user?.id &&
+    !pullableLink &&
+    task.creator.id === user.id &&
+    task.assignee?.id !== user.id;
 
   const handlePull = async () => {
     if (isPulling) return;
@@ -233,7 +281,7 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
       className={cn(
         'group rounded-lg border border-border bg-card p-3 hover:border-border/80 transition-colors',
         isSelected && 'bg-primary/5 border-primary/20',
-        isDragging && 'shadow-lg',
+        isDragging && 'shadow-lg'
       )}
     >
       <div className="flex items-center gap-3">
@@ -267,20 +315,31 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
         </span>
 
         {/* Content */}
-        <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onSelect?.(task.id)}>
+        <div
+          className="flex-1 min-w-0 cursor-pointer"
+          onClick={() => onSelect?.(task.id)}
+        >
           <div className="flex items-center gap-2">
             {priorityConfig[task.priority] && (
               <Tooltip>
                 <TooltipTrigger render={<span className="shrink-0" />}>
-                  <Flag className={cn('h-3 w-3', priorityConfig[task.priority].color)} />
+                  <Flag
+                    className={cn(
+                      'h-3 w-3',
+                      priorityConfig[task.priority].color
+                    )}
+                  />
                 </TooltipTrigger>
-                <TooltipContent side="top">{t(task.priority.toLowerCase())}</TooltipContent>
+                <TooltipContent side="top">
+                  {t(task.priority.toLowerCase())}
+                </TooltipContent>
               </Tooltip>
             )}
             <span
               className={cn(
                 'text-sm font-medium',
-                task.status === 'COMPLETED' && 'line-through text-muted-foreground',
+                task.status === 'COMPLETED' &&
+                  'line-through text-muted-foreground'
               )}
             >
               {task.title}
@@ -289,6 +348,12 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
               <span className="inline-flex items-center gap-0.5 text-[10px] text-purple-400 bg-purple-400/10 px-1.5 py-0.5 rounded">
                 <Vote className="h-2.5 w-2.5" />
                 {t('voteTask')}
+              </span>
+            )}
+            {task.taskGroup && (
+              <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground bg-accent/50 px-1.5 py-0.5 rounded">
+                <Hash className="h-2.5 w-2.5" />
+                {task.taskGroup.name}
               </span>
             )}
             {hasThreads && (
@@ -316,9 +381,13 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
           {/* Blocker indicator */}
           {pendingBlocker && (
             <Tooltip>
-              <TooltipTrigger render={<div className="flex items-center gap-1 mt-1 cursor-default" />}>
+              <TooltipTrigger
+                render={
+                  <div className="flex items-center gap-1 mt-1 cursor-default" />
+                }
+              >
                 <ShieldAlert className="h-3 w-3 text-red-400" />
-                <span className="text-[10px] text-red-400 truncate max-w-[200px]">
+                <span className="text-[10px] text-red-400 truncate max-w-[500px]">
                   {pendingBlocker.blockerNote}
                 </span>
               </TooltipTrigger>
@@ -334,7 +403,12 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
             </p>
           )}
           {dueDateInfo && (
-            <div className={cn('flex items-center gap-1 mt-0.5', dueDateInfo.color)}>
+            <div
+              className={cn(
+                'flex items-center gap-1 mt-0.5',
+                dueDateInfo.color
+              )}
+            >
               <Calendar className="h-3 w-3" />
               <span className="text-[10px]">{dueDateInfo.text}</span>
             </div>
@@ -342,7 +416,8 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
         </div>
 
         {/* Attachment & chat indicators */}
-        {(task._count?.files ?? 0) > 0 || (task._count?.chatMessages ?? 0) > 0 ? (
+        {(task._count?.files ?? 0) > 0 ||
+        (task._count?.chatMessages ?? 0) > 0 ? (
           <div className="flex items-center gap-1.5 shrink-0">
             {(task._count?.files ?? 0) > 0 && (
               <Paperclip className="h-3 w-3 text-muted-foreground" />
@@ -360,8 +435,8 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
           </div>
         ) : null}
 
-        {/* Assignee avatar */}
-        {task.assignee && (
+        {/* Assignee avatar — hidden on mobile */}
+        {!isMobile && task.assignee && (
           <UserProfilePopover userId={task.assignee.id}>
             <Avatar className="h-6 w-6 shrink-0">
               <AvatarFallback className="text-[9px] bg-secondary">
@@ -371,88 +446,264 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
           </UserProfilePopover>
         )}
 
-        {/* Actions */}
-        <div className="relative flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
-          {canComplete && (
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-7 text-xs text-green-500 hover:text-green-400"
-              onClick={() => updateTask(task.id, { status: 'COMPLETED' })}
-            >
-              <Check className="h-3.5 w-3.5 mr-1" />
-              {tc('done')}
-            </Button>
-          )}
-          {pendingBlocker && (
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-7 text-xs text-orange-500 hover:text-orange-400"
-                    disabled={isResolving}
-                    onClick={async () => {
-                      setIsResolving(true);
-                      try { await resolveBlocker(pendingBlocker.id); } catch { setIsResolving(false); }
-                    }}
-                  />
-                }
-              >
-                <Check className="h-3.5 w-3.5 mr-1" />
-                {isResolving ? t('resolving') : t('resolveBlocker')}
-              </TooltipTrigger>
-              <TooltipContent>{pendingBlocker.blockerNote}</TooltipContent>
-            </Tooltip>
-          )}
-          {pendingLink && (
-            <>
+        {/* Actions — desktop: inline with labels */}
+        {!isMobile && (
+          <div className="relative flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+            {canComplete && (
               <Button
                 size="sm"
                 variant="ghost"
                 className="h-7 text-xs text-green-500 hover:text-green-400"
-                disabled={isResolving}
-                onClick={() => handleResolve(pendingLink.id)}
+                onClick={() => updateTask(task.id, { status: 'COMPLETED' })}
               >
                 <Check className="h-3.5 w-3.5 mr-1" />
-                {isResolving ? t('resolving') : tc('done')}
+                {tc('done')}
               </Button>
+            )}
+            {pendingBlocker && (
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 text-xs text-orange-500 hover:text-orange-400"
+                      disabled={isResolving}
+                      onClick={async () => {
+                        setIsResolving(true);
+                        try {
+                          await resolveBlocker(pendingBlocker.id);
+                        } catch {
+                          setIsResolving(false);
+                        }
+                      }}
+                    />
+                  }
+                >
+                  <Check className="h-3.5 w-3.5 mr-1" />
+                  {isResolving ? t('resolving') : t('resolveBlocker')}
+                </TooltipTrigger>
+                <TooltipContent>{pendingBlocker.blockerNote}</TooltipContent>
+              </Tooltip>
+            )}
+            {pendingLink && (
+              <>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 text-xs text-green-500 hover:text-green-400"
+                  disabled={isResolving}
+                  onClick={() => handleResolve(pendingLink.id)}
+                >
+                  <Check className="h-3.5 w-3.5 mr-1" />
+                  {isResolving ? t('resolving') : tc('done')}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 text-xs text-red-500 hover:text-red-400"
+                  disabled={isDeclining}
+                  onClick={() => setShowDecline(true)}
+                >
+                  <X className="h-3.5 w-3.5 mr-1" />
+                  {t('decline')}
+                </Button>
+              </>
+            )}
+            {(pullableLink || canPullAssignee) && (
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 text-xs text-amber-500 hover:text-amber-400"
+                      disabled={isPulling}
+                      onClick={handlePull}
+                    />
+                  }
+                >
+                  <ArrowDownFromLine className="h-3.5 w-3.5 mr-1" />
+                  {isPulling ? '...' : t('pullThread')}
+                </TooltipTrigger>
+                <TooltipContent>{t('pullTooltip')}</TooltipContent>
+              </Tooltip>
+            )}
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 w-7 p-0"
+              onClick={() => onSelect?.(task.id, true)}
+            >
+              <MessageCircle className="h-3.5 w-3.5" />
+            </Button>
+            {section === 'actionRequired' && (
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-7 text-xs text-red-500 hover:text-red-400"
-                disabled={isDeclining}
-                onClick={() => setShowDecline(true)}
+                className="h-7 text-xs"
+                onClick={() => setShowConnect(true)}
+                data-onboarding="connect-thread"
               >
-                <X className="h-3.5 w-3.5 mr-1" />
-                {t('decline')}
+                <Link2 className="h-3.5 w-3.5 mr-1" />
+                {t('connect')}
               </Button>
-            </>
+            )}
+
+            <DropdownMenu>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <DropdownMenuTrigger
+                      render={
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0"
+                        />
+                      }
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </DropdownMenuTrigger>
+                  }
+                />
+                <TooltipContent>{t('moreActions')}</TooltipContent>
+              </Tooltip>
+              <DropdownMenuContent align="end">
+                {onToggleSelect && (
+                  <DropdownMenuItem onClick={() => onToggleSelect(task.id)}>
+                    <Check className="mr-2 h-4 w-4" />
+                    {tc('select')}
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowReminderInput(true);
+                  }}
+                >
+                  <Bell className="mr-2 h-4 w-4" />
+                  {t('setReminder')}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="text-destructive"
+                  onClick={() => deleteTask(task.id)}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  {tc('delete')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            {showReminderInput && (
+              <div className="absolute right-0 top-full mt-1 z-50 rounded-lg border border-border bg-[#1A1A1A] p-3 shadow-xl space-y-2 min-w-[220px]">
+                <p className="text-xs font-medium text-muted-foreground">
+                  {t('setReminder')}
+                </p>
+                <input
+                  type="date"
+                  value={reminderDate}
+                  onChange={(e) => setReminderDate(e.target.value)}
+                  className="h-7 w-full rounded border border-border bg-background px-2 text-xs"
+                />
+                <input
+                  type="time"
+                  value={reminderTime}
+                  onChange={(e) => setReminderTime(e.target.value)}
+                  className="h-7 w-full rounded border border-border bg-background px-2 text-xs"
+                />
+                <div className="flex gap-1.5">
+                  <button
+                    onClick={() => setShowReminderInput(false)}
+                    className="flex-1 h-7 rounded text-xs text-muted-foreground hover:bg-accent/50"
+                  >
+                    {tc('cancel')}
+                  </button>
+                  <button
+                    onClick={async () => {
+                      if (!reminderDate || !reminderTime) return;
+                      try {
+                        const { api } = await import('@/lib/api-client');
+                        await api.post(`/tasks/${task.id}/reminder`, {
+                          remindAt: new Date(
+                            `${reminderDate}T${reminderTime}`
+                          ).toISOString(),
+                        });
+                        setShowReminderInput(false);
+                        setReminderDate('');
+                        setReminderTime('');
+                        toast.success(t('reminderSet'));
+                      } catch {
+                        toast.error(t('reminderExists') || 'Failed');
+                      }
+                    }}
+                    className="flex-1 h-7 rounded bg-primary text-xs text-primary-foreground hover:bg-primary/90"
+                  >
+                    {tc('save')}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Actions — mobile: icon-only compact bar below title */}
+      {isMobile && (
+        <div className="relative flex items-center gap-0.5 mt-1.5 ml-7">
+          {canComplete && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 w-6 p-0 text-green-500 hover:text-green-400"
+              onClick={() => updateTask(task.id, { status: 'COMPLETED' })}
+            >
+              <Check className="h-3.5 w-3.5" />
+            </Button>
+          )}
+          {pendingBlocker && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 w-6 p-0 text-orange-500 hover:text-orange-400"
+              disabled={isResolving}
+              onClick={async () => {
+                setIsResolving(true);
+                try {
+                  await resolveBlocker(pendingBlocker.id);
+                } catch {
+                  setIsResolving(false);
+                }
+              }}
+            >
+              <Check className="h-3.5 w-3.5" />
+            </Button>
+          )}
+          {pendingLink && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 w-6 p-0 text-green-500 hover:text-green-400"
+              disabled={isResolving}
+              onClick={() => handleResolve(pendingLink.id)}
+            >
+              <Check className="h-3.5 w-3.5" />
+            </Button>
           )}
           {(pullableLink || canPullAssignee) && (
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-7 text-xs text-amber-500 hover:text-amber-400"
-                    disabled={isPulling}
-                    onClick={handlePull}
-                  />
-                }
-              >
-                <ArrowDownFromLine className="h-3.5 w-3.5 mr-1" />
-                {isPulling ? '...' : t('pullThread')}
-              </TooltipTrigger>
-              <TooltipContent>{t('pullTooltip')}</TooltipContent>
-            </Tooltip>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 w-6 p-0 text-amber-500 hover:text-amber-400"
+              disabled={isPulling}
+              onClick={handlePull}
+            >
+              <ArrowDownFromLine className="h-3.5 w-3.5" />
+            </Button>
           )}
           <Button
             size="sm"
             variant="ghost"
-            className="h-7 w-7 p-0"
+            className="h-6 w-6 p-0"
             onClick={() => onSelect?.(task.id, true)}
           >
             <MessageCircle className="h-3.5 w-3.5" />
@@ -461,28 +712,25 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
             <Button
               size="sm"
               variant="ghost"
-              className="h-7 text-xs"
+              className="h-6 w-6 p-0"
               onClick={() => setShowConnect(true)}
               data-onboarding="connect-thread"
             >
-              <Link2 className="h-3.5 w-3.5 mr-1" />
-              {t('connect')}
+              <Link2 className="h-3.5 w-3.5" />
             </Button>
           )}
-
           <DropdownMenu>
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <DropdownMenuTrigger
-                    render={<Button variant="ghost" size="sm" className="h-7 w-7 p-0" />}
-                  >
-                    <MoreHorizontal className="h-4 w-4" />
-                  </DropdownMenuTrigger>
-                }
-              />
-              <TooltipContent>{t('moreActions')}</TooltipContent>
-            </Tooltip>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0"
+                />
+              }
+            >
+              <MoreHorizontal className="h-3.5 w-3.5" />
+            </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {onToggleSelect && (
                 <DropdownMenuItem onClick={() => onToggleSelect(task.id)}>
@@ -490,7 +738,21 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
                   {tc('select')}
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem onClick={(e) => { e.preventDefault(); setShowReminderInput(true); }}>
+              {pendingLink && (
+                <DropdownMenuItem
+                  className="text-destructive"
+                  onClick={() => setShowDecline(true)}
+                >
+                  <X className="mr-2 h-4 w-4" />
+                  {t('decline')}
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowReminderInput(true);
+                }}
+              >
                 <Bell className="mr-2 h-4 w-4" />
                 {t('setReminder')}
               </DropdownMenuItem>
@@ -505,27 +767,55 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
           </DropdownMenu>
           {showReminderInput && (
             <div className="absolute right-0 top-full mt-1 z-50 rounded-lg border border-border bg-[#1A1A1A] p-3 shadow-xl space-y-2 min-w-[220px]">
-              <p className="text-xs font-medium text-muted-foreground">{t('setReminder')}</p>
-              <input type="date" value={reminderDate} onChange={e => setReminderDate(e.target.value)} className="h-7 w-full rounded border border-border bg-background px-2 text-xs" />
-              <input type="time" value={reminderTime} onChange={e => setReminderTime(e.target.value)} className="h-7 w-full rounded border border-border bg-background px-2 text-xs" />
+              <p className="text-xs font-medium text-muted-foreground">
+                {t('setReminder')}
+              </p>
+              <input
+                type="date"
+                value={reminderDate}
+                onChange={(e) => setReminderDate(e.target.value)}
+                className="h-7 w-full rounded border border-border bg-background px-2 text-xs"
+              />
+              <input
+                type="time"
+                value={reminderTime}
+                onChange={(e) => setReminderTime(e.target.value)}
+                className="h-7 w-full rounded border border-border bg-background px-2 text-xs"
+              />
               <div className="flex gap-1.5">
-                <button onClick={() => setShowReminderInput(false)} className="flex-1 h-7 rounded text-xs text-muted-foreground hover:bg-accent/50">{tc('cancel')}</button>
-                <button onClick={async () => {
-                  if (!reminderDate || !reminderTime) return;
-                  try {
-                    const { api } = await import('@/lib/api-client');
-                    await api.post(`/tasks/${task.id}/reminder`, { remindAt: new Date(`${reminderDate}T${reminderTime}`).toISOString() });
-                    setShowReminderInput(false);
-                    setReminderDate('');
-                    setReminderTime('');
-                    toast.success(t('reminderSet'));
-                  } catch { toast.error(t('reminderExists') || 'Failed'); }
-                }} className="flex-1 h-7 rounded bg-primary text-xs text-primary-foreground hover:bg-primary/90">{tc('save')}</button>
+                <button
+                  onClick={() => setShowReminderInput(false)}
+                  className="flex-1 h-7 rounded text-xs text-muted-foreground hover:bg-accent/50"
+                >
+                  {tc('cancel')}
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!reminderDate || !reminderTime) return;
+                    try {
+                      const { api } = await import('@/lib/api-client');
+                      await api.post(`/tasks/${task.id}/reminder`, {
+                        remindAt: new Date(
+                          `${reminderDate}T${reminderTime}`
+                        ).toISOString(),
+                      });
+                      setShowReminderInput(false);
+                      setReminderDate('');
+                      setReminderTime('');
+                      toast.success(t('reminderSet'));
+                    } catch {
+                      toast.error(t('reminderExists') || 'Failed');
+                    }
+                  }}
+                  className="flex-1 h-7 rounded bg-primary text-xs text-primary-foreground hover:bg-primary/90"
+                >
+                  {tc('save')}
+                </button>
               </div>
             </div>
           )}
         </div>
-      </div>
+      )}
 
       {/* Thread chain visualization */}
       {expanded && hasThreads && (
@@ -536,15 +826,18 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
 
       {/* Connect dialog */}
       {showConnect && (
-        <ConnectDialog
-          taskId={task.id}
-          onClose={() => setShowConnect(false)}
-        />
+        <ConnectDialog taskId={task.id} onClose={() => setShowConnect(false)} />
       )}
 
       {/* Decline confirmation dialog */}
       {showDecline && pendingLink && (
-        <Dialog open onOpenChange={() => { setShowDecline(false); setDeclineReason(''); }}>
+        <Dialog
+          open
+          onOpenChange={() => {
+            setShowDecline(false);
+            setDeclineReason('');
+          }}
+        >
           <DialogContent className="sm:max-w-sm">
             <DialogHeader>
               <DialogTitle>{t('declineTitle')}</DialogTitle>
@@ -563,7 +856,10 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => { setShowDecline(false); setDeclineReason(''); }}
+                  onClick={() => {
+                    setShowDecline(false);
+                    setDeclineReason('');
+                  }}
                 >
                   {tc('cancel')}
                 </Button>

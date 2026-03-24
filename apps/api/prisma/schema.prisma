@@ -518,6 +518,7 @@ model TaskGroup {
   workspaceId   String?
   sharedSpaceId String?
   createdById   String
+  isPrivate     Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 

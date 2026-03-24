@@ -40,6 +40,17 @@ export class WorkspacesService {
       include: { members: { include: { user: true } } },
     });
 
+    // Auto-create private "My Tasks" group for the creator
+    await this.prisma.taskGroup.create({
+      data: {
+        name: 'My Tasks',
+        workspaceId: workspace.id,
+        createdById: userId,
+        isPrivate: true,
+        members: { create: { userId } },
+      },
+    });
+
     await this.activityService.log({
       workspaceId: workspace.id,
       userId,
@@ -200,6 +211,17 @@ export class WorkspacesService {
       }),
       this.prisma.workspaceInvite.delete({ where: { id: invite.id } }),
     ]);
+
+    // Auto-create private "My Tasks" group for the new member
+    await this.prisma.taskGroup.create({
+      data: {
+        name: 'My Tasks',
+        workspaceId: invite.workspaceId,
+        createdById: userId,
+        isPrivate: true,
+        members: { create: { userId } },
+      },
+    });
 
     await this.activityService.log({
       workspaceId: invite.workspaceId,

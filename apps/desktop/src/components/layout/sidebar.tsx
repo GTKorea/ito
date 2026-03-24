@@ -19,6 +19,7 @@ import {
   ChevronsRight,
   Globe,
   Hash,
+  Lock,
   Plus,
   ChevronRight,
   ChevronDown,
@@ -229,8 +230,12 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                           : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
                       )}
                     >
-                      <Hash className="h-3.5 w-3.5 shrink-0" />
-                      <span className="truncate">{group.name}</span>
+                      {group.isPrivate ? (
+                        <Lock className="h-3.5 w-3.5 shrink-0" />
+                      ) : (
+                        <Hash className="h-3.5 w-3.5 shrink-0" />
+                      )}
+                      <span className="truncate">{group.isPrivate ? tg('myPrivateGroup') : group.name}</span>
                       <span className="ml-auto text-xs text-muted-foreground/60">{group._count.tasks}</span>
                     </Link>
                   ))}

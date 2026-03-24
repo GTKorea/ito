@@ -51,10 +51,18 @@ export class ThreadsService {
 
     const task = await this.prisma.task.findUnique({
       where: { id: taskId },
-      include: { threadLinks: { orderBy: { chainIndex: 'asc' } } },
+      include: {
+        threadLinks: { orderBy: { chainIndex: 'asc' } },
+        taskGroup: { select: { isPrivate: true } },
+      },
     });
 
     if (!task) throw new NotFoundException('Task not found');
+
+    // Check if task is in a private group — cannot connect (except blockers via connectBlocker)
+    if (task.taskGroup?.isPrivate) {
+      throw new BadRequestException('Cannot connect tasks in private groups to others');
+    }
 
     // Only current assignee can connect to someone else
     if (task.assigneeId !== fromUserId) {
@@ -423,10 +431,18 @@ export class ThreadsService {
     // 1. Validate task exists and creator is the current assignee
     const task = await this.prisma.task.findUnique({
       where: { id: taskId },
-      include: { threadLinks: { orderBy: { chainIndex: 'asc' } } },
+      include: {
+        threadLinks: { orderBy: { chainIndex: 'asc' } },
+        taskGroup: { select: { isPrivate: true } },
+      },
     });
 
     if (!task) throw new NotFoundException('Task not found');
+
+    // Check if task is in a private group
+    if (task.taskGroup?.isPrivate) {
+      throw new BadRequestException('Cannot connect tasks in private groups to others');
+    }
 
     if (task.assigneeId !== creatorId) {
       throw new ForbiddenException(

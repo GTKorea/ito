@@ -8,6 +8,7 @@ import { CreateTaskDto, UpdateTaskDto, BatchMoveTasksDto } from './dto/create-ta
 const TASK_INCLUDE_FULL = {
   creator: { select: { id: true, name: true, avatarUrl: true } },
   assignee: { select: { id: true, name: true, avatarUrl: true } },
+  taskGroup: { select: { id: true, name: true } },
   threadLinks: {
     include: {
       fromUser: { select: { id: true, name: true, avatarUrl: true } },
