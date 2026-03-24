@@ -352,7 +352,7 @@ export function ChatPanel({ taskId, onClose }: ChatPanelProps) {
         {/* Messages */}
         <div
           ref={messagesContainerRef}
-          className="flex-1 overflow-y-auto px-4 py-3 space-y-0.5"
+          className="flex-1 overflow-y-auto px-4 py-3 space-y-0.5 custom-scrollbar"
           onScroll={handleScroll}
         >
           {isLoading && messages.length === 0 ? (
@@ -557,7 +557,7 @@ export function ChatPanel({ taskId, onClose }: ChatPanelProps) {
               onCompositionEnd={() => { isComposingRef.current = false; }}
               placeholder={t('placeholder')}
               rows={1}
-              className="flex-1 resize-none rounded-lg border border-border bg-[#1A1A1A] px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 max-h-24"
+              className="flex-1 resize-none rounded-lg border border-border bg-[#1A1A1A] px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 max-h-24 custom-scrollbar"
               style={{
                 height: 'auto',
                 minHeight: '36px',

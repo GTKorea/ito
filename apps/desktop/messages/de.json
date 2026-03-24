@@ -158,6 +158,7 @@
     "voteCommentPlaceholder": "Kommentar hinzufügen (optional)",
     "votedCount": "{voted}/{total} abgestimmt",
     "pullThread": "Faden ziehen",
+    "pullTooltip": "Eine Erinnerung an den Verantwortlichen senden",
     "pullCooldown": "Bitte warten Sie einen Moment",
     "pullSuccess": "Faden gezogen",
     "reminder": "Erinnerung",

@@ -158,6 +158,7 @@
     "voteCommentPlaceholder": "コメントを追加（任意）",
     "votedCount": "{voted}/{total} 投票済み",
     "pullThread": "糸を引く",
+    "pullTooltip": "担当者にリマインダーを送信します",
     "pullCooldown": "しばらくお待ちください",
     "pullSuccess": "糸を引きました",
     "reminder": "リマインダー",

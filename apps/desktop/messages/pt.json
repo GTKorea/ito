@@ -158,6 +158,7 @@
     "voteCommentPlaceholder": "Adicionar comentário (opcional)",
     "votedCount": "{voted}/{total} votaram",
     "pullThread": "Puxar o fio",
+    "pullTooltip": "Enviar um lembrete ao responsável",
     "pullCooldown": "Aguarde um momento antes de puxar novamente",
     "pullSuccess": "Fio puxado com sucesso",
     "reminder": "Lembrete",

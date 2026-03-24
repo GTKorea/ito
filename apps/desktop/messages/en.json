@@ -158,6 +158,7 @@
     "voteCommentPlaceholder": "Add a comment (optional)",
     "votedCount": "{voted}/{total} voted",
     "pullThread": "Pull Thread",
+    "pullTooltip": "Send a nudge to the assignee",
     "pullCooldown": "Please wait before pulling again",
     "pullSuccess": "Thread pulled successfully",
     "reminder": "Reminder",

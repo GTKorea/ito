@@ -43,6 +43,7 @@ import {
   Vote,
   ArrowDownFromLine,
   Paperclip,
+  Bell,
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
@@ -107,6 +108,9 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
   const [isDeclining, setIsDeclining] = useState(false);
   const [declineReason, setDeclineReason] = useState('');
   const [isPulling, setIsPulling] = useState(false);
+  const [showReminderInput, setShowReminderInput] = useState(false);
+  const [reminderDate, setReminderDate] = useState('');
+  const [reminderTime, setReminderTime] = useState('');
   const { updateTask, deleteTask, resolveThread, resolveBlocker, declineThread, pullThread, pullCurrentAssignee } = useTaskStore();
   const { user } = useAuthStore();
   const t = useTranslations('tasks');
@@ -311,12 +315,17 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
 
           {/* Blocker indicator */}
           {pendingBlocker && (
-            <div className="flex items-center gap-1 mt-1">
-              <ShieldAlert className="h-3 w-3 text-red-400" />
-              <span className="text-[10px] text-red-400 truncate max-w-[200px]">
+            <Tooltip>
+              <TooltipTrigger render={<div className="flex items-center gap-1 mt-1 cursor-default" />}>
+                <ShieldAlert className="h-3 w-3 text-red-400" />
+                <span className="text-[10px] text-red-400 truncate max-w-[200px]">
+                  {pendingBlocker.blockerNote}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs whitespace-pre-wrap">
                 {pendingBlocker.blockerNote}
-              </span>
-            </div>
+              </TooltipContent>
+            </Tooltip>
           )}
 
           {task.description && (
@@ -363,7 +372,7 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
         )}
 
         {/* Actions */}
-        <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+        <div className="relative flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
           {canComplete && (
             <Button
               size="sm"
@@ -437,7 +446,7 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
                 <ArrowDownFromLine className="h-3.5 w-3.5 mr-1" />
                 {isPulling ? '...' : t('pullThread')}
               </TooltipTrigger>
-              <TooltipContent>{t('pullThread')}</TooltipContent>
+              <TooltipContent>{t('pullTooltip')}</TooltipContent>
             </Tooltip>
           )}
           <Button
@@ -475,6 +484,10 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
               <TooltipContent>{t('moreActions')}</TooltipContent>
             </Tooltip>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={(e) => { e.preventDefault(); setShowReminderInput(true); }}>
+                <Bell className="mr-2 h-4 w-4" />
+                {t('setReminder')}
+              </DropdownMenuItem>
               <DropdownMenuItem
                 className="text-destructive"
                 onClick={() => deleteTask(task.id)}
@@ -484,6 +497,27 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          {showReminderInput && (
+            <div className="absolute right-0 top-full mt-1 z-50 rounded-lg border border-border bg-[#1A1A1A] p-3 shadow-xl space-y-2 min-w-[220px]">
+              <p className="text-xs font-medium text-muted-foreground">{t('setReminder')}</p>
+              <input type="date" value={reminderDate} onChange={e => setReminderDate(e.target.value)} className="h-7 w-full rounded border border-border bg-background px-2 text-xs" />
+              <input type="time" value={reminderTime} onChange={e => setReminderTime(e.target.value)} className="h-7 w-full rounded border border-border bg-background px-2 text-xs" />
+              <div className="flex gap-1.5">
+                <button onClick={() => setShowReminderInput(false)} className="flex-1 h-7 rounded text-xs text-muted-foreground hover:bg-accent/50">{tc('cancel')}</button>
+                <button onClick={async () => {
+                  if (!reminderDate || !reminderTime) return;
+                  try {
+                    const { api } = await import('@/lib/api-client');
+                    await api.post(`/tasks/${task.id}/reminder`, { remindAt: new Date(`${reminderDate}T${reminderTime}`).toISOString() });
+                    setShowReminderInput(false);
+                    setReminderDate('');
+                    setReminderTime('');
+                    toast.success(t('reminderSet'));
+                  } catch { toast.error(t('reminderExists') || 'Failed'); }
+                }} className="flex-1 h-7 rounded bg-primary text-xs text-primary-foreground hover:bg-primary/90">{tc('save')}</button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

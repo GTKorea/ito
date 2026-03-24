@@ -158,6 +158,7 @@
     "voteCommentPlaceholder": "Ajouter un commentaire (facultatif)",
     "votedCount": "{voted}/{total} ont voté",
     "pullThread": "Tirer le fil",
+    "pullTooltip": "Envoyer un rappel au responsable",
     "pullCooldown": "Veuillez patienter avant de tirer à nouveau",
     "pullSuccess": "Fil tiré avec succès",
     "reminder": "Rappel",

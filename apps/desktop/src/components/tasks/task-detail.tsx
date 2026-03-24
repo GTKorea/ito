@@ -12,8 +12,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { X, Save, Link2, Paperclip, List, Network, MessageCircle, Vote, Bell, Trash2 } from 'lucide-react';
+import { X, Save, Link2, Paperclip, List, Network, MessageCircle, Vote, Bell, Trash2, ChevronDown, Check } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { ChatPanel } from '@/components/chat/chat-panel';
@@ -22,6 +28,21 @@ import { useAuthStore } from '@/stores/auth-store';
 
 const statuses = ['OPEN', 'IN_PROGRESS', 'BLOCKED', 'COMPLETED', 'CANCELLED'];
 const priorities = ['URGENT', 'HIGH', 'MEDIUM', 'LOW'];
+
+const statusColors: Record<string, string> = {
+  OPEN: 'text-foreground',
+  IN_PROGRESS: 'text-blue-400',
+  BLOCKED: 'text-yellow-400',
+  COMPLETED: 'text-green-400',
+  CANCELLED: 'text-muted-foreground',
+};
+
+const priorityColors: Record<string, string> = {
+  URGENT: 'text-red-400',
+  HIGH: 'text-orange-400',
+  MEDIUM: 'text-foreground',
+  LOW: 'text-muted-foreground',
+};
 
 interface TaskDetailProps {
   taskId: string;
@@ -269,33 +290,57 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
                 <label className="text-xs font-medium uppercase text-muted-foreground">
                   {t('status')}
                 </label>
-                <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  className="h-8 w-full rounded-md border border-border bg-background px-2 text-xs text-foreground"
-                >
-                  {statuses.map((s) => (
-                    <option key={s} value={s}>
-                      {s.replace('_', ' ')}
-                    </option>
-                  ))}
-                </select>
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    render={
+                      <button className="h-8 w-full rounded-md border border-border bg-background px-2 text-xs flex items-center justify-between">
+                        <span className={statusColors[status] || 'text-foreground'}>
+                          {status.replace('_', ' ')}
+                        </span>
+                        <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                      </button>
+                    }
+                  />
+                  <DropdownMenuContent>
+                    {statuses.map((s) => (
+                      <DropdownMenuItem key={s} onClick={() => setStatus(s)}>
+                        <span className={cn('flex items-center gap-2 text-xs', statusColors[s] || 'text-foreground')}>
+                          {status === s && <Check className="h-3 w-3" />}
+                          {status !== s && <span className="w-3" />}
+                          {s.replace('_', ' ')}
+                        </span>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-medium uppercase text-muted-foreground">
                   {t('priority')}
                 </label>
-                <select
-                  value={priority}
-                  onChange={(e) => setPriority(e.target.value)}
-                  className="h-8 w-full rounded-md border border-border bg-background px-2 text-xs text-foreground"
-                >
-                  {priorities.map((p) => (
-                    <option key={p} value={p}>
-                      {p}
-                    </option>
-                  ))}
-                </select>
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    render={
+                      <button className="h-8 w-full rounded-md border border-border bg-background px-2 text-xs flex items-center justify-between">
+                        <span className={priorityColors[priority] || 'text-foreground'}>
+                          {priority}
+                        </span>
+                        <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                      </button>
+                    }
+                  />
+                  <DropdownMenuContent>
+                    {priorities.map((p) => (
+                      <DropdownMenuItem key={p} onClick={() => setPriority(p)}>
+                        <span className={cn('flex items-center gap-2 text-xs', priorityColors[p] || 'text-foreground')}>
+                          {priority === p && <Check className="h-3 w-3" />}
+                          {priority !== p && <span className="w-3" />}
+                          {p}
+                        </span>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-medium uppercase text-muted-foreground">

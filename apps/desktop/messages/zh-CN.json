@@ -158,6 +158,7 @@
     "voteCommentPlaceholder": "添加评论（可选）",
     "votedCount": "{voted}/{total} 已投票",
     "pullThread": "拉线",
+    "pullTooltip": "向负责人发送提醒",
     "pullCooldown": "请稍后再试",
     "pullSuccess": "已拉线提醒",
     "reminder": "提醒",
