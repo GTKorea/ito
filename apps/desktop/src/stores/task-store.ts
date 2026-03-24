@@ -126,7 +126,7 @@ async function refetchCategorized(set: (partial: Partial<TaskState>) => void) {
   }
 }
 
-export const useTaskStore = create<TaskState>((set) => ({
+export const useTaskStore = create<TaskState>((set, get) => ({
   actionRequired: [],
   waiting: [],
   completed: [],
@@ -359,6 +359,15 @@ export const useTaskStore = create<TaskState>((set) => ({
   },
 
   batchMoveExecute: async (taskIds, workspaceId, taskGroupId) => {
+    // Capture source groups before move
+    const allTasks = [...get().actionRequired, ...get().waiting, ...get().completed];
+    const movedTasks = allTasks.filter((t) => taskIds.includes(t.id));
+    const sourceGroupCounts: Record<string, number> = {};
+    for (const t of movedTasks) {
+      const gid = (t as any).taskGroupId;
+      if (gid) sourceGroupCounts[gid] = (sourceGroupCounts[gid] || 0) + 1;
+    }
+
     await api.post('/tasks/batch-move', { taskIds, workspaceId, taskGroupId });
     // Optimistic: remove moved tasks from all lists
     set((state) => ({
@@ -366,6 +375,18 @@ export const useTaskStore = create<TaskState>((set) => ({
       waiting: state.waiting.filter((t) => !taskIds.includes(t.id)),
       completed: state.completed.filter((t) => !taskIds.includes(t.id)),
     }));
+
+    // Optimistic: update group counts in sidebar
+    const { useTaskGroupStore } = await import('./task-group-store');
+    useTaskGroupStore.setState((state) => ({
+      groups: state.groups.map((g) => {
+        let delta = 0;
+        if (sourceGroupCounts[g.id]) delta -= sourceGroupCounts[g.id];
+        if (taskGroupId && g.id === taskGroupId) delta += taskIds.length;
+        return delta !== 0 ? { ...g, _count: { ...g._count, tasks: Math.max(0, g._count.tasks + delta) } } : g;
+      }),
+    }));
+
     trackEvent('tasks_moved', { count: taskIds.length });
     await refetchCategorized(set);
   },

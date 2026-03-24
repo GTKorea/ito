@@ -252,11 +252,11 @@ export default function WorkspacePage() {
                 : t('tasksAssignedToYou')}
             </p>
           </div>
+        </div>
+        <div className="flex items-center gap-2">
           {currentGroup && (
             <GroupMembersPopover groupId={currentGroup.id} memberCount={currentGroup._count.members} />
           )}
-        </div>
-        <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="sm"

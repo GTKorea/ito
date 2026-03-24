@@ -18,7 +18,7 @@ export class TaskGroupsService {
         },
       },
       include: {
-        _count: { select: { members: true, tasks: true } },
+        _count: { select: { members: true, tasks: { where: { status: { notIn: ['COMPLETED', 'CANCELLED'] } } } } },
         createdBy: { select: { id: true, name: true, avatarUrl: true } },
       },
     });
@@ -37,7 +37,7 @@ export class TaskGroupsService {
         },
       },
       include: {
-        _count: { select: { members: true, tasks: true } },
+        _count: { select: { members: true, tasks: { where: { status: { notIn: ['COMPLETED', 'CANCELLED'] } } } } },
         createdBy: { select: { id: true, name: true, avatarUrl: true } },
       },
     });
@@ -51,7 +51,7 @@ export class TaskGroupsService {
         members: { some: { userId } },
       },
       include: {
-        _count: { select: { members: true, tasks: true } },
+        _count: { select: { members: true, tasks: { where: { status: { notIn: ['COMPLETED', 'CANCELLED'] } } } } },
         createdBy: { select: { id: true, name: true, avatarUrl: true } },
       },
       orderBy: { createdAt: 'asc' },
@@ -65,7 +65,7 @@ export class TaskGroupsService {
         members: { some: { userId } },
       },
       include: {
-        _count: { select: { members: true, tasks: true } },
+        _count: { select: { members: true, tasks: { where: { status: { notIn: ['COMPLETED', 'CANCELLED'] } } } } },
         createdBy: { select: { id: true, name: true, avatarUrl: true } },
       },
       orderBy: { createdAt: 'asc' },
@@ -80,7 +80,7 @@ export class TaskGroupsService {
           include: { user: { select: { id: true, name: true, email: true, avatarUrl: true } } },
           orderBy: { joinedAt: 'asc' },
         },
-        _count: { select: { members: true, tasks: true } },
+        _count: { select: { members: true, tasks: { where: { status: { notIn: ['COMPLETED', 'CANCELLED'] } } } } },
         createdBy: { select: { id: true, name: true, avatarUrl: true } },
       },
     });
@@ -98,7 +98,7 @@ export class TaskGroupsService {
       where: { id },
       data: dto,
       include: {
-        _count: { select: { members: true, tasks: true } },
+        _count: { select: { members: true, tasks: { where: { status: { notIn: ['COMPLETED', 'CANCELLED'] } } } } },
         createdBy: { select: { id: true, name: true, avatarUrl: true } },
       },
     });
