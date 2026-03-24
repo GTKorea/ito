@@ -5,7 +5,7 @@ import { api } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Download, Trash2, Loader2, Eye } from 'lucide-react';
 import { FilePreviewModal } from './file-preview-modal';
-import { getFileTypeInfo, getFileUrl } from '@/lib/file-utils';
+import { getFileTypeInfo, getFileUrl, getFileViewUrl } from '@/lib/file-utils';
 
 interface FileItem {
   id: string;
@@ -80,7 +80,7 @@ export function FileList({ taskId, refreshKey }: FileListProps) {
             {file.mimeType.startsWith('image/') ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={getFileUrl(file.id)}
+                src={getFileViewUrl(file.url)}
                 alt={file.filename}
                 className="h-8 w-8 rounded object-cover shrink-0"
               />

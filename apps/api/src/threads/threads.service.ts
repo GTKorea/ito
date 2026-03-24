@@ -808,6 +808,115 @@ export class ThreadsService {
   }
 
   /**
+   * Pull a specific thread link — nudge the recipient to respond.
+   * Only the sender (fromUser) of a PENDING PERSON link can pull.
+   * 5-minute cooldown between pulls.
+   */
+  async pullThread(threadLinkId: string, userId: string) {
+    const link = await this.prisma.threadLink.findUnique({
+      where: { id: threadLinkId },
+      include: {
+        task: true,
+        fromUser: { select: { id: true, name: true } },
+        toUser: { select: { id: true, name: true } },
+      },
+    });
+
+    if (!link) throw new NotFoundException('Thread link not found');
+    if (link.fromUserId !== userId) {
+      throw new ForbiddenException('Only the sender can pull this thread');
+    }
+    if (link.status !== 'PENDING') {
+      throw new BadRequestException('Can only pull pending thread links');
+    }
+    if (link.type !== 'PERSON') {
+      throw new BadRequestException('Can only pull person-type thread links');
+    }
+
+    // Check 5-minute cooldown
+    if (link.lastPulledAt) {
+      const cooldownMs = 5 * 60 * 1000;
+      const elapsed = Date.now() - new Date(link.lastPulledAt).getTime();
+      if (elapsed < cooldownMs) {
+        throw new BadRequestException('Please wait before pulling again');
+      }
+    }
+
+    await this.prisma.threadLink.update({
+      where: { id: threadLinkId },
+      data: { lastPulledAt: new Date() },
+    });
+
+    if (link.toUserId) {
+      await this.notificationsService.create({
+        userId: link.toUserId,
+        type: 'THREAD_PULLED',
+        title: `${link.fromUser.name}님이 실을 당겼습니다`,
+        body: `"${link.task.title}" 태스크를 확인해주세요`,
+        data: {
+          taskId: link.taskId,
+          taskTitle: link.task.title,
+          pullerName: link.fromUser.name,
+          pullerUserId: link.fromUserId,
+        },
+      });
+    }
+
+    return { success: true };
+  }
+
+  /**
+   * Pull the current assignee of a task — nudge them to respond.
+   * Only the task creator can pull. 5-minute cooldown.
+   */
+  async pullCurrentAssignee(taskId: string, userId: string) {
+    const task = await this.prisma.task.findUnique({
+      where: { id: taskId },
+      include: {
+        assignee: { select: { id: true, name: true } },
+        creator: { select: { id: true, name: true } },
+      },
+    });
+
+    if (!task) throw new NotFoundException('Task not found');
+    if (task.creatorId !== userId) {
+      throw new ForbiddenException('Only the task creator can pull the assignee');
+    }
+    if (task.assigneeId === userId) {
+      throw new BadRequestException('Cannot pull yourself');
+    }
+
+    // Check 5-minute cooldown
+    if (task.lastPulledAt) {
+      const cooldownMs = 5 * 60 * 1000;
+      const elapsed = Date.now() - new Date(task.lastPulledAt).getTime();
+      if (elapsed < cooldownMs) {
+        throw new BadRequestException('Please wait before pulling again');
+      }
+    }
+
+    await this.prisma.task.update({
+      where: { id: taskId },
+      data: { lastPulledAt: new Date() },
+    });
+
+    await this.notificationsService.create({
+      userId: task.assigneeId,
+      type: 'THREAD_PULLED',
+      title: `${task.creator.name}님이 실을 당겼습니다`,
+      body: `"${task.title}" 태스크를 확인해주세요`,
+      data: {
+        taskId: task.id,
+        taskTitle: task.title,
+        pullerName: task.creator.name,
+        pullerUserId: task.creatorId,
+      },
+    });
+
+    return { success: true };
+  }
+
+  /**
    * Generate a simple cuid-like unique identifier for grouping.
    */
   private generateCuid(): string {

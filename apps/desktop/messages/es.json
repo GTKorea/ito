@@ -156,7 +156,21 @@
     "voteReject": "Rechazar",
     "voteAbstain": "Abstenerse",
     "voteCommentPlaceholder": "Agregar comentario (opcional)",
-    "votedCount": "{voted}/{total} votaron"
+    "votedCount": "{voted}/{total} votaron",
+    "pullThread": "Tirar del hilo",
+    "pullCooldown": "Espere un momento antes de volver a tirar",
+    "pullSuccess": "Hilo tirado correctamente",
+    "reminder": "Recordatorio",
+    "setReminder": "Establecer recordatorio",
+    "removeReminder": "Eliminar recordatorio",
+    "deleteReminder": "Eliminar recordatorio",
+    "reminderSet": "Recordatorio establecido",
+    "reminderDeleted": "Recordatorio eliminado",
+    "reminderExists": "Recordatorio programado:",
+    "selectDateTime": "Seleccionar fecha y hora",
+    "tabDetails": "Detalles",
+    "tabThread": "Hilo",
+    "tabFiles": "Archivos"
   },
   "threads": {
     "title": "Hilos",
@@ -563,7 +577,10 @@
       "TASK_COMPLETED": "Tarea completada",
       "THREAD_DECLINED": "Hilo rechazado",
       "SHARED_SPACE_INVITE": "Invitación a espacio compartido",
-      "CHAT_MESSAGE": "Mensaje de chat"
+      "CHAT_MESSAGE": "Mensaje de chat",
+      "VOTE_COMPLETE": "Votación completada",
+      "THREAD_PULLED": "Hilo tirado",
+      "TASK_REMINDER": "Recordatorio de tarea"
     }
   },
   "help": {

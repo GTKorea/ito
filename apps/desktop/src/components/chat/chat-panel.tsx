@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getFileTypeInfo } from '@/lib/file-utils';
+import { getSocket } from '@/lib/ws-client';
 import { ThreadPanel } from './thread-panel';
 
 interface ChatPanelProps {
@@ -106,6 +107,7 @@ export function ChatPanel({ taskId, onClose }: ChatPanelProps) {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const initialScrollDone = useRef(false);
+  const isComposingRef = useRef(false);
   const t = useTranslations('chat');
 
   const messages = messagesByTask[taskId] || [];
@@ -120,6 +122,36 @@ export function ChatPanel({ taskId, onClose }: ChatPanelProps) {
     openChat(taskId);
     return () => closeChat();
   }, [taskId, openChat, closeChat]);
+
+  // TASK 2: Handle visibility change — unfocus when tab hidden, refocus when visible
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      const socket = getSocket();
+      if (!socket) return;
+      if (document.hidden) {
+        socket.emit('chatUnfocus', { taskId });
+      } else {
+        socket.emit('chatFocus', { taskId });
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [taskId]);
+
+  // TASK 2: Re-emit chatFocus on socket reconnect
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+    const handleReconnect = () => {
+      socket.emit('chatFocus', { taskId });
+    };
+    socket.on('connect', handleReconnect);
+    return () => {
+      socket.off('connect', handleReconnect);
+    };
+  }, [taskId]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -211,7 +243,7 @@ export function ChatPanel({ taskId, onClose }: ChatPanelProps) {
     try {
       await sendMessage(
         taskId,
-        content || ' ',
+        content || '',
         fileIds.length > 0 ? fileIds : undefined,
       );
     } finally {
@@ -220,7 +252,7 @@ export function ChatPanel({ taskId, onClose }: ChatPanelProps) {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !isComposingRef.current && !e.nativeEvent.isComposing) {
       e.preventDefault();
       handleSend();
     }
@@ -282,7 +314,7 @@ export function ChatPanel({ taskId, onClose }: ChatPanelProps) {
       <div
         className={cn(
           'relative flex h-full flex-col border-l border-border bg-[#0F0F0F]',
-          threadParentMessage ? 'w-1/2' : 'w-full',
+          threadParentMessage ? 'w-[40%]' : 'w-full',
         )}
         onDragOver={(e) => { e.preventDefault(); setChatDragOver(true); }}
         onDragLeave={(e) => {
@@ -405,16 +437,18 @@ export function ChatPanel({ taskId, onClose }: ChatPanelProps) {
                             </span>
                           )}
                           <div>
-                            <div
-                              className={cn(
-                                'rounded-2xl px-3 py-1.5 text-[13px] leading-relaxed break-words',
-                                isMe
-                                  ? 'bg-blue-600/90 text-white rounded-br-md'
-                                  : 'bg-[#1E1E1E] text-[#E0E0E0] rounded-bl-md',
-                              )}
-                            >
-                              {msg.content}
-                            </div>
+                            {msg.content && msg.content.trim() && (
+                              <div
+                                className={cn(
+                                  'rounded-2xl px-3 py-1.5 text-[13px] leading-relaxed break-words',
+                                  isMe
+                                    ? 'bg-blue-600/90 text-white rounded-br-md'
+                                    : 'bg-[#1E1E1E] text-[#E0E0E0] rounded-bl-md',
+                                )}
+                              >
+                                {msg.content}
+                              </div>
+                            )}
                             {renderFiles(msg.files)}
                           </div>
                           {!isMe && (
@@ -519,6 +553,8 @@ export function ChatPanel({ taskId, onClose }: ChatPanelProps) {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
+              onCompositionStart={() => { isComposingRef.current = true; }}
+              onCompositionEnd={() => { isComposingRef.current = false; }}
               placeholder={t('placeholder')}
               rows={1}
               className="flex-1 resize-none rounded-lg border border-border bg-[#1A1A1A] px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 max-h-24"
@@ -546,7 +582,7 @@ export function ChatPanel({ taskId, onClose }: ChatPanelProps) {
 
       {/* Thread panel (slide-in from right) */}
       {threadParentMessage && (
-        <div className="w-1/2 h-full">
+        <div className="w-[60%] h-full">
           <ThreadPanel
             taskId={taskId}
             parentMessage={threadParentMessage}

@@ -49,7 +49,13 @@ export class FilesController {
   async download(@Param('id') id: string, @Res() res: Response) {
     const file = await this.filesService.findById(id);
     const filepath = join(process.cwd(), file.url);
-    res.download(filepath, file.filename);
+    const encodedFilename = encodeURIComponent(file.filename);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${encodedFilename}"; filename*=UTF-8''${encodedFilename}`,
+    );
+    res.setHeader('Content-Type', file.mimeType || 'application/octet-stream');
+    res.sendFile(filepath);
   }
 
   @Get('task/:taskId')

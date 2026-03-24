@@ -46,6 +46,8 @@ model User {
   taskGroupsCreated    TaskGroup[]
   taskGroupMembers     TaskGroupMember[]
   votes                Vote[]
+  reminders            Reminder[]
+  chatReadStatuses     ChatReadStatus[]
 }
 
 model RefreshToken {
@@ -186,10 +188,14 @@ model Task {
   sharedSpace SharedSpace? @relation(fields: [sharedSpaceId], references: [id], onDelete: SetNull)
   taskGroup   TaskGroup?   @relation(fields: [taskGroupId], references: [id], onDelete: SetNull)
 
-  threadLinks   ThreadLink[]
-  votes         Vote[]
-  files         File[]
-  chatMessages  ChatMessage[]
+  lastPulledAt  DateTime?
+
+  threadLinks    ThreadLink[]
+  votes          Vote[]
+  files          File[]
+  chatMessages   ChatMessage[]
+  reminders      Reminder[]
+  chatReadStatuses ChatReadStatus[]
 
   @@index([assigneeId])
   @@index([creatorId])
@@ -246,8 +252,9 @@ model ThreadLink {
   chainIndex Int
   groupId    String?
 
-  createdAt  DateTime  @default(now())
-  resolvedAt DateTime?
+  createdAt    DateTime  @default(now())
+  resolvedAt   DateTime?
+  lastPulledAt DateTime?
 
   task     Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
   fromUser User   @relation("ThreadLinkSender", fields: [fromUserId], references: [id])
@@ -300,6 +307,8 @@ enum NotificationType {
   SHARED_SPACE_INVITE
   CHAT_MESSAGE
   VOTE_COMPLETE
+  THREAD_PULLED
+  TASK_REMINDER
 }
 
 model NotificationPreference {
@@ -533,4 +542,37 @@ model TaskGroupMember {
 
   @@unique([taskGroupId, userId])
   @@index([taskGroupId])
+}
+
+// ──────────────────── Reminders ────────────────────
+
+model Reminder {
+  id        String   @id @default(cuid())
+  taskId    String
+  userId    String
+  remindAt  DateTime
+  sent      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, userId])
+  @@index([remindAt, sent])
+  @@index([userId])
+}
+
+// ──────────────────── Chat Read Status ────────────────────
+
+model ChatReadStatus {
+  id         String   @id @default(cuid())
+  taskId     String
+  userId     String
+  lastReadAt DateTime @default(now())
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, userId])
+  @@index([userId])
 }

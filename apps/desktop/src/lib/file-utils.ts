@@ -35,3 +35,13 @@ export function getFileUrl(fileId: string): string {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3011';
   return `${apiUrl}/files/${fileId}/download`;
 }
+
+/**
+ * Returns a direct static URL for inline viewing (images, previews).
+ * Uses the static /uploads/ path which doesn't require JWT auth,
+ * making it suitable for <img src="..."> and other inline elements.
+ */
+export function getFileViewUrl(fileUrl: string): string {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3011';
+  return `${apiUrl}${fileUrl}`;
+}

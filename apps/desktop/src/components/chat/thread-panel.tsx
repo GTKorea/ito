@@ -53,6 +53,7 @@ export function ThreadPanel({ taskId, parentMessage, onClose }: ThreadPanelProps
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const initialScrollDone = useRef(false);
+  const isComposingRef = useRef(false);
   const t = useTranslations('chat');
 
   const replies = threadMessagesByParent[parentMessage.id] || [];
@@ -133,7 +134,7 @@ export function ThreadPanel({ taskId, parentMessage, onClose }: ThreadPanelProps
       await sendThreadReply(
         taskId,
         parentMessage.id,
-        content || ' ',
+        content || '',
         fileIds.length > 0 ? fileIds : undefined,
       );
     } finally {
@@ -142,7 +143,7 @@ export function ThreadPanel({ taskId, parentMessage, onClose }: ThreadPanelProps
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !isComposingRef.current && !e.nativeEvent.isComposing) {
       e.preventDefault();
       handleSend();
     }
@@ -276,16 +277,18 @@ export function ThreadPanel({ taskId, parentMessage, onClose }: ThreadPanelProps
                         {formatTime(msg.createdAt)}
                       </span>
                     </div>
-                    <div
-                      className={cn(
-                        'mt-0.5 rounded-lg px-3 py-1.5 text-[13px] leading-relaxed break-words inline-block',
-                        isMe
-                          ? 'bg-blue-600/90 text-white'
-                          : 'bg-[#1E1E1E] text-[#E0E0E0]',
-                      )}
-                    >
-                      {msg.content}
-                    </div>
+                    {msg.content && msg.content.trim() && (
+                      <div
+                        className={cn(
+                          'mt-0.5 rounded-lg px-3 py-1.5 text-[13px] leading-relaxed break-words inline-block',
+                          isMe
+                            ? 'bg-blue-600/90 text-white'
+                            : 'bg-[#1E1E1E] text-[#E0E0E0]',
+                        )}
+                      >
+                        {msg.content}
+                      </div>
+                    )}
                     {renderFiles(msg.files)}
                   </div>
                 </div>
@@ -353,6 +356,8 @@ export function ThreadPanel({ taskId, parentMessage, onClose }: ThreadPanelProps
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
+            onCompositionStart={() => { isComposingRef.current = true; }}
+            onCompositionEnd={() => { isComposingRef.current = false; }}
             placeholder={t('replyPlaceholder')}
             rows={1}
             className="flex-1 resize-none rounded-lg border border-border bg-[#1A1A1A] px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 max-h-24"

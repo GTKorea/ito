@@ -167,7 +167,7 @@ export class ChatService {
   async sendMessage(
     taskId: string,
     userId: string,
-    content: string,
+    content: string | undefined,
     parentId?: string,
     fileIds?: string[],
   ) {
@@ -201,7 +201,7 @@ export class ChatService {
 
     const message = await this.prisma.chatMessage.create({
       data: {
-        content,
+        content: content || '',
         taskId,
         senderId: userId,
         ...(parentId ? { parentId } : {}),
@@ -266,7 +266,7 @@ export class ChatService {
         .emit('newMessage', message);
     }
 
-    // Send notifications to other participants
+    // Send notifications to other participants (skip users who have chat focused)
     if (this.notificationsService) {
       const participantIds = new Set<string>();
       if (task.creatorId) participantIds.add(task.creatorId);
@@ -278,9 +278,29 @@ export class ChatService {
       // Remove sender
       participantIds.delete(userId);
 
+      // Exclude users who currently have the chat focused (they see messages in real-time)
+      try {
+        const focusedSockets = await this.wsGateway.server
+          ?.in(`task-chat-focus:${taskId}`)
+          .fetchSockets();
+        if (focusedSockets) {
+          for (const s of focusedSockets) {
+            const focusedUserId = (s as any).data?.userId;
+            if (focusedUserId) {
+              participantIds.delete(focusedUserId);
+            }
+          }
+        }
+      } catch {
+        // If fetching focused sockets fails, send notifications to all participants
+      }
+
       const senderName = message.sender.name;
-      const preview =
-        content.length > 50 ? content.slice(0, 50) + '...' : content;
+      const preview = content
+        ? content.length > 50
+          ? content.slice(0, 50) + '...'
+          : content
+        : 'Sent a file';
 
       const notifications = Array.from(participantIds).map((recipientId) =>
         this.notificationsService!.create({

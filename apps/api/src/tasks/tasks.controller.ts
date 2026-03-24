@@ -22,7 +22,9 @@ import { CreateTaskDto, UpdateTaskDto, ReorderTasksDto, BatchMoveTasksDto } from
 @UseGuards(JwtAuthGuard)
 @Controller()
 export class TasksController {
-  constructor(private tasksService: TasksService) {}
+  constructor(
+    private tasksService: TasksService,
+  ) {}
 
   @Post('workspaces/:workspaceId/tasks')
   @UseGuards(WorkspaceMemberGuard)

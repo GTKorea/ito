@@ -41,9 +41,12 @@ import {
   Flag,
   GripVertical,
   Vote,
+  ArrowDownFromLine,
+  Paperclip,
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 // Status names are now translated via useTranslations
 
@@ -85,6 +88,8 @@ interface TaskItemProps {
       chainIndex: number;
       groupId?: string;
     }>;
+    _count?: { files: number; chatMessages: number };
+    unreadChatCount?: number;
   };
   onSelect?: (id: string, openChat?: boolean) => void;
   section: TaskSection;
@@ -101,7 +106,8 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
   const [showDecline, setShowDecline] = useState(false);
   const [isDeclining, setIsDeclining] = useState(false);
   const [declineReason, setDeclineReason] = useState('');
-  const { updateTask, deleteTask, resolveThread, resolveBlocker, declineThread } = useTaskStore();
+  const [isPulling, setIsPulling] = useState(false);
+  const { updateTask, deleteTask, resolveThread, resolveBlocker, declineThread, pullThread, pullCurrentAssignee } = useTaskStore();
   const { user } = useAuthStore();
   const t = useTranslations('tasks');
   const tc = useTranslations('common');
@@ -188,6 +194,34 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
   // Show Done button for self-assigned tasks (no pending thread link or blocker)
   const canComplete = section === 'actionRequired' && isAssignee && !pendingLink && !pendingBlocker && task.status !== 'COMPLETED';
 
+  // Pull thread logic: in waiting section, find a PENDING link where I'm the fromUser
+  const pullableLink = section === 'waiting' && user?.id
+    ? task.threadLinks.find(
+        (l) => l.status === 'PENDING' && l.fromUser.id === user.id && l.type !== 'BLOCKER',
+      )
+    : undefined;
+  // If no direct pullable link but task is forwarded down chain, use pullCurrentAssignee
+  const canPullAssignee = section === 'waiting' && user?.id && !pullableLink
+    && task.creator.id === user.id && task.assignee?.id !== user.id;
+
+  const handlePull = async () => {
+    if (isPulling) return;
+    setIsPulling(true);
+    try {
+      if (pullableLink) {
+        await pullThread(pullableLink.id);
+      } else if (canPullAssignee) {
+        await pullCurrentAssignee(task.id);
+      }
+      toast.success(t('pullSuccess'));
+    } catch (error: any) {
+      const msg = error?.response?.data?.message || t('pullCooldown');
+      toast.error(msg);
+    } finally {
+      setIsPulling(false);
+    }
+  };
+
   return (
     <div
       ref={setNodeRef}
@@ -212,10 +246,10 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
           </button>
         )}
 
-        {/* Drag handle */}
+        {/* Drag handle — always visible in custom sort mode */}
         {isDraggable && !isSelecting && (
           <button
-            className="shrink-0 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-60 transition-opacity touch-none"
+            className="shrink-0 cursor-grab active:cursor-grabbing opacity-40 group-hover:opacity-80 transition-opacity touch-none"
             {...attributes}
             {...listeners}
           >
@@ -224,14 +258,9 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
         )}
 
         {/* Status icon (display only) */}
-        <Tooltip>
-          <TooltipTrigger
-            render={<span className="shrink-0" />}
-          >
-            {statusIcons[task.status] || statusIcons.OPEN}
-          </TooltipTrigger>
-          <TooltipContent side="left">{statusNames[task.status] || 'Open'}</TooltipContent>
-        </Tooltip>
+        <span className="shrink-0">
+          {statusIcons[task.status] || statusIcons.OPEN}
+        </span>
 
         {/* Content */}
         <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onSelect?.(task.id)}>
@@ -303,6 +332,25 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
           )}
         </div>
 
+        {/* Attachment & chat indicators */}
+        {(task._count?.files ?? 0) > 0 || (task._count?.chatMessages ?? 0) > 0 ? (
+          <div className="flex items-center gap-1.5 shrink-0">
+            {(task._count?.files ?? 0) > 0 && (
+              <Paperclip className="h-3 w-3 text-muted-foreground" />
+            )}
+            {(task._count?.chatMessages ?? 0) > 0 && (
+              <span className="relative inline-flex">
+                <MessageCircle className="h-3 w-3 text-muted-foreground" />
+                {(task.unreadChatCount ?? 0) > 0 && (
+                  <span className="absolute -top-1.5 -right-2 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-red-500 px-0.5 text-[9px] font-medium text-white">
+                    {task.unreadChatCount}
+                  </span>
+                )}
+              </span>
+            )}
+          </div>
+        ) : null}
+
         {/* Assignee avatar */}
         {task.assignee && (
           <UserProfilePopover userId={task.assignee.id}>
@@ -373,21 +421,33 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
               </Button>
             </>
           )}
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 w-7 p-0"
-                  onClick={() => onSelect?.(task.id, true)}
-                />
-              }
-            >
-              <MessageCircle className="h-3.5 w-3.5" />
-            </TooltipTrigger>
-            <TooltipContent>{t('chat')}</TooltipContent>
-          </Tooltip>
+          {(pullableLink || canPullAssignee) && (
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 text-xs text-amber-500 hover:text-amber-400"
+                    disabled={isPulling}
+                    onClick={handlePull}
+                  />
+                }
+              >
+                <ArrowDownFromLine className="h-3.5 w-3.5 mr-1" />
+                {isPulling ? '...' : t('pullThread')}
+              </TooltipTrigger>
+              <TooltipContent>{t('pullThread')}</TooltipContent>
+            </Tooltip>
+          )}
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 w-7 p-0"
+            onClick={() => onSelect?.(task.id, true)}
+          >
+            <MessageCircle className="h-3.5 w-3.5" />
+          </Button>
           {section === 'actionRequired' && (
             <Button
               size="sm"

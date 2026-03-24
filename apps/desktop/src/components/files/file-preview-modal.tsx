@@ -4,7 +4,7 @@ import { useEffect, useCallback, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { X, ChevronLeft, ChevronRight, Download, Music } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { getFileTypeInfo, getFileUrl } from '@/lib/file-utils';
+import { getFileTypeInfo, getFileUrl, getFileViewUrl } from '@/lib/file-utils';
 
 interface FileItem {
   id: string;
@@ -70,7 +70,7 @@ export function FilePreviewModal({ files, initialIndex, onClose }: FilePreviewMo
       return (
         <video
           controls
-          src={getFileUrl(file.id)}
+          src={getFileViewUrl(file.url)}
           className="max-w-full max-h-[80vh] rounded-lg"
         />
       );
@@ -82,7 +82,7 @@ export function FilePreviewModal({ files, initialIndex, onClose }: FilePreviewMo
         <div className="flex flex-col items-center gap-4 rounded-xl bg-[#1A1A1A] border border-border p-8 min-w-[300px]">
           <Music className="h-16 w-16 text-cyan-500" />
           <p className="text-sm font-medium text-foreground">{file.filename}</p>
-          <audio controls src={getFileUrl(file.id)} className="w-full max-w-md" />
+          <audio controls src={getFileViewUrl(file.url)} className="w-full max-w-md" />
         </div>
       );
     }
@@ -92,7 +92,7 @@ export function FilePreviewModal({ files, initialIndex, onClose }: FilePreviewMo
       return (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={getFileUrl(file.id)}
+          src={getFileViewUrl(file.url)}
           alt={file.filename}
           className="max-h-[80vh] max-w-[80vw] object-contain rounded-lg"
         />

@@ -156,7 +156,21 @@
     "voteReject": "反对",
     "voteAbstain": "弃权",
     "voteCommentPlaceholder": "添加评论（可选）",
-    "votedCount": "{voted}/{total} 已投票"
+    "votedCount": "{voted}/{total} 已投票",
+    "pullThread": "拉线",
+    "pullCooldown": "请稍后再试",
+    "pullSuccess": "已拉线提醒",
+    "reminder": "提醒",
+    "setReminder": "设置提醒",
+    "removeReminder": "删除提醒",
+    "deleteReminder": "删除提醒",
+    "reminderSet": "提醒已设置",
+    "reminderDeleted": "提醒已删除",
+    "reminderExists": "已设置提醒:",
+    "selectDateTime": "选择日期和时间",
+    "tabDetails": "详情",
+    "tabThread": "线程",
+    "tabFiles": "文件"
   },
   "threads": {
     "title": "线程",
@@ -563,7 +577,10 @@
       "TASK_COMPLETED": "任务完成",
       "THREAD_DECLINED": "线程拒绝",
       "SHARED_SPACE_INVITE": "共享空间邀请",
-      "CHAT_MESSAGE": "聊天消息"
+      "CHAT_MESSAGE": "聊天消息",
+      "VOTE_COMPLETE": "投票完成",
+      "THREAD_PULLED": "拉线提醒",
+      "TASK_REMINDER": "任务提醒"
     }
   },
   "help": {

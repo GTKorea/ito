@@ -156,7 +156,21 @@
     "voteReject": "반대",
     "voteAbstain": "보류",
     "voteCommentPlaceholder": "코멘트 추가 (선택)",
-    "votedCount": "{voted}/{total} 투표 완료"
+    "votedCount": "{voted}/{total} 투표 완료",
+    "pullThread": "실 당기기",
+    "pullCooldown": "잠시 후 다시 시도해주세요",
+    "pullSuccess": "실을 당겼습니다",
+    "reminder": "리마인더",
+    "setReminder": "리마인더 설정",
+    "removeReminder": "리마인더 삭제",
+    "deleteReminder": "리마인더 삭제",
+    "reminderSet": "리마인더가 설정되었습니다",
+    "reminderDeleted": "리마인더가 삭제되었습니다",
+    "reminderExists": "리마인더 예정 시각:",
+    "selectDateTime": "날짜와 시간을 선택하세요",
+    "tabDetails": "상세",
+    "tabThread": "스레드",
+    "tabFiles": "파일"
   },
   "threads": {
     "title": "스레드",
@@ -563,7 +577,10 @@
       "TASK_COMPLETED": "태스크 완료",
       "THREAD_DECLINED": "스레드 거절",
       "SHARED_SPACE_INVITE": "공유 스페이스 초대",
-      "CHAT_MESSAGE": "채팅 메시지"
+      "CHAT_MESSAGE": "채팅 메시지",
+      "VOTE_COMPLETE": "투표 완료",
+      "THREAD_PULLED": "실 당기기",
+      "TASK_REMINDER": "태스크 리마인더"
     }
   },
   "help": {

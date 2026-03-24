@@ -36,7 +36,40 @@ export class ChatGateway {
   ) {
     if (!data.taskId) return;
     client.leave(`task-chat:${data.taskId}`);
+    // Also remove from focus room if leaving chat
+    client.leave(`task-chat-focus:${data.taskId}`);
+    if (client.data.focusedTaskId === data.taskId) {
+      client.data.focusedTaskId = undefined;
+    }
     return { left: true, taskId: data.taskId };
+  }
+
+  @SubscribeMessage('chatFocus')
+  handleChatFocus(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { taskId: string },
+  ) {
+    if (!data.taskId) return;
+    // Leave previous focus room if any
+    if (client.data.focusedTaskId && client.data.focusedTaskId !== data.taskId) {
+      client.leave(`task-chat-focus:${client.data.focusedTaskId}`);
+    }
+    client.join(`task-chat-focus:${data.taskId}`);
+    client.data.focusedTaskId = data.taskId;
+    return { focused: true, taskId: data.taskId };
+  }
+
+  @SubscribeMessage('chatUnfocus')
+  handleChatUnfocus(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { taskId: string },
+  ) {
+    if (!data.taskId) return;
+    client.leave(`task-chat-focus:${data.taskId}`);
+    if (client.data.focusedTaskId === data.taskId) {
+      client.data.focusedTaskId = undefined;
+    }
+    return { unfocused: true, taskId: data.taskId };
   }
 
   @SubscribeMessage('joinThread')
@@ -79,7 +112,9 @@ export class ChatGateway {
     },
   ) {
     const userId = client.data.userId;
-    if (!userId || !data.taskId || !data.content) return;
+    if (!userId || !data.taskId) return;
+    // Allow empty content if files are provided
+    if (!data.content && (!data.fileIds || data.fileIds.length === 0)) return;
 
     try {
       const message = await this.chatService.sendMessage(

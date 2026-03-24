@@ -101,7 +101,23 @@ export default function WorkspacePage() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [openWithChat, setOpenWithChat] = useState(false);
-  const [sortBy, setSortBy] = useState<'priority' | 'dueDate' | 'custom'>('priority');
+  const [sortBy, setSortByState] = useState<'priority' | 'dueDate' | 'custom'>('priority');
+
+  useEffect(() => {
+    if (currentWorkspace) {
+      const saved = localStorage.getItem(`ito-sort-${currentWorkspace.id}`);
+      if (saved && ['priority', 'dueDate', 'custom'].includes(saved)) {
+        setSortByState(saved as 'priority' | 'dueDate' | 'custom');
+      }
+    }
+  }, [currentWorkspace?.id]);
+
+  const setSortBy = (value: 'priority' | 'dueDate' | 'custom') => {
+    setSortByState(value);
+    if (currentWorkspace) {
+      localStorage.setItem(`ito-sort-${currentWorkspace.id}`, value);
+    }
+  };
   const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set());
   const [showMoveDialog, setShowMoveDialog] = useState(false);
   const isSelecting = selectedTaskIds.size > 0;

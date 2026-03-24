@@ -156,7 +156,21 @@
     "voteReject": "Rejeter",
     "voteAbstain": "S'abstenir",
     "voteCommentPlaceholder": "Ajouter un commentaire (facultatif)",
-    "votedCount": "{voted}/{total} ont voté"
+    "votedCount": "{voted}/{total} ont voté",
+    "pullThread": "Tirer le fil",
+    "pullCooldown": "Veuillez patienter avant de tirer à nouveau",
+    "pullSuccess": "Fil tiré avec succès",
+    "reminder": "Rappel",
+    "setReminder": "Définir un rappel",
+    "removeReminder": "Supprimer le rappel",
+    "deleteReminder": "Supprimer le rappel",
+    "reminderSet": "Rappel défini",
+    "reminderDeleted": "Rappel supprimé",
+    "reminderExists": "Rappel programmé :",
+    "selectDateTime": "Sélectionner la date et l'heure",
+    "tabDetails": "Détails",
+    "tabThread": "Fil",
+    "tabFiles": "Fichiers"
   },
   "threads": {
     "title": "Fils",
@@ -563,7 +577,10 @@
       "TASK_COMPLETED": "Tâche terminée",
       "THREAD_DECLINED": "Fil refusé",
       "SHARED_SPACE_INVITE": "Invitation espace partagé",
-      "CHAT_MESSAGE": "Message de chat"
+      "CHAT_MESSAGE": "Message de chat",
+      "VOTE_COMPLETE": "Vote terminé",
+      "THREAD_PULLED": "Fil tiré",
+      "TASK_REMINDER": "Rappel de tâche"
     }
   },
   "help": {

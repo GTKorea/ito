@@ -156,7 +156,21 @@
     "voteReject": "Rejeitar",
     "voteAbstain": "Abster-se",
     "voteCommentPlaceholder": "Adicionar comentário (opcional)",
-    "votedCount": "{voted}/{total} votaram"
+    "votedCount": "{voted}/{total} votaram",
+    "pullThread": "Puxar o fio",
+    "pullCooldown": "Aguarde um momento antes de puxar novamente",
+    "pullSuccess": "Fio puxado com sucesso",
+    "reminder": "Lembrete",
+    "setReminder": "Definir lembrete",
+    "removeReminder": "Remover lembrete",
+    "deleteReminder": "Remover lembrete",
+    "reminderSet": "Lembrete definido",
+    "reminderDeleted": "Lembrete removido",
+    "reminderExists": "Lembrete agendado:",
+    "selectDateTime": "Selecionar data e hora",
+    "tabDetails": "Detalhes",
+    "tabThread": "Thread",
+    "tabFiles": "Arquivos"
   },
   "threads": {
     "title": "Threads",
@@ -563,7 +577,10 @@
       "TASK_COMPLETED": "Tarefa concluída",
       "THREAD_DECLINED": "Thread recusado",
       "SHARED_SPACE_INVITE": "Convite de espaço compartilhado",
-      "CHAT_MESSAGE": "Mensagem de chat"
+      "CHAT_MESSAGE": "Mensagem de chat",
+      "VOTE_COMPLETE": "Votação concluída",
+      "THREAD_PULLED": "Fio puxado",
+      "TASK_REMINDER": "Lembrete de tarefa"
     }
   },
   "help": {

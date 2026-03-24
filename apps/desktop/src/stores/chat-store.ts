@@ -87,6 +87,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
   openChat: (taskId: string) => {
     set({ activeTaskId: taskId });
     get().joinRoom(taskId);
+    // Emit focus so backend suppresses notifications for this user
+    const socket = getSocket();
+    if (socket) {
+      socket.emit('chatFocus', { taskId });
+    }
     // Fetch if not already loaded
     if (!get().messagesByTask[taskId]) {
       get().fetchMessages(taskId);
@@ -95,7 +100,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   closeChat: () => {
     const taskId = get().activeTaskId;
-    if (taskId) get().leaveRoom(taskId);
+    if (taskId) {
+      // Emit unfocus before leaving
+      const socket = getSocket();
+      if (socket) {
+        socket.emit('chatUnfocus', { taskId });
+      }
+      get().leaveRoom(taskId);
+    }
     set({ activeTaskId: null, activeThreadParentId: null });
   },
 
@@ -170,7 +182,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   sendMessage: async (taskId: string, content: string, fileIds?: string[]) => {
     try {
       const { data } = await api.post(`/tasks/${taskId}/messages`, {
-        content,
+        content: content || undefined,
         ...(fileIds && fileIds.length > 0 ? { fileIds } : {}),
       });
       // The server broadcasts via WebSocket, but we also add it
@@ -319,7 +331,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   ) => {
     try {
       const { data } = await api.post(`/tasks/${taskId}/messages`, {
-        content,
+        content: content || undefined,
         parentId,
         ...(fileIds && fileIds.length > 0 ? { fileIds } : {}),
       });

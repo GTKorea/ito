@@ -92,6 +92,8 @@ interface TaskState {
   declineThread: (threadLinkId: string, reason?: string) => Promise<void>;
   reorderTasks: (workspaceId: string, taskIds: string[]) => Promise<void>;
   silentRefetch: (workspaceId: string, taskGroupId?: string) => Promise<void>;
+  pullThread: (linkId: string) => Promise<void>;
+  pullCurrentAssignee: (taskId: string) => Promise<void>;
   batchMoveCheck: (taskIds: string[], workspaceId?: string, taskGroupId?: string) => Promise<{ movable: Task[]; blocked: { task: Task; reason: string }[] }>;
   batchMoveExecute: (taskIds: string[], workspaceId?: string, taskGroupId?: string) => Promise<void>;
 }
@@ -339,6 +341,16 @@ export const useTaskStore = create<TaskState>((set) => ({
     } catch {
       await refetchCategorized(set);
     }
+  },
+
+  pullThread: async (linkId) => {
+    await api.post(`/thread-links/${linkId}/pull`);
+    trackEvent('thread_pulled');
+  },
+
+  pullCurrentAssignee: async (taskId) => {
+    await api.post(`/tasks/${taskId}/pull`);
+    trackEvent('thread_pulled');
   },
 
   batchMoveCheck: async (taskIds, workspaceId, taskGroupId) => {

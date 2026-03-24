@@ -156,7 +156,21 @@
     "voteReject": "反對",
     "voteAbstain": "棄權",
     "voteCommentPlaceholder": "添加評論（可選）",
-    "votedCount": "{voted}/{total} 已投票"
+    "votedCount": "{voted}/{total} 已投票",
+    "pullThread": "拉線",
+    "pullCooldown": "請稍後再試",
+    "pullSuccess": "已拉線提醒",
+    "reminder": "提醒",
+    "setReminder": "設定提醒",
+    "removeReminder": "刪除提醒",
+    "deleteReminder": "刪除提醒",
+    "reminderSet": "提醒已設定",
+    "reminderDeleted": "提醒已刪除",
+    "reminderExists": "已設定提醒:",
+    "selectDateTime": "選擇日期和時間",
+    "tabDetails": "詳情",
+    "tabThread": "執行緒",
+    "tabFiles": "檔案"
   },
   "threads": {
     "title": "執行緒",
@@ -563,7 +577,10 @@
       "TASK_COMPLETED": "任務完成",
       "THREAD_DECLINED": "線程拒絕",
       "SHARED_SPACE_INVITE": "共享空間邀請",
-      "CHAT_MESSAGE": "聊天訊息"
+      "CHAT_MESSAGE": "聊天訊息",
+      "VOTE_COMPLETE": "投票完成",
+      "THREAD_PULLED": "拉線提醒",
+      "TASK_REMINDER": "任務提醒"
     }
   },
   "help": {

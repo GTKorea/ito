@@ -156,7 +156,21 @@
     "voteReject": "反対",
     "voteAbstain": "保留",
     "voteCommentPlaceholder": "コメントを追加（任意）",
-    "votedCount": "{voted}/{total} 投票済み"
+    "votedCount": "{voted}/{total} 投票済み",
+    "pullThread": "糸を引く",
+    "pullCooldown": "しばらくお待ちください",
+    "pullSuccess": "糸を引きました",
+    "reminder": "リマインダー",
+    "setReminder": "リマインダー設定",
+    "removeReminder": "リマインダー削除",
+    "deleteReminder": "リマインダー削除",
+    "reminderSet": "リマインダーを設定しました",
+    "reminderDeleted": "リマインダーを削除しました",
+    "reminderExists": "リマインダー設定済み:",
+    "selectDateTime": "日時を選択してください",
+    "tabDetails": "詳細",
+    "tabThread": "スレッド",
+    "tabFiles": "ファイル"
   },
   "threads": {
     "title": "スレッド",
@@ -563,7 +577,10 @@
       "TASK_COMPLETED": "タスク完了",
       "THREAD_DECLINED": "スレッド拒否",
       "SHARED_SPACE_INVITE": "共有スペース招待",
-      "CHAT_MESSAGE": "チャットメッセージ"
+      "CHAT_MESSAGE": "チャットメッセージ",
+      "VOTE_COMPLETE": "投票完了",
+      "THREAD_PULLED": "糸を引く",
+      "TASK_REMINDER": "タスクリマインダー"
     }
   },
   "help": {

@@ -48,7 +48,7 @@ export class ChatController {
   sendMessage(
     @Param('taskId') taskId: string,
     @CurrentUser('id') userId: string,
-    @Body('content') content: string,
+    @Body('content') content?: string,
     @Body('parentId') parentId?: string,
     @Body('fileIds') fileIds?: string[],
   ) {

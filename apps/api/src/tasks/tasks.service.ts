@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException, Inject, Optional, forwardRef } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { ActivityService } from '../activity/activity.service';
+import { RemindersService } from '../reminders/reminders.service';
 import { CreateTaskDto, UpdateTaskDto, BatchMoveTasksDto } from './dto/create-task.dto';
 
 /** Shared include for task queries with full thread link details */
@@ -22,6 +23,8 @@ export class TasksService {
   constructor(
     private prisma: PrismaService,
     private activityService: ActivityService,
+    @Optional() @Inject(forwardRef(() => RemindersService))
+    private remindersService?: RemindersService,
   ) {}
 
   async create(dto: CreateTaskDto, workspaceId: string, userId: string) {
@@ -155,6 +158,13 @@ export class TasksService {
         threadLinks: true,
       },
     });
+
+    // Cancel reminders when task is completed or cancelled
+    if (dto.status === 'COMPLETED' || dto.status === 'CANCELLED') {
+      if (this.remindersService) {
+        await this.remindersService.cancelTaskReminders(id);
+      }
+    }
 
     await this.activityService.log({
       workspaceId: task.workspaceId,

@@ -649,11 +649,11 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
       {/* Card-style input with toolbar */}
       <div className={cn(
         'rounded-xl',
-        'bg-card/40 backdrop-blur-md',
-        'border border-border/50',
-        'shadow-lg',
+        'bg-background/60 backdrop-blur-xl',
+        'border border-white/[0.08]',
+        'shadow-[0_-8px_30px_rgb(0,0,0,0.12)]',
         'transition-all duration-300',
-        isFocused && 'bg-card/80 border-border shadow-xl',
+        isFocused && 'bg-background/80 border-white/[0.15] shadow-[0_-8px_30px_rgb(0,0,0,0.2)]',
       )}>
         {/* Toolbar — always visible */}
         <div
@@ -661,14 +661,24 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
           onMouseDown={handleToolbarMouseDown}
         >
             <div className="flex items-center gap-0.5 px-3 py-1.5 border-b border-border/30">
+              {/* Group hash button */}
+              <button
+                type="button"
+                onClick={() => insertAtCursor('#')}
+                title={t('groupHashHint')}
+                className="flex h-7 w-7 lg:h-8 lg:w-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors cursor-pointer"
+              >
+                <Hash className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
+              </button>
+
               {/* @ Mention button */}
               <button
                 type="button"
                 onClick={() => insertAtCursor('@')}
                 title="Mention (@)"
-                className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors cursor-pointer"
+                className="flex h-7 w-7 lg:h-8 lg:w-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors cursor-pointer"
               >
-                <AtSign className="h-3.5 w-3.5" />
+                <AtSign className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
               </button>
 
               {/* Chain button */}
@@ -676,9 +686,9 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
                 type="button"
                 onClick={() => insertAtCursor(' > @')}
                 title="Chain (>)"
-                className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors cursor-pointer"
+                className="flex h-7 w-7 lg:h-8 lg:w-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors cursor-pointer"
               >
-                <ChevronRight className="h-3.5 w-3.5" />
+                <ChevronRight className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
               </button>
 
               {/* Blocker button */}
@@ -686,19 +696,9 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
                 type="button"
                 onClick={() => insertAtCursor(' > ')}
                 title="Blocker"
-                className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors cursor-pointer"
+                className="flex h-7 w-7 lg:h-8 lg:w-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors cursor-pointer"
               >
-                <ShieldAlert className="h-3.5 w-3.5" />
-              </button>
-
-              {/* Group hash button */}
-              <button
-                type="button"
-                onClick={() => insertAtCursor('#')}
-                title={t('groupHashHint')}
-                className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors cursor-pointer"
-              >
-                <Hash className="h-3.5 w-3.5" />
+                <ShieldAlert className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
               </button>
 
               {/* Priority button */}
@@ -711,14 +711,14 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
                   }}
                   title="Priority"
                   className={cn(
-                    'flex h-7 w-7 items-center justify-center rounded-md transition-colors',
+                    'flex h-7 w-7 lg:h-8 lg:w-8 items-center justify-center rounded-md transition-colors',
                     'cursor-pointer',
                     priority
                       ? `${selectedPriority?.color}`
                       : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
                   )}
                 >
-                  <Flag className="h-3.5 w-3.5" />
+                  <Flag className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
                 </button>
 
                 {/* Priority dropdown */}
@@ -756,14 +756,14 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
                   onClick={() => dateInputRef.current?.showPicker()}
                   title="Due date"
                   className={cn(
-                    'flex h-7 w-7 items-center justify-center rounded-md transition-colors',
+                    'flex h-7 w-7 lg:h-8 lg:w-8 items-center justify-center rounded-md transition-colors',
                     'cursor-pointer',
                     dueDate
                       ? 'text-blue-400'
                       : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
                   )}
                 >
-                  <CalendarDays className="h-3.5 w-3.5" />
+                  <CalendarDays className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
                 </button>
                 <input
                   ref={dateInputRef}
@@ -773,7 +773,7 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
                     setDueDate(e.target.value || null);
                     inputRef.current?.focus();
                   }}
-                  className="absolute inset-0 opacity-0 w-7 h-7 cursor-pointer"
+                  className="absolute inset-0 opacity-0 w-7 h-7 lg:w-8 lg:h-8 cursor-pointer"
                   tabIndex={-1}
                 />
               </div>
@@ -787,14 +787,14 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
                 }}
                 title={t('voteTask')}
                 className={cn(
-                  'flex h-7 w-7 items-center justify-center rounded-md transition-colors',
+                  'flex h-7 w-7 lg:h-8 lg:w-8 items-center justify-center rounded-md transition-colors',
                   'cursor-pointer',
                   isVoteMode
                     ? 'text-purple-400 bg-purple-400/10'
                     : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
                 )}
               >
-                <Vote className="h-3.5 w-3.5" />
+                <Vote className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
               </button>
             </div>
         </div>

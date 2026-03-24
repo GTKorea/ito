@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
@@ -20,11 +21,13 @@ import { ChatModule } from './chat/chat.module';
 import { SharedSpacesModule } from './shared-spaces/shared-spaces.module';
 import { TaskGroupsModule } from './task-groups/task-groups.module';
 import { VotesModule } from './votes/votes.module';
+import { RemindersModule } from './reminders/reminders.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
+    ScheduleModule.forRoot(),
     PrismaModule,
     AuthModule,
     UsersModule,
@@ -44,6 +47,7 @@ import { VotesModule } from './votes/votes.module';
     SharedSpacesModule,
     TaskGroupsModule,
     VotesModule,
+    RemindersModule,
   ],
 })
 export class AppModule {}

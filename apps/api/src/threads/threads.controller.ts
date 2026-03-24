@@ -69,6 +69,24 @@ export class ThreadsController {
     return this.threadsService.connectChain(taskId, userId, dto.userIds);
   }
 
+  @Post('thread-links/:id/pull')
+  @ApiOperation({ summary: 'Pull a thread link — nudge the recipient' })
+  pullThread(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.threadsService.pullThread(id, userId);
+  }
+
+  @Post('tasks/:taskId/pull')
+  @ApiOperation({ summary: 'Pull the current assignee — nudge them' })
+  pullCurrentAssignee(
+    @Param('taskId') taskId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.threadsService.pullCurrentAssignee(taskId, userId);
+  }
+
   @Post('thread-links/:id/resolve')
   @ApiOperation({ summary: 'Resolve a thread link (snap back to sender)' })
   resolve(

@@ -91,6 +91,23 @@ export function formatNotification(notification: NotificationData): {
           : 'New Message',
         body: notification.title || `New message in "${taskTitle}"`,
       };
+    case 'THREAD_PULLED':
+      return {
+        title: data.pullerName
+          ? `${data.pullerName}님이 실을 당겼습니다`
+          : '실이 당겨졌습니다',
+        body: `"${taskTitle}" 태스크를 확인해주세요`,
+      };
+    case 'TASK_REMINDER':
+      return {
+        title: '리마인더',
+        body: `"${taskTitle}" 태스크를 확인할 시간입니다`,
+      };
+    case 'VOTE_COMPLETE':
+      return {
+        title: `Vote Complete: ${taskTitle}`,
+        body: notification.body || 'All votes have been collected',
+      };
     default:
       return {
         title: notification.title || 'ito',

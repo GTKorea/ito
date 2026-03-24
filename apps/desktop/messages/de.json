@@ -156,7 +156,21 @@
     "voteReject": "Ablehnen",
     "voteAbstain": "Enthalten",
     "voteCommentPlaceholder": "Kommentar hinzufügen (optional)",
-    "votedCount": "{voted}/{total} abgestimmt"
+    "votedCount": "{voted}/{total} abgestimmt",
+    "pullThread": "Faden ziehen",
+    "pullCooldown": "Bitte warten Sie einen Moment",
+    "pullSuccess": "Faden gezogen",
+    "reminder": "Erinnerung",
+    "setReminder": "Erinnerung setzen",
+    "removeReminder": "Erinnerung entfernen",
+    "deleteReminder": "Erinnerung löschen",
+    "reminderSet": "Erinnerung gesetzt",
+    "reminderDeleted": "Erinnerung gelöscht",
+    "reminderExists": "Erinnerung gesetzt für:",
+    "selectDateTime": "Datum und Uhrzeit wählen",
+    "tabDetails": "Details",
+    "tabThread": "Thread",
+    "tabFiles": "Dateien"
   },
   "threads": {
     "title": "Threads",
@@ -563,7 +577,10 @@
       "TASK_COMPLETED": "Aufgabe abgeschlossen",
       "THREAD_DECLINED": "Thread abgelehnt",
       "SHARED_SPACE_INVITE": "Gemeinsamer Bereich Einladung",
-      "CHAT_MESSAGE": "Chat-Nachricht"
+      "CHAT_MESSAGE": "Chat-Nachricht",
+      "VOTE_COMPLETE": "Abstimmung abgeschlossen",
+      "THREAD_PULLED": "Faden gezogen",
+      "TASK_REMINDER": "Aufgabenerinnerung"
     }
   },
   "help": {

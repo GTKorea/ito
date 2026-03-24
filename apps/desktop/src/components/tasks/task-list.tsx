@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { TaskItem } from './task-item';
-import { ChevronDown, ChevronRight, Clock, Eye, EyeOff } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ChevronDown, ChevronRight, Clock, CheckCircle } from 'lucide-react';
+
 import {
   DndContext,
   closestCenter,
@@ -52,6 +52,8 @@ interface Task {
   assignee: User;
   threadLinks: ThreadLink[];
   createdAt: string;
+  _count?: { files: number; chatMessages: number };
+  unreadChatCount?: number;
 }
 
 interface TaskListProps {
@@ -171,23 +173,18 @@ export function TaskList({ actionRequired, waiting, completed, onSelectTask, sor
       {/* Section 3: Completed — tasks that left my hands */}
       {completed.length > 0 && (
         <div>
-          <div className="flex items-center justify-between px-2 mb-2">
-            <p className="text-xs text-muted-foreground">
-              {t('completedCount', { count: completed.length })}
-            </p>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 px-2 text-[10px] text-muted-foreground"
-              onClick={() => setShowCompleted(!showCompleted)}
-            >
-              {showCompleted ? (
-                <><EyeOff className="h-3 w-3 mr-1" />{t('hide')}</>
-              ) : (
-                <><Eye className="h-3 w-3 mr-1" />{t('show')}</>
-              )}
-            </Button>
-          </div>
+          <button
+            onClick={() => setShowCompleted(!showCompleted)}
+            className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground mb-2 px-2 hover:text-foreground transition-colors"
+          >
+            {showCompleted ? (
+              <ChevronDown className="h-3 w-3" />
+            ) : (
+              <ChevronRight className="h-3 w-3" />
+            )}
+            <CheckCircle className="h-3 w-3" />
+            {t('completedCount', { count: completed.length })}
+          </button>
           {showCompleted && (
             <div className="space-y-1 opacity-60">
               {completed.map((task) => (
