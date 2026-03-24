@@ -595,53 +595,49 @@ export function TaskItem({
               </DropdownMenuContent>
             </DropdownMenu>
             {showReminderInput && (
-              <div className="absolute right-0 top-full mt-1 z-50 rounded-lg border border-border bg-[#1A1A1A] p-3 shadow-xl space-y-2 min-w-[220px]">
-                <p className="text-xs font-medium text-muted-foreground">
-                  {t('setReminder')}
-                </p>
-                <input
-                  type="date"
-                  value={reminderDate}
-                  onChange={(e) => setReminderDate(e.target.value)}
-                  className="h-7 w-full rounded border border-border bg-background px-2 text-xs"
-                />
-                <input
-                  type="time"
-                  value={reminderTime}
-                  onChange={(e) => setReminderTime(e.target.value)}
-                  className="h-7 w-full rounded border border-border bg-background px-2 text-xs"
-                />
-                <div className="flex gap-1.5">
-                  <button
-                    onClick={() => setShowReminderInput(false)}
-                    className="flex-1 h-7 rounded text-xs text-muted-foreground hover:bg-accent/50"
-                  >
-                    {tc('cancel')}
-                  </button>
-                  <button
-                    onClick={async () => {
-                      if (!reminderDate || !reminderTime) return;
-                      try {
-                        const { api } = await import('@/lib/api-client');
-                        await api.post(`/tasks/${task.id}/reminder`, {
-                          remindAt: new Date(
-                            `${reminderDate}T${reminderTime}`
-                          ).toISOString(),
-                        });
-                        setShowReminderInput(false);
-                        setReminderDate('');
-                        setReminderTime('');
-                        toast.success(t('reminderSet'));
-                      } catch {
-                        toast.error(t('reminderExists') || 'Failed');
-                      }
-                    }}
-                    className="flex-1 h-7 rounded bg-primary text-xs text-primary-foreground hover:bg-primary/90"
-                  >
-                    {tc('save')}
-                  </button>
-                </div>
-              </div>
+              <Dialog open onOpenChange={() => { setShowReminderInput(false); setReminderDate(''); setReminderTime(''); }}>
+                <DialogContent className="sm:max-w-xs">
+                  <DialogHeader>
+                    <DialogTitle>{t('setReminder')}</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-2">
+                    <input
+                      type="date"
+                      value={reminderDate}
+                      onChange={(e) => setReminderDate(e.target.value)}
+                      className="h-8 w-full rounded-md border border-border bg-background px-2 text-xs"
+                    />
+                    <input
+                      type="time"
+                      value={reminderTime}
+                      onChange={(e) => setReminderTime(e.target.value)}
+                      className="h-8 w-full rounded-md border border-border bg-background px-2 text-xs"
+                    />
+                    <div className="flex gap-2 pt-1">
+                      <Button variant="outline" size="sm" className="flex-1" onClick={() => { setShowReminderInput(false); setReminderDate(''); setReminderTime(''); }}>
+                        {tc('cancel')}
+                      </Button>
+                      <Button size="sm" className="flex-1" onClick={async () => {
+                        if (!reminderDate || !reminderTime) return;
+                        try {
+                          const { api } = await import('@/lib/api-client');
+                          await api.post(`/tasks/${task.id}/reminder`, {
+                            remindAt: new Date(`${reminderDate}T${reminderTime}`).toISOString(),
+                          });
+                          setShowReminderInput(false);
+                          setReminderDate('');
+                          setReminderTime('');
+                          toast.success(t('reminderSet'));
+                        } catch {
+                          toast.error(t('reminderExists') || 'Failed');
+                        }
+                      }}>
+                        {tc('save')}
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             )}
           </div>
         )}
