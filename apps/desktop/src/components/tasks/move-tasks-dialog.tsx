@@ -95,7 +95,7 @@ export function MoveTasksDialog({
 
   return (
     <Dialog open={open} onOpenChange={() => onClose()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md overflow-hidden">
         <DialogHeader>
           <DialogTitle>{t('moveDialogTitle')}</DialogTitle>
         </DialogHeader>
@@ -126,16 +126,16 @@ export function MoveTasksDialog({
 
         {/* Check result / confirm view */}
         {checkResult ? (
-          <div className="space-y-3">
+          <div className="space-y-3 overflow-hidden">
             {checkResult.movable.length > 0 && (
               <div>
                 <p className="text-xs font-medium text-green-500 mb-1">
                   <Check className="inline h-3 w-3 mr-1" />
                   {t('movableCount', { count: checkResult.movable.length })}
                 </p>
-                <div className="max-h-32 overflow-y-auto space-y-0.5">
+                <div className="max-h-32 overflow-y-auto space-y-0.5 min-w-0">
                   {checkResult.movable.map((task) => (
-                    <p key={task.id} className="text-xs text-muted-foreground truncate pl-4">{task.title}</p>
+                    <p key={task.id} className="text-xs text-muted-foreground truncate pl-4 max-w-full">{task.title}</p>
                   ))}
                 </div>
               </div>
@@ -146,10 +146,10 @@ export function MoveTasksDialog({
                   <AlertTriangle className="inline h-3 w-3 mr-1" />
                   {t('blockedCount', { count: checkResult.blocked.length })}
                 </p>
-                <div className="max-h-32 overflow-y-auto space-y-1">
+                <div className="max-h-32 overflow-y-auto space-y-1 min-w-0">
                   {checkResult.blocked.map(({ task, reason }) => (
-                    <div key={task.id} className="pl-4">
-                      <p className="text-xs text-muted-foreground truncate">{task.title}</p>
+                    <div key={task.id} className="pl-4 min-w-0">
+                      <p className="text-xs text-muted-foreground truncate max-w-full">{task.title}</p>
                       <p className="text-[10px] text-yellow-500">{reasonLabel(reason)}</p>
                     </div>
                   ))}

@@ -304,26 +304,24 @@ export default function WorkspacePage() {
           />
         )}
 
-        {/* Selection Action Bar */}
-        {isSelecting && (
-          <div className="px-2 pb-2">
-            <div className="flex items-center justify-between rounded-xl bg-primary/10 border border-primary/20 px-4 py-2.5">
-              <span className="text-sm font-medium">{tt('selectedCount', { count: selectedTaskIds.size })}</span>
-              <div className="flex items-center gap-2">
-                <Button size="sm" variant="outline" onClick={() => setShowMoveDialog(true)}>
-                  <ArrowRightLeft className="mr-1 h-3.5 w-3.5" />
-                  {tt('moveTo')}
-                </Button>
-                <Button size="sm" variant="ghost" onClick={clearSelection}>
-                  {tt('clearSelection')}
-                </Button>
+        {/* Quick Input + Selection Bar — sticky bottom */}
+        <div className="sticky bottom-0 z-10">
+          {isSelecting && (
+            <div className="px-4 pb-2">
+              <div className="flex items-center justify-between rounded-xl bg-primary/10 border border-primary/20 backdrop-blur-sm px-4 py-2">
+                <span className="text-sm font-medium">{tt('selectedCount', { count: selectedTaskIds.size })}</span>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="outline" onClick={() => setShowMoveDialog(true)}>
+                    <ArrowRightLeft className="mr-1 h-3.5 w-3.5" />
+                    {tt('moveTo')}
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={clearSelection}>
+                    {tt('clearSelection')}
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Quick Input — sticky bottom with glassmorphism */}
-        <div className="sticky bottom-0 z-10">
+          )}
           <QuickInput taskGroupId={groupId || undefined} />
         </div>
       </div>

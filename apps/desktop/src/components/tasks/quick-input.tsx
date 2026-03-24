@@ -570,7 +570,7 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
   if (!currentWorkspace) return null;
 
   return (
-    <div className="relative px-8 pb-6 pt-4">
+    <div className="relative px-4 pb-6 pt-4">
       {/* Group autocomplete dropdown — positioned above the input */}
       {showGroupAutocomplete && groupSuggestions.length > 0 && (
         <div className="absolute bottom-full left-8 right-8 mb-3 max-h-48 overflow-y-auto rounded-2xl border border-border bg-card/95 backdrop-blur-md shadow-2xl">
