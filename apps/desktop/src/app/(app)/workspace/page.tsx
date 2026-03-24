@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useTaskStore } from '@/stores/task-store';
@@ -102,6 +102,27 @@ export default function WorkspacePage() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [openWithChat, setOpenWithChat] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(420);
+  const isResizingRef = useRef(false);
+
+  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    isResizingRef.current = true;
+    const startX = e.clientX;
+    const startWidth = sidebarWidth;
+    const onMove = (ev: MouseEvent) => {
+      if (!isResizingRef.current) return;
+      const delta = startX - ev.clientX;
+      setSidebarWidth(Math.max(360, Math.min(800, startWidth + delta)));
+    };
+    const onUp = () => {
+      isResizingRef.current = false;
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }, [sidebarWidth]);
   const [sortBy, setSortByState] = useState<'priority' | 'dueDate' | 'custom'>('priority');
 
   useEffect(() => {
@@ -340,11 +361,19 @@ export default function WorkspacePage() {
       {/* Task Detail Slide-over */}
       <div
         className={cn(
-          'fixed right-0 top-0 z-50 h-full w-full md:w-[420px] transition-transform duration-200 ease-out',
+          'fixed right-0 top-0 z-50 h-full w-full transition-transform duration-200 ease-out',
           drawerVisible ? 'translate-x-0' : 'translate-x-full',
           !selectedTaskId && 'pointer-events-none',
         )}
+        style={{ width: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${sidebarWidth}px` : undefined }}
       >
+        {/* Resize handle — left edge (lg+ only) */}
+        <div
+          className="hidden lg:flex absolute left-0 top-0 h-full w-1.5 cursor-col-resize items-center justify-center z-10 hover:bg-primary/20 transition-colors group"
+          onMouseDown={handleResizeStart}
+        >
+          <div className="h-8 w-0.5 rounded-full bg-border group-hover:bg-primary/50 transition-colors" />
+        </div>
         {selectedTaskId && (
           <TaskDetail
             taskId={selectedTaskId}

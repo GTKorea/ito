@@ -309,13 +309,10 @@ export function ChatPanel({ taskId, onClose }: ChatPanelProps) {
   };
 
   return (
-    <div className="flex h-full w-full">
-      {/* Main chat area */}
+    <div className="relative h-full w-full">
+      {/* Main chat area — always full width */}
       <div
-        className={cn(
-          'relative flex h-full flex-col border-l border-border bg-[#0F0F0F]',
-          threadParentMessage ? 'w-[40%]' : 'w-full',
-        )}
+        className="relative flex h-full w-full flex-col border-l border-border bg-[#0F0F0F]"
         onDragOver={(e) => { e.preventDefault(); setChatDragOver(true); }}
         onDragLeave={(e) => {
           if (!e.currentTarget.contains(e.relatedTarget as Node)) {
@@ -580,9 +577,9 @@ export function ChatPanel({ taskId, onClose }: ChatPanelProps) {
         </div>
       </div>
 
-      {/* Thread panel (slide-in from right) */}
+      {/* Thread panel — overlay on top of chat */}
       {threadParentMessage && (
-        <div className="w-[60%] h-full">
+        <div className="absolute inset-0 z-20 bg-[#0F0F0F]">
           <ThreadPanel
             taskId={taskId}
             parentMessage={threadParentMessage}
