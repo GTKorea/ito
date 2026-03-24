@@ -205,61 +205,43 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                     );
                   })}
 
-                  {/* Internal section */}
-                  <div className="mt-1.5">
-                    <button
-                      onClick={() => toggleSection('internal')}
-                      className="flex items-center gap-1 w-full text-[11px] uppercase tracking-wider text-muted-foreground/50 hover:text-muted-foreground px-2 pt-1.5 pb-0.5 transition-colors"
-                    >
-                      {collapsedSections['internal'] ? (
-                        <ChevronRight className="h-3 w-3 shrink-0" />
-                      ) : (
-                        <ChevronDown className="h-3 w-3 shrink-0" />
-                      )}
-                      <span>{t('internal')}</span>
-                    </button>
-                    {!collapsedSections['internal'] && (
-                      <>
-                        {/* All internal tasks */}
-                        <Link
-                          href="/workspace"
-                          className={cn(
-                            'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
-                            pathname === '/workspace' && !searchParams.get('group')
-                              ? 'bg-accent text-accent-foreground'
-                              : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
-                          )}
-                        >
-                          <span className="truncate">{t('all')}</span>
-                        </Link>
-                        {/* Workspace groups */}
-                        {groups.map((group) => (
-                          <Link
-                            key={group.id}
-                            href={`/workspace?group=${group.id}`}
-                            className={cn(
-                              'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
-                              searchParams.get('group') === group.id
-                                ? 'bg-accent text-accent-foreground'
-                                : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
-                            )}
-                          >
-                            <Hash className="h-3.5 w-3.5 shrink-0" />
-                            <span className="truncate">{group.name}</span>
-                            <span className="ml-auto text-xs text-muted-foreground/60">{group._count.tasks}</span>
-                          </Link>
-                        ))}
-                        {/* New group button */}
-                        <button
-                          className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground/50 hover:text-muted-foreground transition-colors w-full"
-                          onClick={() => currentWorkspace && handleOpenCreateGroup(currentWorkspace.id)}
-                        >
-                          <Plus className="h-3.5 w-3.5" />
-                          <span>{t('newGroup')}</span>
-                        </button>
-                      </>
+                  {/* All tasks */}
+                  <Link
+                    href="/workspace"
+                    className={cn(
+                      'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
+                      pathname === '/workspace' && !searchParams.get('group')
+                        ? 'bg-accent text-accent-foreground'
+                        : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
                     )}
-                  </div>
+                  >
+                    <span className="truncate">{t('all')}</span>
+                  </Link>
+                  {/* Workspace groups */}
+                  {groups.map((group) => (
+                    <Link
+                      key={group.id}
+                      href={`/workspace?group=${group.id}`}
+                      className={cn(
+                        'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
+                        searchParams.get('group') === group.id
+                          ? 'bg-accent text-accent-foreground'
+                          : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
+                      )}
+                    >
+                      <Hash className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate">{group.name}</span>
+                      <span className="ml-auto text-xs text-muted-foreground/60">{group._count.tasks}</span>
+                    </Link>
+                  ))}
+                  {/* New group button */}
+                  <button
+                    className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground/50 hover:text-muted-foreground transition-colors w-full"
+                    onClick={() => currentWorkspace && handleOpenCreateGroup(currentWorkspace.id)}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    <span>{t('newGroup')}</span>
+                  </button>
                 </div>
               )}
             </div>
