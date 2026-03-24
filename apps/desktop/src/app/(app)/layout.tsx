@@ -21,7 +21,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { isMobile, isTablet } = useMediaQuery();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
-  const isTauriEnv = isTauri();
+  const [isTauriEnv, setIsTauriEnv] = useState(false);
+
+  useEffect(() => {
+    setIsTauriEnv(isTauri());
+  }, []);
 
   useEffect(() => {
     // Only fetch if not already authenticated (avoid overriding login() state on mount)

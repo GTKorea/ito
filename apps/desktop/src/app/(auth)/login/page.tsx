@@ -52,29 +52,13 @@ export default function LoginPage() {
     if (isDesktop) {
       const state = crypto.randomUUID();
       const url = `${API_URL}/auth/${provider}/init?from=${encodeURIComponent('ito://')}&state=${encodeURIComponent(state)}`;
-      // Open in external browser — try multiple approaches for Tauri
-      let opened = false;
       try {
-        // Approach 1: Tauri plugin-shell npm package (available in local dev)
         const { open } = await import('@tauri-apps/plugin-shell');
         await open(url);
-        opened = true;
       } catch {
-        // Approach 2: Tauri global __TAURI__ API (available in remote URL mode)
-        try {
-          const tauriShell = (window as any).__TAURI__?.shell || (window as any).__TAURI_INTERNALS__?.plugins?.shell;
-          if (tauriShell?.open) {
-            await tauriShell.open(url);
-            opened = true;
-          }
-        } catch {
-          // silent
-        }
-      }
-      if (!opened) {
-        // Final fallback: window.open to avoid navigating the webview
-        console.error('All Tauri shell methods failed, using window.open');
-        window.open(url, '_blank');
+        // shell plugin failed — don't navigate the webview
+        setPendingProvider(null);
+        return;
       }
 
       setPendingProvider(provider);
