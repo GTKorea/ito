@@ -12,6 +12,7 @@
     "add": "Add",
     "change": "Change",
     "current": "Current",
+    "time": "Time",
     "authenticating": "Authenticating...",
     "noResults": "No results found."
   },

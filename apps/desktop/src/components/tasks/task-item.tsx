@@ -33,7 +33,7 @@ import {
   Circle,
   CircleDot,
   Ban,
-  Calendar,
+  Calendar as CalendarIcon,
   X,
   MessageCircle,
   User,
@@ -51,6 +51,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useMediaQuery } from '@/hooks/use-media-query';
@@ -409,7 +410,7 @@ export function TaskItem({
                 dueDateInfo.color
               )}
             >
-              <Calendar className="h-3 w-3" />
+              <CalendarIcon className="h-3 w-3" />
               <span className="text-[10px]">{dueDateInfo.text}</span>
             </div>
           )}
@@ -551,24 +552,17 @@ export function TaskItem({
             )}
 
             <DropdownMenu>
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <DropdownMenuTrigger
-                      render={
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 p-0"
-                        />
-                      }
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                    </DropdownMenuTrigger>
-                  }
-                />
-                <TooltipContent>{t('moreActions')}</TooltipContent>
-              </Tooltip>
+              <DropdownMenuTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0"
+                  />
+                }
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 {onToggleSelect && (
                   <DropdownMenuItem onClick={() => onToggleSelect(task.id)}>
@@ -596,28 +590,41 @@ export function TaskItem({
             </DropdownMenu>
             {showReminderInput && (
               <Dialog open onOpenChange={() => { setShowReminderInput(false); setReminderDate(''); setReminderTime(''); }}>
-                <DialogContent className="sm:max-w-xs">
-                  <DialogHeader>
+                <DialogContent className="sm:max-w-sm p-0">
+                  <DialogHeader className="px-4 pt-4 pb-0">
                     <DialogTitle>{t('setReminder')}</DialogTitle>
                   </DialogHeader>
-                  <div className="space-y-2">
-                    <input
-                      type="date"
-                      value={reminderDate}
-                      onChange={(e) => setReminderDate(e.target.value)}
-                      className="h-8 w-full rounded-md border border-border bg-background px-2 text-xs"
+                  <div className="space-y-3 px-4 pb-4">
+                    <Calendar
+                      mode="single"
+                      selected={reminderDate ? new Date(reminderDate) : undefined}
+                      onSelect={(date) => {
+                        if (date) {
+                          const y = date.getFullYear();
+                          const m = String(date.getMonth() + 1).padStart(2, '0');
+                          const d = String(date.getDate()).padStart(2, '0');
+                          setReminderDate(`${y}-${m}-${d}`);
+                        } else {
+                          setReminderDate('');
+                        }
+                      }}
+                      disabled={{ before: new Date() }}
+                      className="rounded-md border border-border mx-auto"
                     />
-                    <input
-                      type="time"
-                      value={reminderTime}
-                      onChange={(e) => setReminderTime(e.target.value)}
-                      className="h-8 w-full rounded-md border border-border bg-background px-2 text-xs"
-                    />
-                    <div className="flex gap-2 pt-1">
+                    <div className="flex items-center gap-2">
+                      <label className="text-xs text-muted-foreground whitespace-nowrap">{tc('time') || 'Time'}</label>
+                      <input
+                        type="time"
+                        value={reminderTime}
+                        onChange={(e) => setReminderTime(e.target.value)}
+                        className="h-8 flex-1 rounded-md border border-border bg-background px-2 text-sm [color-scheme:dark]"
+                      />
+                    </div>
+                    <div className="flex gap-2">
                       <Button variant="outline" size="sm" className="flex-1" onClick={() => { setShowReminderInput(false); setReminderDate(''); setReminderTime(''); }}>
                         {tc('cancel')}
                       </Button>
-                      <Button size="sm" className="flex-1" onClick={async () => {
+                      <Button size="sm" className="flex-1" disabled={!reminderDate || !reminderTime} onClick={async () => {
                         if (!reminderDate || !reminderTime) return;
                         try {
                           const { api } = await import('@/lib/api-client');
@@ -762,53 +769,62 @@ export function TaskItem({
             </DropdownMenuContent>
           </DropdownMenu>
           {showReminderInput && (
-            <div className="absolute right-0 top-full mt-1 z-50 rounded-lg border border-border bg-[#1A1A1A] p-3 shadow-xl space-y-2 min-w-[220px]">
-              <p className="text-xs font-medium text-muted-foreground">
-                {t('setReminder')}
-              </p>
-              <input
-                type="date"
-                value={reminderDate}
-                onChange={(e) => setReminderDate(e.target.value)}
-                className="h-7 w-full rounded border border-border bg-background px-2 text-xs"
-              />
-              <input
-                type="time"
-                value={reminderTime}
-                onChange={(e) => setReminderTime(e.target.value)}
-                className="h-7 w-full rounded border border-border bg-background px-2 text-xs"
-              />
-              <div className="flex gap-1.5">
-                <button
-                  onClick={() => setShowReminderInput(false)}
-                  className="flex-1 h-7 rounded text-xs text-muted-foreground hover:bg-accent/50"
-                >
-                  {tc('cancel')}
-                </button>
-                <button
-                  onClick={async () => {
-                    if (!reminderDate || !reminderTime) return;
-                    try {
-                      const { api } = await import('@/lib/api-client');
-                      await api.post(`/tasks/${task.id}/reminder`, {
-                        remindAt: new Date(
-                          `${reminderDate}T${reminderTime}`
-                        ).toISOString(),
-                      });
-                      setShowReminderInput(false);
-                      setReminderDate('');
-                      setReminderTime('');
-                      toast.success(t('reminderSet'));
-                    } catch {
-                      toast.error(t('reminderExists') || 'Failed');
-                    }
-                  }}
-                  className="flex-1 h-7 rounded bg-primary text-xs text-primary-foreground hover:bg-primary/90"
-                >
-                  {tc('save')}
-                </button>
-              </div>
-            </div>
+            <Dialog open onOpenChange={() => { setShowReminderInput(false); setReminderDate(''); setReminderTime(''); }}>
+              <DialogContent className="sm:max-w-sm p-0">
+                <DialogHeader className="px-4 pt-4 pb-0">
+                  <DialogTitle>{t('setReminder')}</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3 px-4 pb-4">
+                  <Calendar
+                    mode="single"
+                    selected={reminderDate ? new Date(reminderDate) : undefined}
+                    onSelect={(date) => {
+                      if (date) {
+                        const y = date.getFullYear();
+                        const m = String(date.getMonth() + 1).padStart(2, '0');
+                        const d = String(date.getDate()).padStart(2, '0');
+                        setReminderDate(`${y}-${m}-${d}`);
+                      } else {
+                        setReminderDate('');
+                      }
+                    }}
+                    disabled={{ before: new Date() }}
+                    className="rounded-md border border-border mx-auto"
+                  />
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs text-muted-foreground whitespace-nowrap">{tc('time') || 'Time'}</label>
+                    <input
+                      type="time"
+                      value={reminderTime}
+                      onChange={(e) => setReminderTime(e.target.value)}
+                      className="h-8 flex-1 rounded-md border border-border bg-background px-2 text-sm [color-scheme:dark]"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" className="flex-1" onClick={() => { setShowReminderInput(false); setReminderDate(''); setReminderTime(''); }}>
+                      {tc('cancel')}
+                    </Button>
+                    <Button size="sm" className="flex-1" disabled={!reminderDate || !reminderTime} onClick={async () => {
+                      if (!reminderDate || !reminderTime) return;
+                      try {
+                        const { api } = await import('@/lib/api-client');
+                        await api.post(`/tasks/${task.id}/reminder`, {
+                          remindAt: new Date(`${reminderDate}T${reminderTime}`).toISOString(),
+                        });
+                        setShowReminderInput(false);
+                        setReminderDate('');
+                        setReminderTime('');
+                        toast.success(t('reminderSet'));
+                      } catch {
+                        toast.error(t('reminderExists') || 'Failed');
+                      }
+                    }}>
+                      {tc('save')}
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           )}
         </div>
       )}
