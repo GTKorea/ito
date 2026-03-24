@@ -15,8 +15,12 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       {isTauriEnv && (
         <div
           data-tauri-drag-region
-          className="fixed top-0 left-0 right-0 h-[48px] z-50"
-          style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
+          className="fixed top-0 left-0 right-0 h-[32px] z-50"
+          style={{
+            WebkitAppRegion: 'drag',
+            // Only the empty titlebar area is draggable — buttons below are not blocked
+            // because this div contains no interactive children
+          } as React.CSSProperties}
         />
       )}
       {children}
