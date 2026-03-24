@@ -1,14 +1,10 @@
 'use client';
 
-import { useState, useEffect, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { isTauri } from '@/lib/platform';
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
-  const [isTauriEnv, setIsTauriEnv] = useState(false);
-
-  useEffect(() => {
-    setIsTauriEnv(isTauri());
-  }, []);
+  const isTauriEnv = isTauri();
 
   return (
     <div suppressHydrationWarning>

@@ -1,6 +1,6 @@
 {
   "name": "ito",
-  "version": "0.6.3",
+  "version": "0.8.3",
   "private": true,
   "description": "ito - collaborative thread-based task management",
   "scripts": {

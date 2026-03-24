@@ -55,10 +55,10 @@ export default function LoginPage() {
       try {
         const { open } = await import('@tauri-apps/plugin-shell');
         await open(url);
-      } catch {
-        // shell plugin failed — don't navigate the webview
-        setPendingProvider(null);
-        return;
+      } catch (err) {
+        console.error('Failed to open external browser:', err);
+        // Fallback: try window.open with _blank to avoid navigating webview
+        window.open(url, '_blank');
       }
 
       setPendingProvider(provider);
