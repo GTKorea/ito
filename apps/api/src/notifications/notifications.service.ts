@@ -1,6 +1,6 @@
 import { Injectable, Inject, Optional, Logger } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
-import { NotificationType } from '@prisma/client';
+import { Notification, NotificationType, Prisma } from '@prisma/client';
 import { WsGateway } from '../websocket/ws.gateway';
 import { SlackService } from '../slack/slack.service';
 import { EmailService } from '../email/email.service';
@@ -24,7 +24,7 @@ export class NotificationsService {
     type: NotificationType | string;
     title: string;
     body?: string;
-    data?: any;
+    data?: Prisma.InputJsonValue;
   }) {
     // Check user preferences
     const preference = await this.prisma.notificationPreference.findUnique({
@@ -42,7 +42,7 @@ export class NotificationsService {
     const slackEnabled = preference?.slack ?? false;
     const slackWebhookUrl = preference?.slackWebhookUrl;
 
-    let notification: any = null;
+    let notification: Notification | null = null;
 
     // Create in-app notification if enabled
     if (inApp) {
@@ -70,7 +70,7 @@ export class NotificationsService {
         .sendNotification(data.userId, {
           type: data.type as string,
           title: data.title,
-          data: data.data,
+          data: data.data as Record<string, unknown> | undefined,
         })
         .catch(() => {
           // Slack notification failures should not affect the main flow

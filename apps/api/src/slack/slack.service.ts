@@ -7,6 +7,20 @@ import { TasksService } from '../tasks/tasks.service';
 import { SlackCommandDto } from './dto/slack-command.dto';
 import * as crypto from 'crypto';
 
+interface SlackBlock {
+  type: string;
+  text?: { type: string; text: string; emoji?: boolean };
+  elements?: Array<{ type: string; text?: string | { type: string; text: string }; url?: string; style?: Record<string, boolean> }>;
+  fields?: Array<{ type: string; text: string }>;
+  [key: string]: unknown;
+}
+
+interface SlackCommandResponse {
+  response_type?: string;
+  text?: string;
+  blocks?: SlackBlock[];
+}
+
 const SLACK_OAUTH_AUTHORIZE_URL = 'https://slack.com/oauth/v2/authorize';
 const SLACK_OAUTH_BOT_SCOPES = [
   'commands',
@@ -28,7 +42,7 @@ export class SlackService implements OnModuleInit {
   private clientId: string | null = null;
   private clientSecret: string | null = null;
 
-  private threadsService: any = null;
+  private threadsService: { connectChain: (taskId: string, userId: string, chainUserIds: string[]) => Promise<unknown> } | null = null;
 
   constructor(
     private moduleRef: ModuleRef,
@@ -241,7 +255,7 @@ export class SlackService implements OnModuleInit {
   async sendMessage(
     channel: string,
     text: string,
-    blocks?: any[],
+    blocks?: SlackBlock[],
     slackTeamId?: string,
   ): Promise<void> {
     const client = await this.getClientForTeam(slackTeamId);
@@ -259,7 +273,7 @@ export class SlackService implements OnModuleInit {
 
   async sendNotification(
     userId: string,
-    notification: { type: string; title: string; data?: any },
+    notification: { type: string; title: string; data?: Record<string, unknown> },
   ): Promise<void> {
     const slackUser = await this.findSlackUser(userId);
     if (!slackUser) return;
@@ -461,7 +475,7 @@ export class SlackService implements OnModuleInit {
   private formatNotification(notification: {
     type: string;
     title: string;
-    data?: any;
+    data?: Record<string, unknown>;
   }): string {
     const data = notification.data || {};
     const taskTitle = data.taskTitle || notification.title;
@@ -489,7 +503,7 @@ export class SlackService implements OnModuleInit {
 
   async handleCommand(
     payload: SlackCommandDto,
-  ): Promise<{ response_type?: string; text?: string; blocks?: any[] }> {
+  ): Promise<SlackCommandResponse> {
     const text = payload.text.trim();
     if (!text) return this.handleHelpCommand();
 
@@ -630,7 +644,7 @@ export class SlackService implements OnModuleInit {
 
   private async handleListCommand(
     payload: SlackCommandDto,
-  ): Promise<{ response_type: string; text?: string; blocks?: any[] }> {
+  ): Promise<SlackCommandResponse> {
     const mapping = await this.resolveSlackUser(
       payload.team_id,
       payload.user_id,
@@ -664,7 +678,7 @@ export class SlackService implements OnModuleInit {
         CANCELLED: ':no_entry_sign:',
       };
 
-      const blocks: any[] = [
+      const blocks: SlackBlock[] = [
         {
           type: 'header',
           text: {
@@ -748,11 +762,7 @@ export class SlackService implements OnModuleInit {
     };
   }
 
-  private handleHelpCommand(): {
-    response_type: string;
-    blocks: any[];
-    text: string;
-  } {
+  private handleHelpCommand(): SlackCommandResponse {
     return {
       response_type: 'ephemeral',
       text: 'ito Slack 명령어 도움말',

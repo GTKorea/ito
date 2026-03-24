@@ -8,6 +8,16 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma/prisma.service';
 
+interface OutlookEvent {
+  id: string;
+  subject?: string;
+  bodyPreview?: string;
+  start?: { dateTime: string };
+  end?: { dateTime: string };
+  isAllDay?: boolean;
+  webLink?: string;
+}
+
 @Injectable()
 export class CalendarService implements OnModuleInit {
   private readonly logger = new Logger(CalendarService.name);
@@ -480,7 +490,8 @@ export class CalendarService implements OnModuleInit {
       if (!response.ok) return [];
 
       const data = await response.json();
-      return ((data.value as any[]) || []).map((event) => ({
+      const events: OutlookEvent[] = data.value || [];
+      return events.map((event) => ({
         id: event.id,
         title: event.subject || '',
         description: event.bodyPreview || '',

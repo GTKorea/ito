@@ -316,7 +316,7 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
               try {
                 const { data } = await api.get(`/task-groups/${groupId}/members`);
                 const memberIds = data
-                  .map((m: any) => m.userId)
+                  .map((m: { userId: string }) => m.userId)
                   .filter((id: string) => id !== currentUser?.id);
                 userIds.push(...memberIds);
               } catch {
@@ -328,7 +328,7 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
             try {
               const { data } = await api.get(`/workspaces/${currentWorkspace.id}/members`);
               const memberIds = data
-                .map((m: any) => m.userId)
+                .map((m: { userId: string }) => m.userId)
                 .filter((id: string) => id !== currentUser?.id);
               userIds.push(...memberIds);
             } catch {

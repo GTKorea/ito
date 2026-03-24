@@ -9,7 +9,7 @@ export class SlackEventDto {
     channel?: string;
     text?: string;
     ts?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
-  [key: string]: any;
+  [key: string]: unknown;
 }

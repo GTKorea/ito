@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 
@@ -35,7 +36,7 @@ export class UsersService {
       data: {
         ...rest,
         ...(socialLinks !== undefined && {
-          socialLinks: socialLinks as any,
+          socialLinks: socialLinks as unknown as Prisma.InputJsonValue,
         }),
       },
       select: USER_PROFILE_SELECT,
@@ -72,7 +73,7 @@ export class UsersService {
     excludeUserId?: string,
     query?: string,
   ) {
-    const where: any = {
+    const where: Prisma.UserWhereInput = {
       workspaceMembers: { some: { workspaceId } },
     };
 

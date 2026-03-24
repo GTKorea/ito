@@ -6,9 +6,14 @@ import {
   Optional,
   forwardRef,
 } from '@nestjs/common';
+import type { Socket } from 'socket.io';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { WsGateway } from '../websocket/ws.gateway';
 import { NotificationsService } from '../notifications/notifications.service';
+
+interface AuthenticatedSocket extends Socket {
+  data: { userId?: string };
+}
 
 @Injectable()
 export class ChatService {
@@ -240,7 +245,7 @@ export class ChatService {
           mimeType: true,
         },
       });
-      (message as any).files = files;
+      (message as typeof message & { files: typeof files }).files = files;
     }
 
     // Increment parent's replyCount if this is a thread reply
@@ -285,7 +290,7 @@ export class ChatService {
           .fetchSockets();
         if (focusedSockets) {
           for (const s of focusedSockets) {
-            const focusedUserId = (s as any).data?.userId;
+            const focusedUserId = (s as unknown as AuthenticatedSocket).data?.userId;
             if (focusedUserId) {
               participantIds.delete(focusedUserId);
             }

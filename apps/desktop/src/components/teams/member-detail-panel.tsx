@@ -39,7 +39,7 @@ interface MemberSummary {
     action: string;
     entityType: string;
     entityId: string;
-    metadata?: any;
+    metadata?: Record<string, string>;
     createdAt: string;
   }>;
   stats: {

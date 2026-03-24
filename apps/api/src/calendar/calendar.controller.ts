@@ -214,7 +214,7 @@ export class CalendarController {
   @ApiOperation({ summary: 'Debug calendar integration status' })
   async debugCalendar(@CurrentUser('id') userId: string) {
     const integrations = await this.calendarService.getIntegrations(userId);
-    const results: any = { integrations };
+    const results: Record<string, unknown> = { integrations };
 
     const now = new Date();
     const start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();

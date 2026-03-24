@@ -82,8 +82,10 @@ function SeedDataStep() {
         setSeeded(true);
       }
       setSeedingState(false);
-    } catch (err: any) {
-      setSeedingState(false, err?.response?.data?.message || t('seedData.error'));
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : t('seedData.error');
+      const axiosMsg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      setSeedingState(false, axiosMsg || msg);
     }
   }, [currentWorkspace, fetchCategorizedTasks, setSeedingState, seeded, t]);
 

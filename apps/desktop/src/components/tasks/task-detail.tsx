@@ -3,7 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useTaskStore } from '@/stores/task-store';
+import type { Task } from '@/stores/task-store';
 import { api } from '@/lib/api-client';
+import { getApiErrorMessage } from '@/lib/error-utils';
+import { statusColors, priorityColors } from '@/lib/task-constants';
 import { ThreadChain } from '@/components/threads/thread-chain';
 import { ThreadGraph } from '@/components/threads/thread-graph';
 import { FileUpload } from '@/components/files/file-upload';
@@ -30,20 +33,11 @@ import { useAuthStore } from '@/stores/auth-store';
 const statuses = ['OPEN', 'IN_PROGRESS', 'BLOCKED', 'COMPLETED', 'CANCELLED'];
 const priorities = ['URGENT', 'HIGH', 'MEDIUM', 'LOW'];
 
-const statusColors: Record<string, string> = {
-  OPEN: 'text-foreground',
-  IN_PROGRESS: 'text-blue-400',
-  BLOCKED: 'text-yellow-400',
-  COMPLETED: 'text-green-400',
-  CANCELLED: 'text-muted-foreground',
-};
-
-const priorityColors: Record<string, string> = {
-  URGENT: 'text-red-400',
-  HIGH: 'text-orange-400',
-  MEDIUM: 'text-foreground',
-  LOW: 'text-muted-foreground',
-};
+interface Reminder {
+  id: string;
+  remindAt: string;
+  sent: boolean;
+}
 
 interface TaskDetailProps {
   taskId: string;
@@ -55,7 +49,7 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
   const { updateTask } = useTaskStore();
   const { user } = useAuthStore();
   const { isMobile } = useMediaQuery();
-  const [task, setTask] = useState<any>(null);
+  const [task, setTask] = useState<Task | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -67,7 +61,7 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
   const [fileRefreshKey, setFileRefreshKey] = useState(0);
   const [showChat, setShowChat] = useState(initialShowChat ?? false);
   const [activeTab, setActiveTab] = useState<'details' | 'thread' | 'files'>('details');
-  const [reminder, setReminder] = useState<any>(null);
+  const [reminder, setReminder] = useState<Reminder | null>(null);
   const [reminderDate, setReminderDate] = useState('');
   const [reminderTime, setReminderTime] = useState('');
   const [reminderLoading, setReminderLoading] = useState(false);
@@ -111,8 +105,8 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
       setReminder(data);
       setShowReminderPopover(false);
       toast.success(t('reminderSet'));
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || t('saveFailed'));
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, t('saveFailed')));
     } finally {
       setReminderLoading(false);
     }

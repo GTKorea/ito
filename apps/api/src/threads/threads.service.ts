@@ -4,6 +4,7 @@ import {
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
+import { Prisma, TaskStatus, Priority } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ActivityService } from '../activity/activity.service';
@@ -427,7 +428,7 @@ export class ThreadsService {
     taskId: string,
     creatorId: string,
     userIds: string[],
-  ): Promise<{ task: any; threadLinks: any[] }> {
+  ) {
     // 1. Validate task exists and creator is the current assignee
     const task = await this.prisma.task.findUnique({
       where: { id: taskId },
@@ -499,7 +500,16 @@ export class ThreadsService {
       (l) => l.toUserId === creatorId && l.status === 'PENDING',
     );
 
-    const threadLinks: any[] = [];
+    const threadLinks: Array<{
+      id: string;
+      taskId: string;
+      fromUserId: string;
+      toUserId: string | null;
+      chainIndex: number;
+      status: string;
+      fromUser: { id: string; name: string };
+      toUser: { id: string; name: string } | null;
+    }> = [];
 
     const result = await this.prisma.$transaction(async (tx) => {
       // Mark current user's link as FORWARDED if they have a pending link
@@ -546,6 +556,7 @@ export class ThreadsService {
 
     // 5. Send THREAD_RECEIVED notification to each user in the chain
     for (const link of threadLinks) {
+      if (!link.toUserId) continue;
       await this.notificationsService.create({
         userId: link.toUserId,
         type: 'THREAD_RECEIVED',
@@ -593,19 +604,19 @@ export class ThreadsService {
     statusFilter?: string[],
     priorityFilter?: string[],
   ) {
-    const statusCondition =
+    const statusCondition: Prisma.TaskWhereInput =
       scope === 'active'
-        ? { status: { in: ['OPEN', 'IN_PROGRESS', 'BLOCKED'] as const } }
+        ? { status: { in: ['OPEN', 'IN_PROGRESS', 'BLOCKED'] as TaskStatus[] } }
         : scope === 'completed'
-          ? { status: 'COMPLETED' as const }
+          ? { status: 'COMPLETED' }
           : {};
 
-    const extraFilters: any = {};
+    const extraFilters: Prisma.TaskWhereInput = {};
     if (statusFilter && statusFilter.length > 0) {
-      extraFilters.status = { in: statusFilter };
+      extraFilters.status = { in: statusFilter as TaskStatus[] };
     }
     if (priorityFilter && priorityFilter.length > 0) {
-      extraFilters.priority = { in: priorityFilter };
+      extraFilters.priority = { in: priorityFilter as Priority[] };
     }
 
     const tasks = await this.prisma.task.findMany({

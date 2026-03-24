@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useTaskStore } from '@/stores/task-store';
+import type { VoteConfig } from '@/stores/task-store';
 import { useAuthStore } from '@/stores/auth-store';
 import { ThreadChain } from '@/components/threads/thread-chain';
 import { ConnectDialog } from '@/components/threads/connect-dialog';
@@ -81,7 +82,7 @@ interface TaskItemProps {
     priority: string;
     dueDate?: string;
     type?: string;
-    voteConfig?: any;
+    voteConfig?: VoteConfig;
     creator: { id: string; name: string; avatarUrl?: string };
     assignee?: { id: string; name: string; avatarUrl?: string };
     taskGroup?: { id: string; name: string } | null;
@@ -266,9 +267,9 @@ export function TaskItem({
         await pullCurrentAssignee(task.id);
       }
       toast.success(t('pullSuccess'));
-    } catch (error: any) {
-      const msg = error?.response?.data?.message || t('pullCooldown');
-      toast.error(msg);
+    } catch (error: unknown) {
+      const axiosErr = error as { response?: { data?: { message?: string } } };
+      toast.error(axiosErr?.response?.data?.message || t('pullCooldown'));
     } finally {
       setIsPulling(false);
     }

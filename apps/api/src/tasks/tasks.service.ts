@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException, Inject, Optional, forwardRef } from '@nestjs/common';
+import { Prisma, TaskStatus } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { ActivityService } from '../activity/activity.service';
 import { RemindersService } from '../reminders/reminders.service';
@@ -80,7 +81,7 @@ export class TasksService {
       teamId?: string;
     },
   ) {
-    const where: any = { workspaceId };
+    const where: Prisma.TaskWhereInput = { workspaceId };
 
     if (filter?.connectedByMe) {
       // Tasks I created and connected to others (they are currently working on it)
@@ -96,7 +97,7 @@ export class TasksService {
       where.assigneeId = userId;
     }
     if (filter?.status) {
-      where.status = filter.status;
+      where.status = filter.status as TaskStatus;
     }
     if (filter?.teamId) {
       where.teamId = filter.teamId;
@@ -146,7 +147,7 @@ export class TasksService {
       throw new ForbiddenException('Cannot revert a completed task');
     }
 
-    const data: any = { ...dto };
+    const data: Prisma.TaskUpdateInput = { ...dto };
     if (dto.dueDate) data.dueDate = new Date(dto.dueDate);
     if (dto.status === 'COMPLETED') data.completedAt = new Date();
 
@@ -180,7 +181,7 @@ export class TasksService {
   }
 
   async findCategorized(workspaceId: string, userId: string, taskGroupId?: string) {
-    const where: any = {
+    const where: Prisma.TaskWhereInput = {
       workspaceId,
       OR: [
           { creatorId: userId },
@@ -240,7 +241,7 @@ export class TasksService {
     const startDate = new Date(start);
     const endDate = new Date(end);
 
-    const baseWhere: any = { workspaceId };
+    const baseWhere: Prisma.TaskWhereInput = { workspaceId };
     if (userId) {
       baseWhere.assigneeId = userId;
     }
@@ -394,7 +395,7 @@ export class TasksService {
     }
 
     const movableIds = movable.map((t) => t.id);
-    const data: any = {};
+    const data: Prisma.TaskUpdateManyMutationInput & Prisma.TaskUncheckedUpdateManyInput = {};
     if (dto.workspaceId) data.workspaceId = dto.workspaceId;
     if (dto.taskGroupId !== undefined) data.taskGroupId = dto.taskGroupId || null;
 

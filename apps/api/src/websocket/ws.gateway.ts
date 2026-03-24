@@ -50,7 +50,7 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // Cleanup handled automatically by Socket.IO
   }
 
-  sendToUser(userId: string, event: string, data: any) {
+  sendToUser(userId: string, event: string, data: Record<string, unknown>) {
     this.server?.to(`user:${userId}`).emit(event, data);
   }
 }

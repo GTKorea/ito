@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma, TaskStatus } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { PaginationQueryDto, AdminTaskQueryDto } from './dto/admin-query.dto';
 import { AdminUpdateUserDto } from './dto/update-user.dto';
@@ -57,7 +58,7 @@ export class AdminService {
     const { page = 1, limit = 10, search, sortBy, sortOrder = 'desc' } = query;
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: Prisma.UserWhereInput = {};
     if (search) {
       where.OR = [
         { email: { contains: search, mode: 'insensitive' } },
@@ -65,11 +66,9 @@ export class AdminService {
       ];
     }
 
-    const orderBy: any = {};
+    let orderBy: Prisma.UserOrderByWithRelationInput = { createdAt: 'desc' };
     if (sortBy && ['name', 'email', 'createdAt', 'role'].includes(sortBy)) {
-      orderBy[sortBy] = sortOrder;
-    } else {
-      orderBy.createdAt = 'desc';
+      orderBy = { [sortBy]: sortOrder } as Prisma.UserOrderByWithRelationInput;
     }
 
     const [users, total] = await Promise.all([
@@ -164,7 +163,7 @@ export class AdminService {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException('User not found');
 
-    const data: any = {};
+    const data: Prisma.UserUpdateInput = {};
     if (dto.name !== undefined) data.name = dto.name;
     if (dto.email !== undefined) data.email = dto.email;
     if (dto.role !== undefined) data.role = dto.role;
@@ -189,7 +188,7 @@ export class AdminService {
     const { page = 1, limit = 10, search, sortBy, sortOrder = 'desc' } = query;
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: Prisma.WorkspaceWhereInput = {};
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
@@ -197,11 +196,9 @@ export class AdminService {
       ];
     }
 
-    const orderBy: any = {};
+    let orderBy: Prisma.WorkspaceOrderByWithRelationInput = { createdAt: 'desc' };
     if (sortBy && ['name', 'slug', 'createdAt'].includes(sortBy)) {
-      orderBy[sortBy] = sortOrder;
-    } else {
-      orderBy.createdAt = 'desc';
+      orderBy = { [sortBy]: sortOrder } as Prisma.WorkspaceOrderByWithRelationInput;
     }
 
     const [workspaces, total] = await Promise.all([
@@ -293,22 +290,20 @@ export class AdminService {
     const { page = 1, limit = 10, search, sortBy, sortOrder = 'desc', status, workspaceId } = query;
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: Prisma.TaskWhereInput = {};
     if (search) {
       where.title = { contains: search, mode: 'insensitive' };
     }
     if (status) {
-      where.status = status;
+      where.status = status as TaskStatus;
     }
     if (workspaceId) {
       where.workspaceId = workspaceId;
     }
 
-    const orderBy: any = {};
+    let orderBy: Prisma.TaskOrderByWithRelationInput = { createdAt: 'desc' };
     if (sortBy && ['title', 'status', 'priority', 'createdAt', 'dueDate'].includes(sortBy)) {
-      orderBy[sortBy] = sortOrder;
-    } else {
-      orderBy.createdAt = 'desc';
+      orderBy = { [sortBy]: sortOrder } as Prisma.TaskOrderByWithRelationInput;
     }
 
     const [tasks, total] = await Promise.all([

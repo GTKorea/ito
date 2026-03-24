@@ -6,13 +6,13 @@ import { trackEvent } from '@/lib/analytics';
 import { useWorkspaceStore } from './workspace-store';
 import { useTaskGroupStore } from './task-group-store';
 
-interface User {
+export interface User {
   id: string;
   name: string;
   avatarUrl?: string;
 }
 
-interface ThreadLink {
+export interface ThreadLink {
   id: string;
   fromUser: User;
   toUser: User | null;
@@ -25,7 +25,14 @@ interface ThreadLink {
   createdAt: string;
 }
 
-interface Task {
+export interface VoteConfig {
+  mode: 'approve_reject' | 'custom';
+  options: string[];
+  allowChange?: boolean;
+  anonymous?: boolean;
+}
+
+export interface Task {
   id: string;
   title: string;
   description?: string;
@@ -34,7 +41,8 @@ interface Task {
   dueDate?: string;
   order?: number;
   type?: string;
-  voteConfig?: any;
+  voteConfig?: VoteConfig;
+  taskGroupId?: string;
   creator: User;
   assignee: User;
   taskGroup?: { id: string; name: string } | null;
@@ -81,10 +89,10 @@ interface TaskState {
   fetchCategorizedTasks: (workspaceId: string, taskGroupId?: string) => Promise<void>;
   fetchCalendarTasks: (workspaceId: string, start: string, end: string) => Promise<void>;
   fetchCalendarEvents: (start: string, end: string) => Promise<void>;
-  createTask: (workspaceId: string, title: string, description?: string, priority?: string, dueDate?: string, taskGroupId?: string, type?: string, voteConfig?: any) => Promise<Task>;
+  createTask: (workspaceId: string, title: string, description?: string, priority?: string, dueDate?: string, taskGroupId?: string, type?: string, voteConfig?: VoteConfig) => Promise<Task>;
   updateTask: (id: string, data: Partial<Task>) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
-  connectChain: (taskId: string, userIds: string[]) => Promise<any>;
+  connectChain: (taskId: string, userIds: string[]) => Promise<Task>;
   connectThread: (taskId: string, toUserId: string, message?: string) => Promise<void>;
   connectMultiThread: (taskId: string, toUserIds: string[], message?: string) => Promise<void>;
   connectBlocker: (taskId: string, blockerNote: string) => Promise<void>;
@@ -365,7 +373,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     const movedTasks = allTasks.filter((t) => taskIds.includes(t.id));
     const sourceGroupCounts: Record<string, number> = {};
     for (const t of movedTasks) {
-      const gid = (t as any).taskGroupId;
+      const gid = t.taskGroupId;
       if (gid) sourceGroupCounts[gid] = (sourceGroupCounts[gid] || 0) + 1;
     }
 

@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import { api } from '@/lib/api-client';
+import type { ThreadLink } from './task-store';
 
 interface User {
   id: string;
@@ -48,7 +49,7 @@ interface SharedSpaceTask {
   creator: User;
   assignee: User;
   workspace: { id: string; name: string; slug: string };
-  threadLinks: any[];
+  threadLinks: ThreadLink[];
   createdAt: string;
 }
 

@@ -16,6 +16,7 @@ import { SlackService } from './slack.service';
 import { SlackCommandDto } from './dto/slack-command.dto';
 import { SlackEventDto } from './dto/slack-event.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @Controller('slack')
 export class SlackController {
@@ -137,12 +138,11 @@ export class SlackController {
   @Post('link-code')
   @UseGuards(JwtAuthGuard)
   async generateLinkCode(
-    @Req() req: Request,
+    @CurrentUser('id') userId: string,
     @Query('workspaceId') workspaceId: string,
   ) {
-    const userId = (req as any).user?.id;
-    if (!userId || !workspaceId) {
-      return { error: 'Missing userId or workspaceId' };
+    if (!workspaceId) {
+      return { error: 'Missing workspaceId' };
     }
 
     const result = await this.slackService.generateLinkCode(userId, workspaceId);
@@ -152,11 +152,10 @@ export class SlackController {
   @Get('user-link-status')
   @UseGuards(JwtAuthGuard)
   async getUserLinkStatus(
-    @Req() req: Request,
+    @CurrentUser('id') userId: string,
     @Query('workspaceId') workspaceId: string,
   ) {
-    const userId = (req as any).user?.id;
-    if (!userId || !workspaceId) {
+    if (!workspaceId) {
       return { linked: false };
     }
 
@@ -166,11 +165,10 @@ export class SlackController {
   @Delete('unlink')
   @UseGuards(JwtAuthGuard)
   async unlinkSlackUser(
-    @Req() req: Request,
+    @CurrentUser('id') userId: string,
     @Query('workspaceId') workspaceId: string,
   ) {
-    const userId = (req as any).user?.id;
-    if (!userId || !workspaceId) {
+    if (!workspaceId) {
       return { success: false };
     }
 

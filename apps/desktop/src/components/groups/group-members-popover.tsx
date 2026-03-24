@@ -33,7 +33,7 @@ export function GroupMembersPopover({ groupId, memberCount }: GroupMembersPopove
   const [isLoading, setIsLoading] = useState(false);
   const [showAddMember, setShowAddMember] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<Array<{ id: string; name: string; email: string; avatarUrl?: string }>>([]);
   const [isSearching, setIsSearching] = useState(false);
   const { addMember, removeMember } = useTaskGroupStore();
   const { currentWorkspace } = useWorkspaceStore();
@@ -60,7 +60,7 @@ export function GroupMembersPopover({ groupId, memberCount }: GroupMembersPopove
     try {
       const { data } = await api.get(`/users/search?q=${encodeURIComponent(query)}&workspaceId=${currentWorkspace.id}`);
       const memberUserIds = new Set(members.map((m) => m.user.id));
-      setSearchResults(data.filter((u: any) => !memberUserIds.has(u.id)));
+      setSearchResults(data.filter((u: { id: string }) => !memberUserIds.has(u.id)));
     } catch {
       setSearchResults([]);
     } finally {

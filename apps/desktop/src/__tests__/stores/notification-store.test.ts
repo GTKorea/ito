@@ -114,7 +114,7 @@ describe('notification-store', () => {
   describe('listenToWs', () => {
     it('should register listener when socket is available', () => {
       const mockOn = vi.fn();
-      mockedGetSocket.mockReturnValue({ on: mockOn } as any);
+      mockedGetSocket.mockReturnValue({ on: mockOn } as unknown as ReturnType<typeof mockedGetSocket>);
 
       useNotificationStore.getState().listenToWs();
 
@@ -123,7 +123,7 @@ describe('notification-store', () => {
 
     it('should add new notification to state when event fires', () => {
       const mockOn = vi.fn();
-      mockedGetSocket.mockReturnValue({ on: mockOn } as any);
+      mockedGetSocket.mockReturnValue({ on: mockOn } as unknown as ReturnType<typeof mockedGetSocket>);
 
       useNotificationStore.getState().listenToWs();
 

@@ -8,6 +8,13 @@ import {
 import { PrismaService } from '../common/prisma/prisma.service';
 import { CastVoteDto } from './dto/cast-vote.dto';
 
+interface VoteConfig {
+  mode: 'approve_reject' | 'custom';
+  options: string[];
+  allowChange?: boolean;
+  anonymous?: boolean;
+}
+
 @Injectable()
 export class VotesService {
   constructor(private prisma: PrismaService) {}
@@ -22,7 +29,7 @@ export class VotesService {
       throw new BadRequestException('Task is not a vote task');
 
     // Validate choice against voteConfig
-    const config = task.voteConfig as any;
+    const config = task.voteConfig as VoteConfig | null;
     if (config?.options && !config.options.includes(dto.choice)) {
       throw new BadRequestException(
         `Invalid choice. Options: ${config.options.join(', ')}`,
@@ -79,7 +86,7 @@ export class VotesService {
       where: { taskId_userId: { taskId, userId } },
     });
 
-    const config = task.voteConfig as any;
+    const config = task.voteConfig as VoteConfig | null;
     const isCreator = task.creatorId === userId;
 
     if (!userVote && !isCreator) {

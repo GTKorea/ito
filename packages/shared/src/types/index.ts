@@ -10,3 +10,24 @@ export type NotificationType =
   | 'WORKSPACE_INVITE'
   | 'TASK_ASSIGNED'
   | 'TASK_COMPLETED';
+
+export interface VoteConfig {
+  mode: 'approve_reject' | 'custom';
+  options: string[];
+  allowChange?: boolean;
+  anonymous?: boolean;
+}
+
+export interface Reminder {
+  id: string;
+  remindAt: string;
+  sent: boolean;
+}
+
+export interface OAuthProfile {
+  id: string;
+  displayName?: string;
+  username?: string;
+  emails?: Array<{ value: string }>;
+  photos?: Array<{ value: string }>;
+}

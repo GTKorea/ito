@@ -1,5 +1,6 @@
 import { IsString, IsOptional, IsEnum, IsDateString, IsArray } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Prisma } from '@prisma/client';
 
 export class CreateTaskDto {
   @ApiProperty({ example: 'Review design mockups' })
@@ -38,7 +39,7 @@ export class CreateTaskDto {
 
   @ApiPropertyOptional({ description: 'Vote configuration JSON' })
   @IsOptional()
-  voteConfig?: any;
+  voteConfig?: Prisma.InputJsonValue;
 }
 
 export class UpdateTaskDto {

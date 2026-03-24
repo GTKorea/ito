@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { api } from '@/lib/api-client';
+import { getApiErrorMessage } from '@/lib/error-utils';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Vote, Loader2 } from 'lucide-react';
@@ -87,8 +88,8 @@ export function VotePanel({ taskId, voteConfig, isCreator }: VotePanelProps) {
       });
       toast.success(t('voteSubmitted'));
       await fetchStatus();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('voteError'));
+    } catch (err: unknown) {
+      toast.error(getApiErrorMessage(err, t('voteError')));
     } finally {
       setIsSubmitting(false);
     }

@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useTaskStore } from '@/stores/task-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
-import { api } from '@/lib/api-client';
+import { useWorkspaceMembers } from '@/hooks/use-workspace-members';
 import {
   Dialog,
   DialogContent,
@@ -35,8 +35,6 @@ type ConnectMode = 'person' | 'blocker';
 
 export function ConnectDialog({ taskId, onClose }: ConnectDialogProps) {
   const [mode, setMode] = useState<ConnectMode>('person');
-  const [search, setSearch] = useState('');
-  const [members, setMembers] = useState<User[]>([]);
   const [selected, setSelected] = useState<User[]>([]);
   const [message, setMessage] = useState('');
   const [blockerNote, setBlockerNote] = useState('');
@@ -46,37 +44,8 @@ export function ConnectDialog({ taskId, onClose }: ConnectDialogProps) {
   const t = useTranslations('threads');
   const tc = useTranslations('common');
 
-  // Load workspace members on mount
-  useEffect(() => {
-    if (!currentWorkspace) return;
-    const loadMembers = async () => {
-      try {
-        const { data } = await api.get('/users/search', {
-          params: { workspaceId: currentWorkspace.id },
-        });
-        setMembers(data);
-      } catch {
-        setMembers([]);
-      }
-    };
-    loadMembers();
-  }, [currentWorkspace]);
-
-  const handleSearch = async (query: string) => {
-    setSearch(query);
-    if (!currentWorkspace) return;
-    try {
-      const { data } = await api.get('/users/search', {
-        params: {
-          workspaceId: currentWorkspace.id,
-          ...(query.length > 0 ? { query } : {}),
-        },
-      });
-      setMembers(data);
-    } catch {
-      setMembers([]);
-    }
-  };
+  const selectedIds = useMemo(() => new Set(selected.map((u) => u.id)), [selected]);
+  const { members, search, setSearch } = useWorkspaceMembers({ excludeIds: selectedIds });
 
   const toggleUser = (user: User) => {
     setSelected((prev) => {
@@ -120,10 +89,6 @@ export function ConnectDialog({ taskId, onClose }: ConnectDialogProps) {
       setIsLoading(false);
     }
   };
-
-  const filteredMembers = members.filter(
-    (m) => !selected.find((s) => s.id === m.id),
-  );
 
   const canSubmit = mode === 'blocker'
     ? blockerNote.trim().length > 0
@@ -210,11 +175,11 @@ export function ConnectDialog({ taskId, onClose }: ConnectDialogProps) {
               <Input
                 placeholder={t('searchByNameOrEmail')}
                 value={search}
-                onChange={(e) => handleSearch(e.target.value)}
+                onChange={(e) => setSearch(e.target.value)}
                 autoFocus
               />
               <div className="max-h-48 overflow-y-auto space-y-1">
-                {filteredMembers.map((user) => (
+                {members.map((user) => (
                   <button
                     key={user.id}
                     onClick={() => toggleUser(user)}
@@ -231,7 +196,7 @@ export function ConnectDialog({ taskId, onClose }: ConnectDialogProps) {
                     </div>
                   </button>
                 ))}
-                {filteredMembers.length === 0 && (
+                {members.length === 0 && (
                   <p className="text-sm text-muted-foreground text-center py-4">
                     {t('noMembersFound')}
                   </p>

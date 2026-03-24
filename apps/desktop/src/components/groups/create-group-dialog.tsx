@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 import { useTaskGroupStore } from '@/stores/task-group-store';
-import { api } from '@/lib/api-client';
+import { useWorkspaceMembers } from '@/hooks/use-workspace-members';
 import {
   Dialog,
   DialogContent,
@@ -35,8 +35,6 @@ interface CreateGroupDialogProps {
 export function CreateGroupDialog({ workspaceId, sharedSpaceId, onClose }: CreateGroupDialogProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [search, setSearch] = useState('');
-  const [members, setMembers] = useState<User[]>([]);
   const [selected, setSelected] = useState<User[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const { currentWorkspace } = useWorkspaceStore();
@@ -44,37 +42,8 @@ export function CreateGroupDialog({ workspaceId, sharedSpaceId, onClose }: Creat
   const t = useTranslations('groups');
   const tc = useTranslations('common');
 
-  // Load workspace members on mount
-  useEffect(() => {
-    if (!currentWorkspace) return;
-    const loadMembers = async () => {
-      try {
-        const { data } = await api.get('/users/search', {
-          params: { workspaceId: currentWorkspace.id },
-        });
-        setMembers(data);
-      } catch {
-        setMembers([]);
-      }
-    };
-    loadMembers();
-  }, [currentWorkspace]);
-
-  const handleSearch = async (query: string) => {
-    setSearch(query);
-    if (!currentWorkspace) return;
-    try {
-      const { data } = await api.get('/users/search', {
-        params: {
-          workspaceId: currentWorkspace.id,
-          ...(query.length > 0 ? { query } : {}),
-        },
-      });
-      setMembers(data);
-    } catch {
-      setMembers([]);
-    }
-  };
+  const selectedIds = useMemo(() => new Set(selected.map((u) => u.id)), [selected]);
+  const { members, search, setSearch } = useWorkspaceMembers({ excludeIds: selectedIds });
 
   const toggleUser = (user: User) => {
     setSelected((prev) => {
@@ -117,10 +86,6 @@ export function CreateGroupDialog({ workspaceId, sharedSpaceId, onClose }: Creat
       setIsCreating(false);
     }
   };
-
-  const filteredMembers = members.filter(
-    (m) => !selected.find((s) => s.id === m.id),
-  );
 
   return (
     <Dialog open onOpenChange={() => onClose()}>
@@ -193,12 +158,12 @@ export function CreateGroupDialog({ workspaceId, sharedSpaceId, onClose }: Creat
             <Input
               placeholder={t('searchMembers')}
               value={search}
-              onChange={(e) => handleSearch(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
             />
 
             {/* Member list */}
             <div className="max-h-40 overflow-y-auto space-y-1 rounded-md border border-border p-1">
-              {filteredMembers.map((user) => (
+              {members.map((user) => (
                 <button
                   key={user.id}
                   onClick={() => toggleUser(user)}
@@ -215,7 +180,7 @@ export function CreateGroupDialog({ workspaceId, sharedSpaceId, onClose }: Creat
                   </div>
                 </button>
               ))}
-              {filteredMembers.length === 0 && (
+              {members.length === 0 && (
                 <p className="text-sm text-muted-foreground text-center py-3">
                   {t('noMembersFound')}
                 </p>

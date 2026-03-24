@@ -152,7 +152,7 @@ describe('task-store', () => {
       const taskWithLink = {
         ...mockTask,
         threadLinks: [
-          { id: 'tl1', fromUser: mockUser, toUser: { id: 'u2', name: 'Bob' }, status: 'PENDING', chainIndex: 0, createdAt: '2026-01-01T00:00:00Z' },
+          { id: 'tl1', fromUser: mockUser, toUser: { id: 'u2', name: 'Bob' }, type: 'PERSON' as const, status: 'PENDING', chainIndex: 0, createdAt: '2026-01-01T00:00:00Z' },
         ],
       };
       useTaskStore.setState({ actionRequired: [taskWithLink] });
@@ -170,7 +170,7 @@ describe('task-store', () => {
       const task1 = {
         ...mockTask,
         threadLinks: [
-          { id: 'tl1', fromUser: mockUser, toUser: { id: 'u2', name: 'Bob' }, status: 'PENDING', chainIndex: 0, createdAt: '2026-01-01T00:00:00Z' },
+          { id: 'tl1', fromUser: mockUser, toUser: { id: 'u2', name: 'Bob' }, type: 'PERSON' as const, status: 'PENDING', chainIndex: 0, createdAt: '2026-01-01T00:00:00Z' },
         ],
       };
       const task2 = { ...mockTask, id: 't2', title: 'Other Task', threadLinks: [] };

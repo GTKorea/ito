@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma, TaskStatus } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { ActivityService } from '../activity/activity.service';
 
@@ -164,8 +165,8 @@ export class TeamsService {
     });
     if (!team) throw new NotFoundException('Team not found');
 
-    const where: any = { teamId };
-    if (filters?.status) where.status = filters.status;
+    const where: Prisma.TaskWhereInput = { teamId };
+    if (filters?.status) where.status = filters.status as TaskStatus;
     if (filters?.assigneeId) where.assigneeId = filters.assigneeId;
 
     return this.prisma.task.findMany({

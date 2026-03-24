@@ -81,7 +81,7 @@ export function TaskDetailPanel() {
   const handleStatusChange = async (newStatus: string) => {
     if (!currentWorkspace) return;
     try {
-      await updateTask(task.id, { status: newStatus } as any);
+      await updateTask(task.id, { status: newStatus });
       await fetchGraphData(currentWorkspace.id);
     } catch (error) {
       console.error('Failed to connect thread:', error);

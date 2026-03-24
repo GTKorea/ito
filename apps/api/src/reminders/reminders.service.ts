@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class RemindersService {
@@ -15,7 +16,7 @@ export class RemindersService {
   constructor(
     private prisma: PrismaService,
     @Inject(forwardRef(() => require('../notifications/notifications.service').NotificationsService))
-    private notificationsService: any,
+    private notificationsService: NotificationsService,
   ) {}
 
   /**
