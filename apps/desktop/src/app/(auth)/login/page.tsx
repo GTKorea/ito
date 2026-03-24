@@ -52,45 +52,52 @@ export default function LoginPage() {
     if (isDesktop) {
       const state = crypto.randomUUID();
       const url = `${API_URL}/auth/${provider}/init?from=${encodeURIComponent('ito://')}&state=${encodeURIComponent(state)}`;
+
+      let shellOpened = false;
       try {
         const { open } = await import('@tauri-apps/plugin-shell');
         await open(url);
+        shellOpened = true;
       } catch (err) {
-        console.error('Failed to open external browser:', err);
-        // Fallback: try window.open with _blank to avoid navigating webview
-        window.open(url, '_blank');
+        console.warn('[OAuth] shell.open failed, falling back to webview navigation:', err);
       }
 
-      setPendingProvider(provider);
+      if (shellOpened) {
+        // 외부 브라우저가 열렸으면 polling으로 결과 대기
+        setPendingProvider(provider);
 
-      // Poll for OAuth result (cookie-free fallback; works in dev mode too)
-      pollRef.current = setInterval(async () => {
-        // Stop if already logged in (deep link may have worked)
-        if (useAuthStore.getState().isAuthenticated) {
+        pollRef.current = setInterval(async () => {
+          if (useAuthStore.getState().isAuthenticated) {
+            if (pollRef.current) clearInterval(pollRef.current);
+            setPendingProvider(null);
+            return;
+          }
+          try {
+            const res = await fetch(`${API_URL}/auth/oauth-result?state=${state}`);
+            if (res.ok) {
+              if (pollRef.current) clearInterval(pollRef.current);
+              const { accessToken, refreshToken } = await res.json();
+              const { setTokens, fetchUser } = useAuthStore.getState();
+              setTokens(accessToken, refreshToken);
+              await fetchUser();
+              router.push('/workspace');
+            }
+          } catch {
+            // Not ready yet, keep polling
+          }
+        }, 2000);
+
+        timeoutRef.current = setTimeout(() => {
           if (pollRef.current) clearInterval(pollRef.current);
           setPendingProvider(null);
-          return;
-        }
-        try {
-          const res = await fetch(`${API_URL}/auth/oauth-result?state=${state}`);
-          if (res.ok) {
-            if (pollRef.current) clearInterval(pollRef.current);
-            const { accessToken, refreshToken } = await res.json();
-            const { setTokens, fetchUser } = useAuthStore.getState();
-            setTokens(accessToken, refreshToken);
-            await fetchUser();
-            router.push('/workspace');
-          }
-        } catch {
-          // Not ready yet, keep polling
-        }
-      }, 2000);
-
-      // Stop polling after 5 minutes
-      timeoutRef.current = setTimeout(() => {
-        if (pollRef.current) clearInterval(pollRef.current);
-        setPendingProvider(null);
-      }, 5 * 60 * 1000);
+        }, 5 * 60 * 1000);
+      } else {
+        // shell plugin 실패 → webview에서 직접 OAuth 진행 (웹 플로우 사용)
+        // from을 웹 origin으로 보내서 서버가 /callback으로 리디렉트하도록 함
+        const webUrl = `${API_URL}/auth/${provider}/init?from=${encodeURIComponent(window.location.origin)}&state=${encodeURIComponent(state)}`;
+        window.location.href = webUrl;
+        return;
+      }
     } else {
       // Web: navigate directly, callback redirects back to this origin.
       const from = window.location.origin;
