@@ -484,6 +484,12 @@ export function TaskItem({ task, onSelect, section, isDraggable, isSelecting, is
               <TooltipContent>{t('moreActions')}</TooltipContent>
             </Tooltip>
             <DropdownMenuContent align="end">
+              {onToggleSelect && (
+                <DropdownMenuItem onClick={() => onToggleSelect(task.id)}>
+                  <Check className="mr-2 h-4 w-4" />
+                  {tc('select')}
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={(e) => { e.preventDefault(); setShowReminderInput(true); }}>
                 <Bell className="mr-2 h-4 w-4" />
                 {t('setReminder')}
