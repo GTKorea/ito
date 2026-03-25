@@ -78,6 +78,18 @@ export class TaskGroupsController {
     return this.taskGroupsService.update(id, dto, userId);
   }
 
+  @Post('task-groups/:id/archive')
+  @ApiOperation({ summary: 'Archive task group' })
+  archive(@Param('id') id: string, @CurrentUser('id') userId: string) {
+    return this.taskGroupsService.archive(id, userId);
+  }
+
+  @Post('task-groups/:id/unarchive')
+  @ApiOperation({ summary: 'Unarchive task group' })
+  unarchive(@Param('id') id: string, @CurrentUser('id') userId: string) {
+    return this.taskGroupsService.unarchive(id, userId);
+  }
+
   @Delete('task-groups/:id')
   @ApiOperation({ summary: 'Delete task group' })
   delete(@Param('id') id: string, @CurrentUser('id') userId: string) {

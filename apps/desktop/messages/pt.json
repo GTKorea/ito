@@ -872,6 +872,7 @@
     "groupName": "Nome do grupo",
     "groupDescription": "Descrição",
     "createGroup": "Criar grupo",
+    "archiveGroup": "Arquivar grupo",
     "deleteGroup": "Excluir grupo",
     "deleteConfirm": "Tem certeza de que deseja excluir este grupo? As tarefas do grupo não serão excluídas.",
     "members": "Membros",

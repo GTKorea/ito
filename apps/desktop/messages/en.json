@@ -872,6 +872,7 @@
     "groupName": "Group Name",
     "groupDescription": "Description",
     "createGroup": "Create Group",
+    "archiveGroup": "Archive Group",
     "deleteGroup": "Delete Group",
     "deleteConfirm": "Are you sure you want to delete this group? Tasks in this group will not be deleted.",
     "members": "Members",

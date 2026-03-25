@@ -44,10 +44,40 @@ export class TaskGroupsService {
     return group;
   }
 
+  async archive(id: string, userId: string) {
+    const group = await this.prisma.taskGroup.findUnique({ where: { id } });
+    if (!group) throw new NotFoundException('Task group not found');
+    if (group.isPrivate) throw new ForbiddenException('Cannot archive private groups');
+    if (group.createdById !== userId) throw new ForbiddenException('Only the creator can archive this group');
+    return this.prisma.taskGroup.update({
+      where: { id },
+      data: { isArchived: true },
+      include: {
+        _count: { select: { members: true, tasks: { where: { status: { notIn: ['COMPLETED', 'CANCELLED'] } } } } },
+        createdBy: { select: { id: true, name: true, avatarUrl: true } },
+      },
+    });
+  }
+
+  async unarchive(id: string, userId: string) {
+    const group = await this.prisma.taskGroup.findUnique({ where: { id } });
+    if (!group) throw new NotFoundException('Task group not found');
+    if (group.createdById !== userId) throw new ForbiddenException('Only the creator can unarchive this group');
+    return this.prisma.taskGroup.update({
+      where: { id },
+      data: { isArchived: false },
+      include: {
+        _count: { select: { members: true, tasks: { where: { status: { notIn: ['COMPLETED', 'CANCELLED'] } } } } },
+        createdBy: { select: { id: true, name: true, avatarUrl: true } },
+      },
+    });
+  }
+
   async findAllInWorkspace(workspaceId: string, userId: string) {
     return this.prisma.taskGroup.findMany({
       where: {
         workspaceId,
+        isArchived: false,
         members: { some: { userId } },
       },
       select: {
@@ -58,6 +88,7 @@ export class TaskGroupsService {
         sharedSpaceId: true,
         createdById: true,
         isPrivate: true,
+        isArchived: true,
         createdAt: true,
         updatedAt: true,
         _count: { select: { members: true, tasks: { where: { status: { notIn: ['COMPLETED', 'CANCELLED'] } } } } },
@@ -71,6 +102,7 @@ export class TaskGroupsService {
     return this.prisma.taskGroup.findMany({
       where: {
         sharedSpaceId,
+        isArchived: false,
         members: { some: { userId } },
       },
       include: {

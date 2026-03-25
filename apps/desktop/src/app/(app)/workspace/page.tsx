@@ -21,7 +21,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Plus, Building2, ArrowUpDown, ArrowLeft, Hash, ArrowRightLeft, Users, UserPlus, X } from 'lucide-react';
+import { Plus, Building2, ArrowUpDown, ArrowLeft, Hash, ArrowRightLeft, Users, UserPlus, X, Settings, Archive, Trash2 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { QuickInput } from '@/components/tasks/quick-input';
 import { MoveTasksDialog } from '@/components/tasks/move-tasks-dialog';
 import { GroupMembersPopover } from '@/components/groups/group-members-popover';
@@ -96,13 +103,14 @@ function CreateWorkspacePrompt() {
 export default function WorkspacePage() {
   const { currentWorkspace, isLoading: wsLoading } = useWorkspaceStore();
   const { actionRequired, waiting, completed, isLoading, fetchCategorizedTasks } = useTaskStore();
-  const { groups } = useTaskGroupStore();
+  const { groups, deleteGroup, archiveGroup } = useTaskGroupStore();
   const { checkAndStartWizard } = useOnboardingStore();
   const [showCreate, setShowCreate] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [openWithChat, setOpenWithChat] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(420);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const isResizingRef = useRef(false);
 
   const handleResizeStart = useCallback((e: React.MouseEvent) => {
@@ -276,7 +284,37 @@ export default function WorkspacePage() {
         </div>
         <div className="flex items-center gap-2">
           {currentGroup && (
-            <GroupMembersPopover groupId={currentGroup.id} memberCount={currentGroup._count.members} />
+            <>
+              <GroupMembersPopover groupId={currentGroup.id} memberCount={currentGroup._count.members} />
+              {!currentGroup.isPrivate && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <Settings className="h-3.5 w-3.5 text-muted-foreground" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={async () => {
+                        await archiveGroup(currentGroup.id);
+                        window.location.href = `/workspace`;
+                      }}
+                    >
+                      <Archive className="mr-2 h-4 w-4" />
+                      {tg('archiveGroup')}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="text-red-500 focus:text-red-500"
+                      onClick={() => setShowDeleteConfirm(true)}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      {tg('deleteGroup')}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </>
           )}
           <Button
             variant="ghost"
@@ -393,6 +431,35 @@ export default function WorkspacePage() {
           currentWorkspaceId={currentWorkspace.id}
           currentGroupId={groupId || undefined}
         />
+      )}
+
+      {/* Delete Group Confirmation */}
+      {showDeleteConfirm && currentGroup && (
+        <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{tg('deleteGroup')}</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground">
+              {tg('deleteConfirm')}
+            </p>
+            <div className="flex justify-end gap-2 mt-4">
+              <Button variant="ghost" onClick={() => setShowDeleteConfirm(false)}>
+                {tc('cancel')}
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={async () => {
+                  await deleteGroup(currentGroup.id);
+                  setShowDeleteConfirm(false);
+                  window.location.href = `/workspace`;
+                }}
+              >
+                {tg('deleteGroup')}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
 
       {/* Onboarding Wizard */}

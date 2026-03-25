@@ -320,7 +320,7 @@ export function TaskItem({
 
         {/* Task group badge — hide when viewing that group */}
         {task.taskGroup && task.taskGroup.id !== currentGroupId && (
-          <span className="shrink-0 inline-flex items-center gap-0.5 text-[10px] text-muted-foreground bg-accent/50 px-1.5 py-0.5 rounded">
+          <span className="shrink-0 inline-flex items-center gap-0.5 text-[10px] font-medium text-blue-400 bg-blue-400/10 px-1.5 py-0.5 rounded">
             <Hash className="h-2.5 w-2.5" />
             {task.taskGroup.name}
           </span>

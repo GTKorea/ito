@@ -872,6 +872,7 @@
     "groupName": "그룹 이름",
     "groupDescription": "설명",
     "createGroup": "그룹 만들기",
+    "archiveGroup": "그룹 아카이브",
     "deleteGroup": "그룹 삭제",
     "deleteConfirm": "이 그룹을 삭제하시겠습니까? 그룹의 태스크는 삭제되지 않습니다.",
     "members": "멤버",

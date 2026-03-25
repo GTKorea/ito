@@ -872,6 +872,7 @@
     "groupName": "分组名称",
     "groupDescription": "描述",
     "createGroup": "创建分组",
+    "archiveGroup": "归档分组",
     "deleteGroup": "删除分组",
     "deleteConfirm": "确定要删除此分组吗？分组中的任务不会被删除。",
     "members": "成员",

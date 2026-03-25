@@ -28,6 +28,7 @@ interface TaskGroupState {
   createSharedSpaceGroup: (sharedSpaceId: string, name: string, description?: string) => Promise<TaskGroup>;
   updateGroup: (id: string, data: { name?: string; description?: string }) => Promise<void>;
   deleteGroup: (id: string) => Promise<void>;
+  archiveGroup: (id: string) => Promise<void>;
   addMember: (groupId: string, userId: string) => Promise<void>;
   removeMember: (groupId: string, userId: string) => Promise<void>;
   addTaskToGroup: (groupId: string, taskId: string) => Promise<void>;
@@ -92,6 +93,14 @@ export const useTaskGroupStore = create<TaskGroupState>((set, get) => ({
 
   deleteGroup: async (id) => {
     await api.delete(`/task-groups/${id}`);
+    set((state) => ({
+      groups: state.groups.filter((g) => g.id !== id),
+      currentGroupId: state.currentGroupId === id ? null : state.currentGroupId,
+    }));
+  },
+
+  archiveGroup: async (id) => {
+    await api.post(`/task-groups/${id}/archive`);
     set((state) => ({
       groups: state.groups.filter((g) => g.id !== id),
       currentGroupId: state.currentGroupId === id ? null : state.currentGroupId,

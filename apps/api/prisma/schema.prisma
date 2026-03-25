@@ -519,6 +519,7 @@ model TaskGroup {
   sharedSpaceId String?
   createdById   String
   isPrivate     Boolean  @default(false)
+  isArchived    Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 

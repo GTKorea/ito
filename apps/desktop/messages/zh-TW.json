@@ -872,6 +872,7 @@
     "groupName": "群組名稱",
     "groupDescription": "描述",
     "createGroup": "建立群組",
+    "archiveGroup": "歸檔群組",
     "deleteGroup": "刪除群組",
     "deleteConfirm": "確定要刪除此群組嗎？群組中的任務不會被刪除。",
     "members": "成員",

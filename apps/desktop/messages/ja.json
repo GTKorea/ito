@@ -872,6 +872,7 @@
     "groupName": "グループ名",
     "groupDescription": "説明",
     "createGroup": "グループを作成",
+    "archiveGroup": "グループをアーカイブ",
     "deleteGroup": "グループを削除",
     "deleteConfirm": "このグループを削除してもよろしいですか？グループ内のタスクは削除されません。",
     "members": "メンバー",
