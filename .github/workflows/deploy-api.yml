@@ -53,7 +53,7 @@ jobs:
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
             # Restart only ito-api (no downtime for other services)
-            docker compose --env-file .env.production up -d --no-deps ito-api
+            docker compose --env-file .env.production up -d --no-deps --force-recreate ito-api
 
             # Run database migrations
             docker compose exec -T ito-api npx prisma migrate deploy
