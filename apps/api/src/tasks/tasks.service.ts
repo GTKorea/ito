@@ -336,7 +336,7 @@ export class TasksService {
     if (dto.workspaceId) {
       const membership = await this.prisma.workspaceMember.findUnique({
         where: {
-          workspaceId_userId: { workspaceId: dto.workspaceId, userId },
+          userId_workspaceId: { workspaceId: dto.workspaceId, userId },
         },
       });
       if (!membership) {
@@ -372,7 +372,7 @@ export class TasksService {
       if (dto.workspaceId && dto.workspaceId !== task.workspaceId) {
         const assigneeMembership = await this.prisma.workspaceMember.findUnique({
           where: {
-            workspaceId_userId: { workspaceId: dto.workspaceId, userId: task.assigneeId },
+            userId_workspaceId: { workspaceId: dto.workspaceId, userId: task.assigneeId },
           },
         });
         if (!assigneeMembership) {
