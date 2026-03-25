@@ -23,6 +23,8 @@ RUN pnpm --filter @ito/shared build
 
 # Generate Prisma client + Build API
 RUN cd apps/api && npx prisma generate
+# SWC drops object properties on linux/amd64 — use tsc for Docker builds
+RUN cd apps/api && sed -i 's/"builder": "swc"/"builder": "tsc"/' nest-cli.json
 RUN pnpm --filter @ito/api build
 
 # ── Production stage ──
