@@ -322,6 +322,7 @@ export default function WorkspacePage() {
             isSelecting={isSelecting}
             selectedTaskIds={selectedTaskIds}
             onToggleSelect={toggleTaskSelection}
+            currentGroupId={groupId || undefined}
           />
         )}
 

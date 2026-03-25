@@ -107,6 +107,7 @@ interface TaskItemProps {
   isSelecting?: boolean;
   isSelected?: boolean;
   onToggleSelect?: (id: string) => void;
+  currentGroupId?: string;
 }
 
 export function TaskItem({
@@ -117,6 +118,7 @@ export function TaskItem({
   isSelecting,
   isSelected,
   onToggleSelect,
+  currentGroupId,
 }: TaskItemProps) {
   const [showConnect, setShowConnect] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -316,8 +318,8 @@ export function TaskItem({
           {statusIcons[task.status] || statusIcons.OPEN}
         </span>
 
-        {/* Task group badge */}
-        {task.taskGroup && (
+        {/* Task group badge — hide when viewing that group */}
+        {task.taskGroup && task.taskGroup.id !== currentGroupId && (
           <span className="shrink-0 inline-flex items-center gap-0.5 text-[10px] text-muted-foreground bg-accent/50 px-1.5 py-0.5 rounded">
             <Hash className="h-2.5 w-2.5" />
             {task.taskGroup.name}

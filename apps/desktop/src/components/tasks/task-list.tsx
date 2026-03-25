@@ -67,9 +67,10 @@ interface TaskListProps {
   isSelecting?: boolean;
   selectedTaskIds?: Set<string>;
   onToggleSelect?: (id: string) => void;
+  currentGroupId?: string;
 }
 
-export function TaskList({ actionRequired, waiting, completed, onSelectTask, sortBy, workspaceId, isSelecting, selectedTaskIds, onToggleSelect }: TaskListProps) {
+export function TaskList({ actionRequired, waiting, completed, onSelectTask, sortBy, workspaceId, isSelecting, selectedTaskIds, onToggleSelect, currentGroupId }: TaskListProps) {
   const t = useTranslations('tasks');
   const { reorderTasks } = useTaskStore();
   const [waitingExpanded, setWaitingExpanded] = useState(true);
@@ -118,6 +119,7 @@ export function TaskList({ actionRequired, waiting, completed, onSelectTask, sor
                     isSelecting={isSelecting}
                     isSelected={selectedTaskIds?.has(task.id)}
                     onToggleSelect={onToggleSelect}
+                    currentGroupId={currentGroupId}
                   />
                 ))}
               </SortableContext>
@@ -132,6 +134,7 @@ export function TaskList({ actionRequired, waiting, completed, onSelectTask, sor
                 isSelecting={isSelecting}
                 isSelected={selectedTaskIds?.has(task.id)}
                 onToggleSelect={onToggleSelect}
+                currentGroupId={currentGroupId}
               />
             ))
           )}
@@ -164,6 +167,7 @@ export function TaskList({ actionRequired, waiting, completed, onSelectTask, sor
                   isSelecting={isSelecting}
                   isSelected={selectedTaskIds?.has(task.id)}
                   onToggleSelect={onToggleSelect}
+                  currentGroupId={currentGroupId}
                 />
               ))}
             </div>
@@ -196,6 +200,7 @@ export function TaskList({ actionRequired, waiting, completed, onSelectTask, sor
                   section="completed"
                   isSelecting={isSelecting}
                   isSelected={selectedTaskIds?.has(task.id)}
+                  currentGroupId={currentGroupId}
                   onToggleSelect={onToggleSelect}
                 />
               ))}
