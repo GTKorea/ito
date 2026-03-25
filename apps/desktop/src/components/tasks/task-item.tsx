@@ -316,6 +316,14 @@ export function TaskItem({
           {statusIcons[task.status] || statusIcons.OPEN}
         </span>
 
+        {/* Task group badge */}
+        {task.taskGroup && (
+          <span className="shrink-0 inline-flex items-center gap-0.5 text-[10px] text-muted-foreground bg-accent/50 px-1.5 py-0.5 rounded">
+            <Hash className="h-2.5 w-2.5" />
+            {task.taskGroup.name}
+          </span>
+        )}
+
         {/* Content */}
         <div
           className="flex-1 min-w-0 cursor-pointer"
@@ -350,12 +358,6 @@ export function TaskItem({
               <span className="inline-flex items-center gap-0.5 text-[10px] text-purple-400 bg-purple-400/10 px-1.5 py-0.5 rounded">
                 <Vote className="h-2.5 w-2.5" />
                 {t('voteTask')}
-              </span>
-            )}
-            {task.taskGroup && (
-              <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground bg-accent/50 px-1.5 py-0.5 rounded">
-                <Hash className="h-2.5 w-2.5" />
-                {task.taskGroup.name}
               </span>
             )}
             {hasThreads && (
