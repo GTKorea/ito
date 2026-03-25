@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../common/prisma/prisma.service';
-import { NotificationsService } from '../notifications/notifications.service';
+import type { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class RemindersService {
