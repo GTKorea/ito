@@ -68,6 +68,35 @@ export class UsersService {
     return user;
   }
 
+  // ── User Preferences ──
+
+  async getPreferences(userId: string, workspaceId: string) {
+    const prefs = await this.prisma.userPreference.findMany({
+      where: { userId, workspaceId },
+      select: { key: true, value: true },
+    });
+    const result: Record<string, unknown> = {};
+    for (const p of prefs) {
+      result[p.key] = p.value;
+    }
+    return result;
+  }
+
+  async setPreference(userId: string, workspaceId: string, key: string, value: unknown) {
+    return this.prisma.userPreference.upsert({
+      where: { userId_workspaceId_key: { userId, workspaceId, key } },
+      update: { value: value as any },
+      create: { userId, workspaceId, key, value: value as any },
+      select: { key: true, value: true },
+    });
+  }
+
+  async deletePreference(userId: string, workspaceId: string, key: string) {
+    await this.prisma.userPreference.deleteMany({
+      where: { userId, workspaceId, key },
+    });
+  }
+
   async searchMembers(
     workspaceId: string,
     excludeUserId?: string,

@@ -2,6 +2,8 @@ import {
   Controller,
   Get,
   Post,
+  Put,
+  Delete,
   Patch,
   Body,
   Param,
@@ -9,6 +11,7 @@ import {
   UseInterceptors,
   UploadedFile,
   Query,
+  Headers,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiConsumes } from '@nestjs/swagger';
@@ -62,6 +65,36 @@ export class UsersController {
     @Query('query') query?: string,
   ) {
     return this.usersService.searchMembers(workspaceId, userId, query);
+  }
+
+  @Get('me/preferences')
+  @ApiOperation({ summary: 'Get all user preferences for current workspace' })
+  getPreferences(
+    @CurrentUser('id') userId: string,
+    @Headers('x-workspace-id') workspaceId: string,
+  ) {
+    return this.usersService.getPreferences(userId, workspaceId);
+  }
+
+  @Put('me/preferences/:key')
+  @ApiOperation({ summary: 'Set a user preference' })
+  setPreference(
+    @CurrentUser('id') userId: string,
+    @Headers('x-workspace-id') workspaceId: string,
+    @Param('key') key: string,
+    @Body('value') value: unknown,
+  ) {
+    return this.usersService.setPreference(userId, workspaceId, key, value);
+  }
+
+  @Delete('me/preferences/:key')
+  @ApiOperation({ summary: 'Delete a user preference' })
+  deletePreference(
+    @CurrentUser('id') userId: string,
+    @Headers('x-workspace-id') workspaceId: string,
+    @Param('key') key: string,
+  ) {
+    return this.usersService.deletePreference(userId, workspaceId, key);
   }
 
   @Get(':id/profile')

@@ -8,6 +8,7 @@ import { useWorkspaceStore } from '@/stores/workspace-store';
 import { useTaskGroupStore } from '@/stores/task-group-store';
 import { useOnboardingStore } from '@/stores/onboarding-store';
 import { useAuthStore } from '@/stores/auth-store';
+import { api } from '@/lib/api-client';
 import { OnboardingWizard } from '@/components/onboarding/onboarding-wizard';
 
 import { TaskList } from '@/components/tasks/task-list';
@@ -103,17 +104,25 @@ function CreateWorkspacePrompt() {
 }
 
 export default function WorkspacePage() {
+  const searchParams = useSearchParams();
+  const groupId = searchParams.get('group');
+  const t = useTranslations('workspace');
+  const tc = useTranslations('common');
+  const tt = useTranslations('tasks');
+  const tg = useTranslations('groups');
   const { currentWorkspace, isLoading: wsLoading } = useWorkspaceStore();
   const { actionRequired, waiting, completed, isLoading, fetchCategorizedTasks } = useTaskStore();
   const { groups, deleteGroup, archiveGroup, updateGroup } = useTaskGroupStore();
   const { checkAndStartWizard } = useOnboardingStore();
+  const currentGroup = groupId ? groups.find((g) => g.id === groupId) : null;
   const [showCreate, setShowCreate] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [openWithChat, setOpenWithChat] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(420);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [memberFilter, setMemberFilter] = useState<Set<string>>(new Set());
+  const [memberFilter, setMemberFilterState] = useState<Set<string>>(new Set());
+  const [groupFilter, setGroupFilterState] = useState<Set<string>>(new Set());
   const isResizingRef = useRef(false);
 
   const handleResizeStart = useCallback((e: React.MouseEvent) => {
@@ -135,25 +144,58 @@ export default function WorkspacePage() {
     document.addEventListener('mouseup', onUp);
   }, [sidebarWidth]);
   const [sortBy, setSortByState] = useState<'priority' | 'dueDate' | 'custom'>('priority');
+  const prefsLoadedRef = useRef(false);
 
+  // Load all preferences from server on workspace change
   useEffect(() => {
-    if (currentWorkspace) {
-      const saved = localStorage.getItem(`ito-sort-${currentWorkspace.id}`);
-      if (saved && ['priority', 'dueDate', 'custom'].includes(saved)) {
-        setSortByState(saved as 'priority' | 'dueDate' | 'custom');
+    if (!currentWorkspace) return;
+    prefsLoadedRef.current = false;
+    api.get('/users/me/preferences').then((res) => {
+      const prefs = res.data;
+      if (prefs.sortBy && ['priority', 'dueDate', 'custom'].includes(prefs.sortBy)) {
+        setSortByState(prefs.sortBy);
       }
-    }
+      if (Array.isArray(prefs.groupFilter) && prefs.groupFilter.length > 0) {
+        setGroupFilterState(new Set(prefs.groupFilter));
+      }
+      prefsLoadedRef.current = true;
+    }).catch(() => { prefsLoadedRef.current = true; });
   }, [currentWorkspace?.id]);
+
+  const savePreference = useCallback((key: string, value: unknown) => {
+    api.put(`/users/me/preferences/${key}`, { value }).catch(() => {});
+  }, []);
+
+  const deletePreference = useCallback((key: string) => {
+    api.delete(`/users/me/preferences/${key}`).catch(() => {});
+  }, []);
 
   const setSortBy = (value: 'priority' | 'dueDate' | 'custom') => {
     setSortByState(value);
-    if (currentWorkspace) {
-      localStorage.setItem(`ito-sort-${currentWorkspace.id}`, value);
+    savePreference('sortBy', value);
+  };
+
+  const setGroupFilter = (value: Set<string>) => {
+    setGroupFilterState(value);
+    if (value.size === 0) {
+      deletePreference('groupFilter');
+    } else {
+      savePreference('groupFilter', [...value]);
     }
   };
+
+  const setMemberFilter = (value: Set<string>) => {
+    setMemberFilterState(value);
+    const key = `memberFilter:${groupId || '_all'}`;
+    if (value.size === 0) {
+      deletePreference(key);
+    } else {
+      savePreference(key, [...value]);
+    }
+  };
+
   const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set());
   const [showMoveDialog, setShowMoveDialog] = useState(false);
-  const [groupFilter, setGroupFilter] = useState<Set<string>>(new Set());
   const isSelecting = selectedTaskIds.size > 0;
 
   const toggleTaskSelection = (taskId: string) => {
@@ -166,16 +208,21 @@ export default function WorkspacePage() {
   };
 
   const clearSelection = () => setSelectedTaskIds(new Set());
-  const searchParams = useSearchParams();
-  const t = useTranslations('workspace');
-  const tc = useTranslations('common');
-  const tt = useTranslations('tasks');
-  const tg = useTranslations('groups');
 
-  const groupId = searchParams.get('group');
-  const currentGroup = groupId ? groups.find((g) => g.id === groupId) : null;
-
-  useEffect(() => { clearSelection(); setMemberFilter(new Set()); }, [groupId]);
+  // Load member filter from server on group change
+  useEffect(() => {
+    clearSelection();
+    setMemberFilterState(new Set());
+    if (groupId && prefsLoadedRef.current) {
+      api.get('/users/me/preferences').then((res) => {
+        const prefs = res.data;
+        const key = `memberFilter:${groupId}`;
+        if (Array.isArray(prefs[key]) && prefs[key].length > 0) {
+          setMemberFilterState(new Set(prefs[key]));
+        }
+      }).catch(() => {});
+    }
+  }, [groupId]);
 
   useEffect(() => {
     if (currentWorkspace) {
@@ -268,12 +315,10 @@ export default function WorkspacePage() {
   );
 
   const toggleGroupFilter = (id: string) => {
-    setGroupFilter((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+    const next = new Set(groupFilter);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setGroupFilter(next);
   };
 
   const toggleAllGroups = () => {
