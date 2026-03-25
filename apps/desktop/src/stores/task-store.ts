@@ -111,6 +111,12 @@ function getWorkspaceId(): string | undefined {
   return useWorkspaceStore.getState().currentWorkspace?.id;
 }
 
+function getCurrentGroupId(): string | undefined {
+  if (typeof window === 'undefined') return undefined;
+  const params = new URLSearchParams(window.location.search);
+  return params.get('group') || undefined;
+}
+
 /** Move a task from actionRequired to waiting (used by connect operations) */
 function moveToWaiting(state: Pick<TaskState, 'actionRequired' | 'waiting'>, taskId: string, updatedData?: Partial<Task>) {
   const task = state.actionRequired.find((t) => t.id === taskId);
@@ -124,7 +130,12 @@ async function refetchCategorized(set: (partial: Partial<TaskState>) => void) {
   const workspaceId = getWorkspaceId();
   if (!workspaceId) return;
   try {
-    const { data } = await api.get(`/workspaces/${workspaceId}/tasks/categorized`);
+    const taskGroupId = getCurrentGroupId();
+    const params: Record<string, string> = {};
+    if (taskGroupId) params.taskGroupId = taskGroupId;
+    const { data } = await api.get(`/workspaces/${workspaceId}/tasks/categorized`, {
+      params: Object.keys(params).length > 0 ? params : undefined,
+    });
     set({
       actionRequired: data.actionRequired,
       waiting: data.waiting,
