@@ -382,9 +382,7 @@ export default function WorkspacePage() {
             </div>
           )}
           <div className="px-4 md:px-6 pb-3">
-            <div className="shadow-[0_0_8px_rgba(59,130,246,0.08)]">
-              <QuickInput taskGroupId={groupId || undefined} />
-            </div>
+            <QuickInput taskGroupId={groupId || undefined} />
           </div>
         </div>
       </div>

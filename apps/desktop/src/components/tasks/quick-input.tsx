@@ -651,9 +651,9 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
         'rounded-xl',
         'bg-background/60 backdrop-blur-xl',
         'border border-white/[0.08]',
-        'shadow-[0_-4px_20px_rgb(0,0,0,0.15),0_-8px_40px_rgb(59,130,246,0.04)]',
+        'shadow-[0_-4px_20px_rgb(0,0,0,0.15),0_-8px_40px_rgb(59,130,246,0.06)]',
         'transition-all duration-300',
-        isFocused && 'bg-background/80 border-white/[0.15] shadow-[0_-4px_20px_rgb(0,0,0,0.2),0_-12px_50px_rgb(59,130,246,0.08)]',
+        isFocused && 'bg-background/80 border-white/[0.15] shadow-[0_-4px_20px_rgb(0,0,0,0.2),0_-12px_50px_rgb(59,130,246,0.12)]',
       )}>
         {/* Toolbar — always visible */}
         <div
