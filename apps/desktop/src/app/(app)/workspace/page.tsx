@@ -164,6 +164,7 @@ export default function WorkspacePage() {
   const clearSelection = () => setSelectedTaskIds(new Set());
   const searchParams = useSearchParams();
   const t = useTranslations('workspace');
+  const tc = useTranslations('common');
   const tt = useTranslations('tasks');
   const tg = useTranslations('groups');
 
