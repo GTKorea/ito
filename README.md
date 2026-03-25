@@ -2,7 +2,7 @@
 
 > Connect teammates with **threads**, hand off tasks, and automatically get them back when done.
 
-[한국어 README](./README.ko.md)
+[한국어](./README.ko.md) | [日本語](./README.ja.md) | [简体中文](./README.zh-CN.md) | [繁體中文](./README.zh-TW.md) | [Deutsch](./README.de.md) | [Español](./README.es.md) | [Français](./README.fr.md) | [Português](./README.pt.md)
 
 ![NestJS](https://img.shields.io/badge/NestJS-11-ea2845?style=flat-square)
 ![Next.js](https://img.shields.io/badge/Next.js-16-000?style=flat-square)
