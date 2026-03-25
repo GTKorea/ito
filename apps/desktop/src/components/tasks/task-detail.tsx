@@ -60,7 +60,7 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
   const [graphView, setGraphView] = useState(false);
   const [fileRefreshKey, setFileRefreshKey] = useState(0);
   const [showChat, setShowChat] = useState(initialShowChat ?? false);
-  const [activeTab, setActiveTab] = useState<'details' | 'thread' | 'files'>('details');
+  const [activeTab, setActiveTab] = useState<'details' | 'files'>('details');
   const [reminder, setReminder] = useState<Reminder | null>(null);
   const [reminderDate, setReminderDate] = useState('');
   const [reminderTime, setReminderTime] = useState('');
@@ -253,7 +253,7 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
 
       {/* Tab navigation */}
       <div className="flex border-b border-border px-4">
-        {(['details', 'thread', 'files'] as const).map((tab) => (
+        {(['details', 'files'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -400,14 +400,10 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
                 />
               </div>
             )}
-          </>
-        )}
 
-        {/* Thread tab */}
-        {activeTab === 'thread' && (
-          <>
-            {task.threadLinks?.length > 0 ? (
-              <div className="space-y-3">
+            {/* Thread section */}
+            {task.threadLinks?.length > 0 && (
+              <div className="space-y-3 border-t border-border pt-4">
                 <div className="flex items-center justify-between text-sm font-medium text-muted-foreground">
                   <div className="flex items-center gap-1.5">
                     <Link2 className="h-4 w-4" />
@@ -443,11 +439,6 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
                 ) : (
                   <ThreadChain links={task.threadLinks} creator={task.creator} />
                 )}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                <Link2 className="h-8 w-8 mb-2 opacity-30" />
-                <p className="text-sm">{t('threadChain')}</p>
               </div>
             )}
           </>

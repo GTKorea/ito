@@ -17,7 +17,7 @@ const TASK_INCLUDE_FULL = {
     },
     orderBy: { chainIndex: 'asc' as const },
   },
-  _count: { select: { threadLinks: true } },
+  _count: { select: { threadLinks: true, files: true, chatMessages: true } },
 } as const;
 
 @Injectable()

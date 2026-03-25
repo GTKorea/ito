@@ -21,7 +21,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Plus, Building2, ArrowUpDown, ArrowLeft, Hash, ArrowRightLeft, Users, UserPlus, X, Settings, Archive, Trash2 } from 'lucide-react';
+import { Plus, Building2, ArrowUpDown, ArrowLeft, Hash, ArrowRightLeft, Users, UserPlus, X, Settings, Archive, Trash2, Filter, Check } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -150,6 +151,7 @@ export default function WorkspacePage() {
   };
   const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set());
   const [showMoveDialog, setShowMoveDialog] = useState(false);
+  const [groupFilter, setGroupFilter] = useState<Set<string>>(new Set());
   const isSelecting = selectedTaskIds.size > 0;
 
   const toggleTaskSelection = (taskId: string) => {
@@ -240,6 +242,42 @@ export default function WorkspacePage() {
     return [...completed].sort(sortFn);
   }, [completed, sortFn]);
 
+  const groupFilterFn = useCallback(
+    (task: { taskGroup?: { id: string; name: string } | null }) => {
+      if (groupFilter.size === 0) return true;
+      if (!task.taskGroup) return groupFilter.has('none');
+      return groupFilter.has(task.taskGroup.id);
+    },
+    [groupFilter],
+  );
+
+  const filteredActionRequired = useMemo(
+    () => sortedActionRequired.filter(groupFilterFn),
+    [sortedActionRequired, groupFilterFn],
+  );
+  const filteredWaiting = useMemo(
+    () => sortedWaiting.filter(groupFilterFn),
+    [sortedWaiting, groupFilterFn],
+  );
+  const filteredCompleted = useMemo(
+    () => sortedCompleted.filter(groupFilterFn),
+    [sortedCompleted, groupFilterFn],
+  );
+
+  const toggleGroupFilter = (id: string) => {
+    setGroupFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAllGroups = () => {
+    if (groupFilter.size === 0) return;
+    setGroupFilter(new Set());
+  };
+
   if (wsLoading) {
     return (
       <div className="flex h-full items-center justify-center">
@@ -315,6 +353,60 @@ export default function WorkspacePage() {
               )}
             </>
           )}
+          {!currentGroup && groups.length > 0 && (
+            <Popover>
+              <PopoverTrigger render={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={cn('h-8 text-xs text-muted-foreground relative', groupFilter.size > 0 && 'text-primary')}
+                  title={tt('filterGroups')}
+                />
+              }>
+                <Filter className="mr-1 h-3.5 w-3.5" />
+                {tt('filterGroups')}
+                {groupFilter.size > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-primary" />
+                )}
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-2" align="end">
+                <div className="space-y-1">
+                  <button
+                    className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs hover:bg-accent transition-colors"
+                    onClick={toggleAllGroups}
+                  >
+                    <span className="flex h-4 w-4 items-center justify-center rounded border border-border">
+                      {groupFilter.size === 0 && <Check className="h-3 w-3 text-primary" />}
+                    </span>
+                    <span className="font-medium">{tt('allGroups')}</span>
+                  </button>
+                  <div className="h-px bg-border my-1" />
+                  <button
+                    className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs hover:bg-accent transition-colors"
+                    onClick={() => toggleGroupFilter('none')}
+                  >
+                    <span className="flex h-4 w-4 items-center justify-center rounded border border-border">
+                      {groupFilter.has('none') && <Check className="h-3 w-3 text-primary" />}
+                    </span>
+                    <span className="text-muted-foreground">{tt('noGroup')}</span>
+                  </button>
+                  {groups.map((g) => (
+                    <button
+                      key={g.id}
+                      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs hover:bg-accent transition-colors"
+                      onClick={() => toggleGroupFilter(g.id)}
+                    >
+                      <span className="flex h-4 w-4 items-center justify-center rounded border border-border">
+                        {groupFilter.has(g.id) && <Check className="h-3 w-3 text-primary" />}
+                      </span>
+                      <Hash className="h-3 w-3 text-green-400" />
+                      <span className="truncate">{g.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
           <Button
             variant="ghost"
             size="sm"
@@ -350,9 +442,9 @@ export default function WorkspacePage() {
           </div>
         ) : (
           <TaskList
-            actionRequired={sortedActionRequired}
-            waiting={sortedWaiting}
-            completed={sortedCompleted}
+            actionRequired={filteredActionRequired}
+            waiting={filteredWaiting}
+            completed={filteredCompleted}
             onSelectTask={handleSelectTask}
             sortBy={sortBy}
             workspaceId={currentWorkspace.id}
