@@ -158,6 +158,13 @@ export default function WorkspacePage() {
       if (Array.isArray(prefs.groupFilter) && prefs.groupFilter.length > 0) {
         setGroupFilterState(new Set(prefs.groupFilter));
       }
+      // memberFilter — groupId가 있으면 해당 그룹의 멤버 필터도 복원
+      if (groupId) {
+        const key = `memberFilter:${groupId}`;
+        if (Array.isArray(prefs[key]) && prefs[key].length > 0) {
+          setMemberFilterState(new Set(prefs[key]));
+        }
+      }
       prefsLoadedRef.current = true;
     }).catch(() => { prefsLoadedRef.current = true; });
   }, [currentWorkspace?.id]);
