@@ -424,18 +424,6 @@ export function TaskItem({
           )}
         </div>
 
-        {/* Chat indicator */}
-        {(task._count?.chatMessages ?? 0) > 0 && (
-          <span className="relative inline-flex shrink-0">
-            <MessageCircle className="h-3 w-3 text-muted-foreground" />
-            {(task.unreadChatCount ?? 0) > 0 && (
-              <span className="absolute -top-1.5 -right-2 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-red-500 px-0.5 text-[9px] font-medium text-white">
-                {task.unreadChatCount}
-              </span>
-            )}
-          </span>
-        )}
-
         {/* Assignee avatar — hidden on mobile */}
         {!isMobile && task.assignee && (
           <UserProfilePopover userId={task.assignee.id}>
