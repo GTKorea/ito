@@ -41,6 +41,9 @@ storybook-static/
 # Uploads
 uploads/
 
+# Internal docs (not for public repo)
+docs/
+
 # Claude Code
 .claude/settings.local.json
 .claude/worktrees/
