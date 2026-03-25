@@ -23,8 +23,7 @@ RUN pnpm --filter @ito/shared build
 
 # Generate Prisma client + Build API
 RUN cd apps/api && npx prisma generate
-# SWC drops object properties on linux/amd64 — use tsc directly
-RUN cd apps/api && rm -rf dist && npx tsc -p tsconfig.build.json
+RUN pnpm --filter @ito/api build
 
 # ── Production stage ──
 FROM node:20-alpine AS runner
