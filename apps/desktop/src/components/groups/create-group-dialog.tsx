@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 import { useTaskGroupStore } from '@/stores/task-group-store';
 import { useWorkspaceMembers } from '@/hooks/use-workspace-members';
+import { api } from '@/lib/api-client';
 import {
   Dialog,
   DialogContent,
@@ -17,13 +18,20 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Hash, X, Users, Loader2, Lock, Globe } from 'lucide-react';
+import { Hash, X, Users, Loader2, Lock, Globe, UsersRound, Check } from 'lucide-react';
 
 interface User {
   id: string;
   name: string;
   email: string;
   avatarUrl?: string;
+}
+
+interface Team {
+  id: string;
+  name: string;
+  members: Array<{ user: { id: string; name: string; avatarUrl?: string } }>;
+  _count: { members: number };
 }
 
 interface CreateGroupDialogProps {
@@ -37,14 +45,23 @@ export function CreateGroupDialog({ workspaceId, sharedSpaceId, onClose }: Creat
   const [description, setDescription] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
   const [selected, setSelected] = useState<User[]>([]);
+  const [selectedTeamIds, setSelectedTeamIds] = useState<Set<string>>(new Set());
+  const [teams, setTeams] = useState<Team[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const { currentWorkspace } = useWorkspaceStore();
-  const { createGroup, createSharedSpaceGroup, addMember } = useTaskGroupStore();
+  const { createGroup, createSharedSpaceGroup, addMember, inviteTeam } = useTaskGroupStore();
   const t = useTranslations('groups');
-  const tc = useTranslations('common');
 
   const selectedIds = useMemo(() => new Set(selected.map((u) => u.id)), [selected]);
   const { members, search, setSearch } = useWorkspaceMembers({ excludeIds: selectedIds });
+
+  // Fetch teams
+  useEffect(() => {
+    if (!currentWorkspace) return;
+    api.get(`/workspaces/${currentWorkspace.id}/teams`)
+      .then(({ data }) => setTeams(data))
+      .catch(() => {});
+  }, [currentWorkspace]);
 
   const toggleUser = (user: User) => {
     setSelected((prev) => {
@@ -56,6 +73,15 @@ export function CreateGroupDialog({ workspaceId, sharedSpaceId, onClose }: Creat
 
   const removeUser = (userId: string) => {
     setSelected((prev) => prev.filter((u) => u.id !== userId));
+  };
+
+  const toggleTeam = (teamId: string) => {
+    setSelectedTeamIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(teamId)) next.delete(teamId);
+      else next.add(teamId);
+      return next;
+    });
   };
 
   const handleCreate = async () => {
@@ -80,6 +106,15 @@ export function CreateGroupDialog({ workspaceId, sharedSpaceId, onClose }: Creat
         }
       }
 
+      // Invite selected teams
+      for (const teamId of selectedTeamIds) {
+        try {
+          await inviteTeam(group.id, teamId);
+        } catch {
+          // Skip if team invite fails
+        }
+      }
+
       onClose();
     } catch (error) {
       console.error('Failed to create group:', error);
@@ -100,7 +135,7 @@ export function CreateGroupDialog({ workspaceId, sharedSpaceId, onClose }: Creat
 
         <div className="space-y-4">
           {/* Group name */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>{t('groupName')}</Label>
             <Input
               placeholder={t('groupName')}
@@ -112,7 +147,7 @@ export function CreateGroupDialog({ workspaceId, sharedSpaceId, onClose }: Creat
           </div>
 
           {/* Description */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>{t('groupDescription')}</Label>
             <Textarea
               placeholder={t('groupDescription')}
@@ -143,8 +178,34 @@ export function CreateGroupDialog({ workspaceId, sharedSpaceId, onClose }: Creat
             </button>
           </div>
 
+          {/* Team invite section */}
+          {teams.length > 0 && (
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1.5">
+                <UsersRound className="h-3.5 w-3.5" />
+                {t('inviteTeam')}
+              </Label>
+              <div className="space-y-1 rounded-md border border-border p-1">
+                {teams.map((team) => (
+                  <button
+                    key={team.id}
+                    onClick={() => toggleTeam(team.id)}
+                    className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent transition-colors"
+                  >
+                    <span className="flex h-4 w-4 items-center justify-center rounded border border-border shrink-0">
+                      {selectedTeamIds.has(team.id) && <Check className="h-3 w-3 text-primary" />}
+                    </span>
+                    <UsersRound className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    <span className="font-medium">{team.name}</span>
+                    <span className="ml-auto text-xs text-muted-foreground">{team._count.members}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Members section */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label className="flex items-center gap-1.5">
               <Users className="h-3.5 w-3.5" />
               {t('inviteMembers')}
