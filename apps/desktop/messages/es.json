@@ -888,7 +888,17 @@
     "inviteMembers": "Invitar miembros",
     "searchMembers": "Buscar por nombre o correo...",
     "noMembersFound": "No se encontraron miembros",
-    "creating": "Creando..."
+    "creating": "Creando...",
+    "publicGroup": "Público",
+    "privateGroup": "Privado",
+    "makePublic": "Hacer público",
+    "makePrivate": "Hacer privado",
+    "inviteTeam": "Invitar equipo",
+    "teamInvited": "Miembros del equipo invitados",
+    "filterMembers": "Filtrar miembros",
+    "myInvolvedTasks": "Mis tareas",
+    "filterByTeam": "Filtrar por equipo",
+    "allMembers": "Todos los miembros"
   },
   "meta": {
     "title": "ito - Colaboración de tareas basada en hilos",

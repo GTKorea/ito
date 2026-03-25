@@ -888,7 +888,17 @@
     "inviteMembers": "Inviter des membres",
     "searchMembers": "Rechercher par nom ou e-mail...",
     "noMembersFound": "Aucun membre trouvé",
-    "creating": "Création..."
+    "creating": "Création...",
+    "publicGroup": "Public",
+    "privateGroup": "Privé",
+    "makePublic": "Rendre public",
+    "makePrivate": "Rendre privé",
+    "inviteTeam": "Inviter l'équipe",
+    "teamInvited": "Membres de l'équipe invités",
+    "filterMembers": "Filtrer les membres",
+    "myInvolvedTasks": "Mes tâches",
+    "filterByTeam": "Filtrer par équipe",
+    "allMembers": "Tous les membres"
   },
   "meta": {
     "title": "ito - Collaboration de tâches basée sur les fils",

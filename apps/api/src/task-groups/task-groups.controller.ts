@@ -120,6 +120,15 @@ export class TaskGroupsController {
     return this.taskGroupsService.removeMember(id, userId);
   }
 
+  @Post('task-groups/:id/invite-team')
+  @ApiOperation({ summary: 'Invite all members of a team to the group' })
+  inviteTeam(
+    @Param('id') id: string,
+    @Body('teamId') teamId: string,
+  ) {
+    return this.taskGroupsService.inviteTeam(id, teamId);
+  }
+
   @Post('task-groups/:id/tasks/:taskId')
   @ApiOperation({ summary: 'Add task to group' })
   addTask(@Param('id') id: string, @Param('taskId') taskId: string) {

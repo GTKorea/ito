@@ -888,7 +888,17 @@
     "inviteMembers": "Mitglieder einladen",
     "searchMembers": "Nach Name oder E-Mail suchen...",
     "noMembersFound": "Keine Mitglieder gefunden",
-    "creating": "Wird erstellt..."
+    "creating": "Wird erstellt...",
+    "publicGroup": "Öffentlich",
+    "privateGroup": "Privat",
+    "makePublic": "Öffentlich machen",
+    "makePrivate": "Privat machen",
+    "inviteTeam": "Team einladen",
+    "teamInvited": "Teammitglieder eingeladen",
+    "filterMembers": "Mitglieder filtern",
+    "myInvolvedTasks": "Meine Aufgaben",
+    "filterByTeam": "Nach Team filtern",
+    "allMembers": "Alle Mitglieder"
   },
   "meta": {
     "title": "ito - Thread-basierte Aufgabenzusammenarbeit",

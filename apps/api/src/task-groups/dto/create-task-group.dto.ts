@@ -1,4 +1,4 @@
-import { IsString, IsOptional, MaxLength } from 'class-validator';
+import { IsString, IsOptional, MaxLength, IsBoolean } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateTaskGroupDto {
@@ -12,6 +12,11 @@ export class CreateTaskGroupDto {
   @IsString()
   @MaxLength(500)
   description?: string;
+
+  @ApiPropertyOptional({ description: 'Whether this group is private (invite-only)' })
+  @IsOptional()
+  @IsBoolean()
+  isPrivate?: boolean;
 }
 
 export class UpdateTaskGroupDto {
@@ -24,4 +29,8 @@ export class UpdateTaskGroupDto {
   @IsString()
   @MaxLength(500)
   description?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isPrivate?: boolean;
 }

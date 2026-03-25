@@ -24,9 +24,10 @@ interface TaskGroupState {
   fetchGroups: (workspaceId: string) => Promise<void>;
   fetchSharedSpaceGroups: (sharedSpaceId: string) => Promise<void>;
   fetchAllSharedSpaceGroups: (spaceIds: string[]) => Promise<void>;
-  createGroup: (workspaceId: string, name: string, description?: string) => Promise<TaskGroup>;
+  createGroup: (workspaceId: string, name: string, description?: string, isPrivate?: boolean) => Promise<TaskGroup>;
   createSharedSpaceGroup: (sharedSpaceId: string, name: string, description?: string) => Promise<TaskGroup>;
-  updateGroup: (id: string, data: { name?: string; description?: string }) => Promise<void>;
+  updateGroup: (id: string, data: { name?: string; description?: string; isPrivate?: boolean }) => Promise<void>;
+  inviteTeam: (groupId: string, teamId: string) => Promise<{ added: number; total: number }>;
   deleteGroup: (id: string) => Promise<void>;
   archiveGroup: (id: string) => Promise<void>;
   addMember: (groupId: string, userId: string) => Promise<void>;
@@ -67,8 +68,8 @@ export const useTaskGroupStore = create<TaskGroupState>((set, get) => ({
     await Promise.all(spaceIds.map((id) => get().fetchSharedSpaceGroups(id)));
   },
 
-  createGroup: async (workspaceId, name, description) => {
-    const { data } = await api.post(`/workspaces/${workspaceId}/task-groups`, { name, description });
+  createGroup: async (workspaceId, name, description, isPrivate) => {
+    const { data } = await api.post(`/workspaces/${workspaceId}/task-groups`, { name, description, isPrivate });
     set((state) => ({ groups: [...state.groups, data] }));
     return data;
   },
@@ -140,6 +141,16 @@ export const useTaskGroupStore = create<TaskGroupState>((set, get) => ({
         g.id === groupId ? { ...g, _count: { ...g._count, tasks: Math.max(0, g._count.tasks - 1) } } : g,
       ),
     }));
+  },
+
+  inviteTeam: async (groupId, teamId) => {
+    const { data } = await api.post(`/task-groups/${groupId}/invite-team`, { teamId });
+    // Refetch to get updated member count
+    const { data: group } = await api.get(`/task-groups/${groupId}`);
+    set((state) => ({
+      groups: state.groups.map((g) => (g.id === groupId ? { ...g, _count: group._count } : g)),
+    }));
+    return data;
   },
 
   setCurrentGroup: (id) => set({ currentGroupId: id }),

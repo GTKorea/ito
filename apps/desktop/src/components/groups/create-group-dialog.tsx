@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Hash, X, Users, Loader2 } from 'lucide-react';
+import { Hash, X, Users, Loader2, Lock, Globe } from 'lucide-react';
 
 interface User {
   id: string;
@@ -35,6 +35,7 @@ interface CreateGroupDialogProps {
 export function CreateGroupDialog({ workspaceId, sharedSpaceId, onClose }: CreateGroupDialogProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [isPrivate, setIsPrivate] = useState(false);
   const [selected, setSelected] = useState<User[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const { currentWorkspace } = useWorkspaceStore();
@@ -65,7 +66,7 @@ export function CreateGroupDialog({ workspaceId, sharedSpaceId, onClose }: Creat
       if (sharedSpaceId) {
         group = await createSharedSpaceGroup(sharedSpaceId, name.trim(), description.trim() || undefined);
       } else if (workspaceId) {
-        group = await createGroup(workspaceId, name.trim(), description.trim() || undefined);
+        group = await createGroup(workspaceId, name.trim(), description.trim() || undefined, isPrivate);
       } else {
         return;
       }
@@ -119,6 +120,27 @@ export function CreateGroupDialog({ workspaceId, sharedSpaceId, onClose }: Creat
               onChange={(e) => setDescription(e.target.value)}
               rows={2}
             />
+          </div>
+
+          {/* Visibility toggle */}
+          <div className="flex items-center justify-between rounded-md border border-border px-3 py-2">
+            <div className="flex items-center gap-2">
+              {isPrivate ? (
+                <Lock className="h-3.5 w-3.5 text-amber-500" />
+              ) : (
+                <Globe className="h-3.5 w-3.5 text-green-500" />
+              )}
+              <span className="text-sm font-medium">
+                {isPrivate ? t('privateGroup') : t('publicGroup')}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsPrivate(!isPrivate)}
+              className="text-xs text-primary hover:underline"
+            >
+              {isPrivate ? t('makePublic') : t('makePrivate')}
+            </button>
           </div>
 
           {/* Members section */}

@@ -888,7 +888,17 @@
     "inviteMembers": "멤버 초대",
     "searchMembers": "이름 또는 이메일로 검색...",
     "noMembersFound": "멤버를 찾을 수 없습니다",
-    "creating": "만드는 중..."
+    "creating": "만드는 중...",
+    "publicGroup": "공개",
+    "privateGroup": "비공개",
+    "makePublic": "공개로 전환",
+    "makePrivate": "비공개로 전환",
+    "inviteTeam": "팀 초대",
+    "teamInvited": "팀 멤버가 초대되었습니다",
+    "filterMembers": "멤버 필터",
+    "myInvolvedTasks": "내 태스크",
+    "filterByTeam": "팀별 필터",
+    "allMembers": "전체 멤버"
   },
   "meta": {
     "title": "ito - 연결 기반 협업 태스크 관리",

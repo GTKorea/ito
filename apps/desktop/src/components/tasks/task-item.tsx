@@ -372,6 +372,9 @@ export function TaskItem({
                 {task.threadLinks.length}
               </Badge>
             )}
+            {(task._count?.files ?? 0) > 0 && (
+              <Paperclip className="h-3 w-3 text-muted-foreground shrink-0" />
+            )}
           </div>
 
           {/* Waiting section: show current worker inline */}
@@ -421,25 +424,17 @@ export function TaskItem({
           )}
         </div>
 
-        {/* Attachment & chat indicators */}
-        {(task._count?.files ?? 0) > 0 ||
-        (task._count?.chatMessages ?? 0) > 0 ? (
-          <div className="flex items-center gap-1.5 shrink-0">
-            {(task._count?.files ?? 0) > 0 && (
-              <Paperclip className="h-3 w-3 text-muted-foreground" />
-            )}
-            {(task._count?.chatMessages ?? 0) > 0 && (
-              <span className="relative inline-flex">
-                <MessageCircle className="h-3 w-3 text-muted-foreground" />
-                {(task.unreadChatCount ?? 0) > 0 && (
-                  <span className="absolute -top-1.5 -right-2 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-red-500 px-0.5 text-[9px] font-medium text-white">
-                    {task.unreadChatCount}
-                  </span>
-                )}
+        {/* Chat indicator */}
+        {(task._count?.chatMessages ?? 0) > 0 && (
+          <span className="relative inline-flex shrink-0">
+            <MessageCircle className="h-3 w-3 text-muted-foreground" />
+            {(task.unreadChatCount ?? 0) > 0 && (
+              <span className="absolute -top-1.5 -right-2 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-red-500 px-0.5 text-[9px] font-medium text-white">
+                {task.unreadChatCount}
               </span>
             )}
-          </div>
-        ) : null}
+          </span>
+        )}
 
         {/* Assignee avatar — hidden on mobile */}
         {!isMobile && task.assignee && (

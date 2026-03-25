@@ -54,15 +54,24 @@ export class ThreadsService {
       where: { id: taskId },
       include: {
         threadLinks: { orderBy: { chainIndex: 'asc' } },
-        taskGroup: { select: { isPrivate: true } },
+        taskGroup: { select: { id: true, isPrivate: true } },
       },
     });
 
     if (!task) throw new NotFoundException('Task not found');
 
-    // Check if task is in a private group — cannot connect (except blockers via connectBlocker)
+    // Private group: only allow connecting to group members
     if (task.taskGroup?.isPrivate) {
-      throw new BadRequestException('Cannot connect tasks in private groups to others');
+      const groupMembers = await this.prisma.taskGroupMember.findMany({
+        where: { taskGroupId: task.taskGroup.id },
+        select: { userId: true },
+      });
+      const memberSet = new Set(groupMembers.map((m) => m.userId));
+      for (const toUserId of toUserIds) {
+        if (!memberSet.has(toUserId)) {
+          throw new ForbiddenException('In private groups, you can only connect to group members');
+        }
+      }
     }
 
     // Only current assignee can connect to someone else
@@ -434,15 +443,24 @@ export class ThreadsService {
       where: { id: taskId },
       include: {
         threadLinks: { orderBy: { chainIndex: 'asc' } },
-        taskGroup: { select: { isPrivate: true } },
+        taskGroup: { select: { id: true, isPrivate: true } },
       },
     });
 
     if (!task) throw new NotFoundException('Task not found');
 
-    // Check if task is in a private group
+    // Private group: only allow connecting to group members
     if (task.taskGroup?.isPrivate) {
-      throw new BadRequestException('Cannot connect tasks in private groups to others');
+      const groupMembers = await this.prisma.taskGroupMember.findMany({
+        where: { taskGroupId: task.taskGroup.id },
+        select: { userId: true },
+      });
+      const memberSet = new Set(groupMembers.map((m) => m.userId));
+      for (const userId of userIds) {
+        if (!memberSet.has(userId)) {
+          throw new ForbiddenException('In private groups, you can only connect to group members');
+        }
+      }
     }
 
     if (task.assigneeId !== creatorId) {

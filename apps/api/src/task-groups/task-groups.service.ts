@@ -2,6 +2,13 @@ import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/commo
 import { PrismaService } from '../common/prisma/prisma.service';
 import { CreateTaskGroupDto, UpdateTaskGroupDto } from './dto/create-task-group.dto';
 
+function groupInclude() {
+  return {
+    _count: { select: { members: true, tasks: { where: { status: { notIn: ['COMPLETED', 'CANCELLED'] as const } } } } },
+    createdBy: { select: { id: true, name: true, avatarUrl: true } },
+  };
+}
+
 @Injectable()
 export class TaskGroupsService {
   constructor(private prisma: PrismaService) {}
@@ -11,16 +18,14 @@ export class TaskGroupsService {
       data: {
         name: dto.name,
         description: dto.description,
+        isPrivate: dto.isPrivate ?? false,
         workspaceId,
         createdById: userId,
         members: {
           create: { userId },
         },
       },
-      include: {
-        _count: { select: { members: true, tasks: { where: { status: { notIn: ['COMPLETED', 'CANCELLED'] } } } } },
-        createdBy: { select: { id: true, name: true, avatarUrl: true } },
-      },
+      include: groupInclude(),
     });
     return group;
   }
@@ -36,10 +41,7 @@ export class TaskGroupsService {
           create: { userId },
         },
       },
-      include: {
-        _count: { select: { members: true, tasks: { where: { status: { notIn: ['COMPLETED', 'CANCELLED'] } } } } },
-        createdBy: { select: { id: true, name: true, avatarUrl: true } },
-      },
+      include: groupInclude(),
     });
     return group;
   }
@@ -47,15 +49,11 @@ export class TaskGroupsService {
   async archive(id: string, userId: string) {
     const group = await this.prisma.taskGroup.findUnique({ where: { id } });
     if (!group) throw new NotFoundException('Task group not found');
-    if (group.isPrivate) throw new ForbiddenException('Cannot archive private groups');
     if (group.createdById !== userId) throw new ForbiddenException('Only the creator can archive this group');
     return this.prisma.taskGroup.update({
       where: { id },
       data: { isArchived: true },
-      include: {
-        _count: { select: { members: true, tasks: { where: { status: { notIn: ['COMPLETED', 'CANCELLED'] } } } } },
-        createdBy: { select: { id: true, name: true, avatarUrl: true } },
-      },
+      include: groupInclude(),
     });
   }
 
@@ -66,10 +64,7 @@ export class TaskGroupsService {
     return this.prisma.taskGroup.update({
       where: { id },
       data: { isArchived: false },
-      include: {
-        _count: { select: { members: true, tasks: { where: { status: { notIn: ['COMPLETED', 'CANCELLED'] } } } } },
-        createdBy: { select: { id: true, name: true, avatarUrl: true } },
-      },
+      include: groupInclude(),
     });
   }
 
@@ -78,7 +73,10 @@ export class TaskGroupsService {
       where: {
         workspaceId,
         isArchived: false,
-        members: { some: { userId } },
+        OR: [
+          { isPrivate: false },
+          { members: { some: { userId } } },
+        ],
       },
       select: {
         id: true,
@@ -103,12 +101,12 @@ export class TaskGroupsService {
       where: {
         sharedSpaceId,
         isArchived: false,
-        members: { some: { userId } },
+        OR: [
+          { isPrivate: false },
+          { members: { some: { userId } } },
+        ],
       },
-      include: {
-        _count: { select: { members: true, tasks: { where: { status: { notIn: ['COMPLETED', 'CANCELLED'] } } } } },
-        createdBy: { select: { id: true, name: true, avatarUrl: true } },
-      },
+      include: groupInclude(),
       orderBy: { createdAt: 'asc' },
     });
   }
@@ -138,19 +136,13 @@ export class TaskGroupsService {
     return this.prisma.taskGroup.update({
       where: { id },
       data: dto,
-      include: {
-        _count: { select: { members: true, tasks: { where: { status: { notIn: ['COMPLETED', 'CANCELLED'] } } } } },
-        createdBy: { select: { id: true, name: true, avatarUrl: true } },
-      },
+      include: groupInclude(),
     });
   }
 
   async delete(id: string, userId: string) {
     const group = await this.prisma.taskGroup.findUnique({ where: { id } });
     if (!group) throw new NotFoundException('Task group not found');
-    if (group.isPrivate) {
-      throw new ForbiddenException('Cannot delete private groups');
-    }
     if (group.createdById !== userId) {
       throw new ForbiddenException('Only the creator can delete this group');
     }
@@ -182,6 +174,34 @@ export class TaskGroupsService {
     });
     if (!member) throw new NotFoundException('Member not found in group');
     return this.prisma.taskGroupMember.delete({ where: { id: member.id } });
+  }
+
+  async inviteTeam(groupId: string, teamId: string) {
+    const group = await this.prisma.taskGroup.findUnique({ where: { id: groupId } });
+    if (!group) throw new NotFoundException('Task group not found');
+
+    const teamMembers = await this.prisma.teamMember.findMany({
+      where: { teamId },
+      select: { userId: true },
+    });
+
+    if (teamMembers.length === 0) throw new NotFoundException('Team has no members');
+
+    const existingMembers = await this.prisma.taskGroupMember.findMany({
+      where: { taskGroupId: groupId, userId: { in: teamMembers.map((m) => m.userId) } },
+      select: { userId: true },
+    });
+    const existingSet = new Set(existingMembers.map((m) => m.userId));
+    const newUserIds = teamMembers.filter((m) => !existingSet.has(m.userId)).map((m) => m.userId);
+
+    if (newUserIds.length > 0) {
+      await this.prisma.taskGroupMember.createMany({
+        data: newUserIds.map((userId) => ({ taskGroupId: groupId, userId })),
+        skipDuplicates: true,
+      });
+    }
+
+    return { added: newUserIds.length, total: teamMembers.length };
   }
 
   async addTaskToGroup(taskId: string, groupId: string) {

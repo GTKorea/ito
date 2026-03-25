@@ -180,16 +180,29 @@ export class TasksService {
     return updated;
   }
 
-  async findCategorized(workspaceId: string, userId: string, taskGroupId?: string) {
+  async findCategorized(workspaceId: string, userId: string, taskGroupId?: string, memberIds?: string[]) {
     const where: Prisma.TaskWhereInput = {
       workspaceId,
-      OR: [
-          { creatorId: userId },
-          { assigneeId: userId },
-          { threadLinks: { some: { fromUserId: userId } } },
-          { threadLinks: { some: { toUserId: userId } } },
-        ],
     };
+
+    // When filtering by specific members within a group, show tasks those members are involved in
+    if (memberIds && memberIds.length > 0) {
+      where.OR = memberIds.flatMap((mid) => [
+        { creatorId: mid },
+        { assigneeId: mid },
+        { threadLinks: { some: { fromUserId: mid } } },
+        { threadLinks: { some: { toUserId: mid } } },
+      ]);
+    } else {
+      // Default: show tasks the current user is involved in
+      where.OR = [
+        { creatorId: userId },
+        { assigneeId: userId },
+        { threadLinks: { some: { fromUserId: userId } } },
+        { threadLinks: { some: { toUserId: userId } } },
+      ];
+    }
+
     if (taskGroupId) {
       where.taskGroupId = taskGroupId;
     }

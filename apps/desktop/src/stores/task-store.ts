@@ -86,7 +86,7 @@ interface TaskState {
   calendarLoading: boolean;
   calendarEvents: CalendarEvent[];
   calendarEventsLoading: boolean;
-  fetchCategorizedTasks: (workspaceId: string, taskGroupId?: string) => Promise<void>;
+  fetchCategorizedTasks: (workspaceId: string, taskGroupId?: string, memberIds?: string[]) => Promise<void>;
   fetchCalendarTasks: (workspaceId: string, start: string, end: string) => Promise<void>;
   fetchCalendarEvents: (start: string, end: string) => Promise<void>;
   createTask: (workspaceId: string, title: string, description?: string, priority?: string, dueDate?: string, taskGroupId?: string, type?: string, voteConfig?: VoteConfig) => Promise<Task>;
@@ -167,11 +167,14 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     }
   },
 
-  fetchCategorizedTasks: async (workspaceId, taskGroupId) => {
+  fetchCategorizedTasks: async (workspaceId, taskGroupId, memberIds) => {
     set({ isLoading: true });
     try {
+      const params: Record<string, string> = {};
+      if (taskGroupId) params.taskGroupId = taskGroupId;
+      if (memberIds && memberIds.length > 0) params.memberIds = memberIds.join(',');
       const { data } = await api.get(`/workspaces/${workspaceId}/tasks/categorized`, {
-        params: taskGroupId ? { taskGroupId } : undefined,
+        params: Object.keys(params).length > 0 ? params : undefined,
       });
       set({
         actionRequired: data.actionRequired,

@@ -44,8 +44,10 @@ export class TasksController {
     @Param('workspaceId') workspaceId: string,
     @CurrentUser('id') userId: string,
     @Query('taskGroupId') taskGroupId?: string,
+    @Query('memberIds') memberIds?: string,
   ) {
-    return this.tasksService.findCategorized(workspaceId, userId, taskGroupId);
+    const memberIdList = memberIds ? memberIds.split(',').filter(Boolean) : undefined;
+    return this.tasksService.findCategorized(workspaceId, userId, taskGroupId, memberIdList);
   }
 
   @Get('workspaces/:workspaceId/tasks/calendar')

@@ -14,6 +14,13 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     setMounted(true);
   }, []);
 
+  // Sync html lang attribute with current locale
+  useEffect(() => {
+    if (mounted) {
+      document.documentElement.lang = locale;
+    }
+  }, [locale, mounted]);
+
   // Prevent hydration mismatch: server defaults to 'en' but client
   // reads locale from localStorage, which may differ.
   if (!mounted) return null;

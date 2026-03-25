@@ -888,7 +888,17 @@
     "inviteMembers": "邀请成员",
     "searchMembers": "按名称或邮箱搜索...",
     "noMembersFound": "未找到成员",
-    "creating": "创建中..."
+    "creating": "创建中...",
+    "publicGroup": "公开",
+    "privateGroup": "私密",
+    "makePublic": "设为公开",
+    "makePrivate": "设为私密",
+    "inviteTeam": "邀请团队",
+    "teamInvited": "已邀请团队成员",
+    "filterMembers": "筛选成员",
+    "myInvolvedTasks": "我的任务",
+    "filterByTeam": "按团队筛选",
+    "allMembers": "全部成员"
   },
   "meta": {
     "title": "ito - 基于线程的任务协作",

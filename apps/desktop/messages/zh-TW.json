@@ -888,7 +888,17 @@
     "inviteMembers": "邀請成員",
     "searchMembers": "按名稱或郵箱搜尋...",
     "noMembersFound": "找不到成員",
-    "creating": "建立中..."
+    "creating": "建立中...",
+    "publicGroup": "公開",
+    "privateGroup": "私密",
+    "makePublic": "設為公開",
+    "makePrivate": "設為私密",
+    "inviteTeam": "邀請團隊",
+    "teamInvited": "已邀請團隊成員",
+    "filterMembers": "篩選成員",
+    "myInvolvedTasks": "我的任務",
+    "filterByTeam": "按團隊篩選",
+    "allMembers": "全部成員"
   },
   "meta": {
     "title": "ito - 基於線程的任務協作",

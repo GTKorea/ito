@@ -888,7 +888,17 @@
     "inviteMembers": "Invite Members",
     "searchMembers": "Search by name or email...",
     "noMembersFound": "No members found",
-    "creating": "Creating..."
+    "creating": "Creating...",
+    "publicGroup": "Public",
+    "privateGroup": "Private",
+    "makePublic": "Make Public",
+    "makePrivate": "Make Private",
+    "inviteTeam": "Invite Team",
+    "teamInvited": "Team members invited",
+    "filterMembers": "Filter members",
+    "myInvolvedTasks": "My tasks",
+    "filterByTeam": "Filter by team",
+    "allMembers": "All members"
   },
   "meta": {
     "title": "ito - Thread-based Task Collaboration",

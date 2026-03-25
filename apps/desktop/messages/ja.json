@@ -888,7 +888,17 @@
     "inviteMembers": "メンバーを招待",
     "searchMembers": "名前またはメールで検索...",
     "noMembersFound": "メンバーが見つかりません",
-    "creating": "作成中..."
+    "creating": "作成中...",
+    "publicGroup": "公開",
+    "privateGroup": "非公開",
+    "makePublic": "公開にする",
+    "makePrivate": "非公開にする",
+    "inviteTeam": "チームを招待",
+    "teamInvited": "チームメンバーを招待しました",
+    "filterMembers": "メンバーフィルター",
+    "myInvolvedTasks": "自分のタスク",
+    "filterByTeam": "チーム別フィルター",
+    "allMembers": "全メンバー"
   },
   "meta": {
     "title": "ito - スレッドベースのタスクコラボレーション",

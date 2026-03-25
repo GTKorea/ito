@@ -7,6 +7,7 @@ import { useTaskStore } from '@/stores/task-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 import { useTaskGroupStore } from '@/stores/task-group-store';
 import { useOnboardingStore } from '@/stores/onboarding-store';
+import { useAuthStore } from '@/stores/auth-store';
 import { OnboardingWizard } from '@/components/onboarding/onboarding-wizard';
 
 import { TaskList } from '@/components/tasks/task-list';
@@ -21,7 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Plus, Building2, ArrowUpDown, ArrowLeft, Hash, ArrowRightLeft, Users, UserPlus, X, Settings, Archive, Trash2, Filter, Check } from 'lucide-react';
+import { Plus, Building2, ArrowUpDown, ArrowLeft, Hash, ArrowRightLeft, Users, UserPlus, X, Settings, Archive, Trash2, Filter, Check, Lock, Globe, User } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   DropdownMenu,
@@ -104,7 +105,7 @@ function CreateWorkspacePrompt() {
 export default function WorkspacePage() {
   const { currentWorkspace, isLoading: wsLoading } = useWorkspaceStore();
   const { actionRequired, waiting, completed, isLoading, fetchCategorizedTasks } = useTaskStore();
-  const { groups, deleteGroup, archiveGroup } = useTaskGroupStore();
+  const { groups, deleteGroup, archiveGroup, updateGroup } = useTaskGroupStore();
   const { checkAndStartWizard } = useOnboardingStore();
   const [showCreate, setShowCreate] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
@@ -112,6 +113,7 @@ export default function WorkspacePage() {
   const [openWithChat, setOpenWithChat] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(420);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [memberFilter, setMemberFilter] = useState<Set<string>>(new Set());
   const isResizingRef = useRef(false);
 
   const handleResizeStart = useCallback((e: React.MouseEvent) => {
@@ -173,13 +175,14 @@ export default function WorkspacePage() {
   const groupId = searchParams.get('group');
   const currentGroup = groupId ? groups.find((g) => g.id === groupId) : null;
 
-  useEffect(() => { clearSelection(); }, [groupId]);
+  useEffect(() => { clearSelection(); setMemberFilter(new Set()); }, [groupId]);
 
   useEffect(() => {
     if (currentWorkspace) {
-      fetchCategorizedTasks(currentWorkspace.id, groupId || undefined);
+      const memberIds = memberFilter.size > 0 ? Array.from(memberFilter) : undefined;
+      fetchCategorizedTasks(currentWorkspace.id, groupId || undefined, memberIds);
     }
-  }, [currentWorkspace, fetchCategorizedTasks, groupId]);
+  }, [currentWorkspace, fetchCategorizedTasks, groupId, memberFilter]);
 
   // Trigger onboarding wizard on first workspace visit
   useEffect(() => {
@@ -325,32 +328,85 @@ export default function WorkspacePage() {
           {currentGroup && (
             <>
               <GroupMembersPopover groupId={currentGroup.id} memberCount={currentGroup._count.members} />
-              {!currentGroup.isPrivate && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger render={<Button variant="ghost" size="sm" className="h-8 w-8 p-0" />}>
-                    <Settings className="h-3.5 w-3.5 text-muted-foreground" />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={async () => {
-                        await archiveGroup(currentGroup.id);
-                        window.location.href = `/workspace`;
+              {/* Member filter within group */}
+              <Popover>
+                <PopoverTrigger render={
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={cn('h-8 text-xs text-muted-foreground relative', memberFilter.size > 0 && 'text-primary')}
+                    title={tg('filterMembers')}
+                  />
+                }>
+                  <User className="mr-1 h-3.5 w-3.5" />
+                  {tg('filterMembers')}
+                  {memberFilter.size > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-primary" />
+                  )}
+                </PopoverTrigger>
+                <PopoverContent className="w-56 p-2" align="end">
+                  <div className="space-y-1">
+                    <button
+                      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs hover:bg-accent transition-colors"
+                      onClick={() => setMemberFilter(new Set())}
+                    >
+                      <span className="flex h-4 w-4 items-center justify-center rounded border border-border">
+                        {memberFilter.size === 0 && <Check className="h-3 w-3 text-primary" />}
+                      </span>
+                      <span className="font-medium">{tg('allMembers')}</span>
+                    </button>
+                    <div className="h-px bg-border my-1" />
+                    <button
+                      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs hover:bg-accent transition-colors"
+                      onClick={() => {
+                        const { user } = useAuthStore.getState();
+                        if (user) setMemberFilter(new Set([user.id]));
                       }}
                     >
-                      <Archive className="mr-2 h-4 w-4" />
-                      {tg('archiveGroup')}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className="text-red-500 focus:text-red-500"
-                      onClick={() => setShowDeleteConfirm(true)}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      {tg('deleteGroup')}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
+                      <span className="flex h-4 w-4 items-center justify-center rounded border border-border">
+                        {memberFilter.size === 1 && memberFilter.has(useAuthStore.getState().user?.id || '') && <Check className="h-3 w-3 text-primary" />}
+                      </span>
+                      <span>{tg('myInvolvedTasks')}</span>
+                    </button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+              <DropdownMenu>
+                <DropdownMenuTrigger render={<Button variant="ghost" size="sm" className="h-8 w-8 p-0" />}>
+                  <Settings className="h-3.5 w-3.5 text-muted-foreground" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={async () => {
+                      await updateGroup(currentGroup.id, { isPrivate: !currentGroup.isPrivate });
+                      window.location.reload();
+                    }}
+                  >
+                    {currentGroup.isPrivate ? (
+                      <><Globe className="mr-2 h-4 w-4" />{tg('makePublic')}</>
+                    ) : (
+                      <><Lock className="mr-2 h-4 w-4" />{tg('makePrivate')}</>
+                    )}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={async () => {
+                      await archiveGroup(currentGroup.id);
+                      window.location.href = `/workspace`;
+                    }}
+                  >
+                    <Archive className="mr-2 h-4 w-4" />
+                    {tg('archiveGroup')}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="text-red-500 focus:text-red-500"
+                    onClick={() => setShowDeleteConfirm(true)}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    {tg('deleteGroup')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           )}
           {!currentGroup && groups.length > 0 && (

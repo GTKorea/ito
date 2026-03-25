@@ -235,7 +235,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                       ) : (
                         <Hash className="h-3.5 w-3.5 shrink-0" />
                       )}
-                      <span className="truncate">{group.isPrivate ? tg('myPrivateGroup') : group.name}</span>
+                      <span className="truncate">{group.name}</span>
                       <span className="ml-auto text-xs text-muted-foreground/60">{group._count.tasks}</span>
                     </Link>
                   ))}

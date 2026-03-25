@@ -888,7 +888,17 @@
     "inviteMembers": "Convidar membros",
     "searchMembers": "Pesquisar por nome ou e-mail...",
     "noMembersFound": "Nenhum membro encontrado",
-    "creating": "Criando..."
+    "creating": "Criando...",
+    "publicGroup": "Público",
+    "privateGroup": "Privado",
+    "makePublic": "Tornar público",
+    "makePrivate": "Tornar privado",
+    "inviteTeam": "Convidar equipe",
+    "teamInvited": "Membros da equipe convidados",
+    "filterMembers": "Filtrar membros",
+    "myInvolvedTasks": "Minhas tarefas",
+    "filterByTeam": "Filtrar por equipe",
+    "allMembers": "Todos os membros"
   },
   "meta": {
     "title": "ito - Colaboração de tarefas baseada em threads",
