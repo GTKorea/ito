@@ -18,12 +18,18 @@ RUN pnpm install --frozen-lockfile
 COPY packages/shared/ packages/shared/
 COPY apps/api/ apps/api/
 
+# Debug: verify source has taskGroup
+RUN echo "=== SOURCE CHECK ===" && grep -n "taskGroup" apps/api/src/tasks/tasks.service.ts | head -5
+
 # Build shared package
 RUN pnpm --filter @ito/shared build
 
 # Generate Prisma client + Build API
 RUN cd apps/api && npx prisma generate
 RUN pnpm --filter @ito/api build
+
+# Debug: verify dist has taskGroup
+RUN echo "=== DIST CHECK ===" && grep -n "taskGroup" apps/api/dist/tasks/tasks.service.js | head -5
 
 # ── Production stage ──
 FROM node:20-alpine AS runner
