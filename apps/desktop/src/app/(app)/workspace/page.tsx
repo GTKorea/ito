@@ -288,10 +288,8 @@ export default function WorkspacePage() {
               <GroupMembersPopover groupId={currentGroup.id} memberCount={currentGroup._count.members} />
               {!currentGroup.isPrivate && (
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <Settings className="h-3.5 w-3.5 text-muted-foreground" />
-                    </Button>
+                  <DropdownMenuTrigger render={<Button variant="ghost" size="sm" className="h-8 w-8 p-0" />}>
+                    <Settings className="h-3.5 w-3.5 text-muted-foreground" />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem
