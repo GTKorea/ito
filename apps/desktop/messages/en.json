@@ -934,7 +934,9 @@
     "filterMembers": "Filter members",
     "myInvolvedTasks": "My tasks",
     "filterByTeam": "Filter by team",
-    "allMembers": "All members"
+    "allMembers": "All members",
+    "nameAlreadyExists": "A group with this name already exists",
+    "createFailed": "Failed to create group"
   },
   "meta": {
     "title": "ito - Thread-based Task Collaboration",

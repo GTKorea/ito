@@ -934,7 +934,9 @@
     "filterMembers": "Mitglieder filtern",
     "myInvolvedTasks": "Meine Aufgaben",
     "filterByTeam": "Nach Team filtern",
-    "allMembers": "Alle Mitglieder"
+    "allMembers": "Alle Mitglieder",
+    "nameAlreadyExists": "Eine Gruppe mit diesem Namen existiert bereits",
+    "createFailed": "Gruppe konnte nicht erstellt werden"
   },
   "meta": {
     "title": "ito - Thread-basierte Aufgabenzusammenarbeit",

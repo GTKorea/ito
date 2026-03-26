@@ -934,7 +934,9 @@
     "filterMembers": "Filtrer les membres",
     "myInvolvedTasks": "Mes tâches",
     "filterByTeam": "Filtrer par équipe",
-    "allMembers": "Tous les membres"
+    "allMembers": "Tous les membres",
+    "nameAlreadyExists": "Un groupe avec ce nom existe déjà",
+    "createFailed": "Échec de la création du groupe"
   },
   "meta": {
     "title": "ito - Collaboration de tâches basée sur les fils",

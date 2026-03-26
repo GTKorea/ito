@@ -934,7 +934,9 @@
     "filterMembers": "Filtrar membros",
     "myInvolvedTasks": "Minhas tarefas",
     "filterByTeam": "Filtrar por equipe",
-    "allMembers": "Todos os membros"
+    "allMembers": "Todos os membros",
+    "nameAlreadyExists": "Já existe um grupo com este nome",
+    "createFailed": "Falha ao criar grupo"
   },
   "meta": {
     "title": "ito - Colaboração de tarefas baseada em threads",

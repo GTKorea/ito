@@ -934,7 +934,9 @@
     "filterMembers": "メンバーフィルター",
     "myInvolvedTasks": "自分のタスク",
     "filterByTeam": "チーム別フィルター",
-    "allMembers": "全メンバー"
+    "allMembers": "全メンバー",
+    "nameAlreadyExists": "同じ名前のグループが既に存在します",
+    "createFailed": "グループの作成に失敗しました"
   },
   "meta": {
     "title": "ito - スレッドベースのタスクコラボレーション",

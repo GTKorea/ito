@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 import { useTaskGroupStore } from '@/stores/task-group-store';
 import { useWorkspaceMembers } from '@/hooks/use-workspace-members';
@@ -116,8 +117,13 @@ export function CreateGroupDialog({ workspaceId, sharedSpaceId, onClose }: Creat
       }
 
       onClose();
-    } catch (error) {
-      console.error('Failed to create group:', error);
+    } catch (error: unknown) {
+      const err = error as { response?: { status?: number } };
+      if (err.response?.status === 409) {
+        toast.error(t('nameAlreadyExists'));
+      } else {
+        toast.error(t('createFailed'));
+      }
     } finally {
       setIsCreating(false);
     }

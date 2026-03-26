@@ -934,7 +934,9 @@
     "filterMembers": "멤버 필터",
     "myInvolvedTasks": "내 태스크",
     "filterByTeam": "팀별 필터",
-    "allMembers": "전체 멤버"
+    "allMembers": "전체 멤버",
+    "nameAlreadyExists": "같은 이름의 그룹이 이미 존재합니다",
+    "createFailed": "그룹 생성에 실패했습니다"
   },
   "meta": {
     "title": "ito - 연결 기반 협업 태스크 관리",

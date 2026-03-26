@@ -934,7 +934,9 @@
     "filterMembers": "筛选成员",
     "myInvolvedTasks": "我的任务",
     "filterByTeam": "按团队筛选",
-    "allMembers": "全部成员"
+    "allMembers": "全部成员",
+    "nameAlreadyExists": "同名群组已存在",
+    "createFailed": "创建群组失败"
   },
   "meta": {
     "title": "ito - 基于线程的任务协作",

@@ -934,7 +934,9 @@
     "filterMembers": "Filtrar miembros",
     "myInvolvedTasks": "Mis tareas",
     "filterByTeam": "Filtrar por equipo",
-    "allMembers": "Todos los miembros"
+    "allMembers": "Todos los miembros",
+    "nameAlreadyExists": "Ya existe un grupo con este nombre",
+    "createFailed": "Error al crear el grupo"
   },
   "meta": {
     "title": "ito - Colaboración de tareas basada en hilos",
