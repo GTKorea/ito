@@ -65,7 +65,9 @@
     "collapse": "折りたたむ",
     "newGroup": "新しいグループ",
     "internal": "内部",
-    "all": "すべて"
+    "all": "すべて",
+    "nameAlreadyInUse": "この名前は既に使用されています",
+    "createFailed": "ワークスペースの作成に失敗しました"
   },
   "workspace": {
     "myTasks": "マイタスク",
@@ -550,7 +552,30 @@
     "inviteRole": "Role",
     "roleMemberDesc": "Full access to workspace",
     "roleGuestDesc": "Limited view access",
-    "noWorkspace": "No workspace selected"
+    "noWorkspace": "No workspace selected",
+    "workspaceNameLabel": "ワークスペース名",
+    "nameAlreadyInUse": "このワークスペース名は既に使用されています",
+    "about": "概要",
+    "description": "説明",
+    "descriptionPlaceholder": "ワークスペースの説明...",
+    "website": "ウェブサイト",
+    "location": "所在地",
+    "locationPlaceholder": "例：東京、日本",
+    "industry": "業種",
+    "industryPlaceholder": "例：テクノロジー",
+    "saved": "設定を保存しました",
+    "saveFailed": "設定の保存に失敗しました",
+    "logoUpdated": "ロゴを更新しました",
+    "logoUploadFailed": "ロゴのアップロードに失敗しました",
+    "dangerZone": "危険ゾーン",
+    "deleteWorkspace": "ワークスペースを削除",
+    "deleteWorkspaceDescription": "このワークスペースとすべてのデータを完全に削除します。この操作は元に戻せません。",
+    "deleteConfirmTitle": "ワークスペースを削除",
+    "deleteConfirmDescription": "「{name}」と関連するすべてのタスク、スレッド、データが完全に削除されます。この操作は元に戻せません。",
+    "deleteConfirmInput": "確認のため「{name}」と入力してください",
+    "deleteConfirmButton": "このワークスペースを削除",
+    "workspaceDeleted": "ワークスペースを削除しました",
+    "deleteFailed": "ワークスペースの削除に失敗しました"
   },
   "calendar": {
     "title": "Calendar",

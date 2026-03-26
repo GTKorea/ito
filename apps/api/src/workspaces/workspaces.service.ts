@@ -108,7 +108,7 @@ export class WorkspacesService {
 
   async update(
     workspaceId: string,
-    data: { name?: string; description?: string; avatarUrl?: string },
+    data: { name?: string; description?: string; avatarUrl?: string; website?: string; location?: string; industry?: string },
     userId: string,
   ) {
     const ws = await this.prisma.workspace.findUnique({
@@ -124,12 +124,25 @@ export class WorkspacesService {
       throw new ForbiddenException('Only workspace owners and admins can update settings');
     }
 
+    // Check name uniqueness if name is being changed
+    if (data.name && data.name !== ws.name) {
+      const existingByName = await this.prisma.workspace.findFirst({
+        where: { name: data.name, id: { not: workspaceId } },
+      });
+      if (existingByName) {
+        throw new ConflictException('Workspace name already in use');
+      }
+    }
+
     const updated = await this.prisma.workspace.update({
       where: { id: workspaceId },
       data: {
         ...(data.name !== undefined && { name: data.name }),
         ...(data.description !== undefined && { description: data.description }),
         ...(data.avatarUrl !== undefined && { avatarUrl: data.avatarUrl }),
+        ...(data.website !== undefined && { website: data.website }),
+        ...(data.location !== undefined && { location: data.location }),
+        ...(data.industry !== undefined && { industry: data.industry }),
       },
     });
 
@@ -143,6 +156,61 @@ export class WorkspacesService {
     });
 
     return updated;
+  }
+
+  async deleteWorkspace(workspaceId: string, confirmName: string, userId: string) {
+    const ws = await this.prisma.workspace.findUnique({
+      where: { id: workspaceId },
+    });
+    if (!ws) throw new NotFoundException('Workspace not found');
+
+    // Only OWNER can delete
+    const member = await this.prisma.workspaceMember.findUnique({
+      where: { userId_workspaceId: { userId, workspaceId } },
+    });
+    if (!member || member.role !== 'OWNER') {
+      throw new ForbiddenException('Only the workspace owner can delete the workspace');
+    }
+
+    // Confirm name matches
+    if (confirmName !== ws.name) {
+      throw new BadRequestException('Workspace name does not match');
+    }
+
+    // Cascade delete in transaction
+    await this.prisma.$transaction([
+      // Delete thread links for tasks in this workspace
+      this.prisma.threadLink.deleteMany({ where: { task: { workspaceId } } }),
+      // Delete chat messages
+      this.prisma.chatMessage.deleteMany({ where: { task: { workspaceId } } }),
+      // Delete files attached to tasks
+      this.prisma.file.deleteMany({ where: { task: { workspaceId } } }),
+      // Delete tasks
+      this.prisma.task.deleteMany({ where: { workspaceId } }),
+      // Delete task group members and groups
+      this.prisma.taskGroupMember.deleteMany({ where: { taskGroup: { workspaceId } } }),
+      this.prisma.taskGroup.deleteMany({ where: { workspaceId } }),
+      // Delete invites
+      this.prisma.workspaceInvite.deleteMany({ where: { workspaceId } }),
+      // Delete activities
+      this.prisma.activity.deleteMany({ where: { workspaceId } }),
+      // Delete user preferences
+      this.prisma.userPreference.deleteMany({ where: { workspaceId } }),
+      // Delete slack workspaces
+      this.prisma.slackUser.deleteMany({ where: { slackWorkspace: { workspaceId } } }),
+      this.prisma.slackWorkspace.deleteMany({ where: { workspaceId } }),
+      // Delete shared space participants
+      this.prisma.sharedSpaceParticipant.deleteMany({ where: { workspaceId } }),
+      // Delete team members and teams
+      this.prisma.teamMember.deleteMany({ where: { team: { workspaceId } } }),
+      this.prisma.team.deleteMany({ where: { workspaceId } }),
+      // Delete workspace members
+      this.prisma.workspaceMember.deleteMany({ where: { workspaceId } }),
+      // Delete workspace itself
+      this.prisma.workspace.delete({ where: { id: workspaceId } }),
+    ]);
+
+    return { message: 'Workspace deleted' };
   }
 
   async invite(workspaceId: string, email: string, inviterUserId: string, role: WorkspaceRole = WorkspaceRole.MEMBER) {

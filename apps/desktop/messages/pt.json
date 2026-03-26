@@ -65,7 +65,9 @@
     "collapse": "Recolher",
     "newGroup": "Novo grupo",
     "internal": "Interno",
-    "all": "Todos"
+    "all": "Todos",
+    "nameAlreadyInUse": "Nome já está em uso",
+    "createFailed": "Falha ao criar espaço de trabalho"
   },
   "workspace": {
     "myTasks": "Minhas Tarefas",
@@ -550,7 +552,30 @@
     "inviteRole": "Role",
     "roleMemberDesc": "Full access to workspace",
     "roleGuestDesc": "Limited view access",
-    "noWorkspace": "No workspace selected"
+    "noWorkspace": "No workspace selected",
+    "workspaceNameLabel": "Nome do espaço de trabalho",
+    "nameAlreadyInUse": "Este nome de espaço de trabalho já está em uso",
+    "about": "Sobre",
+    "description": "Descrição",
+    "descriptionPlaceholder": "Descreva seu espaço de trabalho...",
+    "website": "Website",
+    "location": "Localização",
+    "locationPlaceholder": "ex. São Paulo, Brasil",
+    "industry": "Indústria",
+    "industryPlaceholder": "ex. Tecnologia",
+    "saved": "Configurações salvas",
+    "saveFailed": "Falha ao salvar configurações",
+    "logoUpdated": "Logo atualizado",
+    "logoUploadFailed": "Falha ao enviar logo",
+    "dangerZone": "Zona de perigo",
+    "deleteWorkspace": "Excluir espaço de trabalho",
+    "deleteWorkspaceDescription": "Exclui permanentemente este espaço de trabalho e todos os seus dados. Esta ação não pode ser desfeita.",
+    "deleteConfirmTitle": "Excluir espaço de trabalho",
+    "deleteConfirmDescription": "Isso excluirá permanentemente \"{name}\" e todas as tarefas, threads e dados associados. Esta ação não pode ser desfeita.",
+    "deleteConfirmInput": "Digite \"{name}\" para confirmar",
+    "deleteConfirmButton": "Excluir este espaço de trabalho",
+    "workspaceDeleted": "Espaço de trabalho excluído",
+    "deleteFailed": "Falha ao excluir espaço de trabalho"
   },
   "calendar": {
     "title": "Calendar",

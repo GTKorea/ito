@@ -4,9 +4,10 @@ import { WorkspacesService } from './workspaces.service';
 import { ActivityModule } from '../activity/activity.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { EmailModule } from '../email/email.module';
+import { FilesModule } from '../files/files.module';
 
 @Module({
-  imports: [ActivityModule, NotificationsModule, EmailModule],
+  imports: [ActivityModule, NotificationsModule, EmailModule, FilesModule],
   controllers: [WorkspacesController],
   providers: [WorkspacesService],
   exports: [WorkspacesService],

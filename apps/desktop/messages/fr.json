@@ -65,7 +65,9 @@
     "collapse": "Réduire",
     "newGroup": "Nouveau groupe",
     "internal": "Interne",
-    "all": "Tout"
+    "all": "Tout",
+    "nameAlreadyInUse": "Ce nom est déjà utilisé",
+    "createFailed": "Impossible de créer l'espace de travail"
   },
   "workspace": {
     "myTasks": "Mes Tâches",
@@ -550,7 +552,30 @@
     "inviteRole": "Role",
     "roleMemberDesc": "Full access to workspace",
     "roleGuestDesc": "Limited view access",
-    "noWorkspace": "No workspace selected"
+    "noWorkspace": "No workspace selected",
+    "workspaceNameLabel": "Nom de l'espace de travail",
+    "nameAlreadyInUse": "Ce nom d'espace de travail est déjà utilisé",
+    "about": "À propos",
+    "description": "Description",
+    "descriptionPlaceholder": "Décrivez votre espace de travail...",
+    "website": "Site web",
+    "location": "Emplacement",
+    "locationPlaceholder": "ex. Paris, France",
+    "industry": "Secteur",
+    "industryPlaceholder": "ex. Technologie",
+    "saved": "Paramètres enregistrés",
+    "saveFailed": "Impossible d'enregistrer les paramètres",
+    "logoUpdated": "Logo mis à jour",
+    "logoUploadFailed": "Impossible de télécharger le logo",
+    "dangerZone": "Zone de danger",
+    "deleteWorkspace": "Supprimer l'espace de travail",
+    "deleteWorkspaceDescription": "Supprime définitivement cet espace de travail et toutes ses données. Cette action est irréversible.",
+    "deleteConfirmTitle": "Supprimer l'espace de travail",
+    "deleteConfirmDescription": "Cela supprimera définitivement « {name} » et toutes les tâches, fils et données associés. Cette action est irréversible.",
+    "deleteConfirmInput": "Tapez « {name} » pour confirmer",
+    "deleteConfirmButton": "Supprimer cet espace de travail",
+    "workspaceDeleted": "Espace de travail supprimé",
+    "deleteFailed": "Impossible de supprimer l'espace de travail"
   },
   "calendar": {
     "title": "Calendar",

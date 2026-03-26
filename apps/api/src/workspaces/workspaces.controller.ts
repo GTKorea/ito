@@ -15,16 +15,24 @@ import { WorkspacesService } from './workspaces.service';
 import {
   CreateWorkspaceDto,
   UpdateWorkspaceDto,
+  DeleteWorkspaceDto,
   InviteMemberDto,
   UpdateMemberRoleDto,
 } from './dto/create-workspace.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { UseInterceptors, UploadedFile } from '@nestjs/common';
+import { ApiConsumes } from '@nestjs/swagger';
+import { FilesService } from '../files/files.service';
 
 @ApiTags('workspaces')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('workspaces')
 export class WorkspacesController {
-  constructor(private workspacesService: WorkspacesService) {}
+  constructor(
+    private workspacesService: WorkspacesService,
+    private filesService: FilesService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a workspace' })
@@ -128,5 +136,27 @@ export class WorkspacesController {
     @Param('userId') userId: string,
   ) {
     return this.workspacesService.getMemberSummary(workspaceId, userId);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete workspace (OWNER only, requires name confirmation)' })
+  deleteWorkspace(
+    @Param('id') id: string,
+    @Body() dto: DeleteWorkspaceDto,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.workspacesService.deleteWorkspace(id, dto.confirmName, userId);
+  }
+
+  @Post(':id/logo')
+  @ApiOperation({ summary: 'Upload workspace logo' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('logo', { storage: undefined }))
+  uploadLogo(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.filesService.uploadWorkspaceLogo(file, id, userId);
   }
 }

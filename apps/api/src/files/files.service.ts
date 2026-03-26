@@ -10,6 +10,7 @@ import { join, extname } from 'path';
 
 const UPLOADS_DIR = join(process.cwd(), 'uploads');
 const AVATARS_DIR = join(UPLOADS_DIR, 'avatars');
+const LOGOS_DIR = join(UPLOADS_DIR, 'logos');
 
 @Injectable()
 export class FilesService {
@@ -55,6 +56,33 @@ export class FilesService {
 
     await this.prisma.user.update({
       where: { id: userId },
+      data: { avatarUrl },
+    });
+
+    return { avatarUrl };
+  }
+
+  async uploadWorkspaceLogo(file: Express.Multer.File, workspaceId: string, userId: string) {
+    // Verify OWNER/ADMIN permission
+    const member = await this.prisma.workspaceMember.findUnique({
+      where: { userId_workspaceId: { userId, workspaceId } },
+    });
+    if (!member || !['OWNER', 'ADMIN'].includes(member.role)) {
+      throw new ForbiddenException('Only workspace owners and admins can upload a logo');
+    }
+
+    await mkdir(LOGOS_DIR, { recursive: true });
+
+    const ext = extname(file.originalname);
+    const filename = `${workspaceId}${ext}`;
+    const filepath = join(LOGOS_DIR, filename);
+
+    await writeFile(filepath, file.buffer);
+
+    const avatarUrl = `/uploads/logos/${filename}`;
+
+    await this.prisma.workspace.update({
+      where: { id: workspaceId },
       data: { avatarUrl },
     });
 

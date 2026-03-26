@@ -37,6 +37,27 @@ export class UpdateWorkspaceDto {
   @IsOptional()
   @IsString()
   avatarUrl?: string;
+
+  @ApiPropertyOptional({ example: 'https://example.com' })
+  @IsOptional()
+  @IsString()
+  website?: string;
+
+  @ApiPropertyOptional({ example: 'Seoul, South Korea' })
+  @IsOptional()
+  @IsString()
+  location?: string;
+
+  @ApiPropertyOptional({ example: 'Technology' })
+  @IsOptional()
+  @IsString()
+  industry?: string;
+}
+
+export class DeleteWorkspaceDto {
+  @ApiProperty({ description: 'Workspace name for confirmation' })
+  @IsString()
+  confirmName: string;
 }
 
 export class InviteMemberDto {

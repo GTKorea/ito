@@ -65,7 +65,9 @@
     "collapse": "Collapse",
     "newGroup": "New Group",
     "internal": "Internal",
-    "all": "All"
+    "all": "All",
+    "nameAlreadyInUse": "Name already in use",
+    "createFailed": "Failed to create workspace"
   },
   "workspace": {
     "myTasks": "My Tasks",
@@ -550,7 +552,30 @@
     "inviteRole": "Role",
     "roleMemberDesc": "Full access to workspace",
     "roleGuestDesc": "Limited view access",
-    "noWorkspace": "No workspace selected"
+    "noWorkspace": "No workspace selected",
+    "workspaceNameLabel": "Workspace name",
+    "nameAlreadyInUse": "This workspace name is already in use",
+    "about": "About",
+    "description": "Description",
+    "descriptionPlaceholder": "Describe your workspace...",
+    "website": "Website",
+    "location": "Location",
+    "locationPlaceholder": "e.g. Seoul, South Korea",
+    "industry": "Industry",
+    "industryPlaceholder": "e.g. Technology",
+    "saved": "Settings saved",
+    "saveFailed": "Failed to save settings",
+    "logoUpdated": "Logo updated",
+    "logoUploadFailed": "Failed to upload logo",
+    "dangerZone": "Danger Zone",
+    "deleteWorkspace": "Delete Workspace",
+    "deleteWorkspaceDescription": "Permanently delete this workspace and all its data. This action cannot be undone.",
+    "deleteConfirmTitle": "Delete Workspace",
+    "deleteConfirmDescription": "This will permanently delete \"{name}\" and all associated tasks, threads, and data. This action cannot be undone.",
+    "deleteConfirmInput": "Type \"{name}\" to confirm",
+    "deleteConfirmButton": "Delete this workspace",
+    "workspaceDeleted": "Workspace deleted",
+    "deleteFailed": "Failed to delete workspace"
   },
   "calendar": {
     "title": "Calendar",

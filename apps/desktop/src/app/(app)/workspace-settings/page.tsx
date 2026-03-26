@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 import { useAuthStore } from '@/stores/auth-store';
 import { api } from '@/lib/api-client';
@@ -33,6 +35,9 @@ import {
   Trash2,
   Loader2,
   LogOut,
+  Camera,
+  Building2,
+  AlertTriangle,
 } from 'lucide-react';
 
 interface WorkspaceMember {
@@ -56,14 +61,24 @@ const ROLE_BADGE_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | '
 const ROLES = ['ADMIN', 'MEMBER', 'GUEST'] as const;
 
 export default function WorkspaceSettingsPage() {
-  const { currentWorkspace } = useWorkspaceStore();
+  const router = useRouter();
+  const { currentWorkspace, updateWorkspace, uploadLogo, deleteWorkspace } = useWorkspaceStore();
   const { user } = useAuthStore();
   const t = useTranslations('workspaceSettings');
   const tc = useTranslations('common');
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   const [members, setMembers] = useState<WorkspaceMember[]>([]);
   const [membersLoading, setMembersLoading] = useState(true);
   const [myRole, setMyRole] = useState('MEMBER');
+
+  // Workspace info state
+  const [wsName, setWsName] = useState('');
+  const [wsDescription, setWsDescription] = useState('');
+  const [wsWebsite, setWsWebsite] = useState('');
+  const [wsLocation, setWsLocation] = useState('');
+  const [wsIndustry, setWsIndustry] = useState('');
+  const [infoSaving, setInfoSaving] = useState(false);
 
   // Invite state
   const [showInvite, setShowInvite] = useState(false);
@@ -73,6 +88,22 @@ export default function WorkspaceSettingsPage() {
   const [inviteLink, setInviteLink] = useState('');
   const [copied, setCopied] = useState(false);
 
+  // Delete state
+  const [showDelete, setShowDelete] = useState(false);
+  const [deleteConfirmName, setDeleteConfirmName] = useState('');
+  const [deleting, setDeleting] = useState(false);
+
+  // Initialize workspace info when workspace changes
+  useEffect(() => {
+    if (currentWorkspace) {
+      setWsName(currentWorkspace.name || '');
+      setWsDescription(currentWorkspace.description || '');
+      setWsWebsite(currentWorkspace.website || '');
+      setWsLocation(currentWorkspace.location || '');
+      setWsIndustry(currentWorkspace.industry || '');
+    }
+  }, [currentWorkspace]);
+
   const fetchMembers = async () => {
     if (!currentWorkspace) return;
     setMembersLoading(true);
@@ -81,6 +112,11 @@ export default function WorkspaceSettingsPage() {
       setMembers(data.members || []);
       const me = data.members?.find((m: WorkspaceMember) => m.user.id === user?.id);
       setMyRole(me?.role || 'MEMBER');
+      // Also populate workspace details from full response
+      if (data.description !== undefined) setWsDescription(data.description || '');
+      if (data.website !== undefined) setWsWebsite(data.website || '');
+      if (data.location !== undefined) setWsLocation(data.location || '');
+      if (data.industry !== undefined) setWsIndustry(data.industry || '');
     } catch (error) {
       console.error('Failed to load workspace settings:', error);
     } finally {
@@ -93,6 +129,42 @@ export default function WorkspaceSettingsPage() {
   }, [currentWorkspace]);
 
   const canManageMembers = myRole === 'OWNER' || myRole === 'ADMIN';
+  const isOwner = myRole === 'OWNER';
+
+  const handleSaveInfo = async () => {
+    if (!currentWorkspace) return;
+    setInfoSaving(true);
+    try {
+      await updateWorkspace(currentWorkspace.id, {
+        name: wsName.trim(),
+        description: wsDescription.trim() || undefined,
+        website: wsWebsite.trim() || undefined,
+        location: wsLocation.trim() || undefined,
+        industry: wsIndustry.trim() || undefined,
+      });
+      toast.success(t('saved'));
+    } catch (error: unknown) {
+      const err = error as { response?: { status?: number } };
+      if (err.response?.status === 409) {
+        toast.error(t('nameAlreadyInUse'));
+      } else {
+        toast.error(t('saveFailed'));
+      }
+    } finally {
+      setInfoSaving(false);
+    }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !currentWorkspace) return;
+    try {
+      await uploadLogo(currentWorkspace.id, file);
+      toast.success(t('logoUpdated'));
+    } catch {
+      toast.error(t('logoUploadFailed'));
+    }
+  };
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     if (!currentWorkspace) return;
@@ -147,6 +219,24 @@ export default function WorkspaceSettingsPage() {
     setCopied(false);
   };
 
+  const handleDeleteWorkspace = async () => {
+    if (!currentWorkspace) return;
+    setDeleting(true);
+    try {
+      await deleteWorkspace(currentWorkspace.id, deleteConfirmName);
+      toast.success(t('workspaceDeleted'));
+      setShowDelete(false);
+      router.push('/workspace');
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || t('deleteFailed'));
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3011';
+
   if (!currentWorkspace) {
     return (
       <div className="flex h-full items-center justify-center text-muted-foreground">
@@ -156,7 +246,7 @@ export default function WorkspaceSettingsPage() {
   }
 
   return (
-    <div className="h-full">
+    <div className="h-full overflow-y-auto">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-4 md:px-6 py-3">
         <div>
@@ -172,19 +262,130 @@ export default function WorkspaceSettingsPage() {
       </div>
 
       <div className="max-w-2xl p-6 space-y-6">
-        {/* Workspace Info */}
-        <section className="space-y-3">
+        {/* Workspace Info + Logo */}
+        <section className="space-y-4">
           <h2 className="text-sm font-semibold flex items-center gap-2">
             {t('workspaceInfo')}
           </h2>
-          <div className="flex items-center gap-4 rounded-lg border border-border p-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-lg font-bold text-primary-foreground">
-              {currentWorkspace.name.charAt(0).toUpperCase()}
+
+          <div className="flex items-start gap-4">
+            {/* Logo */}
+            <div
+              className="relative group cursor-pointer shrink-0"
+              onClick={() => canManageMembers && logoInputRef.current?.click()}
+            >
+              <div className="h-16 w-16 rounded-lg overflow-hidden bg-primary flex items-center justify-center">
+                {currentWorkspace.avatarUrl ? (
+                  <Avatar className="h-16 w-16 rounded-lg">
+                    <AvatarImage
+                      src={`${apiUrl}${currentWorkspace.avatarUrl}`}
+                      alt={currentWorkspace.name}
+                      className="object-cover"
+                    />
+                    <AvatarFallback className="text-xl font-bold bg-primary text-primary-foreground rounded-lg">
+                      {currentWorkspace.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                ) : (
+                  <span className="text-xl font-bold text-primary-foreground">
+                    {currentWorkspace.name.charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </div>
+              {canManageMembers && (
+                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Camera className="h-5 w-5 text-white" />
+                </div>
+              )}
+              <input
+                ref={logoInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleLogoUpload}
+              />
             </div>
-            <div>
-              <p className="font-semibold">{currentWorkspace.name}</p>
+
+            {/* Name + Slug */}
+            <div className="flex-1 space-y-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="wsName">{t('workspaceNameLabel')}</Label>
+                <Input
+                  id="wsName"
+                  value={wsName}
+                  onChange={(e) => setWsName(e.target.value)}
+                  disabled={!canManageMembers}
+                />
+              </div>
               <p className="text-xs text-muted-foreground">{currentWorkspace.slug}</p>
             </div>
+          </div>
+        </section>
+
+        <Separator />
+
+        {/* About */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Building2 className="h-4 w-4 text-muted-foreground" />
+            <h2 className="text-sm font-semibold">{t('about')}</h2>
+          </div>
+
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="wsDescription">{t('description')}</Label>
+              <textarea
+                id="wsDescription"
+                value={wsDescription}
+                onChange={(e) => setWsDescription(e.target.value)}
+                disabled={!canManageMembers}
+                placeholder={t('descriptionPlaceholder')}
+                rows={3}
+                maxLength={500}
+                className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none disabled:opacity-50"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="wsWebsite">{t('website')}</Label>
+                <Input
+                  id="wsWebsite"
+                  value={wsWebsite}
+                  onChange={(e) => setWsWebsite(e.target.value)}
+                  disabled={!canManageMembers}
+                  placeholder="https://example.com"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="wsLocation">{t('location')}</Label>
+                <Input
+                  id="wsLocation"
+                  value={wsLocation}
+                  onChange={(e) => setWsLocation(e.target.value)}
+                  disabled={!canManageMembers}
+                  placeholder={t('locationPlaceholder')}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="wsIndustry">{t('industry')}</Label>
+              <Input
+                id="wsIndustry"
+                value={wsIndustry}
+                onChange={(e) => setWsIndustry(e.target.value)}
+                disabled={!canManageMembers}
+                placeholder={t('industryPlaceholder')}
+              />
+            </div>
+
+            {canManageMembers && (
+              <Button onClick={handleSaveInfo} disabled={infoSaving || !wsName.trim()}>
+                {infoSaving ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : null}
+                {tc('save')}
+              </Button>
+            )}
           </div>
         </section>
 
@@ -210,10 +411,10 @@ export default function WorkspaceSettingsPage() {
             <div className="space-y-1">
               {members.map((member) => {
                 const isMe = member.user.id === user?.id;
-                const isOwner = member.role === 'OWNER';
-                const canChangeRole = canManageMembers && !isOwner && !isMe;
+                const isMemberOwner = member.role === 'OWNER';
+                const canChangeRole = canManageMembers && !isMemberOwner && !isMe;
                 const canRemove =
-                  (canManageMembers && !isOwner && !(myRole === 'ADMIN' && member.role === 'ADMIN')) ||
+                  (canManageMembers && !isMemberOwner && !(myRole === 'ADMIN' && member.role === 'ADMIN')) ||
                   isMe;
 
                 return (
@@ -224,7 +425,7 @@ export default function WorkspaceSettingsPage() {
                     <Avatar className="h-7 w-7">
                       {member.user.avatarUrl && (
                         <AvatarImage
-                          src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3011'}${member.user.avatarUrl}`}
+                          src={`${apiUrl}${member.user.avatarUrl}`}
                           alt={member.user.name}
                         />
                       )}
@@ -301,6 +502,36 @@ export default function WorkspaceSettingsPage() {
             </div>
           )}
         </section>
+
+        {/* Danger Zone - Owner only */}
+        {isOwner && (
+          <>
+            <Separator />
+            <section className="space-y-4">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-destructive" />
+                <h2 className="text-sm font-semibold text-destructive">{t('dangerZone')}</h2>
+              </div>
+
+              <div className="rounded-lg border border-destructive/30 p-4 space-y-3">
+                <div>
+                  <p className="text-sm font-medium">{t('deleteWorkspace')}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {t('deleteWorkspaceDescription')}
+                  </p>
+                </div>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setShowDelete(true)}
+                >
+                  <Trash2 className="mr-1 h-3.5 w-3.5" />
+                  {t('deleteWorkspace')}
+                </Button>
+              </div>
+            </section>
+          </>
+        )}
       </div>
 
       {/* Invite Dialog */}
@@ -389,6 +620,42 @@ export default function WorkspaceSettingsPage() {
                 </Button>
               </div>
             )}
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {showDelete && (
+        <Dialog open onOpenChange={() => { setShowDelete(false); setDeleteConfirmName(''); }}>
+          <DialogContent className="sm:max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="text-destructive">
+                {t('deleteConfirmTitle')}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                {t('deleteConfirmDescription', { name: currentWorkspace.name })}
+              </p>
+              <div className="space-y-1.5">
+                <Label>{t('deleteConfirmInput', { name: currentWorkspace.name })}</Label>
+                <Input
+                  value={deleteConfirmName}
+                  onChange={(e) => setDeleteConfirmName(e.target.value)}
+                  placeholder={currentWorkspace.name}
+                  autoFocus
+                />
+              </div>
+              <Button
+                variant="destructive"
+                className="w-full"
+                disabled={deleteConfirmName !== currentWorkspace.name || deleting}
+                onClick={handleDeleteWorkspace}
+              >
+                {deleting && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
+                {t('deleteConfirmButton')}
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       )}

@@ -65,7 +65,9 @@
     "collapse": "Einklappen",
     "newGroup": "Neue Gruppe",
     "internal": "Intern",
-    "all": "Alle"
+    "all": "Alle",
+    "nameAlreadyInUse": "Name wird bereits verwendet",
+    "createFailed": "Workspace konnte nicht erstellt werden"
   },
   "workspace": {
     "myTasks": "Meine Aufgaben",
@@ -550,7 +552,30 @@
     "inviteRole": "Role",
     "roleMemberDesc": "Full access to workspace",
     "roleGuestDesc": "Limited view access",
-    "noWorkspace": "No workspace selected"
+    "noWorkspace": "No workspace selected",
+    "workspaceNameLabel": "Workspace-Name",
+    "nameAlreadyInUse": "Dieser Workspace-Name wird bereits verwendet",
+    "about": "Über",
+    "description": "Beschreibung",
+    "descriptionPlaceholder": "Beschreiben Sie Ihren Workspace...",
+    "website": "Website",
+    "location": "Standort",
+    "locationPlaceholder": "z.B. Berlin, Deutschland",
+    "industry": "Branche",
+    "industryPlaceholder": "z.B. Technologie",
+    "saved": "Einstellungen gespeichert",
+    "saveFailed": "Einstellungen konnten nicht gespeichert werden",
+    "logoUpdated": "Logo aktualisiert",
+    "logoUploadFailed": "Logo konnte nicht hochgeladen werden",
+    "dangerZone": "Gefahrenzone",
+    "deleteWorkspace": "Workspace löschen",
+    "deleteWorkspaceDescription": "Löscht diesen Workspace und alle seine Daten dauerhaft. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleteConfirmTitle": "Workspace löschen",
+    "deleteConfirmDescription": "Dies löscht \"{name}\" und alle zugehörigen Aufgaben, Threads und Daten dauerhaft. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleteConfirmInput": "Geben Sie \"{name}\" zur Bestätigung ein",
+    "deleteConfirmButton": "Diesen Workspace löschen",
+    "workspaceDeleted": "Workspace gelöscht",
+    "deleteFailed": "Workspace konnte nicht gelöscht werden"
   },
   "calendar": {
     "title": "Calendar",

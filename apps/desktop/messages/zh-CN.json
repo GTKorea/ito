@@ -65,7 +65,9 @@
     "collapse": "收起",
     "newGroup": "新建分组",
     "internal": "内部",
-    "all": "全部"
+    "all": "全部",
+    "nameAlreadyInUse": "名称已被使用",
+    "createFailed": "创建工作区失败"
   },
   "workspace": {
     "myTasks": "我的任务",
@@ -550,7 +552,30 @@
     "inviteRole": "Role",
     "roleMemberDesc": "Full access to workspace",
     "roleGuestDesc": "Limited view access",
-    "noWorkspace": "No workspace selected"
+    "noWorkspace": "No workspace selected",
+    "workspaceNameLabel": "工作区名称",
+    "nameAlreadyInUse": "此工作区名称已被使用",
+    "about": "关于",
+    "description": "描述",
+    "descriptionPlaceholder": "描述您的工作区...",
+    "website": "网站",
+    "location": "位置",
+    "locationPlaceholder": "例：上海，中国",
+    "industry": "行业",
+    "industryPlaceholder": "例：科技",
+    "saved": "设置已保存",
+    "saveFailed": "保存设置失败",
+    "logoUpdated": "标志已更新",
+    "logoUploadFailed": "上传标志失败",
+    "dangerZone": "危险区域",
+    "deleteWorkspace": "删除工作区",
+    "deleteWorkspaceDescription": "永久删除此工作区及其所有数据。此操作无法撤消。",
+    "deleteConfirmTitle": "删除工作区",
+    "deleteConfirmDescription": "将永久删除\"{name}\"及所有相关任务、线程和数据。此操作无法撤消。",
+    "deleteConfirmInput": "输入\"{name}\"以确认",
+    "deleteConfirmButton": "删除此工作区",
+    "workspaceDeleted": "工作区已删除",
+    "deleteFailed": "删除工作区失败"
   },
   "calendar": {
     "title": "Calendar",

@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Check, ChevronsUpDown, Plus, Settings } from 'lucide-react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 
 export function WorkspaceSwitcher() {
@@ -27,16 +29,27 @@ export function WorkspaceSwitcher() {
       .replace(/[^a-z0-9-]/g, '')
       .replace(/^-+|-+$/g, '');
     const finalSlug = slug || `ws-${Date.now().toString(36)}`;
-    await createWorkspace(newName, finalSlug);
-    setNewName('');
-    setCreating(false);
-    setOpen(false);
+    try {
+      await createWorkspace(newName, finalSlug);
+      setNewName('');
+      setCreating(false);
+      setOpen(false);
+    } catch (error: unknown) {
+      const err = error as { response?: { status?: number } };
+      if (err.response?.status === 409) {
+        toast.error(t('nameAlreadyInUse'));
+      } else {
+        toast.error(t('createFailed'));
+      }
+    }
   };
 
   const handleSelect = (ws: (typeof workspaces)[0]) => {
     setCurrentWorkspace(ws);
     setOpen(false);
   };
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3011';
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -45,9 +58,21 @@ export function WorkspaceSwitcher() {
           <button className="flex h-12 w-full items-center gap-2 border-b border-border px-4 hover:bg-accent/50 transition-colors" />
         }
       >
-        <div className="flex h-6 w-6 items-center justify-center rounded bg-primary text-[10px] font-bold text-primary-foreground shrink-0">
-          糸
-        </div>
+        {currentWorkspace?.avatarUrl ? (
+          <Avatar className="h-6 w-6 shrink-0 rounded">
+            <AvatarImage
+              src={`${apiUrl}${currentWorkspace.avatarUrl}`}
+              alt={currentWorkspace.name}
+            />
+            <AvatarFallback className="text-[10px] font-bold bg-primary text-primary-foreground rounded">
+              {currentWorkspace.name.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        ) : (
+          <div className="flex h-6 w-6 items-center justify-center rounded bg-primary text-[10px] font-bold text-primary-foreground shrink-0">
+            {currentWorkspace?.name?.charAt(0).toUpperCase() || '糸'}
+          </div>
+        )}
         <span className="text-sm font-semibold truncate flex-1 text-left">
           {currentWorkspace?.name || 'ito'}
         </span>
@@ -66,9 +91,18 @@ export function WorkspaceSwitcher() {
                   : 'hover:bg-accent/50 text-foreground',
               )}
             >
-              <div className="flex h-5 w-5 items-center justify-center rounded bg-primary/20 text-[9px] font-bold text-primary shrink-0">
-                {ws.name.charAt(0).toUpperCase()}
-              </div>
+              {ws.avatarUrl ? (
+                <Avatar className="h-5 w-5 shrink-0 rounded">
+                  <AvatarImage src={`${apiUrl}${ws.avatarUrl}`} alt={ws.name} />
+                  <AvatarFallback className="text-[9px] font-bold bg-primary/20 text-primary rounded">
+                    {ws.name.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              ) : (
+                <div className="flex h-5 w-5 items-center justify-center rounded bg-primary/20 text-[9px] font-bold text-primary shrink-0">
+                  {ws.name.charAt(0).toUpperCase()}
+                </div>
+              )}
               <span className="truncate flex-1 text-left">{ws.name}</span>
               {ws.id === currentWorkspace?.id && (
                 <Check className="h-3.5 w-3.5 text-primary shrink-0" />
@@ -77,7 +111,7 @@ export function WorkspaceSwitcher() {
           ))}
         </div>
 
-        <Separator className="my-2" />
+        <Separator className="my-1" />
 
         {creating ? (
           <div className="px-1 pb-1 space-y-1.5">

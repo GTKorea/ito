@@ -65,7 +65,9 @@
     "collapse": "收合",
     "newGroup": "新增群組",
     "internal": "內部",
-    "all": "全部"
+    "all": "全部",
+    "nameAlreadyInUse": "名稱已被使用",
+    "createFailed": "建立工作區失敗"
   },
   "workspace": {
     "myTasks": "我的任務",
@@ -550,7 +552,30 @@
     "inviteRole": "Role",
     "roleMemberDesc": "Full access to workspace",
     "roleGuestDesc": "Limited view access",
-    "noWorkspace": "No workspace selected"
+    "noWorkspace": "No workspace selected",
+    "workspaceNameLabel": "工作區名稱",
+    "nameAlreadyInUse": "此工作區名稱已被使用",
+    "about": "關於",
+    "description": "描述",
+    "descriptionPlaceholder": "描述您的工作區...",
+    "website": "網站",
+    "location": "位置",
+    "locationPlaceholder": "例：台北，台灣",
+    "industry": "產業",
+    "industryPlaceholder": "例：科技",
+    "saved": "設定已儲存",
+    "saveFailed": "儲存設定失敗",
+    "logoUpdated": "標誌已更新",
+    "logoUploadFailed": "上傳標誌失敗",
+    "dangerZone": "危險區域",
+    "deleteWorkspace": "刪除工作區",
+    "deleteWorkspaceDescription": "永久刪除此工作區及其所有資料。此操作無法復原。",
+    "deleteConfirmTitle": "刪除工作區",
+    "deleteConfirmDescription": "將永久刪除「{name}」及所有相關任務、線程和資料。此操作無法復原。",
+    "deleteConfirmInput": "輸入「{name}」以確認",
+    "deleteConfirmButton": "刪除此工作區",
+    "workspaceDeleted": "工作區已刪除",
+    "deleteFailed": "刪除工作區失敗"
   },
   "calendar": {
     "title": "Calendar",
