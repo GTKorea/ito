@@ -309,16 +309,16 @@ export default function WorkspacePage() {
   );
 
   const filteredActionRequired = useMemo(
-    () => sortedActionRequired.filter(groupFilterFn),
-    [sortedActionRequired, groupFilterFn],
+    () => groupId ? sortedActionRequired : sortedActionRequired.filter(groupFilterFn),
+    [sortedActionRequired, groupFilterFn, groupId],
   );
   const filteredWaiting = useMemo(
-    () => sortedWaiting.filter(groupFilterFn),
-    [sortedWaiting, groupFilterFn],
+    () => groupId ? sortedWaiting : sortedWaiting.filter(groupFilterFn),
+    [sortedWaiting, groupFilterFn, groupId],
   );
   const filteredCompleted = useMemo(
-    () => sortedCompleted.filter(groupFilterFn),
-    [sortedCompleted, groupFilterFn],
+    () => groupId ? sortedCompleted : sortedCompleted.filter(groupFilterFn),
+    [sortedCompleted, groupFilterFn, groupId],
   );
 
   const toggleGroupFilter = (id: string) => {
