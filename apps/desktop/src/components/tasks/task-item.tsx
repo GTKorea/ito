@@ -211,7 +211,7 @@ export function TaskItem({
 
   useEffect(() => {
     if (isNewlyCreated) {
-      const timer = setTimeout(() => clearNewlyCreated(), 1800);
+      const timer = setTimeout(() => clearNewlyCreated(), 1000);
       return () => clearTimeout(timer);
     }
   }, [isNewlyCreated, clearNewlyCreated]);
