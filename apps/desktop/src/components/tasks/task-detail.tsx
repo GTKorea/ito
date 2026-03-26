@@ -187,7 +187,7 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
         setSaveStatus('idle');
         toast.error(t('saveFailed'));
       }
-    }, 800);
+    }, 300);
   }, [title, description]);
 
   // Immediate save for status/priority/dueDate
