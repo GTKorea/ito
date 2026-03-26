@@ -11,6 +11,7 @@ interface TaskGroup {
   sharedSpaceId?: string;
   createdById: string;
   isPrivate?: boolean;
+  isSystem?: boolean;
   createdBy: { id: string; name: string; avatarUrl?: string };
   _count: { members: number; tasks: number };
 }

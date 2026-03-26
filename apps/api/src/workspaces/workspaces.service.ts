@@ -47,6 +47,7 @@ export class WorkspacesService {
         workspaceId: workspace.id,
         createdById: userId,
         isPrivate: true,
+        isSystem: true,
         members: { create: { userId } },
       },
     });
@@ -202,6 +203,8 @@ export class WorkspacesService {
       this.prisma.chatMessage.deleteMany({ where: { task: { workspaceId } } }),
       // Delete files attached to tasks
       this.prisma.file.deleteMany({ where: { task: { workspaceId } } }),
+      // Delete co-creator records
+      this.prisma.taskCoCreator.deleteMany({ where: { task: { workspaceId } } }),
       // Delete tasks
       this.prisma.task.deleteMany({ where: { workspaceId } }),
       // Delete task group members and groups
@@ -297,16 +300,22 @@ export class WorkspacesService {
       this.prisma.workspaceInvite.delete({ where: { id: invite.id } }),
     ]);
 
-    // Auto-create private "My Tasks" group for the new member
-    await this.prisma.taskGroup.create({
-      data: {
-        name: 'My Tasks',
-        workspaceId: invite.workspaceId,
-        createdById: userId,
-        isPrivate: true,
-        members: { create: { userId } },
-      },
+    // Auto-create private "My Tasks" group for the new member (if not already exists)
+    const existingSystemGroup = await this.prisma.taskGroup.findFirst({
+      where: { workspaceId: invite.workspaceId, createdById: userId, isSystem: true },
     });
+    if (!existingSystemGroup) {
+      await this.prisma.taskGroup.create({
+        data: {
+          name: 'My Tasks',
+          workspaceId: invite.workspaceId,
+          createdById: userId,
+          isPrivate: true,
+          isSystem: true,
+          members: { create: { userId } },
+        },
+      });
+    }
 
     // Auto-join all public groups in the workspace
     const publicGroups = await this.prisma.taskGroup.findMany({
@@ -441,12 +450,17 @@ export class WorkspacesService {
       await this.prisma.task.deleteMany({ where: { id: { in: taskIds } } });
     }
 
-    // 2. Remove from all task groups in this workspace
+    // 2. Remove co-creator records in this workspace
+    await this.prisma.taskCoCreator.deleteMany({
+      where: { userId: targetUserId, task: { workspaceId } },
+    });
+
+    // 3. Remove from all task groups in this workspace
     await this.prisma.taskGroupMember.deleteMany({
       where: { userId: targetUserId, taskGroup: { workspaceId } },
     });
 
-    // 3. Delete private groups created by the user
+    // 4. Delete private groups created by the user
     const privateGroups = await this.prisma.taskGroup.findMany({
       where: { workspaceId, createdById: targetUserId, isPrivate: true },
       select: { id: true },
@@ -457,11 +471,11 @@ export class WorkspacesService {
       await this.prisma.taskGroup.deleteMany({ where: { id: { in: groupIds } } });
     }
 
-    // 4. Delete user preferences and activities
+    // 5. Delete user preferences and activities
     await this.prisma.userPreference.deleteMany({ where: { userId: targetUserId, workspaceId } });
     await this.prisma.activity.deleteMany({ where: { userId: targetUserId, workspaceId } });
 
-    // 5. Remove workspace membership
+    // 6. Remove workspace membership
     await this.prisma.workspaceMember.deleteMany({
       where: { userId: targetUserId, workspaceId },
     });
@@ -570,6 +584,36 @@ export class WorkspacesService {
     });
 
     return { message: 'Sample data created', seeded: true, tasks };
+  }
+
+  async getPendingInvites(workspaceId: string, userId: string) {
+    const member = await this.prisma.workspaceMember.findUnique({
+      where: { userId_workspaceId: { userId, workspaceId } },
+    });
+    if (!member || !['OWNER', 'ADMIN'].includes(member.role)) {
+      throw new ForbiddenException('Only owners and admins can view pending invites');
+    }
+    return this.prisma.workspaceInvite.findMany({
+      where: {
+        workspaceId,
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async cancelInvite(inviteId: string, workspaceId: string, userId: string) {
+    const member = await this.prisma.workspaceMember.findUnique({
+      where: { userId_workspaceId: { userId, workspaceId } },
+    });
+    if (!member || !['OWNER', 'ADMIN'].includes(member.role)) {
+      throw new ForbiddenException('Only owners and admins can cancel invites');
+    }
+    const invite = await this.prisma.workspaceInvite.findUnique({ where: { id: inviteId } });
+    if (!invite || invite.workspaceId !== workspaceId) {
+      throw new NotFoundException('Invite not found');
+    }
+    return this.prisma.workspaceInvite.delete({ where: { id: inviteId } });
   }
 
   async getMemberSummary(workspaceId: string, targetUserId: string) {

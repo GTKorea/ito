@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { CreateTaskGroupDto, UpdateTaskGroupDto } from './dto/create-task-group.dto';
 
@@ -13,7 +13,20 @@ function groupInclude() {
 export class TaskGroupsService {
   constructor(private prisma: PrismaService) {}
 
+  private async checkNameUniqueness(name: string, workspaceId?: string, sharedSpaceId?: string, excludeId?: string) {
+    const where: Record<string, unknown> = {
+      name,
+      isSystem: false,
+      ...(excludeId ? { id: { not: excludeId } } : {}),
+    };
+    if (workspaceId) where.workspaceId = workspaceId;
+    if (sharedSpaceId) where.sharedSpaceId = sharedSpaceId;
+    const existing = await this.prisma.taskGroup.findFirst({ where });
+    if (existing) throw new ConflictException('A group with this name already exists');
+  }
+
   async create(dto: CreateTaskGroupDto, workspaceId: string, userId: string) {
+    await this.checkNameUniqueness(dto.name, workspaceId);
     const group = await this.prisma.taskGroup.create({
       data: {
         name: dto.name,
@@ -46,6 +59,7 @@ export class TaskGroupsService {
   }
 
   async createForSharedSpace(dto: CreateTaskGroupDto, sharedSpaceId: string, userId: string) {
+    await this.checkNameUniqueness(dto.name, undefined, sharedSpaceId);
     const group = await this.prisma.taskGroup.create({
       data: {
         name: dto.name,
@@ -64,6 +78,7 @@ export class TaskGroupsService {
   async archive(id: string, userId: string) {
     const group = await this.prisma.taskGroup.findUnique({ where: { id } });
     if (!group) throw new NotFoundException('Task group not found');
+    if (group.isSystem) throw new ForbiddenException('System groups cannot be archived');
     if (group.createdById !== userId) throw new ForbiddenException('Only the creator can archive this group');
     return this.prisma.taskGroup.update({
       where: { id },
@@ -102,6 +117,7 @@ export class TaskGroupsService {
           sharedSpaceId: true,
           createdById: true,
           isPrivate: true,
+          isSystem: true,
           isArchived: true,
           createdAt: true,
           updatedAt: true,
@@ -169,6 +185,12 @@ export class TaskGroupsService {
     if (group.createdById !== userId) {
       throw new ForbiddenException('Only the creator can update this group');
     }
+    if (group.isSystem) {
+      throw new ForbiddenException('System groups cannot be modified');
+    }
+    if (dto.name && dto.name !== group.name) {
+      await this.checkNameUniqueness(dto.name, group.workspaceId || undefined, group.sharedSpaceId || undefined, id);
+    }
     return this.prisma.taskGroup.update({
       where: { id },
       data: dto,
@@ -179,6 +201,7 @@ export class TaskGroupsService {
   async delete(id: string, userId: string) {
     const group = await this.prisma.taskGroup.findUnique({ where: { id } });
     if (!group) throw new NotFoundException('Task group not found');
+    if (group.isSystem) throw new ForbiddenException('System groups cannot be deleted');
     if (group.createdById !== userId) {
       throw new ForbiddenException('Only the creator can delete this group');
     }
@@ -198,6 +221,7 @@ export class TaskGroupsService {
   async addMember(groupId: string, userId: string) {
     const group = await this.prisma.taskGroup.findUnique({ where: { id: groupId } });
     if (!group) throw new NotFoundException('Task group not found');
+    if (group.isSystem) throw new ForbiddenException('Cannot add members to system groups');
     return this.prisma.taskGroupMember.create({
       data: { taskGroupId: groupId, userId },
       include: { user: { select: { id: true, name: true, email: true, avatarUrl: true } } },
@@ -215,6 +239,7 @@ export class TaskGroupsService {
   async inviteTeam(groupId: string, teamId: string) {
     const group = await this.prisma.taskGroup.findUnique({ where: { id: groupId } });
     if (!group) throw new NotFoundException('Task group not found');
+    if (group.isSystem) throw new ForbiddenException('Cannot invite teams to system groups');
 
     const teamMembers = await this.prisma.teamMember.findMany({
       where: { teamId },

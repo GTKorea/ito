@@ -423,42 +423,44 @@ export default function WorkspacePage() {
                   </div>
                 </PopoverContent>
               </Popover>
-              <DropdownMenu>
-                <DropdownMenuTrigger render={<Button variant="ghost" size="sm" className="h-8 w-8 p-0" />}>
-                  <Settings className="h-3.5 w-3.5 text-muted-foreground" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    onClick={async () => {
-                      await updateGroup(currentGroup.id, { isPrivate: !currentGroup.isPrivate });
-                      window.location.reload();
-                    }}
-                  >
-                    {currentGroup.isPrivate ? (
-                      <><Globe className="mr-2 h-4 w-4" />{tg('makePublic')}</>
-                    ) : (
-                      <><Lock className="mr-2 h-4 w-4" />{tg('makePrivate')}</>
-                    )}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={async () => {
-                      await archiveGroup(currentGroup.id);
-                      window.location.href = `/workspace`;
-                    }}
-                  >
-                    <Archive className="mr-2 h-4 w-4" />
-                    {tg('archiveGroup')}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="text-red-500 focus:text-red-500"
-                    onClick={() => setShowDeleteConfirm(true)}
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    {tg('deleteGroup')}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {!currentGroup.isSystem && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger render={<Button variant="ghost" size="sm" className="h-8 w-8 p-0" />}>
+                    <Settings className="h-3.5 w-3.5 text-muted-foreground" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={async () => {
+                        await updateGroup(currentGroup.id, { isPrivate: !currentGroup.isPrivate });
+                        window.location.reload();
+                      }}
+                    >
+                      {currentGroup.isPrivate ? (
+                        <><Globe className="mr-2 h-4 w-4" />{tg('makePublic')}</>
+                      ) : (
+                        <><Lock className="mr-2 h-4 w-4" />{tg('makePrivate')}</>
+                      )}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={async () => {
+                        await archiveGroup(currentGroup.id);
+                        window.location.href = `/workspace`;
+                      }}
+                    >
+                      <Archive className="mr-2 h-4 w-4" />
+                      {tg('archiveGroup')}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="text-red-500 focus:text-red-500"
+                      onClick={() => setShowDeleteConfirm(true)}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      {tg('deleteGroup')}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </>
           )}
           {!currentGroup && groups.length > 0 && (
