@@ -183,7 +183,7 @@
     "noCoCreators": "공동 작업자 없음",
     "searchMember": "멤버 검색...",
     "noMembersFound": "멤버를 찾을 수 없습니다",
-    "transferTask": "소유권 양도",
+    "transferTask": "태스크 양도",
     "transferred": "태스크가 양도되었습니다",
     "completionWatchers": "완료 알림 수신자",
     "noWatchers": "수신자 없음"
