@@ -58,7 +58,8 @@ const ROLE_BADGE_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | '
   GUEST: 'outline',
 };
 
-const ROLES = ['ADMIN', 'MEMBER', 'GUEST'] as const;
+const ALL_ROLES = ['OWNER', 'ADMIN', 'MEMBER', 'GUEST'] as const;
+const NON_OWNER_ROLES = ['ADMIN', 'MEMBER', 'GUEST'] as const;
 
 export default function WorkspaceSettingsPage() {
   const router = useRouter();
@@ -77,7 +78,6 @@ export default function WorkspaceSettingsPage() {
   const [wsDescription, setWsDescription] = useState('');
   const [wsWebsite, setWsWebsite] = useState('');
   const [wsLocation, setWsLocation] = useState('');
-  const [wsIndustry, setWsIndustry] = useState('');
   const [infoSaving, setInfoSaving] = useState(false);
 
   // Invite state
@@ -100,7 +100,6 @@ export default function WorkspaceSettingsPage() {
       setWsDescription(currentWorkspace.description || '');
       setWsWebsite(currentWorkspace.website || '');
       setWsLocation(currentWorkspace.location || '');
-      setWsIndustry(currentWorkspace.industry || '');
     }
   }, [currentWorkspace]);
 
@@ -116,7 +115,6 @@ export default function WorkspaceSettingsPage() {
       if (data.description !== undefined) setWsDescription(data.description || '');
       if (data.website !== undefined) setWsWebsite(data.website || '');
       if (data.location !== undefined) setWsLocation(data.location || '');
-      if (data.industry !== undefined) setWsIndustry(data.industry || '');
     } catch (error) {
       console.error('Failed to load workspace settings:', error);
     } finally {
@@ -140,7 +138,6 @@ export default function WorkspaceSettingsPage() {
         description: wsDescription.trim() || undefined,
         website: wsWebsite.trim() || undefined,
         location: wsLocation.trim() || undefined,
-        industry: wsIndustry.trim() || undefined,
       });
       toast.success(t('saved'));
     } catch (error: unknown) {
@@ -308,7 +305,7 @@ export default function WorkspaceSettingsPage() {
 
             {/* Name + Slug */}
             <div className="flex-1 space-y-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="wsName">{t('workspaceNameLabel')}</Label>
                 <Input
                   id="wsName"
@@ -332,7 +329,7 @@ export default function WorkspaceSettingsPage() {
           </div>
 
           <div className="space-y-3">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="wsDescription">{t('description')}</Label>
               <textarea
                 id="wsDescription"
@@ -347,7 +344,7 @@ export default function WorkspaceSettingsPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="wsWebsite">{t('website')}</Label>
                 <Input
                   id="wsWebsite"
@@ -357,7 +354,7 @@ export default function WorkspaceSettingsPage() {
                   placeholder="https://example.com"
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="wsLocation">{t('location')}</Label>
                 <Input
                   id="wsLocation"
@@ -367,17 +364,6 @@ export default function WorkspaceSettingsPage() {
                   placeholder={t('locationPlaceholder')}
                 />
               </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="wsIndustry">{t('industry')}</Label>
-              <Input
-                id="wsIndustry"
-                value={wsIndustry}
-                onChange={(e) => setWsIndustry(e.target.value)}
-                disabled={!canManageMembers}
-                placeholder={t('industryPlaceholder')}
-              />
             </div>
 
             {canManageMembers && (
@@ -466,7 +452,7 @@ export default function WorkspaceSettingsPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           {canChangeRole &&
-                            ROLES.filter((r) => r !== member.role).map((role) => (
+                            (isOwner ? ALL_ROLES : NON_OWNER_ROLES).filter((r) => r !== member.role).map((role) => (
                               <DropdownMenuItem
                                 key={role}
                                 onClick={() => handleRoleChange(member.user.id, role)}
@@ -553,7 +539,7 @@ export default function WorkspaceSettingsPage() {
                   onKeyDown={(e) => e.key === 'Enter' && handleInvite()}
                   autoFocus
                 />
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label>{t('inviteRole')}</Label>
                   <div className="flex gap-2">
                     <button
@@ -637,7 +623,7 @@ export default function WorkspaceSettingsPage() {
               <p className="text-sm text-muted-foreground">
                 {t('deleteConfirmDescription', { name: currentWorkspace.name })}
               </p>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label>{t('deleteConfirmInput', { name: currentWorkspace.name })}</Label>
                 <Input
                   value={deleteConfirmName}

@@ -11,7 +11,6 @@ export interface Workspace {
   description?: string;
   website?: string;
   location?: string;
-  industry?: string;
   _count?: { members: number };
 }
 
@@ -22,7 +21,7 @@ interface WorkspaceState {
   fetchWorkspaces: () => Promise<void>;
   setCurrentWorkspace: (ws: Workspace) => void;
   createWorkspace: (name: string, slug: string) => Promise<Workspace>;
-  updateWorkspace: (id: string, data: Partial<Pick<Workspace, 'name' | 'description' | 'website' | 'location' | 'industry'>>) => Promise<Workspace>;
+  updateWorkspace: (id: string, data: Partial<Pick<Workspace, 'name' | 'description' | 'website' | 'location'>>) => Promise<Workspace>;
   uploadLogo: (id: string, file: File) => Promise<void>;
   deleteWorkspace: (id: string, confirmName: string) => Promise<void>;
 }

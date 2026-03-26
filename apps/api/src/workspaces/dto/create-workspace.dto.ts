@@ -48,10 +48,6 @@ export class UpdateWorkspaceDto {
   @IsString()
   location?: string;
 
-  @ApiPropertyOptional({ example: 'Technology' })
-  @IsOptional()
-  @IsString()
-  industry?: string;
 }
 
 export class DeleteWorkspaceDto {

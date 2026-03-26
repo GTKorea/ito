@@ -108,7 +108,7 @@ export class WorkspacesService {
 
   async update(
     workspaceId: string,
-    data: { name?: string; description?: string; avatarUrl?: string; website?: string; location?: string; industry?: string },
+    data: { name?: string; description?: string; avatarUrl?: string; website?: string; location?: string },
     userId: string,
   ) {
     const ws = await this.prisma.workspace.findUnique({
@@ -134,15 +134,32 @@ export class WorkspacesService {
       }
     }
 
+    // Generate new slug if name changes
+    let newSlug: string | undefined;
+    if (data.name && data.name !== ws.name) {
+      newSlug = data.name
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, '')
+        .replace(/^-+|-+$/g, '') || `ws-${Date.now().toString(36)}`;
+      // Check slug uniqueness
+      const existingBySlug = await this.prisma.workspace.findFirst({
+        where: { slug: newSlug, id: { not: workspaceId } },
+      });
+      if (existingBySlug) {
+        newSlug = `${newSlug}-${Date.now().toString(36)}`;
+      }
+    }
+
     const updated = await this.prisma.workspace.update({
       where: { id: workspaceId },
       data: {
         ...(data.name !== undefined && { name: data.name }),
+        ...(newSlug && { slug: newSlug }),
         ...(data.description !== undefined && { description: data.description }),
         ...(data.avatarUrl !== undefined && { avatarUrl: data.avatarUrl }),
         ...(data.website !== undefined && { website: data.website }),
         ...(data.location !== undefined && { location: data.location }),
-        ...(data.industry !== undefined && { industry: data.industry }),
       },
     });
 
@@ -326,12 +343,14 @@ export class WorkspacesService {
     });
     if (!target) throw new NotFoundException('Member not found');
 
-    if (target.role === 'OWNER') {
-      throw new ForbiddenException('Cannot change the owner role');
+    // Only OWNER can promote someone to OWNER
+    if (newRole === 'OWNER' && requester.role !== 'OWNER') {
+      throw new ForbiddenException('Only owners can promote members to owner');
     }
 
-    if (requester.role === 'ADMIN' && target.role === 'ADMIN') {
-      throw new ForbiddenException('Admins cannot change other admin roles');
+    // ADMIN cannot change other ADMIN or OWNER roles
+    if (requester.role === 'ADMIN' && ['ADMIN', 'OWNER'].includes(target.role)) {
+      throw new ForbiddenException('Admins cannot change owner or other admin roles');
     }
 
     await this.prisma.workspaceMember.updateMany({
