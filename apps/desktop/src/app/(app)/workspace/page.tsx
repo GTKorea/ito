@@ -565,7 +565,7 @@ export default function WorkspacePage() {
         {/* Quick Input + Selection Bar — sticky bottom */}
         <div className="sticky bottom-0 z-10">
           {isSelecting && (
-            <div className="px-4 md:px-6 pb-2">
+            <div className="px-4 md:px-6 pb-1">
               <div className="flex items-center justify-between rounded-xl bg-primary/10 border border-primary/20 backdrop-blur-sm px-4 py-2">
                 <span className="text-sm font-medium">{tt('selectedCount', { count: selectedTaskIds.size })}</span>
                 <div className="flex items-center gap-2">
