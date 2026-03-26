@@ -537,6 +537,7 @@
     "removeMember": "Remove Member",
     "confirmRemove": "Are you sure you want to remove this member?",
     "leaveWorkspace": "Leave Workspace",
+    "leaveWorkspaceDescription": "Diesen Workspace verlassen. Ihre persönlichen Aufgaben und Aktivitäten werden dauerhaft gelöscht.",
     "roleChanged": "Role changed successfully",
     "memberRemoved": "Member removed",
     "you": "you",

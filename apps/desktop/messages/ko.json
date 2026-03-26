@@ -537,6 +537,7 @@
     "removeMember": "멤버 제거",
     "confirmRemove": "이 멤버를 제거하시겠습니까?",
     "leaveWorkspace": "워크스페이스 나가기",
+    "leaveWorkspaceDescription": "이 워크스페이스를 나갑니다. 개인 태스크와 활동 기록이 영구적으로 삭제됩니다.",
     "roleChanged": "역할이 변경되었습니다",
     "memberRemoved": "멤버가 제거되었습니다",
     "you": "나",

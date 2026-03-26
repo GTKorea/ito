@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 import { useAuthStore } from '@/stores/auth-store';
+import { useTaskGroupStore } from '@/stores/task-group-store';
 import { api } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -206,6 +207,11 @@ export default function WorkspaceSettingsPage() {
         useWorkspaceStore.getState().setCurrentWorkspace(next);
       }
       useWorkspaceStore.setState({ workspaces: remaining, currentWorkspace: next });
+      // Reset groups so sidebar updates immediately
+      useTaskGroupStore.setState({ groups: [], totalActiveTaskCount: 0 });
+      if (next) {
+        useTaskGroupStore.getState().fetchGroups(next.id);
+      }
       toast.success(t('leftWorkspace'));
       setShowLeave(false);
       router.push('/workspace');
@@ -282,12 +288,6 @@ export default function WorkspaceSettingsPage() {
           <h1 className="text-lg font-semibold">{t('title')}</h1>
           <p className="text-xs text-muted-foreground">{t('subtitle')}</p>
         </div>
-        {canManageMembers && (
-          <Button size="sm" onClick={() => setShowInvite(true)}>
-            <UserPlus className="mr-1 h-4 w-4" />
-            {t('invite')}
-          </Button>
-        )}
       </div>
 
       <div className="max-w-2xl p-6 space-y-6">
@@ -411,13 +411,21 @@ export default function WorkspaceSettingsPage() {
 
         {/* Members */}
         <section className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-muted-foreground" />
-            <h2 className="text-sm font-semibold">{t('members')}</h2>
-            {members.length > 0 && (
-              <Badge variant="secondary" className="text-[10px]">
-                {members.length}
-              </Badge>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-muted-foreground" />
+              <h2 className="text-sm font-semibold">{t('members')}</h2>
+              {members.length > 0 && (
+                <Badge variant="secondary" className="text-[10px]">
+                  {members.length}
+                </Badge>
+              )}
+            </div>
+            {canManageMembers && (
+              <Button size="sm" variant="outline" onClick={() => setShowInvite(true)}>
+                <UserPlus className="mr-1 h-4 w-4" />
+                {t('invite')}
+              </Button>
             )}
           </div>
 
@@ -521,35 +529,52 @@ export default function WorkspaceSettingsPage() {
           )}
         </section>
 
-        {/* Danger Zone - Owner only */}
-        {isOwner && (
-          <>
-            <Separator />
-            <section className="space-y-4">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-destructive" />
-                <h2 className="text-sm font-semibold text-destructive">{t('dangerZone')}</h2>
-              </div>
+        {/* Danger Zone */}
+        <Separator />
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-destructive" />
+            <h2 className="text-sm font-semibold text-destructive">{t('dangerZone')}</h2>
+          </div>
 
-              <div className="rounded-lg border border-destructive/30 p-4 space-y-3">
-                <div>
-                  <p className="text-sm font-medium">{t('deleteWorkspace')}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {t('deleteWorkspaceDescription')}
-                  </p>
-                </div>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => setShowDelete(true)}
-                >
-                  <Trash2 className="mr-1 h-3.5 w-3.5" />
-                  {t('deleteWorkspace')}
-                </Button>
+          {/* Leave Workspace */}
+          <div className="rounded-lg border border-destructive/30 p-4 space-y-3">
+            <div>
+              <p className="text-sm font-medium">{t('leaveWorkspace')}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {t('leaveWorkspaceDescription')}
+              </p>
+            </div>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setShowLeave(true)}
+            >
+              <LogOut className="mr-1 h-3.5 w-3.5" />
+              {t('leaveWorkspace')}
+            </Button>
+          </div>
+
+          {/* Delete Workspace - Owner only */}
+          {isOwner && (
+            <div className="rounded-lg border border-destructive/30 p-4 space-y-3">
+              <div>
+                <p className="text-sm font-medium">{t('deleteWorkspace')}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {t('deleteWorkspaceDescription')}
+                </p>
               </div>
-            </section>
-          </>
-        )}
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setShowDelete(true)}
+              >
+                <Trash2 className="mr-1 h-3.5 w-3.5" />
+                {t('deleteWorkspace')}
+              </Button>
+            </div>
+          )}
+        </section>
       </div>
 
       {/* Invite Dialog */}

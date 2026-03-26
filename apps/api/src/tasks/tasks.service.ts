@@ -185,26 +185,35 @@ export class TasksService {
       workspaceId,
     };
 
-    // When filtering by specific members within a group, show tasks those members are involved in
-    if (memberIds && memberIds.length > 0) {
-      where.OR = memberIds.flatMap((mid) => [
-        { creatorId: mid },
-        { assigneeId: mid },
-        { threadLinks: { some: { fromUserId: mid } } },
-        { threadLinks: { some: { toUserId: mid } } },
-      ]);
-    } else {
-      // Default: show tasks the current user is involved in
-      where.OR = [
-        { creatorId: userId },
-        { assigneeId: userId },
-        { threadLinks: { some: { fromUserId: userId } } },
-        { threadLinks: { some: { toUserId: userId } } },
-      ];
-    }
-
     if (taskGroupId) {
+      // Group view: show all tasks in the group
       where.taskGroupId = taskGroupId;
+      // If member filter is active, narrow down to those members' tasks
+      if (memberIds && memberIds.length > 0) {
+        where.OR = memberIds.flatMap((mid) => [
+          { creatorId: mid },
+          { assigneeId: mid },
+          { threadLinks: { some: { fromUserId: mid } } },
+          { threadLinks: { some: { toUserId: mid } } },
+        ]);
+      }
+    } else {
+      // My Tasks view: only show tasks the current user is involved in
+      if (memberIds && memberIds.length > 0) {
+        where.OR = memberIds.flatMap((mid) => [
+          { creatorId: mid },
+          { assigneeId: mid },
+          { threadLinks: { some: { fromUserId: mid } } },
+          { threadLinks: { some: { toUserId: mid } } },
+        ]);
+      } else {
+        where.OR = [
+          { creatorId: userId },
+          { assigneeId: userId },
+          { threadLinks: { some: { fromUserId: userId } } },
+          { threadLinks: { some: { toUserId: userId } } },
+        ];
+      }
     }
     const allTasks = await this.prisma.task.findMany({
       where,

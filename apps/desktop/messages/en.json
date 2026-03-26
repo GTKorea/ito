@@ -537,6 +537,7 @@
     "removeMember": "Remove Member",
     "confirmRemove": "Are you sure you want to remove this member?",
     "leaveWorkspace": "Leave Workspace",
+    "leaveWorkspaceDescription": "Leave this workspace. Your solo tasks and activity history will be permanently deleted.",
     "roleChanged": "Role changed successfully",
     "memberRemoved": "Member removed",
     "you": "you",

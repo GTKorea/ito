@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useTaskStore } from '@/stores/task-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
@@ -41,6 +42,8 @@ export function ConnectDialog({ taskId, onClose }: ConnectDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { connectThread, connectMultiThread, connectBlocker, fetchCategorizedTasks } = useTaskStore();
   const { currentWorkspace } = useWorkspaceStore();
+  const searchParams = useSearchParams();
+  const groupId = searchParams.get('group') || undefined;
   const t = useTranslations('threads');
   const tc = useTranslations('common');
 
@@ -81,7 +84,7 @@ export function ConnectDialog({ taskId, onClose }: ConnectDialogProps) {
           );
         }
       }
-      await fetchCategorizedTasks(currentWorkspace.id);
+      await fetchCategorizedTasks(currentWorkspace.id, groupId);
       onClose();
     } catch (error) {
       console.error('Failed to connect:', error);

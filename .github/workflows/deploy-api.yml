@@ -65,6 +65,6 @@ jobs:
             docker compose exec -T ito-api npx prisma migrate deploy
 
             # Clean up old Docker images to prevent disk full
-            docker image prune -af --filter "until=72h"
+            docker image prune -af --filter "until=24h"
 
             echo "✅ ito-api deployed successfully"
