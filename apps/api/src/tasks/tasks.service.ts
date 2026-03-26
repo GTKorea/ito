@@ -229,12 +229,18 @@ export class TasksService {
       const isActive = !['COMPLETED', 'CANCELLED'].includes(task.status);
       const isAssignee = task.assigneeId === userId;
 
-      if (isActive && isAssignee && task.status === 'BLOCKED') {
+      if (!isActive) {
+        completed.push(task);
+      } else if (isAssignee && task.status === 'BLOCKED') {
         // BLOCKED tasks go to waiting (external dependency)
         waiting.push(task);
-      } else if (isActive && isAssignee) {
+      } else if (isAssignee) {
         actionRequired.push(task);
-      } else if (isActive && !isAssignee) {
+      } else if (taskGroupId) {
+        // Group view: show other members' active tasks in waiting
+        waiting.push(task);
+      } else {
+        // My Tasks view: categorize by involvement
         const isCreator = task.creatorId === userId;
         const hasForwardedLink = task.threadLinks.some(
           (l) =>
@@ -246,8 +252,6 @@ export class TasksService {
         } else {
           completed.push(task);
         }
-      } else {
-        completed.push(task);
       }
     }
 
