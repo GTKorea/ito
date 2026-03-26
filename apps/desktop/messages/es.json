@@ -178,7 +178,8 @@
     "selectDateTime": "Seleccionar fecha y hora",
     "tabDetails": "Detalles",
     "tabThread": "Hilo",
-    "tabFiles": "Archivos"
+    "tabFiles": "Archivos",
+    "coCreators": "Co-creadores"
   },
   "threads": {
     "title": "Hilos",
@@ -581,7 +582,11 @@
     "leaveConfirmDescription": "Tus tareas individuales, historial de actividad y membresías de grupo en este espacio de trabajo se eliminarán permanentemente. Las tareas conectadas con otros miembros se conservarán. Esta acción no se puede deshacer.",
     "leaveConfirmButton": "Abandonar espacio de trabajo",
     "leftWorkspace": "Has abandonado el espacio de trabajo",
-    "leaveFailed": "No se pudo abandonar el espacio de trabajo"
+    "leaveFailed": "No se pudo abandonar el espacio de trabajo",
+    "pendingInvites": "Invitaciones pendientes",
+    "expiresAt": "Expira el {date}",
+    "cancelInvite": "Cancelar invitación",
+    "inviteCancelled": "Invitación cancelada"
   },
   "calendar": {
     "title": "Calendar",

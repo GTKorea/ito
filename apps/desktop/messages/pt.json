@@ -178,7 +178,8 @@
     "selectDateTime": "Selecionar data e hora",
     "tabDetails": "Detalhes",
     "tabThread": "Thread",
-    "tabFiles": "Arquivos"
+    "tabFiles": "Arquivos",
+    "coCreators": "Co-criadores"
   },
   "threads": {
     "title": "Threads",
@@ -581,7 +582,11 @@
     "leaveConfirmDescription": "Suas tarefas individuais, histórico de atividades e associações a grupos neste espaço de trabalho serão permanentemente excluídos. Tarefas conectadas a outros membros serão preservadas. Esta ação não pode ser desfeita.",
     "leaveConfirmButton": "Sair do espaço de trabalho",
     "leftWorkspace": "Saiu do espaço de trabalho",
-    "leaveFailed": "Falha ao sair do espaço de trabalho"
+    "leaveFailed": "Falha ao sair do espaço de trabalho",
+    "pendingInvites": "Convites pendentes",
+    "expiresAt": "Expira em {date}",
+    "cancelInvite": "Cancelar convite",
+    "inviteCancelled": "Convite cancelado"
   },
   "calendar": {
     "title": "Calendar",

@@ -178,7 +178,8 @@
     "selectDateTime": "Sélectionner la date et l'heure",
     "tabDetails": "Détails",
     "tabThread": "Fil",
-    "tabFiles": "Fichiers"
+    "tabFiles": "Fichiers",
+    "coCreators": "Co-créateurs"
   },
   "threads": {
     "title": "Fils",
@@ -581,7 +582,11 @@
     "leaveConfirmDescription": "Vos tâches individuelles, historique d'activité et adhésions aux groupes dans cet espace de travail seront définitivement supprimés. Les tâches liées à d'autres membres seront conservées. Cette action est irréversible.",
     "leaveConfirmButton": "Quitter l'espace de travail",
     "leftWorkspace": "Espace de travail quitté",
-    "leaveFailed": "Impossible de quitter l'espace de travail"
+    "leaveFailed": "Impossible de quitter l'espace de travail",
+    "pendingInvites": "Invitations en attente",
+    "expiresAt": "Expire le {date}",
+    "cancelInvite": "Annuler l'invitation",
+    "inviteCancelled": "Invitation annulée"
   },
   "calendar": {
     "title": "Calendar",

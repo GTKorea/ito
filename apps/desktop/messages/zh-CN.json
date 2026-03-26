@@ -178,7 +178,8 @@
     "selectDateTime": "选择日期和时间",
     "tabDetails": "详情",
     "tabThread": "线程",
-    "tabFiles": "文件"
+    "tabFiles": "文件",
+    "coCreators": "共同创建者"
   },
   "threads": {
     "title": "线程",
@@ -581,7 +582,11 @@
     "leaveConfirmDescription": "您在此工作区的个人任务、活动记录和群组成员资格将被永久删除。与其他成员关联的任务将保留。此操作无法撤消。",
     "leaveConfirmButton": "离开工作区",
     "leftWorkspace": "已离开工作区",
-    "leaveFailed": "离开工作区失败"
+    "leaveFailed": "离开工作区失败",
+    "pendingInvites": "待处理邀请",
+    "expiresAt": "{date} 过期",
+    "cancelInvite": "取消邀请",
+    "inviteCancelled": "邀请已取消"
   },
   "calendar": {
     "title": "Calendar",

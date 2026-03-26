@@ -178,7 +178,8 @@
     "selectDateTime": "Select date and time",
     "tabDetails": "Details",
     "tabThread": "Thread",
-    "tabFiles": "Files"
+    "tabFiles": "Files",
+    "coCreators": "Co-Creators"
   },
   "threads": {
     "title": "Threads",
@@ -581,7 +582,11 @@
     "leaveConfirmDescription": "All your solo tasks, activity history, and group memberships in this workspace will be permanently deleted. Tasks connected to other members will be preserved. This action cannot be undone.",
     "leaveConfirmButton": "Leave Workspace",
     "leftWorkspace": "Left workspace",
-    "leaveFailed": "Failed to leave workspace"
+    "leaveFailed": "Failed to leave workspace",
+    "pendingInvites": "Pending Invites",
+    "expiresAt": "Expires {date}",
+    "cancelInvite": "Cancel Invite",
+    "inviteCancelled": "Invite cancelled"
   },
   "calendar": {
     "title": "Calendar",

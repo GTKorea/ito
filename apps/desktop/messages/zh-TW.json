@@ -178,7 +178,8 @@
     "selectDateTime": "選擇日期和時間",
     "tabDetails": "詳情",
     "tabThread": "執行緒",
-    "tabFiles": "檔案"
+    "tabFiles": "檔案",
+    "coCreators": "共同建立者"
   },
   "threads": {
     "title": "執行緒",
@@ -581,7 +582,11 @@
     "leaveConfirmDescription": "您在此工作區的個人任務、活動記錄和群組成員資格將被永久刪除。與其他成員關聯的任務將保留。此操作無法復原。",
     "leaveConfirmButton": "離開工作區",
     "leftWorkspace": "已離開工作區",
-    "leaveFailed": "離開工作區失敗"
+    "leaveFailed": "離開工作區失敗",
+    "pendingInvites": "待處理邀請",
+    "expiresAt": "{date} 到期",
+    "cancelInvite": "取消邀請",
+    "inviteCancelled": "邀請已取消"
   },
   "calendar": {
     "title": "Calendar",

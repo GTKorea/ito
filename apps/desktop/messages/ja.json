@@ -178,7 +178,8 @@
     "selectDateTime": "日時を選択してください",
     "tabDetails": "詳細",
     "tabThread": "スレッド",
-    "tabFiles": "ファイル"
+    "tabFiles": "ファイル",
+    "coCreators": "共同作成者"
   },
   "threads": {
     "title": "スレッド",
@@ -581,7 +582,11 @@
     "leaveConfirmDescription": "このワークスペースのあなたの個人タスク、活動履歴、グループメンバーシップが完全に削除されます。他のメンバーに接続されたタスクは保持されます。この操作は元に戻せません。",
     "leaveConfirmButton": "ワークスペースを退出",
     "leftWorkspace": "ワークスペースを退出しました",
-    "leaveFailed": "ワークスペースの退出に失敗しました"
+    "leaveFailed": "ワークスペースの退出に失敗しました",
+    "pendingInvites": "保留中の招待",
+    "expiresAt": "{date}に期限切れ",
+    "cancelInvite": "招待をキャンセル",
+    "inviteCancelled": "招待がキャンセルされました"
   },
   "calendar": {
     "title": "Calendar",

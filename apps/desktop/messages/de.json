@@ -178,7 +178,8 @@
     "selectDateTime": "Datum und Uhrzeit wählen",
     "tabDetails": "Details",
     "tabThread": "Thread",
-    "tabFiles": "Dateien"
+    "tabFiles": "Dateien",
+    "coCreators": "Mitersteller"
   },
   "threads": {
     "title": "Threads",
@@ -581,7 +582,11 @@
     "leaveConfirmDescription": "Ihre Einzelaufgaben, Aktivitätsverlauf und Gruppenmitgliedschaften in diesem Workspace werden dauerhaft gelöscht. Aufgaben, die mit anderen Mitgliedern verbunden sind, bleiben erhalten. Diese Aktion kann nicht rückgängig gemacht werden.",
     "leaveConfirmButton": "Workspace verlassen",
     "leftWorkspace": "Workspace verlassen",
-    "leaveFailed": "Workspace konnte nicht verlassen werden"
+    "leaveFailed": "Workspace konnte nicht verlassen werden",
+    "pendingInvites": "Ausstehende Einladungen",
+    "expiresAt": "Läuft ab am {date}",
+    "cancelInvite": "Einladung stornieren",
+    "inviteCancelled": "Einladung storniert"
   },
   "calendar": {
     "title": "Calendar",

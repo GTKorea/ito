@@ -178,7 +178,8 @@
     "selectDateTime": "날짜와 시간을 선택하세요",
     "tabDetails": "상세",
     "tabThread": "스레드",
-    "tabFiles": "파일"
+    "tabFiles": "파일",
+    "coCreators": "공동 작업자"
   },
   "threads": {
     "title": "스레드",
@@ -581,7 +582,11 @@
     "leaveConfirmDescription": "이 워크스페이스에서 나의 단독 태스크, 활동 기록, 그룹 멤버십이 영구적으로 삭제됩니다. 다른 멤버와 연결된 태스크는 유지됩니다. 이 작업은 되돌릴 수 없습니다.",
     "leaveConfirmButton": "워크스페이스 나가기",
     "leftWorkspace": "워크스페이스를 나갔습니다",
-    "leaveFailed": "워크스페이스 나가기에 실패했습니다"
+    "leaveFailed": "워크스페이스 나가기에 실패했습니다",
+    "pendingInvites": "대기 중인 초대",
+    "expiresAt": "{date} 만료",
+    "cancelInvite": "초대 취소",
+    "inviteCancelled": "초대가 취소되었습니다"
   },
   "calendar": {
     "title": "캘린더",
