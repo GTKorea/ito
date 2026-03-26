@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { X, Save, Link2, Paperclip, List, Network, MessageCircle, Vote, Bell, Trash2, ChevronDown, Check, Upload, Users, UserPlus } from 'lucide-react';
+import { X, Link2, Paperclip, List, Network, MessageCircle, Vote, Bell, Trash2, ChevronDown, Check, Upload, Users, UserPlus, ArrowRightLeft, Eye } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   DropdownMenu,
@@ -58,11 +58,9 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
   const [status, setStatus] = useState('OPEN');
   const [priority, setPriority] = useState('MEDIUM');
   const [dueDate, setDueDate] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
   const [graphView, setGraphView] = useState(false);
   const [fileRefreshKey, setFileRefreshKey] = useState(0);
   const [showChat, setShowChat] = useState(initialShowChat ?? false);
-  const [activeTab, setActiveTab] = useState<'details' | 'files'>('details');
   const [reminder, setReminder] = useState<Reminder | null>(null);
   const [reminderDate, setReminderDate] = useState('');
   const [reminderTime, setReminderTime] = useState('');
@@ -70,6 +68,8 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
   const [showReminderPopover, setShowReminderPopover] = useState(false);
   const [globalDragOver, setGlobalDragOver] = useState(false);
   const dragCounter = useRef(0);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const initialValuesRef = useRef({ title: '', description: '' });
   const t = useTranslations('tasks');
   const tc = useTranslations('chat');
   const tf = useTranslations('files');
@@ -118,9 +118,11 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
         setStatus(data.status);
         setPriority(data.priority);
         setDueDate(data.dueDate ? data.dueDate.slice(0, 10) : '');
+        initialValuesRef.current = { title: data.title, description: data.description || '' };
       })
       .catch((e) => console.error('Failed to load task:', e))
       .finally(() => setIsLoading(false));
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [taskId]);
 
   // Fetch existing reminder for this task
@@ -158,23 +160,31 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
     }
   };
 
-  const handleSave = async () => {
-    setIsSaving(true);
+  // Debounced auto-save for title/description
+  useEffect(() => {
+    if (!task) return;
+    const { title: initTitle, description: initDesc } = initialValuesRef.current;
+    if (title === initTitle && description === initDesc) return;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      try {
+        await updateTask(taskId, {
+          ...(title !== initTitle ? { title } : {}),
+          ...(description !== initDesc ? { description: description || undefined } : {}),
+        });
+        initialValuesRef.current = { title, description };
+      } catch {
+        toast.error(t('saveFailed'));
+      }
+    }, 800);
+  }, [title, description]);
+
+  // Immediate save for status/priority/dueDate
+  const saveField = async (field: string, value: string) => {
     try {
-      await updateTask(taskId, {
-        title,
-        description: description || undefined,
-        status,
-        priority,
-        dueDate: dueDate || undefined,
-      });
-      toast.success(t('saved'));
-      onClose();
-    } catch (error) {
-      console.error('Failed to update task:', error);
+      await updateTask(taskId, { [field]: value || undefined });
+    } catch {
       toast.error(t('saveFailed'));
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -298,32 +308,8 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
         </div>
       </div>
 
-      {/* Tab navigation */}
-      <div className="flex border-b border-border px-4">
-        {(['details', 'files'] as const).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={cn(
-              'px-3 py-2.5 text-sm font-medium transition-colors relative',
-              activeTab === tab
-                ? 'text-foreground'
-                : 'text-muted-foreground hover:text-foreground',
-            )}
-          >
-            {t(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`)}
-            {activeTab === tab && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
-            )}
-          </button>
-        ))}
-      </div>
-
       {/* Body */}
       <div className="flex-1 overflow-y-auto p-4 space-y-5">
-        {/* Details tab */}
-        {activeTab === 'details' && (
-          <>
             {/* Title */}
             <Input
               value={title}
@@ -360,7 +346,7 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
                   />
                   <DropdownMenuContent>
                     {statuses.map((s) => (
-                      <DropdownMenuItem key={s} onClick={() => setStatus(s)}>
+                      <DropdownMenuItem key={s} onClick={() => { setStatus(s); saveField('status', s); }}>
                         <span className={cn('flex items-center gap-2 text-xs', statusColors[s] || 'text-foreground')}>
                           {status === s && <Check className="h-3 w-3" />}
                           {status !== s && <span className="w-3" />}
@@ -388,7 +374,7 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
                   />
                   <DropdownMenuContent>
                     {priorities.map((p) => (
-                      <DropdownMenuItem key={p} onClick={() => setPriority(p)}>
+                      <DropdownMenuItem key={p} onClick={() => { setPriority(p); saveField('priority', p); }}>
                         <span className={cn('flex items-center gap-2 text-xs', priorityColors[p] || 'text-foreground')}>
                           {priority === p && <Check className="h-3 w-3" />}
                           {priority !== p && <span className="w-3" />}
@@ -406,7 +392,7 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
                 <Input
                   type="date"
                   value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
+                  onChange={(e) => { setDueDate(e.target.value); saveField('dueDate', e.target.value); }}
                   className="h-8 text-xs"
                 />
               </div>
@@ -427,6 +413,11 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
               </div>
             </div>
 
+            {/* Transfer — creator only, no active threads */}
+            {task.creator?.id === user?.id && !task.threadLinks?.some((l) => l.status === 'PENDING' || l.status === 'FORWARDED') && (
+              <TransferButton taskId={taskId} onTransferred={onClose} />
+            )}
+
             {/* Co-Creators */}
             <CoCreatorSection
               task={task}
@@ -435,11 +426,13 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
               onUpdate={setTask}
             />
 
-            {/* Save button */}
-            <Button size="sm" onClick={handleSave} disabled={isSaving} className="w-full">
-              <Save className="mr-1 h-3.5 w-3.5" />
-              {isSaving ? t('saving') : t('saveChanges')}
-            </Button>
+            {/* Completion Watchers */}
+            <CompletionWatcherSection
+              task={task}
+              taskId={taskId}
+              currentUserId={user?.id}
+              onUpdate={setTask}
+            />
 
             {/* Vote Panel */}
             {task.type === 'VOTE' && task.voteConfig && (
@@ -496,23 +489,19 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
                 )}
               </div>
             )}
-          </>
-        )}
 
-        {/* Files tab */}
-        {activeTab === 'files' && (
-          <div className="space-y-3">
-            <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
-              <Paperclip className="h-4 w-4" />
-              {t('attachments')}
-            </h3>
-            <FileList taskId={taskId} refreshKey={fileRefreshKey} />
-            <FileUpload
-              taskId={taskId}
-              onUploadComplete={() => setFileRefreshKey((k) => k + 1)}
-            />
-          </div>
-        )}
+            {/* Attachments */}
+            <div className="space-y-3 border-t border-border pt-4">
+              <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
+                <Paperclip className="h-4 w-4" />
+                {t('attachments')}
+              </h3>
+              <FileList taskId={taskId} refreshKey={fileRefreshKey} />
+              <FileUpload
+                taskId={taskId}
+                onUploadComplete={() => setFileRefreshKey((k) => k + 1)}
+              />
+            </div>
       </div>
 
       {/* Mobile: thumb-friendly close button at the bottom */}
@@ -643,6 +632,197 @@ function CoCreatorSection({
         </div>
       ) : (
         <p className="text-[10px] text-muted-foreground">{t('noCoCreators')}</p>
+      )}
+    </div>
+  );
+}
+
+function TransferButton({ taskId, onTransferred }: { taskId: string; onTransferred: () => void }) {
+  const t = useTranslations('tasks');
+  const { transferTask } = useTaskStore();
+  const [open, setOpen] = useState(false);
+  const existingIds = useMemo(() => new Set<string>(), []);
+  const { members, search, setSearch } = useWorkspaceMembers({ excludeIds: existingIds });
+
+  const handleTransfer = async (userId: string) => {
+    try {
+      await transferTask(taskId, userId);
+      toast.success(t('transferred'));
+      setOpen(false);
+      onTransferred();
+    } catch {
+      toast.error(t('saveFailed'));
+    }
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger render={
+        <Button variant="outline" size="sm" className="w-full text-xs">
+          <ArrowRightLeft className="mr-1 h-3 w-3" />
+          {t('transferTask')}
+        </Button>
+      } />
+      <PopoverContent className="w-56 p-2" align="start">
+        <Input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={t('searchMember')}
+          className="h-7 text-xs mb-2"
+          autoFocus
+        />
+        <div className="max-h-40 overflow-y-auto space-y-0.5">
+          {members.length === 0 && (
+            <p className="text-xs text-muted-foreground text-center py-2">{t('noMembersFound')}</p>
+          )}
+          {members.map((m) => (
+            <button
+              key={m.id}
+              className="w-full flex items-center gap-2 rounded px-2 py-1.5 hover:bg-accent transition-colors text-left"
+              onClick={() => handleTransfer(m.id)}
+            >
+              <Avatar className="h-5 w-5">
+                <AvatarFallback className="text-[8px] bg-secondary">
+                  {m.name.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs truncate">{m.name}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{m.email}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function CompletionWatcherSection({
+  task,
+  taskId,
+  currentUserId,
+  onUpdate,
+}: {
+  task: Task;
+  taskId: string;
+  currentUserId?: string;
+  onUpdate: React.Dispatch<React.SetStateAction<Task | null>>;
+}) {
+  const t = useTranslations('tasks');
+  const [showAdd, setShowAdd] = useState(false);
+  const watcherIds = useMemo(
+    () => new Set(task.completionWatchers?.map((w) => w.watcher.id) || []),
+    [task.completionWatchers],
+  );
+  const { members, search, setSearch } = useWorkspaceMembers({ excludeIds: watcherIds });
+
+  // Only show if user is assignee or creator (involved in the task)
+  const isInvolved = currentUserId === task.assignee?.id || currentUserId === task.creator?.id;
+
+  const handleAdd = async (userId: string) => {
+    try {
+      const { data } = await api.post(`/tasks/${taskId}/completion-watchers`, { userIds: [userId] });
+      onUpdate(data);
+      setShowAdd(false);
+      setSearch('');
+    } catch {
+      toast.error(t('saveFailed'));
+    }
+  };
+
+  const handleAddTeam = async (teamId: string) => {
+    try {
+      const { data } = await api.post(`/tasks/${taskId}/completion-watchers`, { teamId });
+      onUpdate(data);
+      setShowAdd(false);
+      setSearch('');
+    } catch {
+      toast.error(t('saveFailed'));
+    }
+  };
+
+  const handleRemove = async (watcherId: string) => {
+    try {
+      await api.delete(`/tasks/${taskId}/completion-watchers/${watcherId}`);
+      onUpdate((prev) => prev ? {
+        ...prev,
+        completionWatchers: prev.completionWatchers?.filter((w) => w.watcher.id !== watcherId),
+      } : prev);
+    } catch {}
+  };
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between">
+        <label className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-1">
+          <Eye className="h-3 w-3" />
+          {t('completionWatchers')}
+        </label>
+        {isInvolved && (
+          <Popover open={showAdd} onOpenChange={setShowAdd}>
+            <PopoverTrigger render={
+              <button className="h-5 w-5 rounded flex items-center justify-center hover:bg-accent transition-colors" />
+            }>
+              <UserPlus className="h-3 w-3 text-muted-foreground" />
+            </PopoverTrigger>
+            <PopoverContent className="w-56 p-2" align="end">
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={t('searchMember')}
+                className="h-7 text-xs mb-2"
+                autoFocus
+              />
+              <div className="max-h-40 overflow-y-auto space-y-0.5">
+                {members.length === 0 && (
+                  <p className="text-xs text-muted-foreground text-center py-2">{t('noMembersFound')}</p>
+                )}
+                {members.map((m) => (
+                  <button
+                    key={m.id}
+                    className="w-full flex items-center gap-2 rounded px-2 py-1.5 hover:bg-accent transition-colors text-left"
+                    onClick={() => handleAdd(m.id)}
+                  >
+                    <Avatar className="h-5 w-5">
+                      <AvatarFallback className="text-[8px] bg-secondary">
+                        {m.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs truncate">{m.name}</p>
+                      <p className="text-[10px] text-muted-foreground truncate">{m.email}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
+      </div>
+      {task.completionWatchers && task.completionWatchers.length > 0 ? (
+        <div className="flex flex-wrap gap-1.5">
+          {task.completionWatchers.map((w) => (
+            <div key={w.id} className="flex items-center gap-1 rounded-full bg-accent/50 px-2 py-0.5">
+              <Avatar className="h-4 w-4">
+                <AvatarFallback className="text-[7px] bg-secondary">
+                  {w.watcher.name?.charAt(0).toUpperCase() || '?'}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-[10px] text-foreground">{w.watcher.name}</span>
+              {w.addedById === currentUserId && (
+                <button
+                  className="ml-0.5 text-muted-foreground hover:text-destructive"
+                  onClick={() => handleRemove(w.watcher.id)}
+                >
+                  <X className="h-2.5 w-2.5" />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-[10px] text-muted-foreground">{t('noWatchers')}</p>
       )}
     </div>
   );
