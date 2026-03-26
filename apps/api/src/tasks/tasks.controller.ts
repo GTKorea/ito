@@ -114,6 +114,36 @@ export class TasksController {
     return this.tasksService.reorderTasks(workspaceId, userId, dto.taskIds);
   }
 
+  @Post('tasks/:id/completion-watchers')
+  @ApiOperation({ summary: 'Add completion watchers to a task' })
+  addCompletionWatchers(
+    @Param('id') id: string,
+    @Body() body: { userIds?: string[]; teamId?: string; threadLinkId?: string },
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.tasksService.addCompletionWatchers(id, body, userId, body.threadLinkId);
+  }
+
+  @Delete('tasks/:id/completion-watchers/:watcherId')
+  @ApiOperation({ summary: 'Remove a completion watcher' })
+  removeCompletionWatcher(
+    @Param('id') id: string,
+    @Param('watcherId') watcherId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.tasksService.removeCompletionWatcher(id, watcherId, userId);
+  }
+
+  @Post('tasks/:id/transfer')
+  @ApiOperation({ summary: 'Transfer task ownership to another user (creator only, no active threads)' })
+  transferTask(
+    @Param('id') id: string,
+    @Body('newOwnerId') newOwnerId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.tasksService.transferTask(id, newOwnerId, userId);
+  }
+
   @Post('tasks/:id/co-creators')
   @ApiOperation({ summary: 'Add co-creators to a task (creator only)' })
   addCoCreators(

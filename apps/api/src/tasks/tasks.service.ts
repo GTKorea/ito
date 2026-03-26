@@ -3,6 +3,7 @@ import { Prisma, TaskStatus } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { ActivityService } from '../activity/activity.service';
 import { RemindersService } from '../reminders/reminders.service';
+import type { NotificationsService } from '../notifications/notifications.service';
 import { CreateTaskDto, UpdateTaskDto, BatchMoveTasksDto } from './dto/create-task.dto';
 
 /** Shared include for task queries with full thread link details */
@@ -12,6 +13,10 @@ const TASK_INCLUDE_FULL = {
   taskGroup: { select: { id: true, name: true } },
   coCreators: {
     include: { user: { select: { id: true, name: true, avatarUrl: true } } },
+    orderBy: { createdAt: 'asc' as const },
+  },
+  completionWatchers: {
+    include: { watcher: { select: { id: true, name: true, avatarUrl: true } } },
     orderBy: { createdAt: 'asc' as const },
   },
   threadLinks: {
@@ -31,6 +36,8 @@ export class TasksService {
     private activityService: ActivityService,
     @Optional() @Inject(forwardRef(() => RemindersService))
     private remindersService?: RemindersService,
+    @Optional() @Inject(forwardRef(() => require('../notifications/notifications.service').NotificationsService))
+    private notificationsService?: NotificationsService,
   ) {}
 
   async create(dto: CreateTaskDto, workspaceId: string, userId: string) {
@@ -176,6 +183,23 @@ export class TasksService {
       }
     }
 
+    // Notify completion watchers when task is completed
+    if (dto.status === 'COMPLETED' && this.notificationsService) {
+      const watchers = await this.prisma.taskCompletionWatcher.findMany({
+        where: { taskId: id },
+        select: { watcherId: true },
+      });
+      for (const w of watchers) {
+        await this.notificationsService.create({
+          userId: w.watcherId,
+          type: 'TASK_COMPLETED',
+          title: `"${task.title}" completed`,
+          body: `Task "${task.title}" has been marked as completed`,
+          data: { taskId: id, taskTitle: task.title },
+        });
+      }
+    }
+
     await this.activityService.log({
       workspaceId: task.workspaceId,
       userId,
@@ -183,6 +207,48 @@ export class TasksService {
       entityType: 'Task',
       entityId: id,
       metadata: { changes: dto },
+    });
+
+    return updated;
+  }
+
+  async transferTask(taskId: string, newOwnerId: string, requestingUserId: string) {
+    const task = await this.prisma.task.findUnique({
+      where: { id: taskId },
+      include: { threadLinks: true },
+    });
+    if (!task) throw new NotFoundException('Task not found');
+    if (task.creatorId !== requestingUserId) {
+      throw new ForbiddenException('Only the creator can transfer a task');
+    }
+    if (newOwnerId === requestingUserId) {
+      throw new BadRequestException('Cannot transfer to yourself');
+    }
+    const hasActiveThreads = task.threadLinks.some(
+      (l) => l.status === 'PENDING' || l.status === 'FORWARDED',
+    );
+    if (hasActiveThreads) {
+      throw new ForbiddenException('Cannot transfer a task with active thread connections');
+    }
+
+    // Remove new owner from co-creators if they were one
+    await this.prisma.taskCoCreator.deleteMany({
+      where: { taskId, userId: newOwnerId },
+    });
+
+    const updated = await this.prisma.task.update({
+      where: { id: taskId },
+      data: { creatorId: newOwnerId, assigneeId: newOwnerId },
+      include: TASK_INCLUDE_FULL,
+    });
+
+    await this.activityService.log({
+      workspaceId: task.workspaceId,
+      userId: requestingUserId,
+      action: 'TRANSFERRED',
+      entityType: 'Task',
+      entityId: taskId,
+      metadata: { newOwnerId },
     });
 
     return updated;
@@ -378,6 +444,60 @@ export class TasksService {
     }
     await this.prisma.taskCoCreator.deleteMany({
       where: { taskId, userId: coCreatorUserId },
+    });
+    return this.findById(taskId);
+  }
+
+  async addCompletionWatchers(
+    taskId: string,
+    input: { userIds?: string[]; teamId?: string },
+    addedByUserId: string,
+    threadLinkId?: string,
+  ) {
+    const task = await this.prisma.task.findUnique({
+      where: { id: taskId },
+      include: { threadLinks: { where: { status: { in: ['PENDING', 'FORWARDED'] } } } },
+    });
+    if (!task) throw new NotFoundException('Task not found');
+
+    // Resolve user IDs (from direct IDs + team members)
+    let watcherIds: string[] = [...(input.userIds || [])];
+    if (input.teamId) {
+      const teamMembers = await this.prisma.teamMember.findMany({
+        where: { teamId: input.teamId },
+        select: { userId: true },
+      });
+      watcherIds.push(...teamMembers.map((m) => m.userId));
+    }
+
+    // Exclude: the adder themselves, and the snap-back target (previous person in chain)
+    const excludeIds = new Set<string>([addedByUserId]);
+    for (const link of task.threadLinks) {
+      if (link.toUserId && link.fromUserId) {
+        // fromUser will get snap-back notification automatically
+        excludeIds.add(link.fromUserId);
+      }
+    }
+    watcherIds = [...new Set(watcherIds)].filter((id) => !excludeIds.has(id));
+
+    if (watcherIds.length > 0) {
+      await this.prisma.taskCompletionWatcher.createMany({
+        data: watcherIds.map((watcherId) => ({
+          taskId,
+          watcherId,
+          addedById: addedByUserId,
+          threadLinkId: threadLinkId || null,
+        })),
+        skipDuplicates: true,
+      });
+    }
+
+    return this.findById(taskId);
+  }
+
+  async removeCompletionWatcher(taskId: string, watcherId: string, requestingUserId: string) {
+    await this.prisma.taskCompletionWatcher.deleteMany({
+      where: { taskId, watcherId, addedById: requestingUserId },
     });
     return this.findById(taskId);
   }
