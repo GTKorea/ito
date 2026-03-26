@@ -45,3 +45,29 @@ export function getFileViewUrl(fileUrl: string): string {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3011';
   return `${apiUrl}${fileUrl}`;
 }
+
+/**
+ * Upload files to a task. Shared by FileUpload component and TaskDetail drag-and-drop.
+ */
+export async function uploadTaskFiles(
+  taskId: string,
+  files: File[],
+  onProgress?: (index: number, status: 'uploading' | 'done' | 'error') => void,
+): Promise<void> {
+  // Lazy import to avoid circular dependency at module level
+  const { api } = await import('@/lib/api-client');
+  for (let i = 0; i < files.length; i++) {
+    onProgress?.(i, 'uploading');
+    try {
+      const formData = new FormData();
+      formData.append('file', files[i]);
+      formData.append('taskId', taskId);
+      await api.post('/files/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      onProgress?.(i, 'done');
+    } catch {
+      onProgress?.(i, 'error');
+    }
+  }
+}

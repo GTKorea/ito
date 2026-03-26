@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { useTaskStore } from '@/stores/task-store';
 import type { Task } from '@/stores/task-store';
@@ -11,11 +11,12 @@ import { ThreadChain } from '@/components/threads/thread-chain';
 import { ThreadGraph } from '@/components/threads/thread-graph';
 import { FileUpload } from '@/components/files/file-upload';
 import { FileList } from '@/components/files/file-list';
+import { uploadTaskFiles } from '@/lib/file-utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { X, Save, Link2, Paperclip, List, Network, MessageCircle, Vote, Bell, Trash2, ChevronDown, Check } from 'lucide-react';
+import { X, Save, Link2, Paperclip, List, Network, MessageCircle, Vote, Bell, Trash2, ChevronDown, Check, Upload, Users, UserPlus } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   DropdownMenu,
@@ -66,8 +67,40 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
   const [reminderTime, setReminderTime] = useState('');
   const [reminderLoading, setReminderLoading] = useState(false);
   const [showReminderPopover, setShowReminderPopover] = useState(false);
+  const [globalDragOver, setGlobalDragOver] = useState(false);
+  const dragCounter = useRef(0);
   const t = useTranslations('tasks');
   const tc = useTranslations('chat');
+  const tf = useTranslations('files');
+
+  const handleFilesUpload = useCallback(async (files: File[]) => {
+    await uploadTaskFiles(taskId, files);
+    setFileRefreshKey((k) => k + 1);
+  }, [taskId]);
+
+  const handleGlobalDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    dragCounter.current++;
+    if (e.dataTransfer.types.includes('Files')) {
+      setGlobalDragOver(true);
+    }
+  }, []);
+
+  const handleGlobalDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    dragCounter.current--;
+    if (dragCounter.current === 0) {
+      setGlobalDragOver(false);
+    }
+  }, []);
+
+  const handleGlobalDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    dragCounter.current = 0;
+    setGlobalDragOver(false);
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) handleFilesUpload(files);
+  }, [handleFilesUpload]);
 
   useEffect(() => {
     if (initialShowChat) setShowChat(true);
@@ -175,7 +208,20 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
   }
 
   return (
-    <div className="flex h-full w-full flex-col border-l border-border bg-[#1A1A1A]">
+    <div
+      className="relative flex h-full w-full flex-col border-l border-border bg-[#1A1A1A]"
+      onDragEnter={handleGlobalDragEnter}
+      onDragOver={(e) => e.preventDefault()}
+      onDragLeave={handleGlobalDragLeave}
+      onDrop={handleGlobalDrop}
+    >
+      {/* Drop overlay */}
+      {globalDragOver && (
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm border-2 border-dashed border-primary rounded-lg">
+          <Upload className="h-8 w-8 text-primary mb-2" />
+          <p className="text-sm font-medium text-primary">{tf('dropFileHere')}</p>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <h2 className="text-sm font-semibold text-[#ECECEC]">{t('taskDetail')}</h2>
@@ -379,6 +425,44 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
                 </div>
               </div>
             </div>
+
+            {/* Co-Creators */}
+            {task.coCreators && task.coCreators.length > 0 && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-1">
+                  <Users className="h-3 w-3" />
+                  {t('coCreators')}
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {task.coCreators.map((cc) => (
+                    <div key={cc.id} className="flex items-center gap-1 rounded-full bg-accent/50 px-2 py-0.5">
+                      <Avatar className="h-4 w-4">
+                        <AvatarFallback className="text-[7px] bg-secondary">
+                          {cc.user.name?.charAt(0).toUpperCase() || '?'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-[10px] text-foreground">{cc.user.name}</span>
+                      {task.creator?.id === user?.id && (
+                        <button
+                          className="ml-0.5 text-muted-foreground hover:text-destructive"
+                          onClick={async () => {
+                            try {
+                              await api.delete(`/tasks/${taskId}/co-creators/${cc.user.id}`);
+                              setTask((prev) => prev ? {
+                                ...prev,
+                                coCreators: prev.coCreators?.filter((c) => c.id !== cc.id),
+                              } : prev);
+                            } catch {}
+                          }}
+                        >
+                          <X className="h-2.5 w-2.5" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Save button */}
             <Button size="sm" onClick={handleSave} disabled={isSaving} className="w-full">

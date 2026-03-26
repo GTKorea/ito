@@ -2,10 +2,9 @@
 
 import { useState, useRef } from 'react';
 import { useTranslations } from 'next-intl';
-import { api } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Upload, Loader2, X, CheckCircle2 } from 'lucide-react';
-import { getFileTypeInfo } from '@/lib/file-utils';
+import { getFileTypeInfo, uploadTaskFiles } from '@/lib/file-utils';
 
 interface FileUploadProps {
   taskId: string;
@@ -27,23 +26,11 @@ export function FileUpload({ taskId, onUploadComplete }: FileUploadProps) {
     const entries = files.map((file) => ({ file, status: 'uploading' as const }));
     setUploadingFiles(entries);
 
-    for (let i = 0; i < entries.length; i++) {
-      try {
-        const formData = new FormData();
-        formData.append('file', entries[i].file);
-        formData.append('taskId', taskId);
-        await api.post('/files/upload', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        setUploadingFiles((prev) =>
-          prev.map((f, idx) => (idx === i ? { ...f, status: 'done' } : f))
-        );
-      } catch {
-        setUploadingFiles((prev) =>
-          prev.map((f, idx) => (idx === i ? { ...f, status: 'error' } : f))
-        );
-      }
-    }
+    await uploadTaskFiles(taskId, files, (index, status) => {
+      setUploadingFiles((prev) =>
+        prev.map((f, idx) => (idx === index ? { ...f, status } : f))
+      );
+    });
 
     setTimeout(() => {
       setUploadingFiles([]);
