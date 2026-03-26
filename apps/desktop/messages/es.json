@@ -575,7 +575,12 @@
     "deleteConfirmInput": "Escribe \"{name}\" para confirmar",
     "deleteConfirmButton": "Eliminar este espacio de trabajo",
     "workspaceDeleted": "Espacio de trabajo eliminado",
-    "deleteFailed": "No se pudo eliminar el espacio de trabajo"
+    "deleteFailed": "No se pudo eliminar el espacio de trabajo",
+    "leaveConfirmTitle": "Abandonar espacio de trabajo",
+    "leaveConfirmDescription": "Tus tareas individuales, historial de actividad y membresías de grupo en este espacio de trabajo se eliminarán permanentemente. Las tareas conectadas con otros miembros se conservarán. Esta acción no se puede deshacer.",
+    "leaveConfirmButton": "Abandonar espacio de trabajo",
+    "leftWorkspace": "Has abandonado el espacio de trabajo",
+    "leaveFailed": "No se pudo abandonar el espacio de trabajo"
   },
   "calendar": {
     "title": "Calendar",

@@ -575,7 +575,12 @@
     "deleteConfirmInput": "Geben Sie \"{name}\" zur Bestätigung ein",
     "deleteConfirmButton": "Diesen Workspace löschen",
     "workspaceDeleted": "Workspace gelöscht",
-    "deleteFailed": "Workspace konnte nicht gelöscht werden"
+    "deleteFailed": "Workspace konnte nicht gelöscht werden",
+    "leaveConfirmTitle": "Workspace verlassen",
+    "leaveConfirmDescription": "Ihre Einzelaufgaben, Aktivitätsverlauf und Gruppenmitgliedschaften in diesem Workspace werden dauerhaft gelöscht. Aufgaben, die mit anderen Mitgliedern verbunden sind, bleiben erhalten. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "leaveConfirmButton": "Workspace verlassen",
+    "leftWorkspace": "Workspace verlassen",
+    "leaveFailed": "Workspace konnte nicht verlassen werden"
   },
   "calendar": {
     "title": "Calendar",

@@ -575,7 +575,12 @@
     "deleteConfirmInput": "Tapez « {name} » pour confirmer",
     "deleteConfirmButton": "Supprimer cet espace de travail",
     "workspaceDeleted": "Espace de travail supprimé",
-    "deleteFailed": "Impossible de supprimer l'espace de travail"
+    "deleteFailed": "Impossible de supprimer l'espace de travail",
+    "leaveConfirmTitle": "Quitter l'espace de travail",
+    "leaveConfirmDescription": "Vos tâches individuelles, historique d'activité et adhésions aux groupes dans cet espace de travail seront définitivement supprimés. Les tâches liées à d'autres membres seront conservées. Cette action est irréversible.",
+    "leaveConfirmButton": "Quitter l'espace de travail",
+    "leftWorkspace": "Espace de travail quitté",
+    "leaveFailed": "Impossible de quitter l'espace de travail"
   },
   "calendar": {
     "title": "Calendar",

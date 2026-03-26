@@ -575,7 +575,12 @@
     "deleteConfirmInput": "確認のため「{name}」と入力してください",
     "deleteConfirmButton": "このワークスペースを削除",
     "workspaceDeleted": "ワークスペースを削除しました",
-    "deleteFailed": "ワークスペースの削除に失敗しました"
+    "deleteFailed": "ワークスペースの削除に失敗しました",
+    "leaveConfirmTitle": "ワークスペースを退出",
+    "leaveConfirmDescription": "このワークスペースのあなたの個人タスク、活動履歴、グループメンバーシップが完全に削除されます。他のメンバーに接続されたタスクは保持されます。この操作は元に戻せません。",
+    "leaveConfirmButton": "ワークスペースを退出",
+    "leftWorkspace": "ワークスペースを退出しました",
+    "leaveFailed": "ワークスペースの退出に失敗しました"
   },
   "calendar": {
     "title": "Calendar",

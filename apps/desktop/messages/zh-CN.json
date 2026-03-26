@@ -575,7 +575,12 @@
     "deleteConfirmInput": "输入\"{name}\"以确认",
     "deleteConfirmButton": "删除此工作区",
     "workspaceDeleted": "工作区已删除",
-    "deleteFailed": "删除工作区失败"
+    "deleteFailed": "删除工作区失败",
+    "leaveConfirmTitle": "离开工作区",
+    "leaveConfirmDescription": "您在此工作区的个人任务、活动记录和群组成员资格将被永久删除。与其他成员关联的任务将保留。此操作无法撤消。",
+    "leaveConfirmButton": "离开工作区",
+    "leftWorkspace": "已离开工作区",
+    "leaveFailed": "离开工作区失败"
   },
   "calendar": {
     "title": "Calendar",

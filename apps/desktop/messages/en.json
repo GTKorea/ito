@@ -575,7 +575,12 @@
     "deleteConfirmInput": "Type \"{name}\" to confirm",
     "deleteConfirmButton": "Delete this workspace",
     "workspaceDeleted": "Workspace deleted",
-    "deleteFailed": "Failed to delete workspace"
+    "deleteFailed": "Failed to delete workspace",
+    "leaveConfirmTitle": "Leave Workspace",
+    "leaveConfirmDescription": "All your solo tasks, activity history, and group memberships in this workspace will be permanently deleted. Tasks connected to other members will be preserved. This action cannot be undone.",
+    "leaveConfirmButton": "Leave Workspace",
+    "leftWorkspace": "Left workspace",
+    "leaveFailed": "Failed to leave workspace"
   },
   "calendar": {
     "title": "Calendar",

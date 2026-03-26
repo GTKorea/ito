@@ -575,7 +575,12 @@
     "deleteConfirmInput": "Digite \"{name}\" para confirmar",
     "deleteConfirmButton": "Excluir este espaço de trabalho",
     "workspaceDeleted": "Espaço de trabalho excluído",
-    "deleteFailed": "Falha ao excluir espaço de trabalho"
+    "deleteFailed": "Falha ao excluir espaço de trabalho",
+    "leaveConfirmTitle": "Sair do espaço de trabalho",
+    "leaveConfirmDescription": "Suas tarefas individuais, histórico de atividades e associações a grupos neste espaço de trabalho serão permanentemente excluídos. Tarefas conectadas a outros membros serão preservadas. Esta ação não pode ser desfeita.",
+    "leaveConfirmButton": "Sair do espaço de trabalho",
+    "leftWorkspace": "Saiu do espaço de trabalho",
+    "leaveFailed": "Falha ao sair do espaço de trabalho"
   },
   "calendar": {
     "title": "Calendar",

@@ -93,6 +93,10 @@ export default function WorkspaceSettingsPage() {
   const [deleteConfirmName, setDeleteConfirmName] = useState('');
   const [deleting, setDeleting] = useState(false);
 
+  // Leave state
+  const [showLeave, setShowLeave] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+
   // Initialize workspace info when workspace changes
   useEffect(() => {
     if (currentWorkspace) {
@@ -175,13 +179,41 @@ export default function WorkspaceSettingsPage() {
     }
   };
 
-  const handleRemoveMember = async (userId: string) => {
+  const handleRemoveMember = async (memberId: string) => {
     if (!currentWorkspace) return;
+    // If removing self, show confirmation dialog instead
+    if (memberId === user?.id) {
+      setShowLeave(true);
+      return;
+    }
     try {
-      await api.delete(`/workspaces/${currentWorkspace.id}/members/${userId}`);
+      await api.delete(`/workspaces/${currentWorkspace.id}/members/${memberId}`);
       fetchMembers();
     } catch (error) {
       console.error('Failed to remove member:', error);
+    }
+  };
+
+  const handleLeaveWorkspace = async () => {
+    if (!currentWorkspace || !user) return;
+    setLeaving(true);
+    try {
+      await api.delete(`/workspaces/${currentWorkspace.id}/members/${user.id}`);
+      // Remove from store and switch workspace
+      const remaining = useWorkspaceStore.getState().workspaces.filter((ws) => ws.id !== currentWorkspace.id);
+      const next = remaining[0] || null;
+      if (next) {
+        useWorkspaceStore.getState().setCurrentWorkspace(next);
+      }
+      useWorkspaceStore.setState({ workspaces: remaining, currentWorkspace: next });
+      toast.success(t('leftWorkspace'));
+      setShowLeave(false);
+      router.push('/workspace');
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || t('leaveFailed'));
+    } finally {
+      setLeaving(false);
     }
   };
 
@@ -606,6 +638,40 @@ export default function WorkspaceSettingsPage() {
                 </Button>
               </div>
             )}
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Leave Confirmation Dialog */}
+      {showLeave && (
+        <Dialog open onOpenChange={() => setShowLeave(false)}>
+          <DialogContent className="sm:max-w-sm">
+            <DialogHeader>
+              <DialogTitle>{t('leaveConfirmTitle')}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                {t('leaveConfirmDescription')}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setShowLeave(false)}
+                >
+                  {tc('cancel')}
+                </Button>
+                <Button
+                  variant="destructive"
+                  className="flex-1"
+                  disabled={leaving}
+                  onClick={handleLeaveWorkspace}
+                >
+                  {leaving && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
+                  {t('leaveConfirmButton')}
+                </Button>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       )}

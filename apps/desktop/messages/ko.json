@@ -575,7 +575,12 @@
     "deleteConfirmInput": "확인을 위해 \"{name}\"을(를) 입력하세요",
     "deleteConfirmButton": "이 워크스페이스 삭제",
     "workspaceDeleted": "워크스페이스가 삭제되었습니다",
-    "deleteFailed": "워크스페이스 삭제에 실패했습니다"
+    "deleteFailed": "워크스페이스 삭제에 실패했습니다",
+    "leaveConfirmTitle": "워크스페이스 나가기",
+    "leaveConfirmDescription": "이 워크스페이스에서 나의 단독 태스크, 활동 기록, 그룹 멤버십이 영구적으로 삭제됩니다. 다른 멤버와 연결된 태스크는 유지됩니다. 이 작업은 되돌릴 수 없습니다.",
+    "leaveConfirmButton": "워크스페이스 나가기",
+    "leftWorkspace": "워크스페이스를 나갔습니다",
+    "leaveFailed": "워크스페이스 나가기에 실패했습니다"
   },
   "calendar": {
     "title": "캘린더",

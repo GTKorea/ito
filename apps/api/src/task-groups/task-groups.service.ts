@@ -27,6 +27,21 @@ export class TaskGroupsService {
       },
       include: groupInclude(),
     });
+
+    // If public group, auto-add all workspace members
+    if (!dto.isPrivate) {
+      const members = await this.prisma.workspaceMember.findMany({
+        where: { workspaceId },
+        select: { userId: true },
+      });
+      await this.prisma.taskGroupMember.createMany({
+        data: members
+          .filter((m) => m.userId !== userId)
+          .map((m) => ({ taskGroupId: group.id, userId: m.userId })),
+        skipDuplicates: true,
+      });
+    }
+
     return group;
   }
 

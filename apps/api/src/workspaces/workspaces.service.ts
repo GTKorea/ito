@@ -308,6 +308,18 @@ export class WorkspacesService {
       },
     });
 
+    // Auto-join all public groups in the workspace
+    const publicGroups = await this.prisma.taskGroup.findMany({
+      where: { workspaceId: invite.workspaceId, isPrivate: false, isArchived: false },
+      select: { id: true },
+    });
+    if (publicGroups.length > 0) {
+      await this.prisma.taskGroupMember.createMany({
+        data: publicGroups.map((g) => ({ taskGroupId: g.id, userId })),
+        skipDuplicates: true,
+      });
+    }
+
     await this.activityService.log({
       workspaceId: invite.workspaceId,
       userId,
@@ -411,6 +423,45 @@ export class WorkspacesService {
       }
     }
 
+    // Clean up user data before removing membership
+    // 1. Delete solo tasks (creator = assignee = user, no thread links)
+    const soloTasks = await this.prisma.task.findMany({
+      where: {
+        workspaceId,
+        creatorId: targetUserId,
+        assigneeId: targetUserId,
+        threadLinks: { none: {} },
+      },
+      select: { id: true },
+    });
+    if (soloTasks.length > 0) {
+      const taskIds = soloTasks.map((t) => t.id);
+      await this.prisma.chatMessage.deleteMany({ where: { taskId: { in: taskIds } } });
+      await this.prisma.file.deleteMany({ where: { taskId: { in: taskIds } } });
+      await this.prisma.task.deleteMany({ where: { id: { in: taskIds } } });
+    }
+
+    // 2. Remove from all task groups in this workspace
+    await this.prisma.taskGroupMember.deleteMany({
+      where: { userId: targetUserId, taskGroup: { workspaceId } },
+    });
+
+    // 3. Delete private groups created by the user
+    const privateGroups = await this.prisma.taskGroup.findMany({
+      where: { workspaceId, createdById: targetUserId, isPrivate: true },
+      select: { id: true },
+    });
+    if (privateGroups.length > 0) {
+      const groupIds = privateGroups.map((g) => g.id);
+      await this.prisma.taskGroupMember.deleteMany({ where: { taskGroupId: { in: groupIds } } });
+      await this.prisma.taskGroup.deleteMany({ where: { id: { in: groupIds } } });
+    }
+
+    // 4. Delete user preferences and activities
+    await this.prisma.userPreference.deleteMany({ where: { userId: targetUserId, workspaceId } });
+    await this.prisma.activity.deleteMany({ where: { userId: targetUserId, workspaceId } });
+
+    // 5. Remove workspace membership
     await this.prisma.workspaceMember.deleteMany({
       where: { userId: targetUserId, workspaceId },
     });
