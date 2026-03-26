@@ -111,7 +111,7 @@ export function WorkspaceSwitcher() {
           ))}
         </div>
 
-        <Separator className="my-1" />
+        <Separator className="my-0.5" />
 
         {creating ? (
           <div className="px-1 pb-1 space-y-1.5">
