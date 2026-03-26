@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { X, Link2, Paperclip, List, Network, MessageCircle, Vote, Bell, Trash2, ChevronDown, Check, Upload, Users, UserPlus, ArrowRightLeft, Eye } from 'lucide-react';
+import { X, Link2, Paperclip, List, Network, MessageCircle, Vote, Bell, Trash2, ChevronDown, Check, Upload, Users, UserPlus, ArrowRightLeft, Eye, Loader2 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   DropdownMenu,
@@ -67,6 +67,8 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
   const [reminderLoading, setReminderLoading] = useState(false);
   const [showReminderPopover, setShowReminderPopover] = useState(false);
   const [globalDragOver, setGlobalDragOver] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const saveStatusTimer = useRef<NodeJS.Timeout | null>(null);
   const dragCounter = useRef(0);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const initialValuesRef = useRef({ title: '', description: '' });
@@ -160,12 +162,19 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
     }
   };
 
+  const markSaved = useCallback(() => {
+    setSaveStatus('saved');
+    if (saveStatusTimer.current) clearTimeout(saveStatusTimer.current);
+    saveStatusTimer.current = setTimeout(() => setSaveStatus('idle'), 2000);
+  }, []);
+
   // Debounced auto-save for title/description
   useEffect(() => {
     if (!task) return;
     const { title: initTitle, description: initDesc } = initialValuesRef.current;
     if (title === initTitle && description === initDesc) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
+    setSaveStatus('saving');
     debounceRef.current = setTimeout(async () => {
       try {
         await updateTask(taskId, {
@@ -173,7 +182,9 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
           ...(description !== initDesc ? { description: description || undefined } : {}),
         });
         initialValuesRef.current = { title, description };
+        markSaved();
       } catch {
+        setSaveStatus('idle');
         toast.error(t('saveFailed'));
       }
     }, 800);
@@ -181,9 +192,12 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
 
   // Immediate save for status/priority/dueDate
   const saveField = async (field: string, value: string) => {
+    setSaveStatus('saving');
     try {
       await updateTask(taskId, { [field]: value || undefined });
+      markSaved();
     } catch {
+      setSaveStatus('idle');
       toast.error(t('saveFailed'));
     }
   };
@@ -235,7 +249,15 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
       )}
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
-        <h2 className="text-sm font-semibold text-[#ECECEC]">{t('taskDetail')}</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-[#ECECEC]">{t('taskDetail')}</h2>
+          {saveStatus === 'saving' && (
+            <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+          )}
+          {saveStatus === 'saved' && (
+            <Check className="h-3 w-3 text-green-500 animate-in fade-in duration-200" />
+          )}
+        </div>
         <div className="flex items-center gap-1">
           <Popover open={showReminderPopover} onOpenChange={setShowReminderPopover}>
             <PopoverTrigger render={
