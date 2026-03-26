@@ -198,20 +198,30 @@ export class TasksService {
         ]);
       }
     } else {
-      // My Tasks view: only show tasks the current user is involved in
+      // All Tasks view: tasks user is involved in + tasks from user's groups
+      const userGroupIds = await this.prisma.taskGroupMember.findMany({
+        where: { userId, taskGroup: { workspaceId } },
+        select: { taskGroupId: true },
+      });
+      const groupIds = userGroupIds.map((g) => g.taskGroupId);
+
       if (memberIds && memberIds.length > 0) {
-        where.OR = memberIds.flatMap((mid) => [
-          { creatorId: mid },
-          { assigneeId: mid },
-          { threadLinks: { some: { fromUserId: mid } } },
-          { threadLinks: { some: { toUserId: mid } } },
-        ]);
+        where.OR = [
+          ...memberIds.flatMap((mid) => [
+            { creatorId: mid },
+            { assigneeId: mid },
+            { threadLinks: { some: { fromUserId: mid } } },
+            { threadLinks: { some: { toUserId: mid } } },
+          ]),
+          ...(groupIds.length > 0 ? [{ taskGroupId: { in: groupIds } }] : []),
+        ];
       } else {
         where.OR = [
           { creatorId: userId },
           { assigneeId: userId },
           { threadLinks: { some: { fromUserId: userId } } },
           { threadLinks: { some: { toUserId: userId } } },
+          ...(groupIds.length > 0 ? [{ taskGroupId: { in: groupIds } }] : []),
         ];
       }
     }
@@ -232,26 +242,12 @@ export class TasksService {
       if (!isActive) {
         completed.push(task);
       } else if (isAssignee && task.status === 'BLOCKED') {
-        // BLOCKED tasks go to waiting (external dependency)
         waiting.push(task);
       } else if (isAssignee) {
         actionRequired.push(task);
-      } else if (taskGroupId) {
-        // Group view: show other members' active tasks in waiting
-        waiting.push(task);
       } else {
-        // My Tasks view: categorize by involvement
-        const isCreator = task.creatorId === userId;
-        const hasForwardedLink = task.threadLinks.some(
-          (l) =>
-            (l.fromUserId === userId || l.toUserId === userId) &&
-            l.status === 'FORWARDED',
-        );
-        if (isCreator || hasForwardedLink) {
-          waiting.push(task);
-        } else {
-          completed.push(task);
-        }
+        // Not assignee: creator, forwarded link, or group member
+        waiting.push(task);
       }
     }
 

@@ -110,16 +110,24 @@ export class TaskGroupsService {
         },
         orderBy: { createdAt: 'asc' },
       }),
-      this.prisma.task.count({
-        where: {
-          workspaceId,
-          status: { notIn: ['COMPLETED', 'CANCELLED'] },
-          OR: [
-            { assigneeId: userId },
-            { creatorId: userId },
-          ],
-        },
-      }),
+      (async () => {
+        const userGroupIds = await this.prisma.taskGroupMember.findMany({
+          where: { userId, taskGroup: { workspaceId } },
+          select: { taskGroupId: true },
+        });
+        const groupIds = userGroupIds.map((g) => g.taskGroupId);
+        return this.prisma.task.count({
+          where: {
+            workspaceId,
+            status: { notIn: ['COMPLETED', 'CANCELLED'] },
+            OR: [
+              { assigneeId: userId },
+              { creatorId: userId },
+              ...(groupIds.length > 0 ? [{ taskGroupId: { in: groupIds } }] : []),
+            ],
+          },
+        });
+      })(),
     ]);
     return { groups, totalActiveCount };
   }
