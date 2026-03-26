@@ -38,6 +38,13 @@ export interface CoCreator {
   createdAt: string;
 }
 
+export interface CompletionWatcher {
+  id: string;
+  watcher: User;
+  addedById: string;
+  createdAt: string;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -52,6 +59,7 @@ export interface Task {
   creator: User;
   assignee: User;
   coCreators?: CoCreator[];
+  completionWatchers?: CompletionWatcher[];
   taskGroup?: { id: string; name: string } | null;
   threadLinks: ThreadLink[];
   createdAt: string;
@@ -89,6 +97,8 @@ interface TaskState {
   waiting: Task[];
   completed: Task[];
   isLoading: boolean;
+  newlyCreatedTaskId: string | null;
+  clearNewlyCreated: () => void;
   calendarData: CalendarData | null;
   calendarLoading: boolean;
   calendarEvents: CalendarEvent[];
@@ -112,6 +122,7 @@ interface TaskState {
   pullCurrentAssignee: (taskId: string) => Promise<void>;
   batchMoveCheck: (taskIds: string[], workspaceId?: string, taskGroupId?: string) => Promise<{ movable: Task[]; blocked: { task: Task; reason: string }[] }>;
   batchMoveExecute: (taskIds: string[], workspaceId?: string, taskGroupId?: string) => Promise<void>;
+  transferTask: (taskId: string, newOwnerId: string) => Promise<void>;
 }
 
 function getWorkspaceId(): string | undefined {
@@ -162,6 +173,8 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   waiting: [],
   completed: [],
   isLoading: false,
+  newlyCreatedTaskId: null,
+  clearNewlyCreated: () => set({ newlyCreatedTaskId: null }),
   calendarData: null,
   calendarLoading: false,
   calendarEvents: [],
@@ -224,7 +237,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       ...(voteConfig ? { voteConfig } : {}),
       ...(coCreatorIds && coCreatorIds.length > 0 ? { coCreatorIds } : {}),
     });
-    set((state) => ({ actionRequired: [data, ...state.actionRequired] }));
+    set((state) => ({ actionRequired: [...state.actionRequired, data], newlyCreatedTaskId: data.id }));
     // Optimistic update: increment task counts in sidebar
     const groupStore = useTaskGroupStore.getState();
     useTaskGroupStore.setState({
@@ -459,5 +472,16 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
     trackEvent('tasks_moved', { count: taskIds.length });
     await refetchCategorized(set);
+  },
+
+  transferTask: async (taskId, newOwnerId) => {
+    await api.post(`/tasks/${taskId}/transfer`, { newOwnerId });
+    // Remove from all lists (task is no longer mine)
+    set((state) => ({
+      actionRequired: state.actionRequired.filter((t) => t.id !== taskId),
+      waiting: state.waiting.filter((t) => t.id !== taskId),
+      completed: state.completed.filter((t) => t.id !== taskId),
+    }));
+    trackEvent('task_transferred');
   },
 }));

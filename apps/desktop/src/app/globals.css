@@ -165,3 +165,25 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.25);
 }
+
+/* Task creation slide-in animation */
+@keyframes task-in {
+  0% {
+    opacity: 0;
+    transform: translateX(-8px);
+    background-color: hsl(var(--primary) / 0.1);
+  }
+  30% {
+    opacity: 1;
+    transform: translateX(0);
+    background-color: hsl(var(--primary) / 0.1);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+    background-color: transparent;
+  }
+}
+.animate-task-in {
+  animation: task-in 1.5s ease-out forwards;
+}

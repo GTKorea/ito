@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -206,6 +206,16 @@ export function TaskItem({
     zIndex: isDragging ? 50 : undefined,
   };
 
+  const { newlyCreatedTaskId, clearNewlyCreated } = useTaskStore();
+  const isNewlyCreated = newlyCreatedTaskId === task.id;
+
+  useEffect(() => {
+    if (isNewlyCreated) {
+      const timer = setTimeout(() => clearNewlyCreated(), 1800);
+      return () => clearTimeout(timer);
+    }
+  }, [isNewlyCreated, clearNewlyCreated]);
+
   const hasThreads = task.threadLinks.length > 0;
   const dueDateInfo = getDueDateInfo(task.dueDate);
   const isAssignee = user?.id === task.assignee?.id;
@@ -283,9 +293,10 @@ export function TaskItem({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'group rounded-lg border border-border bg-card p-3 hover:border-border/80 transition-colors',
+        'group rounded-lg border border-border bg-card p-3 hover:border-border/80 transition-all',
         isSelected && 'bg-primary/5 border-primary/20',
-        isDragging && 'shadow-lg'
+        isDragging && 'shadow-lg',
+        isNewlyCreated && 'animate-task-in'
       )}
     >
       <div className="flex items-center gap-3">
