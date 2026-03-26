@@ -216,6 +216,11 @@ export default function WorkspacePage() {
 
   const clearSelection = () => setSelectedTaskIds(new Set());
 
+  // Sync groupId to store so refetchCategorized can read it
+  useEffect(() => {
+    useTaskGroupStore.getState().setCurrentGroup(groupId || null);
+  }, [groupId]);
+
   // Load member filter from server on group change
   useEffect(() => {
     clearSelection();
