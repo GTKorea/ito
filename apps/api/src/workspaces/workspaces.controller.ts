@@ -120,6 +120,25 @@ export class WorkspacesController {
     );
   }
 
+  @Get(':id/invites')
+  @ApiOperation({ summary: 'Get pending invites for workspace (OWNER/ADMIN only)' })
+  getPendingInvites(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.workspacesService.getPendingInvites(id, userId);
+  }
+
+  @Delete(':id/invites/:inviteId')
+  @ApiOperation({ summary: 'Cancel a pending invite (OWNER/ADMIN only)' })
+  cancelInvite(
+    @Param('id') id: string,
+    @Param('inviteId') inviteId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.workspacesService.cancelInvite(inviteId, id, userId);
+  }
+
   @Post(':id/seed-sample-data')
   @ApiOperation({ summary: 'Seed sample data for onboarding (owner only, empty workspace only)' })
   seedSampleData(

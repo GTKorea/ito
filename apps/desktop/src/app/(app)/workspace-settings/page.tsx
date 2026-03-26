@@ -39,6 +39,8 @@ import {
   Camera,
   Building2,
   AlertTriangle,
+  Clock,
+  XCircle,
 } from 'lucide-react';
 
 interface WorkspaceMember {
@@ -50,6 +52,14 @@ interface WorkspaceMember {
     email: string;
     avatarUrl?: string;
   };
+}
+
+interface PendingInvite {
+  id: string;
+  email: string;
+  role: string;
+  expiresAt: string;
+  createdAt: string;
 }
 
 const ROLE_BADGE_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
@@ -71,6 +81,7 @@ export default function WorkspaceSettingsPage() {
   const logoInputRef = useRef<HTMLInputElement>(null);
 
   const [members, setMembers] = useState<WorkspaceMember[]>([]);
+  const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
   const [membersLoading, setMembersLoading] = useState(true);
   const [myRole, setMyRole] = useState('MEMBER');
 
@@ -112,8 +123,13 @@ export default function WorkspaceSettingsPage() {
     if (!currentWorkspace) return;
     setMembersLoading(true);
     try {
-      const { data } = await api.get(`/workspaces/${currentWorkspace.id}`);
+      const [wsRes, invitesRes] = await Promise.all([
+        api.get(`/workspaces/${currentWorkspace.id}`),
+        api.get(`/workspaces/${currentWorkspace.id}/invites`).catch(() => ({ data: [] })),
+      ]);
+      const data = wsRes.data;
       setMembers(data.members || []);
+      setPendingInvites(invitesRes.data || []);
       const me = data.members?.find((m: WorkspaceMember) => m.user.id === user?.id);
       setMyRole(me?.role || 'MEMBER');
       // Also populate workspace details from full response
@@ -124,6 +140,17 @@ export default function WorkspaceSettingsPage() {
       console.error('Failed to load workspace settings:', error);
     } finally {
       setMembersLoading(false);
+    }
+  };
+
+  const handleCancelInvite = async (inviteId: string) => {
+    if (!currentWorkspace) return;
+    try {
+      await api.delete(`/workspaces/${currentWorkspace.id}/invites/${inviteId}`);
+      setPendingInvites((prev) => prev.filter((i) => i.id !== inviteId));
+      toast.success(t('inviteCancelled'));
+    } catch {
+      toast.error(t('saveFailed'));
     }
   };
 
@@ -528,6 +555,55 @@ export default function WorkspaceSettingsPage() {
             </div>
           )}
         </section>
+
+        {/* Pending Invites */}
+        {canManageMembers && pendingInvites.length > 0 && (
+          <>
+            <Separator />
+            <section className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <h2 className="text-sm font-semibold">{t('pendingInvites')}</h2>
+                <Badge variant="secondary" className="text-[10px]">
+                  {pendingInvites.length}
+                </Badge>
+              </div>
+              <div className="space-y-1">
+                {pendingInvites.map((invite) => (
+                  <div
+                    key={invite.id}
+                    className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-accent/30 transition-colors group"
+                  >
+                    <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center">
+                      <UserPlus className="h-3.5 w-3.5 text-muted-foreground" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm truncate">{invite.email}</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {t('expiresAt', { date: new Date(invite.expiresAt).toLocaleDateString() })}
+                      </p>
+                    </div>
+                    <Badge
+                      variant={ROLE_BADGE_VARIANT[invite.role] || 'outline'}
+                      className="text-[10px] shrink-0"
+                    >
+                      {t(`role_${invite.role}`)}
+                    </Badge>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-destructive"
+                      onClick={() => handleCancelInvite(invite.id)}
+                      title={t('cancelInvite')}
+                    >
+                      <XCircle className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </>
+        )}
 
         {/* Danger Zone */}
         <Separator />
