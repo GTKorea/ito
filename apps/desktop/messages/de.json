@@ -71,7 +71,7 @@
   },
   "workspace": {
     "myTasks": "Meine Aufgaben",
-    "tasksAssignedToYou": "Dir zugewiesene Aufgaben",
+    "tasksAssignedToYou": "Aufgaben mit Bezug zu dir",
     "newTask": "Neue Aufgabe",
     "noWorkspaceYet": "Noch kein Arbeitsbereich",
     "createWorkspaceToStart": "Erstelle einen Arbeitsbereich, um mit der Aufgabenverwaltung zu beginnen",
@@ -182,7 +182,11 @@
     "coCreators": "Mitersteller",
     "noCoCreators": "Keine Mitersteller",
     "searchMember": "Mitglied suchen...",
-    "noMembersFound": "Keine Mitglieder gefunden"
+    "noMembersFound": "Keine Mitglieder gefunden",
+    "transferTask": "Eigentum übertragen",
+    "transferred": "Aufgabe übertragen",
+    "completionWatchers": "Abschlussbenachrichtigungen",
+    "noWatchers": "Keine Empfänger"
   },
   "threads": {
     "title": "Threads",

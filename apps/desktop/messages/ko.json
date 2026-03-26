@@ -71,7 +71,7 @@
   },
   "workspace": {
     "myTasks": "내 태스크",
-    "tasksAssignedToYou": "나에게 할당된 태스크",
+    "tasksAssignedToYou": "나와 관련된 태스크",
     "newTask": "새 태스크",
     "noWorkspaceYet": "워크스페이스가 없습니다",
     "createWorkspaceToStart": "태스크 관리를 시작하려면 워크스페이스를 만드세요",
@@ -182,7 +182,11 @@
     "coCreators": "공동 작업자",
     "noCoCreators": "공동 작업자 없음",
     "searchMember": "멤버 검색...",
-    "noMembersFound": "멤버를 찾을 수 없습니다"
+    "noMembersFound": "멤버를 찾을 수 없습니다",
+    "transferTask": "소유권 양도",
+    "transferred": "태스크가 양도되었습니다",
+    "completionWatchers": "완료 알림 수신자",
+    "noWatchers": "수신자 없음"
   },
   "threads": {
     "title": "스레드",

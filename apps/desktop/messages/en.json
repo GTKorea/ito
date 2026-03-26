@@ -71,7 +71,7 @@
   },
   "workspace": {
     "myTasks": "My Tasks",
-    "tasksAssignedToYou": "Tasks assigned to you",
+    "tasksAssignedToYou": "Tasks related to you",
     "newTask": "New Task",
     "noWorkspaceYet": "No workspace yet",
     "createWorkspaceToStart": "Create a workspace to start managing your tasks",
@@ -182,7 +182,11 @@
     "coCreators": "Co-Creators",
     "noCoCreators": "No co-creators",
     "searchMember": "Search member...",
-    "noMembersFound": "No members found"
+    "noMembersFound": "No members found",
+    "transferTask": "Transfer Ownership",
+    "transferred": "Task transferred",
+    "completionWatchers": "Completion Watchers",
+    "noWatchers": "No watchers"
   },
   "threads": {
     "title": "Threads",

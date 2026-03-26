@@ -71,7 +71,7 @@
   },
   "workspace": {
     "myTasks": "Mes Tâches",
-    "tasksAssignedToYou": "Tâches qui vous sont assignées",
+    "tasksAssignedToYou": "Tâches liées à vous",
     "newTask": "Nouvelle Tâche",
     "noWorkspaceYet": "Pas encore d'espace de travail",
     "createWorkspaceToStart": "Créez un espace de travail pour commencer à gérer vos tâches",
@@ -182,7 +182,11 @@
     "coCreators": "Co-créateurs",
     "noCoCreators": "Aucun co-créateur",
     "searchMember": "Rechercher un membre...",
-    "noMembersFound": "Aucun membre trouvé"
+    "noMembersFound": "Aucun membre trouvé",
+    "transferTask": "Transférer la propriété",
+    "transferred": "Tâche transférée",
+    "completionWatchers": "Observateurs de complétion",
+    "noWatchers": "Aucun observateur"
   },
   "threads": {
     "title": "Fils",

@@ -71,7 +71,7 @@
   },
   "workspace": {
     "myTasks": "Mis Tareas",
-    "tasksAssignedToYou": "Tareas asignadas a ti",
+    "tasksAssignedToYou": "Tareas relacionadas contigo",
     "newTask": "Nueva Tarea",
     "noWorkspaceYet": "Aún no hay espacio de trabajo",
     "createWorkspaceToStart": "Crea un espacio de trabajo para comenzar a gestionar tus tareas",
@@ -182,7 +182,11 @@
     "coCreators": "Co-creadores",
     "noCoCreators": "Sin co-creadores",
     "searchMember": "Buscar miembro...",
-    "noMembersFound": "No se encontraron miembros"
+    "noMembersFound": "No se encontraron miembros",
+    "transferTask": "Transferir propiedad",
+    "transferred": "Tarea transferida",
+    "completionWatchers": "Observadores de finalización",
+    "noWatchers": "Sin observadores"
   },
   "threads": {
     "title": "Hilos",

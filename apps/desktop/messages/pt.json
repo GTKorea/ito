@@ -71,7 +71,7 @@
   },
   "workspace": {
     "myTasks": "Minhas Tarefas",
-    "tasksAssignedToYou": "Tarefas atribuídas a você",
+    "tasksAssignedToYou": "Tarefas relacionadas a você",
     "newTask": "Nova Tarefa",
     "noWorkspaceYet": "Nenhum espaço de trabalho ainda",
     "createWorkspaceToStart": "Crie um espaço de trabalho para começar a gerenciar suas tarefas",
@@ -182,7 +182,11 @@
     "coCreators": "Co-criadores",
     "noCoCreators": "Sem co-criadores",
     "searchMember": "Buscar membro...",
-    "noMembersFound": "Nenhum membro encontrado"
+    "noMembersFound": "Nenhum membro encontrado",
+    "transferTask": "Transferir propriedade",
+    "transferred": "Tarefa transferida",
+    "completionWatchers": "Observadores de conclusão",
+    "noWatchers": "Sem observadores"
   },
   "threads": {
     "title": "Threads",

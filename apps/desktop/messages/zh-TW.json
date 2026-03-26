@@ -71,7 +71,7 @@
   },
   "workspace": {
     "myTasks": "我的任務",
-    "tasksAssignedToYou": "指派給你的任務",
+    "tasksAssignedToYou": "與你相關的任務",
     "newTask": "新任務",
     "noWorkspaceYet": "尚無工作區",
     "createWorkspaceToStart": "建立工作區以開始管理任務",
@@ -182,7 +182,11 @@
     "coCreators": "共同建立者",
     "noCoCreators": "無共同建立者",
     "searchMember": "搜尋成員...",
-    "noMembersFound": "找不到成員"
+    "noMembersFound": "找不到成員",
+    "transferTask": "轉讓所有權",
+    "transferred": "任務已轉讓",
+    "completionWatchers": "完成通知接收者",
+    "noWatchers": "無接收者"
   },
   "threads": {
     "title": "執行緒",

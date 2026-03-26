@@ -71,7 +71,7 @@
   },
   "workspace": {
     "myTasks": "我的任务",
-    "tasksAssignedToYou": "分配给你的任务",
+    "tasksAssignedToYou": "与你相关的任务",
     "newTask": "新任务",
     "noWorkspaceYet": "还没有工作区",
     "createWorkspaceToStart": "创建一个工作区以开始管理任务",
@@ -182,7 +182,11 @@
     "coCreators": "共同创建者",
     "noCoCreators": "无共同创建者",
     "searchMember": "搜索成员...",
-    "noMembersFound": "未找到成员"
+    "noMembersFound": "未找到成员",
+    "transferTask": "转让所有权",
+    "transferred": "任务已转让",
+    "completionWatchers": "完成通知接收人",
+    "noWatchers": "无接收人"
   },
   "threads": {
     "title": "线程",
