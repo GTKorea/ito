@@ -24,7 +24,9 @@ export class FilesService {
   ) {
     await mkdir(UPLOADS_DIR, { recursive: true });
 
-    const ext = extname(file.originalname);
+    // Multer encodes originalname as latin1; decode to UTF-8 for non-ASCII filenames
+    const originalName = Buffer.from(file.originalname, 'latin1').toString('utf8');
+    const ext = extname(originalName);
     const filename = `${randomUUID()}${ext}`;
     const filepath = join(UPLOADS_DIR, filename);
 
@@ -32,7 +34,7 @@ export class FilesService {
 
     return this.prisma.file.create({
       data: {
-        filename: file.originalname,
+        filename: originalName,
         url: `/uploads/${filename}`,
         size: file.size,
         mimeType: file.mimetype,
