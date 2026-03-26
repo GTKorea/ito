@@ -40,6 +40,12 @@ export class CreateTaskDto {
   @ApiPropertyOptional({ description: 'Vote configuration JSON' })
   @IsOptional()
   voteConfig?: Prisma.InputJsonValue;
+
+  @ApiPropertyOptional({ description: 'Co-creator user IDs' })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  coCreatorIds?: string[];
 }
 
 export class UpdateTaskDto {

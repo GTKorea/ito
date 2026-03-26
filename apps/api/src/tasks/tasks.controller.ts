@@ -114,6 +114,26 @@ export class TasksController {
     return this.tasksService.reorderTasks(workspaceId, userId, dto.taskIds);
   }
 
+  @Post('tasks/:id/co-creators')
+  @ApiOperation({ summary: 'Add co-creators to a task (creator only)' })
+  addCoCreators(
+    @Param('id') id: string,
+    @Body('userIds') userIds: string[],
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.tasksService.addCoCreators(id, userIds, userId);
+  }
+
+  @Delete('tasks/:id/co-creators/:coCreatorUserId')
+  @ApiOperation({ summary: 'Remove a co-creator from a task (creator only)' })
+  removeCoCreator(
+    @Param('id') id: string,
+    @Param('coCreatorUserId') coCreatorUserId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.tasksService.removeCoCreator(id, coCreatorUserId, userId);
+  }
+
   @Post('tasks/batch-move/check')
   @ApiOperation({ summary: 'Check which tasks can be moved' })
   batchMoveCheck(

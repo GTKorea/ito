@@ -10,6 +10,10 @@ const TASK_INCLUDE_FULL = {
   creator: { select: { id: true, name: true, avatarUrl: true } },
   assignee: { select: { id: true, name: true, avatarUrl: true } },
   taskGroup: { select: { id: true, name: true } },
+  coCreators: {
+    include: { user: { select: { id: true, name: true, avatarUrl: true } } },
+    orderBy: { createdAt: 'asc' as const },
+  },
   threadLinks: {
     include: {
       fromUser: { select: { id: true, name: true, avatarUrl: true } },
@@ -51,10 +55,22 @@ export class TasksService {
         teamId: dto.teamId || undefined,
         taskGroupId: dto.taskGroupId || undefined,
         order: newOrder,
+        ...(dto.coCreatorIds && dto.coCreatorIds.length > 0
+          ? {
+              coCreators: {
+                create: dto.coCreatorIds
+                  .filter((id) => id !== userId)
+                  .map((id) => ({ userId: id })),
+              },
+            }
+          : {}),
       },
       include: {
         creator: { select: { id: true, name: true, avatarUrl: true } },
         assignee: { select: { id: true, name: true, avatarUrl: true } },
+        coCreators: {
+          include: { user: { select: { id: true, name: true, avatarUrl: true } } },
+        },
         threadLinks: true,
       },
     });
@@ -114,15 +130,7 @@ export class TasksService {
     const task = await this.prisma.task.findUnique({
       where: { id },
       include: {
-        creator: { select: { id: true, name: true, avatarUrl: true } },
-        assignee: { select: { id: true, name: true, avatarUrl: true } },
-        threadLinks: {
-          include: {
-            fromUser: { select: { id: true, name: true, avatarUrl: true } },
-            toUser: { select: { id: true, name: true, avatarUrl: true } },
-          },
-          orderBy: { chainIndex: 'asc' },
-        },
+        ...TASK_INCLUDE_FULL,
         files: true,
       },
     });
@@ -193,6 +201,7 @@ export class TasksService {
         where.OR = memberIds.flatMap((mid) => [
           { creatorId: mid },
           { assigneeId: mid },
+          { coCreators: { some: { userId: mid } } },
           { threadLinks: { some: { fromUserId: mid } } },
           { threadLinks: { some: { toUserId: mid } } },
         ]);
@@ -210,6 +219,7 @@ export class TasksService {
           ...memberIds.flatMap((mid) => [
             { creatorId: mid },
             { assigneeId: mid },
+            { coCreators: { some: { userId: mid } } },
             { threadLinks: { some: { fromUserId: mid } } },
             { threadLinks: { some: { toUserId: mid } } },
           ]),
@@ -219,6 +229,7 @@ export class TasksService {
         where.OR = [
           { creatorId: userId },
           { assigneeId: userId },
+          { coCreators: { some: { userId } } },
           { threadLinks: { some: { fromUserId: userId } } },
           { threadLinks: { some: { toUserId: userId } } },
           ...(groupIds.length > 0 ? [{ taskGroupId: { in: groupIds } }] : []),
@@ -238,6 +249,8 @@ export class TasksService {
     for (const task of allTasks) {
       const isActive = !['COMPLETED', 'CANCELLED'].includes(task.status);
       const isAssignee = task.assigneeId === userId;
+      const isCreator = task.creatorId === userId;
+      const isCoCreator = task.coCreators?.some((cc) => cc.userId === userId) ?? false;
 
       if (!isActive) {
         completed.push(task);
@@ -245,8 +258,31 @@ export class TasksService {
         waiting.push(task);
       } else if (isAssignee) {
         actionRequired.push(task);
+      } else if (isCreator) {
+        // Creator but not assignee: task has been forwarded to someone else
+        const hasActiveForward = task.threadLinks.some(
+          (l) => l.fromUserId === userId && (l.status === 'PENDING' || l.status === 'FORWARDED'),
+        );
+        if (hasActiveForward) {
+          waiting.push(task);
+        } else {
+          actionRequired.push(task);
+        }
+      } else if (isCoCreator) {
+        // Co-creator: sees the task like the creator does
+        const hasActiveForward = task.threadLinks.some(
+          (l) => l.status === 'PENDING' || l.status === 'FORWARDED',
+        );
+        if (hasActiveForward) {
+          waiting.push(task);
+        } else {
+          actionRequired.push(task);
+        }
+      } else if (taskGroupId) {
+        // Group view: group member sees other people's active tasks in action required
+        actionRequired.push(task);
       } else {
-        // Not assignee: creator, forwarded link, or group member
+        // All Tasks view: tasks from groups where user is not directly involved
         waiting.push(task);
       }
     }
@@ -316,6 +352,34 @@ export class TasksService {
     });
 
     return deleted;
+  }
+
+  async addCoCreators(taskId: string, userIds: string[], requestingUserId: string) {
+    const task = await this.prisma.task.findUnique({ where: { id: taskId } });
+    if (!task) throw new NotFoundException('Task not found');
+    if (task.creatorId !== requestingUserId) {
+      throw new ForbiddenException('Only the creator (SuperCreator) can manage co-creators');
+    }
+    const filteredIds = userIds.filter((id) => id !== task.creatorId);
+    if (filteredIds.length > 0) {
+      await this.prisma.taskCoCreator.createMany({
+        data: filteredIds.map((userId) => ({ taskId, userId })),
+        skipDuplicates: true,
+      });
+    }
+    return this.findById(taskId);
+  }
+
+  async removeCoCreator(taskId: string, coCreatorUserId: string, requestingUserId: string) {
+    const task = await this.prisma.task.findUnique({ where: { id: taskId } });
+    if (!task) throw new NotFoundException('Task not found');
+    if (task.creatorId !== requestingUserId) {
+      throw new ForbiddenException('Only the creator (SuperCreator) can manage co-creators');
+    }
+    await this.prisma.taskCoCreator.deleteMany({
+      where: { taskId, userId: coCreatorUserId },
+    });
+    return this.findById(taskId);
   }
 
   async reorderTasks(workspaceId: string, userId: string, taskIds: string[]) {
