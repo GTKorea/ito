@@ -179,7 +179,10 @@
     "tabDetails": "Detalles",
     "tabThread": "Hilo",
     "tabFiles": "Archivos",
-    "coCreators": "Co-creadores"
+    "coCreators": "Co-creadores",
+    "noCoCreators": "Sin co-creadores",
+    "searchMember": "Buscar miembro...",
+    "noMembersFound": "No se encontraron miembros"
   },
   "threads": {
     "title": "Hilos",

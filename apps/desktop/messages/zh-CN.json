@@ -179,7 +179,10 @@
     "tabDetails": "详情",
     "tabThread": "线程",
     "tabFiles": "文件",
-    "coCreators": "共同创建者"
+    "coCreators": "共同创建者",
+    "noCoCreators": "无共同创建者",
+    "searchMember": "搜索成员...",
+    "noMembersFound": "未找到成员"
   },
   "threads": {
     "title": "线程",

@@ -179,7 +179,10 @@
     "tabDetails": "Details",
     "tabThread": "Thread",
     "tabFiles": "Dateien",
-    "coCreators": "Mitersteller"
+    "coCreators": "Mitersteller",
+    "noCoCreators": "Keine Mitersteller",
+    "searchMember": "Mitglied suchen...",
+    "noMembersFound": "Keine Mitglieder gefunden"
   },
   "threads": {
     "title": "Threads",

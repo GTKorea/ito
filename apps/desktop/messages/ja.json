@@ -179,7 +179,10 @@
     "tabDetails": "詳細",
     "tabThread": "スレッド",
     "tabFiles": "ファイル",
-    "coCreators": "共同作成者"
+    "coCreators": "共同作成者",
+    "noCoCreators": "共同作成者なし",
+    "searchMember": "メンバー検索...",
+    "noMembersFound": "メンバーが見つかりません"
   },
   "threads": {
     "title": "スレッド",

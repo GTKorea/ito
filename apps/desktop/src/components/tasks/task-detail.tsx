@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useTaskStore } from '@/stores/task-store';
 import type { Task } from '@/stores/task-store';
@@ -30,6 +30,7 @@ import { useMediaQuery } from '@/hooks/use-media-query';
 import { ChatPanel } from '@/components/chat/chat-panel';
 import { VotePanel } from '@/components/tasks/vote-panel';
 import { useAuthStore } from '@/stores/auth-store';
+import { useWorkspaceMembers } from '@/hooks/use-workspace-members';
 
 const statuses = ['OPEN', 'IN_PROGRESS', 'BLOCKED', 'COMPLETED', 'CANCELLED'];
 const priorities = ['URGENT', 'HIGH', 'MEDIUM', 'LOW'];
@@ -427,42 +428,12 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
             </div>
 
             {/* Co-Creators */}
-            {task.coCreators && task.coCreators.length > 0 && (
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-1">
-                  <Users className="h-3 w-3" />
-                  {t('coCreators')}
-                </label>
-                <div className="flex flex-wrap gap-1.5">
-                  {task.coCreators.map((cc) => (
-                    <div key={cc.id} className="flex items-center gap-1 rounded-full bg-accent/50 px-2 py-0.5">
-                      <Avatar className="h-4 w-4">
-                        <AvatarFallback className="text-[7px] bg-secondary">
-                          {cc.user.name?.charAt(0).toUpperCase() || '?'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-[10px] text-foreground">{cc.user.name}</span>
-                      {task.creator?.id === user?.id && (
-                        <button
-                          className="ml-0.5 text-muted-foreground hover:text-destructive"
-                          onClick={async () => {
-                            try {
-                              await api.delete(`/tasks/${taskId}/co-creators/${cc.user.id}`);
-                              setTask((prev) => prev ? {
-                                ...prev,
-                                coCreators: prev.coCreators?.filter((c) => c.id !== cc.id),
-                              } : prev);
-                            } catch {}
-                          }}
-                        >
-                          <X className="h-2.5 w-2.5" />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            <CoCreatorSection
+              task={task}
+              taskId={taskId}
+              isCreator={task.creator?.id === user?.id}
+              onUpdate={setTask}
+            />
 
             {/* Save button */}
             <Button size="sm" onClick={handleSave} disabled={isSaving} className="w-full">
@@ -556,6 +527,122 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
             <X className="h-5 w-5" />
           </Button>
         </div>
+      )}
+    </div>
+  );
+}
+
+function CoCreatorSection({
+  task,
+  taskId,
+  isCreator,
+  onUpdate,
+}: {
+  task: Task;
+  taskId: string;
+  isCreator: boolean;
+  onUpdate: React.Dispatch<React.SetStateAction<Task | null>>;
+}) {
+  const t = useTranslations('tasks');
+  const [showAdd, setShowAdd] = useState(false);
+  const existingIds = useMemo(
+    () => new Set([task.creator?.id, ...(task.coCreators?.map((cc) => cc.user.id) || [])].filter(Boolean) as string[]),
+    [task.creator?.id, task.coCreators],
+  );
+  const { members, search, setSearch } = useWorkspaceMembers({ excludeIds: existingIds });
+
+  const handleAdd = async (userId: string, userName: string) => {
+    try {
+      const { data } = await api.post(`/tasks/${taskId}/co-creators`, { userIds: [userId] });
+      onUpdate(data);
+      setShowAdd(false);
+      setSearch('');
+    } catch {
+      toast.error(t('saveFailed'));
+    }
+  };
+
+  const handleRemove = async (ccId: string, ccUserId: string) => {
+    try {
+      await api.delete(`/tasks/${taskId}/co-creators/${ccUserId}`);
+      onUpdate((prev) => prev ? {
+        ...prev,
+        coCreators: prev.coCreators?.filter((c) => c.id !== ccId),
+      } : prev);
+    } catch {}
+  };
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between">
+        <label className="text-xs font-medium uppercase text-muted-foreground flex items-center gap-1">
+          <Users className="h-3 w-3" />
+          {t('coCreators')}
+        </label>
+        {isCreator && (
+          <Popover open={showAdd} onOpenChange={setShowAdd}>
+            <PopoverTrigger render={
+              <button className="h-5 w-5 rounded flex items-center justify-center hover:bg-accent transition-colors" />
+            }>
+              <UserPlus className="h-3 w-3 text-muted-foreground" />
+            </PopoverTrigger>
+            <PopoverContent className="w-56 p-2" align="end">
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={t('searchMember')}
+                className="h-7 text-xs mb-2"
+                autoFocus
+              />
+              <div className="max-h-40 overflow-y-auto space-y-0.5">
+                {members.length === 0 && (
+                  <p className="text-xs text-muted-foreground text-center py-2">{t('noMembersFound')}</p>
+                )}
+                {members.map((m) => (
+                  <button
+                    key={m.id}
+                    className="w-full flex items-center gap-2 rounded px-2 py-1.5 hover:bg-accent transition-colors text-left"
+                    onClick={() => handleAdd(m.id, m.name)}
+                  >
+                    <Avatar className="h-5 w-5">
+                      <AvatarFallback className="text-[8px] bg-secondary">
+                        {m.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs truncate">{m.name}</p>
+                      <p className="text-[10px] text-muted-foreground truncate">{m.email}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
+      </div>
+      {task.coCreators && task.coCreators.length > 0 ? (
+        <div className="flex flex-wrap gap-1.5">
+          {task.coCreators.map((cc) => (
+            <div key={cc.id} className="flex items-center gap-1 rounded-full bg-accent/50 px-2 py-0.5">
+              <Avatar className="h-4 w-4">
+                <AvatarFallback className="text-[7px] bg-secondary">
+                  {cc.user.name?.charAt(0).toUpperCase() || '?'}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-[10px] text-foreground">{cc.user.name}</span>
+              {isCreator && (
+                <button
+                  className="ml-0.5 text-muted-foreground hover:text-destructive"
+                  onClick={() => handleRemove(cc.id, cc.user.id)}
+                >
+                  <X className="h-2.5 w-2.5" />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-[10px] text-muted-foreground">{t('noCoCreators')}</p>
       )}
     </div>
   );

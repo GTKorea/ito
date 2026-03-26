@@ -179,7 +179,10 @@
     "tabDetails": "상세",
     "tabThread": "스레드",
     "tabFiles": "파일",
-    "coCreators": "공동 작업자"
+    "coCreators": "공동 작업자",
+    "noCoCreators": "공동 작업자 없음",
+    "searchMember": "멤버 검색...",
+    "noMembersFound": "멤버를 찾을 수 없습니다"
   },
   "threads": {
     "title": "스레드",

@@ -179,7 +179,10 @@
     "tabDetails": "詳情",
     "tabThread": "執行緒",
     "tabFiles": "檔案",
-    "coCreators": "共同建立者"
+    "coCreators": "共同建立者",
+    "noCoCreators": "無共同建立者",
+    "searchMember": "搜尋成員...",
+    "noMembersFound": "找不到成員"
   },
   "threads": {
     "title": "執行緒",
