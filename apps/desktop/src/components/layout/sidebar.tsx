@@ -62,7 +62,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
   const { user, logout } = useAuthStore();
   const { unreadCount } = useNotificationStore();
   const { currentWorkspace } = useWorkspaceStore();
-  const { groups, sharedSpaceGroups, fetchGroups, fetchAllSharedSpaceGroups } = useTaskGroupStore();
+  const { groups, sharedSpaceGroups, totalActiveTaskCount, fetchGroups, fetchAllSharedSpaceGroups } = useTaskGroupStore();
   const { sharedSpaces, fetchSharedSpaces } = useSharedSpaceStore();
   const t = useTranslations('sidebar');
   const tg = useTranslations('groups');
@@ -217,6 +217,9 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                     )}
                   >
                     <span className="truncate">{t('all')}</span>
+                    {totalActiveTaskCount > 0 && (
+                      <span className="ml-auto text-xs text-muted-foreground/60">{totalActiveTaskCount}</span>
+                    )}
                   </Link>
                   {/* Workspace groups */}
                   {groups.map((group) => (

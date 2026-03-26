@@ -69,31 +69,44 @@ export class TaskGroupsService {
   }
 
   async findAllInWorkspace(workspaceId: string, userId: string) {
-    return this.prisma.taskGroup.findMany({
-      where: {
-        workspaceId,
-        isArchived: false,
-        OR: [
-          { isPrivate: false },
-          { members: { some: { userId } } },
-        ],
-      },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        workspaceId: true,
-        sharedSpaceId: true,
-        createdById: true,
-        isPrivate: true,
-        isArchived: true,
-        createdAt: true,
-        updatedAt: true,
-        _count: { select: { members: true, tasks: { where: { status: { notIn: ['COMPLETED', 'CANCELLED'] } } } } },
-        createdBy: { select: { id: true, name: true, avatarUrl: true } },
-      },
-      orderBy: { createdAt: 'asc' },
-    });
+    const [groups, totalActiveCount] = await Promise.all([
+      this.prisma.taskGroup.findMany({
+        where: {
+          workspaceId,
+          isArchived: false,
+          OR: [
+            { isPrivate: false },
+            { members: { some: { userId } } },
+          ],
+        },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          workspaceId: true,
+          sharedSpaceId: true,
+          createdById: true,
+          isPrivate: true,
+          isArchived: true,
+          createdAt: true,
+          updatedAt: true,
+          _count: { select: { members: true, tasks: { where: { status: { notIn: ['COMPLETED', 'CANCELLED'] } } } } },
+          createdBy: { select: { id: true, name: true, avatarUrl: true } },
+        },
+        orderBy: { createdAt: 'asc' },
+      }),
+      this.prisma.task.count({
+        where: {
+          workspaceId,
+          status: { notIn: ['COMPLETED', 'CANCELLED'] },
+          OR: [
+            { assigneeId: userId },
+            { creatorId: userId },
+          ],
+        },
+      }),
+    ]);
+    return { groups, totalActiveCount };
   }
 
   async findAllInSharedSpace(sharedSpaceId: string, userId: string) {

@@ -18,6 +18,7 @@ interface TaskGroup {
 interface TaskGroupState {
   groups: TaskGroup[];
   sharedSpaceGroups: Record<string, TaskGroup[]>;
+  totalActiveTaskCount: number;
   currentGroupId: string | null;
   isLoading: boolean;
 
@@ -40,6 +41,7 @@ interface TaskGroupState {
 export const useTaskGroupStore = create<TaskGroupState>((set, get) => ({
   groups: [],
   sharedSpaceGroups: {},
+  totalActiveTaskCount: 0,
   currentGroupId: null,
   isLoading: false,
 
@@ -47,7 +49,7 @@ export const useTaskGroupStore = create<TaskGroupState>((set, get) => ({
     set({ isLoading: true });
     try {
       const { data } = await api.get(`/workspaces/${workspaceId}/task-groups`);
-      set({ groups: data, isLoading: false });
+      set({ groups: data.groups, totalActiveTaskCount: data.totalActiveCount, isLoading: false });
     } catch {
       set({ isLoading: false });
     }

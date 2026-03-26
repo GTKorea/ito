@@ -224,10 +224,11 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       ...(voteConfig ? { voteConfig } : {}),
     });
     set((state) => ({ actionRequired: [data, ...state.actionRequired] }));
-    // Optimistic update: increment group task count in sidebar
-    if (taskGroupId) {
-      const groupStore = useTaskGroupStore.getState();
-      useTaskGroupStore.setState({
+    // Optimistic update: increment task counts in sidebar
+    const groupStore = useTaskGroupStore.getState();
+    useTaskGroupStore.setState({
+      totalActiveTaskCount: groupStore.totalActiveTaskCount + 1,
+      ...(taskGroupId ? {
         groups: groupStore.groups.map((g) =>
           g.id === taskGroupId ? { ...g, _count: { ...g._count, tasks: g._count.tasks + 1 } } : g
         ),
@@ -239,8 +240,8 @@ export const useTaskStore = create<TaskState>((set, get) => ({
             ),
           ])
         ),
-      });
-    }
+      } : {}),
+    });
     trackEvent('task_created', { workspaceId });
     return data;
   },
@@ -257,6 +258,25 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         waiting: state.waiting.filter((t) => t.id !== id),
         completed: [data, ...state.completed],
       }));
+      // Optimistic: decrement task counts (completed tasks are excluded from count)
+      const taskGroupId = data.taskGroupId;
+      const groupStore = useTaskGroupStore.getState();
+      useTaskGroupStore.setState({
+        totalActiveTaskCount: Math.max(0, groupStore.totalActiveTaskCount - 1),
+        ...(taskGroupId ? {
+          groups: groupStore.groups.map((g) =>
+            g.id === taskGroupId ? { ...g, _count: { ...g._count, tasks: Math.max(0, g._count.tasks - 1) } } : g
+          ),
+          sharedSpaceGroups: Object.fromEntries(
+            Object.entries(groupStore.sharedSpaceGroups).map(([spaceId, groups]) => [
+              spaceId,
+              groups.map((g) =>
+                g.id === taskGroupId ? { ...g, _count: { ...g._count, tasks: Math.max(0, g._count.tasks - 1) } } : g
+              ),
+            ])
+          ),
+        } : {}),
+      });
     } else {
       set((state) => ({
         actionRequired: updateInList(state.actionRequired),
@@ -267,12 +287,39 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   },
 
   deleteTask: async (id) => {
+    // Find the task before deleting to get its groupId and status
+    const allTasks = [...get().actionRequired, ...get().waiting, ...get().completed];
+    const task = allTasks.find((t) => t.id === id);
+    const taskGroupId = task?.taskGroupId;
+    const isNonCompleted = task?.status !== 'COMPLETED' && task?.status !== 'CANCELLED';
+
     await api.delete(`/tasks/${id}`);
     set((state) => ({
       actionRequired: state.actionRequired.filter((t) => t.id !== id),
       waiting: state.waiting.filter((t) => t.id !== id),
       completed: state.completed.filter((t) => t.id !== id),
     }));
+
+    // Optimistic update: decrement task counts in sidebar (only for non-completed tasks, matching backend count)
+    if (isNonCompleted) {
+      const groupStore = useTaskGroupStore.getState();
+      useTaskGroupStore.setState({
+        totalActiveTaskCount: Math.max(0, groupStore.totalActiveTaskCount - 1),
+        ...(taskGroupId ? {
+          groups: groupStore.groups.map((g) =>
+            g.id === taskGroupId ? { ...g, _count: { ...g._count, tasks: Math.max(0, g._count.tasks - 1) } } : g
+          ),
+          sharedSpaceGroups: Object.fromEntries(
+            Object.entries(groupStore.sharedSpaceGroups).map(([spaceId, groups]) => [
+              spaceId,
+              groups.map((g) =>
+                g.id === taskGroupId ? { ...g, _count: { ...g._count, tasks: Math.max(0, g._count.tasks - 1) } } : g
+              ),
+            ])
+          ),
+        } : {}),
+      });
+    }
   },
 
   connectChain: async (taskId: string, userIds: string[]) => {
