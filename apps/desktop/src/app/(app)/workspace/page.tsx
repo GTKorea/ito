@@ -23,7 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Plus, Building2, ArrowUpDown, ArrowLeft, Hash, ArrowRightLeft, Users, UserPlus, X, Settings, Archive, Trash2, Filter, Check, Lock, Globe, User } from 'lucide-react';
+import { Plus, Building2, ArrowUpDown, Hash, ArrowRightLeft, Users, UserPlus, X, Settings, Archive, Trash2, Filter, Check, Lock, Globe, User } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   DropdownMenu,
@@ -36,7 +36,7 @@ import { QuickInput } from '@/components/tasks/quick-input';
 import { MoveTasksDialog } from '@/components/tasks/move-tasks-dialog';
 import { GroupMembersPopover } from '@/components/groups/group-members-popover';
 import { cn } from '@/lib/utils';
-import Link from 'next/link';
+
 
 const PRIORITY_ORDER: Record<string, number> = {
   URGENT: 0,
@@ -355,14 +355,6 @@ export default function WorkspacePage() {
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-4 md:px-6 py-3">
         <div className="flex items-center gap-2">
-          {currentGroup && (
-            <Link
-              href="/workspace"
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-          )}
           <div>
             <h1 className="text-lg md:text-xl font-semibold flex items-center gap-2">
               {currentGroup ? (
@@ -573,7 +565,7 @@ export default function WorkspacePage() {
         {/* Quick Input + Selection Bar — sticky bottom */}
         <div className="sticky bottom-0 z-10">
           {isSelecting && (
-            <div className="px-4 pb-2">
+            <div className="px-4 md:px-6 pb-2">
               <div className="flex items-center justify-between rounded-xl bg-primary/10 border border-primary/20 backdrop-blur-sm px-4 py-2">
                 <span className="text-sm font-medium">{tt('selectedCount', { count: selectedTaskIds.size })}</span>
                 <div className="flex items-center gap-2">
