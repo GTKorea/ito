@@ -32,6 +32,8 @@ model User {
   tasksCreated         Task[]         @relation("TaskCreator")
   tasksAssigned        Task[]         @relation("TaskAssignee")
   taskCoCreations      TaskCoCreator[]
+  completionWatching       TaskCompletionWatcher[] @relation("CompletionWatcher")
+  completionWatchersAdded  TaskCompletionWatcher[] @relation("CompletionWatcherAdder")
   threadLinksFrom      ThreadLink[]   @relation("ThreadLinkSender")
   threadLinksTo        ThreadLink[]   @relation("ThreadLinkReceiver")
   notifications             Notification[]
@@ -196,7 +198,8 @@ model Task {
   lastPulledAt  DateTime?
 
   threadLinks    ThreadLink[]
-  coCreators     TaskCoCreator[]
+  coCreators          TaskCoCreator[]
+  completionWatchers  TaskCompletionWatcher[]
   votes          Vote[]
   files          File[]
   chatMessages   ChatMessage[]
@@ -585,6 +588,25 @@ model TaskCoCreator {
   @@unique([taskId, userId])
   @@index([taskId])
   @@index([userId])
+}
+
+// ──────────────────── Task Completion Watchers ────────────────────
+
+model TaskCompletionWatcher {
+  id           String   @id @default(cuid())
+  taskId       String
+  watcherId    String
+  addedById    String
+  threadLinkId String?
+  createdAt    DateTime @default(now())
+
+  task    Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  watcher User @relation("CompletionWatcher", fields: [watcherId], references: [id], onDelete: Cascade)
+  addedBy User @relation("CompletionWatcherAdder", fields: [addedById], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, watcherId, addedById])
+  @@index([taskId])
+  @@index([watcherId])
 }
 
 // ──────────────────── Chat Read Status ────────────────────
