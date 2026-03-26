@@ -32,6 +32,12 @@ export interface VoteConfig {
   anonymous?: boolean;
 }
 
+export interface CoCreator {
+  id: string;
+  user: User;
+  createdAt: string;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -45,6 +51,7 @@ export interface Task {
   taskGroupId?: string;
   creator: User;
   assignee: User;
+  coCreators?: CoCreator[];
   taskGroup?: { id: string; name: string } | null;
   threadLinks: ThreadLink[];
   createdAt: string;
@@ -89,7 +96,7 @@ interface TaskState {
   fetchCategorizedTasks: (workspaceId: string, taskGroupId?: string, memberIds?: string[]) => Promise<void>;
   fetchCalendarTasks: (workspaceId: string, start: string, end: string) => Promise<void>;
   fetchCalendarEvents: (start: string, end: string) => Promise<void>;
-  createTask: (workspaceId: string, title: string, description?: string, priority?: string, dueDate?: string, taskGroupId?: string, type?: string, voteConfig?: VoteConfig) => Promise<Task>;
+  createTask: (workspaceId: string, title: string, description?: string, priority?: string, dueDate?: string, taskGroupId?: string, type?: string, voteConfig?: VoteConfig, coCreatorIds?: string[]) => Promise<Task>;
   updateTask: (id: string, data: Partial<Task>) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
   connectChain: (taskId: string, userIds: string[]) => Promise<Task>;
@@ -112,9 +119,8 @@ function getWorkspaceId(): string | undefined {
 }
 
 function getCurrentGroupId(): string | undefined {
-  if (typeof window === 'undefined') return undefined;
-  const params = new URLSearchParams(window.location.search);
-  return params.get('group') || undefined;
+  // Use store state as source of truth instead of URL parsing (avoids timing issues)
+  return useTaskGroupStore.getState().currentGroupId || undefined;
 }
 
 /** Move a task from actionRequired to waiting (used by connect operations) */
@@ -126,15 +132,14 @@ function moveToWaiting(state: Pick<TaskState, 'actionRequired' | 'waiting'>, tas
   };
 }
 
-async function refetchCategorized(set: (partial: Partial<TaskState>) => void) {
-  const workspaceId = getWorkspaceId();
-  if (!workspaceId) return;
+async function fetchAndSetCategorized(
+  set: (partial: Partial<TaskState>) => void,
+  workspaceId: string,
+  taskGroupId?: string,
+) {
   try {
-    const taskGroupId = getCurrentGroupId();
-    const params: Record<string, string> = {};
-    if (taskGroupId) params.taskGroupId = taskGroupId;
     const { data } = await api.get(`/workspaces/${workspaceId}/tasks/categorized`, {
-      params: Object.keys(params).length > 0 ? params : undefined,
+      params: taskGroupId ? { taskGroupId } : undefined,
     });
     set({
       actionRequired: data.actionRequired,
@@ -144,6 +149,12 @@ async function refetchCategorized(set: (partial: Partial<TaskState>) => void) {
   } catch {
     // silent fail on refetch
   }
+}
+
+async function refetchCategorized(set: (partial: Partial<TaskState>) => void) {
+  const workspaceId = getWorkspaceId();
+  if (!workspaceId) return;
+  await fetchAndSetCategorized(set, workspaceId, getCurrentGroupId());
 }
 
 export const useTaskStore = create<TaskState>((set, get) => ({
@@ -199,21 +210,10 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   },
 
   silentRefetch: async (workspaceId, taskGroupId) => {
-    try {
-      const { data } = await api.get(`/workspaces/${workspaceId}/tasks/categorized`, {
-        params: taskGroupId ? { taskGroupId } : undefined,
-      });
-      set({
-        actionRequired: data.actionRequired,
-        waiting: data.waiting,
-        completed: data.completed,
-      });
-    } catch {
-      // silent fail
-    }
+    await fetchAndSetCategorized(set, workspaceId, taskGroupId);
   },
 
-  createTask: async (workspaceId, title, description, priority, dueDate, taskGroupId, type, voteConfig) => {
+  createTask: async (workspaceId, title, description, priority, dueDate, taskGroupId, type, voteConfig, coCreatorIds) => {
     const { data } = await api.post(`/workspaces/${workspaceId}/tasks`, {
       title,
       description,
@@ -222,6 +222,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       taskGroupId,
       ...(type ? { type } : {}),
       ...(voteConfig ? { voteConfig } : {}),
+      ...(coCreatorIds && coCreatorIds.length > 0 ? { coCreatorIds } : {}),
     });
     set((state) => ({ actionRequired: [data, ...state.actionRequired] }));
     // Optimistic update: increment task counts in sidebar
@@ -447,7 +448,6 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     }));
 
     // Optimistic: update group counts in sidebar
-    const { useTaskGroupStore } = await import('./task-group-store');
     useTaskGroupStore.setState((state) => ({
       groups: state.groups.map((g) => {
         let delta = 0;
