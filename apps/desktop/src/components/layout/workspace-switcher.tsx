@@ -113,62 +113,64 @@ export function WorkspaceSwitcher() {
 
         <Separator className="my-0.5" />
 
-        {creating ? (
-          <div className="px-1 pb-1 space-y-1.5">
-            <Input
-              placeholder={t('workspaceName')}
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleCreate();
-                if (e.key === 'Escape') {
-                  setCreating(false);
-                  setNewName('');
-                }
-              }}
-              autoFocus
-              className="h-7 text-xs"
-            />
-            <div className="flex gap-1">
-              <Button
-                size="sm"
-                className="h-6 text-xs flex-1"
-                onClick={handleCreate}
-                disabled={!newName.trim()}
-              >
-                {t('create')}
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-6 text-xs"
-                onClick={() => {
-                  setCreating(false);
-                  setNewName('');
+        <div>
+          {creating ? (
+            <div className="px-1 pb-1 space-y-1.5">
+              <Input
+                placeholder={t('workspaceName')}
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleCreate();
+                  if (e.key === 'Escape') {
+                    setCreating(false);
+                    setNewName('');
+                  }
                 }}
-              >
-                {t('cancel')}
-              </Button>
+                autoFocus
+                className="h-7 text-xs"
+              />
+              <div className="flex gap-1">
+                <Button
+                  size="sm"
+                  className="h-6 text-xs flex-1"
+                  onClick={handleCreate}
+                  disabled={!newName.trim()}
+                >
+                  {t('create')}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 text-xs"
+                  onClick={() => {
+                    setCreating(false);
+                    setNewName('');
+                  }}
+                >
+                  {t('cancel')}
+                </Button>
+              </div>
             </div>
-          </div>
-        ) : (
-          <button
-            onClick={() => setCreating(true)}
+          ) : (
+            <button
+              onClick={() => setCreating(true)}
+              className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-sm text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              {t('createWorkspace')}
+            </button>
+          )}
+
+          <Link
+            href="/workspace-settings"
+            onClick={() => setOpen(false)}
             className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-sm text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
           >
-            <Plus className="h-3.5 w-3.5" />
-            {t('createWorkspace')}
-          </button>
-        )}
-
-        <Link
-          href="/workspace-settings"
-          onClick={() => setOpen(false)}
-          className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-sm text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
-        >
-          <Settings className="h-3.5 w-3.5" />
-          {t('workspaceSettings')}
-        </Link>
+            <Settings className="h-3.5 w-3.5" />
+            {t('workspaceSettings')}
+          </Link>
+        </div>
       </PopoverContent>
     </Popover>
   );
