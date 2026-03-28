@@ -73,6 +73,7 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
   const dragCounter = useRef(0);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const initialValuesRef = useRef({ title: '', description: '' });
+  const composingRef = useRef(false);
   const t = useTranslations('tasks');
   const tc = useTranslations('chat');
   const tf = useTranslations('files');
@@ -172,15 +173,17 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
   // Debounced auto-save for title/description
   useEffect(() => {
     if (!task) return;
+    if (composingRef.current) return; // Skip during IME composition
     const { title: initTitle, description: initDesc } = initialValuesRef.current;
     if (title === initTitle && description === initDesc) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
     setSaveStatus('saving');
     debounceRef.current = setTimeout(async () => {
+      if (composingRef.current) return; // Double-check after timeout
       try {
         await updateTask(taskId, {
           ...(title !== initTitle ? { title } : {}),
-          ...(description !== initDesc ? { description: description || undefined } : {}),
+          ...(description !== initDesc ? { description } : {}),
         });
         initialValuesRef.current = { title, description };
         markSaved();
@@ -337,6 +340,8 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              onCompositionStart={() => { composingRef.current = true; }}
+              onCompositionEnd={(e) => { composingRef.current = false; setTitle((e.target as HTMLInputElement).value); }}
               className="text-base font-semibold bg-transparent border-none px-2 focus-visible:ring-0"
               placeholder={t('title')}
             />
@@ -345,6 +350,8 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              onCompositionStart={() => { composingRef.current = true; }}
+              onCompositionEnd={(e) => { composingRef.current = false; setDescription((e.target as HTMLTextAreaElement).value); }}
               className="bg-transparent border-border min-h-[80px] text-sm"
               placeholder={t('addDescription')}
               rows={3}

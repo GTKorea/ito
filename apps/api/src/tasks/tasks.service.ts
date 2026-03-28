@@ -163,6 +163,7 @@ export class TasksService {
     }
 
     const data: Prisma.TaskUpdateInput = { ...dto };
+    if ('description' in dto && dto.description === '') data.description = null;
     if (dto.dueDate) data.dueDate = new Date(dto.dueDate);
     if (dto.status === 'COMPLETED') data.completedAt = new Date();
 
