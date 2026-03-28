@@ -23,7 +23,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Plus, Building2, ArrowUpDown, Hash, ArrowRightLeft, Users, UserPlus, X, Settings, Archive, Trash2, Filter, Check, Lock, Globe, User } from 'lucide-react';
+import { Plus, Building2, ArrowUpDown, Hash, ArrowRightLeft, Users, UserPlus, X, Settings, Archive, Trash2, Filter, Check, Lock, Globe, User, Tag as TagIcon } from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   DropdownMenu,
@@ -35,6 +36,7 @@ import {
 import { QuickInput } from '@/components/tasks/quick-input';
 import { MoveTasksDialog } from '@/components/tasks/move-tasks-dialog';
 import { GroupMembersPopover } from '@/components/groups/group-members-popover';
+import { TagManager } from '@/components/groups/tag-manager';
 import { cn } from '@/lib/utils';
 
 
@@ -112,7 +114,7 @@ export default function WorkspacePage() {
   const tg = useTranslations('groups');
   const { currentWorkspace, isLoading: wsLoading } = useWorkspaceStore();
   const { actionRequired, waiting, completed, meetings, dismissedMeetingIds, isLoading, fetchCategorizedTasks } = useTaskStore();
-  const { groups, deleteGroup, archiveGroup, updateGroup } = useTaskGroupStore();
+  const { groups, deleteGroup, archiveGroup, updateGroup, tags, fetchTags } = useTaskGroupStore();
   const { checkAndStartWizard } = useOnboardingStore();
   const currentGroup = groupId ? groups.find((g) => g.id === groupId) : null;
   const [showCreate, setShowCreate] = useState(false);
@@ -121,8 +123,11 @@ export default function WorkspacePage() {
   const [openWithChat, setOpenWithChat] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(420);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showTagManager, setShowTagManager] = useState(false);
   const [memberFilter, setMemberFilterState] = useState<Set<string>>(new Set());
   const [groupFilter, setGroupFilterState] = useState<Set<string>>(new Set());
+  const [tagFilter, setTagFilterState] = useState<Set<string>>(new Set());
+  const [workspaceMembers, setWorkspaceMembers] = useState<Array<{ userId: string; user: { id: string; name: string; avatarUrl?: string } }>>([]);
   const isResizingRef = useRef(false);
 
   const handleResizeStart = useCallback((e: React.MouseEvent) => {
@@ -200,6 +205,42 @@ export default function WorkspacePage() {
       savePreference(key, [...value]);
     }
   };
+
+  const setTagFilter = (value: Set<string>) => {
+    setTagFilterState(value);
+    const key = `tagFilter:${groupId}`;
+    if (value.size === 0) {
+      deletePreference(key);
+    } else {
+      savePreference(key, [...value]);
+    }
+  };
+
+  // Fetch workspace members for all-tasks member filter
+  useEffect(() => {
+    if (currentWorkspace) {
+      api.get(`/workspaces/${currentWorkspace.id}/members`).then((res) => {
+        setWorkspaceMembers(res.data);
+      }).catch(() => {});
+    }
+  }, [currentWorkspace]);
+
+  // Fetch tags and restore tag filter on group change
+  useEffect(() => {
+    setTagFilterState(new Set());
+    if (groupId) {
+      fetchTags(groupId);
+      if (prefsLoadedRef.current) {
+        api.get('/users/me/preferences').then((res) => {
+          const prefs = res.data;
+          const key = `tagFilter:${groupId}`;
+          if (Array.isArray(prefs[key]) && prefs[key].length > 0) {
+            setTagFilterState(new Set(prefs[key]));
+          }
+        }).catch(() => {});
+      }
+    }
+  }, [groupId, fetchTags]);
 
   const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set());
   const [showMoveDialog, setShowMoveDialog] = useState(false);
@@ -313,17 +354,25 @@ export default function WorkspacePage() {
     [groupFilter],
   );
 
+  const tagFilterFn = useCallback(
+    (task: { tags?: Array<{ tagId: string }> }) => {
+      if (tagFilter.size === 0) return true;
+      return task.tags?.some((tt) => tagFilter.has(tt.tagId)) ?? false;
+    },
+    [tagFilter],
+  );
+
   const filteredActionRequired = useMemo(
-    () => groupId ? sortedActionRequired : sortedActionRequired.filter(groupFilterFn),
-    [sortedActionRequired, groupFilterFn, groupId],
+    () => (groupId ? sortedActionRequired : sortedActionRequired.filter(groupFilterFn)).filter(tagFilterFn),
+    [sortedActionRequired, groupFilterFn, tagFilterFn, groupId],
   );
   const filteredWaiting = useMemo(
-    () => groupId ? sortedWaiting : sortedWaiting.filter(groupFilterFn),
-    [sortedWaiting, groupFilterFn, groupId],
+    () => (groupId ? sortedWaiting : sortedWaiting.filter(groupFilterFn)).filter(tagFilterFn),
+    [sortedWaiting, groupFilterFn, tagFilterFn, groupId],
   );
   const filteredCompleted = useMemo(
-    () => groupId ? sortedCompleted : sortedCompleted.filter(groupFilterFn),
-    [sortedCompleted, groupFilterFn, groupId],
+    () => (groupId ? sortedCompleted : sortedCompleted.filter(groupFilterFn)).filter(tagFilterFn),
+    [sortedCompleted, groupFilterFn, tagFilterFn, groupId],
   );
 
   const toggleGroupFilter = (id: string) => {
@@ -420,6 +469,57 @@ export default function WorkspacePage() {
                   </div>
                 </PopoverContent>
               </Popover>
+              {/* Tag filter within group */}
+              {(tags[currentGroup.id] || []).length > 0 && (
+                <Popover>
+                  <PopoverTrigger render={
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={cn('h-8 text-xs text-muted-foreground relative', tagFilter.size > 0 && 'text-primary')}
+                      title={tg('filterTags')}
+                    />
+                  }>
+                    <TagIcon className="mr-1 h-3.5 w-3.5" />
+                    {tg('filterTags')}
+                    {tagFilter.size > 0 && (
+                      <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-primary" />
+                    )}
+                  </PopoverTrigger>
+                  <PopoverContent className="w-56 p-2" align="end">
+                    <div className="space-y-1">
+                      <button
+                        className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs hover:bg-accent transition-colors"
+                        onClick={() => setTagFilter(new Set())}
+                      >
+                        <span className="flex h-4 w-4 items-center justify-center rounded border border-border">
+                          {tagFilter.size === 0 && <Check className="h-3 w-3 text-primary" />}
+                        </span>
+                        <span className="font-medium">{tg('allTags')}</span>
+                      </button>
+                      <div className="h-px bg-border my-1" />
+                      {(tags[currentGroup.id] || []).map((tag) => (
+                        <button
+                          key={tag.id}
+                          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs hover:bg-accent transition-colors"
+                          onClick={() => {
+                            const next = new Set(tagFilter);
+                            if (next.has(tag.id)) next.delete(tag.id);
+                            else next.add(tag.id);
+                            setTagFilter(next);
+                          }}
+                        >
+                          <span className="flex h-4 w-4 items-center justify-center rounded border border-border">
+                            {tagFilter.has(tag.id) && <Check className="h-3 w-3 text-primary" />}
+                          </span>
+                          <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: tag.color }} />
+                          <span>{tag.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              )}
               {!currentGroup.isSystem && (
                 <DropdownMenu>
                   <DropdownMenuTrigger render={<Button variant="ghost" size="sm" className="h-8 w-8 p-0" />}>
@@ -437,6 +537,10 @@ export default function WorkspacePage() {
                       ) : (
                         <><Lock className="mr-2 h-4 w-4" />{tg('makePrivate')}</>
                       )}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setShowTagManager(true)}>
+                      <TagIcon className="mr-2 h-4 w-4" />
+                      {tg('manageTags')}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={async () => {
@@ -459,6 +563,59 @@ export default function WorkspacePage() {
                 </DropdownMenu>
               )}
             </>
+          )}
+          {/* Member filter in all-tasks view */}
+          {!currentGroup && (
+            <Popover>
+              <PopoverTrigger render={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={cn('h-8 text-xs text-muted-foreground relative', memberFilter.size > 0 && 'text-primary')}
+                  title={tg('filterMembers')}
+                />
+              }>
+                <User className="mr-1 h-3.5 w-3.5" />
+                {tg('filterMembers')}
+                {memberFilter.size > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-primary" />
+                )}
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-2" align="end">
+                <div className="space-y-1">
+                  <button
+                    className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs hover:bg-accent transition-colors"
+                    onClick={() => setMemberFilter(new Set())}
+                  >
+                    <span className="flex h-4 w-4 items-center justify-center rounded border border-border">
+                      {memberFilter.size === 0 && <Check className="h-3 w-3 text-primary" />}
+                    </span>
+                    <span className="font-medium">{tg('allMembers')}</span>
+                  </button>
+                  <div className="h-px bg-border my-1" />
+                  {workspaceMembers.map((member) => (
+                    <button
+                      key={member.userId}
+                      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs hover:bg-accent transition-colors"
+                      onClick={() => {
+                        const next = new Set(memberFilter);
+                        if (next.has(member.userId)) next.delete(member.userId);
+                        else next.add(member.userId);
+                        setMemberFilter(next);
+                      }}
+                    >
+                      <span className="flex h-4 w-4 items-center justify-center rounded border border-border">
+                        {memberFilter.has(member.userId) && <Check className="h-3 w-3 text-primary" />}
+                      </span>
+                      <Avatar className="h-5 w-5">
+                        <AvatarFallback className="text-[9px]">{member.user.name[0]}</AvatarFallback>
+                      </Avatar>
+                      <span className="truncate">{member.user.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
           )}
           {!currentGroup && groups.length > 0 && (
             <Popover>
@@ -633,6 +790,18 @@ export default function WorkspacePage() {
           currentWorkspaceId={currentWorkspace.id}
           currentGroupId={groupId || undefined}
         />
+      )}
+
+      {/* Tag Manager Dialog */}
+      {showTagManager && currentGroup && (
+        <Dialog open onOpenChange={() => setShowTagManager(false)}>
+          <DialogContent className="sm:max-w-sm">
+            <DialogHeader>
+              <DialogTitle>{tg('manageTags')}</DialogTitle>
+            </DialogHeader>
+            <TagManager groupId={currentGroup.id} />
+          </DialogContent>
+        </Dialog>
       )}
 
       {/* Delete Group Confirmation */}

@@ -40,10 +40,11 @@ export class WorkspacesService {
       include: { members: { include: { user: true } } },
     });
 
-    // Auto-create private "My Tasks" group for the creator
+    // Auto-create private system group for the creator (named after user)
+    const creator = await this.prisma.user.findUnique({ where: { id: userId }, select: { name: true } });
     await this.prisma.taskGroup.create({
       data: {
-        name: 'My Tasks',
+        name: creator?.name ?? 'My Tasks',
         workspaceId: workspace.id,
         createdById: userId,
         isPrivate: true,
@@ -300,14 +301,15 @@ export class WorkspacesService {
       this.prisma.workspaceInvite.delete({ where: { id: invite.id } }),
     ]);
 
-    // Auto-create private "My Tasks" group for the new member (if not already exists)
+    // Auto-create private system group for the new member (named after user)
     const existingSystemGroup = await this.prisma.taskGroup.findFirst({
       where: { workspaceId: invite.workspaceId, createdById: userId, isSystem: true },
     });
     if (!existingSystemGroup) {
+      const invitedUser = await this.prisma.user.findUnique({ where: { id: userId }, select: { name: true } });
       await this.prisma.taskGroup.create({
         data: {
-          name: 'My Tasks',
+          name: invitedUser?.name ?? 'My Tasks',
           workspaceId: invite.workspaceId,
           createdById: userId,
           isPrivate: true,

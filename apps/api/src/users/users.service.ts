@@ -31,7 +31,7 @@ export class UsersService {
 
   async updateProfile(id: string, data: UpdateProfileDto) {
     const { socialLinks, ...rest } = data;
-    return this.prisma.user.update({
+    const updated = await this.prisma.user.update({
       where: { id },
       data: {
         ...rest,
@@ -41,6 +41,16 @@ export class UsersService {
       },
       select: USER_PROFILE_SELECT,
     });
+
+    // Sync system group names if name changed
+    if (data.name) {
+      await this.prisma.taskGroup.updateMany({
+        where: { createdById: id, isSystem: true },
+        data: { name: data.name },
+      });
+    }
+
+    return updated;
   }
 
   async findPublicProfile(userId: string, requestingUserId: string) {

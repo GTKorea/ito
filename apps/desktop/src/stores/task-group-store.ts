@@ -16,12 +16,20 @@ interface TaskGroup {
   _count: { members: number; tasks: number };
 }
 
+export interface Tag {
+  id: string;
+  name: string;
+  color: string;
+  taskGroupId: string;
+}
+
 interface TaskGroupState {
   groups: TaskGroup[];
   sharedSpaceGroups: Record<string, TaskGroup[]>;
   totalActiveTaskCount: number;
   currentGroupId: string | null;
   isLoading: boolean;
+  tags: Record<string, Tag[]>;
 
   fetchGroups: (workspaceId: string) => Promise<void>;
   fetchSharedSpaceGroups: (sharedSpaceId: string) => Promise<void>;
@@ -37,6 +45,10 @@ interface TaskGroupState {
   addTaskToGroup: (groupId: string, taskId: string) => Promise<void>;
   removeTaskFromGroup: (groupId: string, taskId: string) => Promise<void>;
   setCurrentGroup: (id: string | null) => void;
+  fetchTags: (groupId: string) => Promise<void>;
+  createTag: (groupId: string, name: string, color?: string) => Promise<Tag>;
+  updateTag: (tagId: string, data: { name?: string; color?: string }) => Promise<void>;
+  deleteTag: (tagId: string, groupId: string) => Promise<void>;
 }
 
 export const useTaskGroupStore = create<TaskGroupState>((set, get) => ({
@@ -45,6 +57,7 @@ export const useTaskGroupStore = create<TaskGroupState>((set, get) => ({
   totalActiveTaskCount: 0,
   currentGroupId: null,
   isLoading: false,
+  tags: {},
 
   fetchGroups: async (workspaceId) => {
     set({ isLoading: true });
@@ -157,4 +170,39 @@ export const useTaskGroupStore = create<TaskGroupState>((set, get) => ({
   },
 
   setCurrentGroup: (id) => set({ currentGroupId: id }),
+
+  fetchTags: async (groupId) => {
+    try {
+      const { data } = await api.get(`/task-groups/${groupId}/tags`);
+      set((state) => ({ tags: { ...state.tags, [groupId]: data } }));
+    } catch {
+      // silent
+    }
+  },
+
+  createTag: async (groupId, name, color) => {
+    const { data } = await api.post(`/task-groups/${groupId}/tags`, { name, color });
+    set((state) => ({
+      tags: { ...state.tags, [groupId]: [...(state.tags[groupId] || []), data] },
+    }));
+    return data;
+  },
+
+  updateTag: async (tagId, updateData) => {
+    const { data } = await api.patch(`/tags/${tagId}`, updateData);
+    set((state) => {
+      const newTags = { ...state.tags };
+      for (const groupId of Object.keys(newTags)) {
+        newTags[groupId] = newTags[groupId].map((t) => (t.id === tagId ? data : t));
+      }
+      return { tags: newTags };
+    });
+  },
+
+  deleteTag: async (tagId, groupId) => {
+    await api.delete(`/tags/${tagId}`);
+    set((state) => ({
+      tags: { ...state.tags, [groupId]: (state.tags[groupId] || []).filter((t) => t.id !== tagId) },
+    }));
+  },
 }));

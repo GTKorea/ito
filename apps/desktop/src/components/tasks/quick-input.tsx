@@ -8,7 +8,7 @@ import { useAuthStore } from '@/stores/auth-store';
 import { api } from '@/lib/api-client';
 import { parseQuickInput } from '@/lib/quick-input-parser';
 import { useTranslations } from 'next-intl';
-import { Send, Loader2, AtSign, ChevronRight, Flag, CalendarDays, ShieldAlert, Hash, Users, Vote } from 'lucide-react';
+import { Send, Loader2, AtSign, ChevronRight, Flag, CalendarDays, ShieldAlert, Hash, Users, Vote, Tag as TagIcon, X, Check } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 
@@ -47,6 +47,14 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
   const [groupMentionStartPos, setGroupMentionStartPos] = useState(0);
   const resolvedGroupRef = useRef<Map<string, string>>(new Map());
 
+  // Tag autocomplete state
+  const [showTagAutocomplete, setShowTagAutocomplete] = useState(false);
+  const [tagSuggestions, setTagSuggestions] = useState<Array<{ id: string; name: string; color: string }>>([]);
+  const [tagAutocompleteIndex, setTagAutocompleteIndex] = useState(0);
+  const [tagMentionStartPos, setTagMentionStartPos] = useState(0);
+  const resolvedTagsRef = useRef<Map<string, string>>(new Map());
+  const [selectedTags, setSelectedTags] = useState<Array<{ id: string; name: string; color: string }>>([]);
+
   const [isFocused, setIsFocused] = useState(false);
   const [priority, setPriority] = useState<string | null>(null);
   const [dueDate, setDueDate] = useState<string | null>(null);
@@ -68,8 +76,14 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
 
   const { createTask, connectChain, connectMultiThread, connectBlocker, silentRefetch } = useTaskStore();
   const { currentWorkspace } = useWorkspaceStore();
-  const { groups } = useTaskGroupStore();
+  const { groups, tags, fetchTags } = useTaskGroupStore();
   const { user: currentUser } = useAuthStore();
+
+  useEffect(() => {
+    if (taskGroupId) {
+      fetchTags(taskGroupId);
+    }
+  }, [taskGroupId, fetchTags]);
 
   const searchUsers = useCallback(
     async (query: string) => {
@@ -148,6 +162,39 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
     }
     setShowGroupAutocomplete(false);
 
+    // --- $ Tag autocomplete detection ---
+    if (cursorPos <= (firstSegmentEnd === -1 ? value.length : firstSegmentEnd)) {
+      let dollarPos = -1;
+      for (let i = cursorPos - 1; i >= 0; i--) {
+        if (value[i] === '$') {
+          dollarPos = i;
+          break;
+        }
+        if (value[i] === ' ' && i < cursorPos - 1) break;
+      }
+
+      if (dollarPos >= 0 && taskGroupId) {
+        const query = value.substring(dollarPos + 1, cursorPos);
+        if (!query.includes(' ')) {
+          const groupTags = tags[taskGroupId] || [];
+          const lowerQuery = query.toLowerCase();
+          const filtered = groupTags.filter((t) =>
+            t.name.toLowerCase().startsWith(lowerQuery),
+          );
+          if (filtered.length > 0) {
+            setTagSuggestions(filtered);
+            setTagMentionStartPos(dollarPos);
+            setTagAutocompleteIndex(0);
+            setShowTagAutocomplete(true);
+            setShowAutocomplete(false);
+            setShowGroupAutocomplete(false);
+            return;
+          }
+        }
+      }
+    }
+    setShowTagAutocomplete(false);
+
     // --- @ mention detection ---
     // Find the last @ before cursor that isn't already completed
     let atPos = -1;
@@ -221,7 +268,48 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
     }, 0);
   };
 
+  const selectTag = (tag: { id: string; name: string; color: string }) => {
+    const before = input.substring(0, tagMentionStartPos);
+    const after = input.substring(inputRef.current?.selectionStart ?? input.length);
+    const newInput = before + '$' + tag.name + after;
+    setInput(newInput);
+    resolvedTagsRef.current.set(tag.name, tag.id);
+    if (!selectedTags.find((t) => t.id === tag.id)) {
+      setSelectedTags((prev) => [...prev, tag]);
+    }
+    setShowTagAutocomplete(false);
+    setTimeout(() => {
+      const newPos = before.length + tag.name.length + 1;
+      inputRef.current?.focus();
+      inputRef.current?.setSelectionRange(newPos, newPos);
+    }, 0);
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Tag autocomplete keyboard handling
+    if (showTagAutocomplete && tagSuggestions.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setTagAutocompleteIndex((prev) => prev < tagSuggestions.length - 1 ? prev + 1 : 0);
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setTagAutocompleteIndex((prev) => prev > 0 ? prev - 1 : tagSuggestions.length - 1);
+        return;
+      }
+      if (e.key === 'Tab' || (e.key === 'Enter' && showTagAutocomplete)) {
+        e.preventDefault();
+        selectTag(tagSuggestions[tagAutocompleteIndex]);
+        return;
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setShowTagAutocomplete(false);
+        return;
+      }
+    }
+
     // Group autocomplete keyboard handling
     if (showGroupAutocomplete && groupSuggestions.length > 0) {
       if (e.key === 'ArrowDown') {
@@ -387,6 +475,31 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
         await connectBlocker(task.id, parsed.blockerNote);
       }
 
+      // Apply tags (from $ syntax and UI selection)
+      if (task?.id) {
+        const groupTags = tags[effectiveGroupId || ''] || [];
+        const addedTagIds = new Set<string>();
+
+        // Tags from $ syntax
+        if (parsed.tagNames) {
+          for (const tagName of parsed.tagNames) {
+            const tagId = resolvedTagsRef.current.get(tagName)
+              || groupTags.find((t) => t.name === tagName)?.id;
+            if (tagId && !addedTagIds.has(tagId)) {
+              await api.post(`/tasks/${task.id}/tags`, { tagId });
+              addedTagIds.add(tagId);
+            }
+          }
+        }
+
+        // Tags from UI selection
+        for (const tag of selectedTags) {
+          if (!addedTagIds.has(tag.id)) {
+            await api.post(`/tasks/${task.id}/tags`, { tagId: tag.id });
+          }
+        }
+      }
+
       // Refresh the task list
       await silentRefetch(currentWorkspace.id, taskGroupId);
       setInput('');
@@ -398,8 +511,10 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
       setMeetingTime('');
       setMeetingDuration(60);
       setMeetingAgenda('');
+      setSelectedTags([]);
       resolvedUsersRef.current.clear();
       resolvedGroupRef.current.clear();
+      resolvedTagsRef.current.clear();
       setTimeout(() => inputRef.current?.focus(), 0);
     } catch {
       // Error handled silently — could add toast notification here
@@ -623,6 +738,27 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
         </div>
       )}
 
+      {/* Tag autocomplete dropdown — positioned above the input */}
+      {showTagAutocomplete && tagSuggestions.length > 0 && (
+        <div className="absolute bottom-full left-4 right-4 mb-3 max-h-48 overflow-y-auto rounded-2xl border border-border bg-card/95 backdrop-blur-md shadow-2xl">
+          {tagSuggestions.map((tag, index) => (
+            <button
+              key={tag.id}
+              onMouseDown={(e) => { e.preventDefault(); selectTag(tag); }}
+              className={cn(
+                'flex w-full items-center gap-2.5 px-3.5 py-2.5 text-sm transition-colors',
+                index === tagAutocompleteIndex
+                  ? 'bg-accent text-accent-foreground'
+                  : 'hover:bg-accent/50',
+              )}
+            >
+              <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: tag.color }} />
+              <span className="font-medium">{tag.name}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* User autocomplete dropdown — positioned above the input */}
       {showAutocomplete && autocompleteResults.length > 0 && (
         <div className="absolute bottom-full left-4 right-4 mb-3 max-h-48 overflow-y-auto rounded-2xl border border-border bg-card/95 backdrop-blur-md shadow-2xl">
@@ -805,6 +941,36 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
                 />
               </div>
 
+              {/* Tag button — only in group view */}
+              {taskGroupId && (tags[taskGroupId] || []).length > 0 && (
+                <button
+                  type="button"
+                  onMouseDown={handleToolbarMouseDown}
+                  onClick={() => {
+                    // Toggle showing all tags as suggestions
+                    if (showTagAutocomplete) {
+                      setShowTagAutocomplete(false);
+                    } else {
+                      const groupTags = tags[taskGroupId] || [];
+                      setTagSuggestions(groupTags);
+                      setTagMentionStartPos(input.length);
+                      setTagAutocompleteIndex(0);
+                      setShowTagAutocomplete(true);
+                    }
+                  }}
+                  title={t('addTag')}
+                  className={cn(
+                    'flex h-7 w-7 lg:h-8 lg:w-8 items-center justify-center rounded-md transition-colors',
+                    'cursor-pointer',
+                    selectedTags.length > 0
+                      ? 'text-primary bg-primary/10'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
+                  )}
+                >
+                  <TagIcon className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
+                </button>
+              )}
+
               {/* Vote button */}
               <button
                 type="button"
@@ -846,6 +1012,29 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
               </button>
             </div>
         </div>
+
+        {/* Selected tags badges */}
+        {selectedTags.length > 0 && (
+          <div className="flex flex-wrap gap-1 px-4 pt-2">
+            {selectedTags.map((tag) => (
+              <span
+                key={tag.id}
+                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium"
+                style={{ backgroundColor: tag.color + '20', color: tag.color }}
+              >
+                {tag.name}
+                <button
+                  type="button"
+                  onClick={() => setSelectedTags((prev) => prev.filter((t) => t.id !== tag.id))}
+                  onMouseDown={handleToolbarMouseDown}
+                  className="hover:opacity-70 cursor-pointer"
+                >
+                  <X className="h-2.5 w-2.5" />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* Badges row — shows selected priority/due date */}
         {(selectedPriority || dueDate || isVoteMode || isMeetingMode) && (
