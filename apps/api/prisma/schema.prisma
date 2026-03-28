@@ -52,6 +52,7 @@ model User {
   reminders            Reminder[]
   chatReadStatuses     ChatReadStatus[]
   preferences          UserPreference[]
+  meetingDismissals    MeetingDismissal[]
 }
 
 model RefreshToken {
@@ -204,7 +205,8 @@ model Task {
   files          File[]
   chatMessages   ChatMessage[]
   reminders      Reminder[]
-  chatReadStatuses ChatReadStatus[]
+  chatReadStatuses     ChatReadStatus[]
+  meetingDismissals    MeetingDismissal[]
 
   @@index([assigneeId])
   @@index([creatorId])
@@ -232,6 +234,7 @@ enum Priority {
 enum TaskType {
   STANDARD
   VOTE
+  MEETING
 }
 
 model Vote {
@@ -318,6 +321,9 @@ enum NotificationType {
   VOTE_COMPLETE
   THREAD_PULLED
   TASK_REMINDER
+  MEETING_INVITED
+  MEETING_CONFIRMED
+  MEETING_RESCHEDULED
 }
 
 model NotificationPreference {
@@ -616,6 +622,21 @@ model ChatReadStatus {
   taskId     String
   userId     String
   lastReadAt DateTime @default(now())
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, userId])
+  @@index([userId])
+}
+
+// ──────────────────── Meeting Dismissals ────────────────────
+
+model MeetingDismissal {
+  id        String   @id @default(cuid())
+  taskId    String
+  userId    String
+  createdAt DateTime @default(now())
 
   task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

@@ -96,6 +96,8 @@ interface TaskState {
   actionRequired: Task[];
   waiting: Task[];
   completed: Task[];
+  meetings: Task[];
+  dismissedMeetingIds: string[];
   isLoading: boolean;
   newlyCreatedTaskId: string | null;
   clearNewlyCreated: () => void;
@@ -118,11 +120,15 @@ interface TaskState {
   declineThread: (threadLinkId: string, reason?: string) => Promise<void>;
   reorderTasks: (workspaceId: string, taskIds: string[]) => Promise<void>;
   silentRefetch: (workspaceId: string, taskGroupId?: string) => Promise<void>;
-  pullThread: (linkId: string) => Promise<void>;
-  pullCurrentAssignee: (taskId: string) => Promise<void>;
+  pullThread: (linkId: string, message?: string) => Promise<void>;
+  pullCurrentAssignee: (taskId: string, message?: string) => Promise<void>;
   batchMoveCheck: (taskIds: string[], workspaceId?: string, taskGroupId?: string) => Promise<{ movable: Task[]; blocked: { task: Task; reason: string }[] }>;
   batchMoveExecute: (taskIds: string[], workspaceId?: string, taskGroupId?: string) => Promise<void>;
   transferTask: (taskId: string, newOwnerId: string) => Promise<void>;
+  confirmMeeting: (taskId: string) => Promise<void>;
+  rescheduleMeeting: (taskId: string, scheduledAt: string, duration?: number) => Promise<void>;
+  dismissMeeting: (taskId: string) => Promise<void>;
+  restoreMeeting: (taskId: string) => Promise<void>;
 }
 
 function getWorkspaceId(): string | undefined {
@@ -156,6 +162,8 @@ async function fetchAndSetCategorized(
       actionRequired: data.actionRequired,
       waiting: data.waiting,
       completed: data.completed,
+      meetings: data.meetings ?? [],
+      dismissedMeetingIds: data.dismissedMeetingIds ?? [],
     });
   } catch {
     // silent fail on refetch
@@ -172,6 +180,8 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   actionRequired: [],
   waiting: [],
   completed: [],
+  meetings: [],
+  dismissedMeetingIds: [],
   isLoading: false,
   newlyCreatedTaskId: null,
   clearNewlyCreated: () => set({ newlyCreatedTaskId: null }),
@@ -215,6 +225,8 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         actionRequired: data.actionRequired,
         waiting: data.waiting,
         completed: data.completed,
+        meetings: data.meetings ?? [],
+        dismissedMeetingIds: data.dismissedMeetingIds ?? [],
         isLoading: false,
       });
     } catch {
@@ -427,13 +439,13 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     }
   },
 
-  pullThread: async (linkId) => {
-    await api.post(`/thread-links/${linkId}/pull`);
+  pullThread: async (linkId, message?) => {
+    await api.post(`/thread-links/${linkId}/pull`, { message });
     trackEvent('thread_pulled');
   },
 
-  pullCurrentAssignee: async (taskId) => {
-    await api.post(`/tasks/${taskId}/pull`);
+  pullCurrentAssignee: async (taskId, message?) => {
+    await api.post(`/tasks/${taskId}/pull`, { message });
     trackEvent('thread_pulled');
   },
 
@@ -483,5 +495,33 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       completed: state.completed.filter((t) => t.id !== taskId),
     }));
     trackEvent('task_transferred');
+  },
+
+  confirmMeeting: async (taskId) => {
+    await api.post(`/tasks/${taskId}/meeting/confirm`);
+    trackEvent('meeting_confirmed');
+    await refetchCategorized(set);
+  },
+
+  rescheduleMeeting: async (taskId, scheduledAt, duration?) => {
+    await api.post(`/tasks/${taskId}/meeting/reschedule`, { scheduledAt, duration });
+    trackEvent('meeting_rescheduled');
+    await refetchCategorized(set);
+  },
+
+  dismissMeeting: async (taskId) => {
+    await api.post(`/tasks/${taskId}/meeting/dismiss`);
+    set((state) => ({
+      dismissedMeetingIds: [...state.dismissedMeetingIds, taskId],
+    }));
+    trackEvent('meeting_dismissed');
+  },
+
+  restoreMeeting: async (taskId) => {
+    await api.post(`/tasks/${taskId}/meeting/restore`);
+    set((state) => ({
+      dismissedMeetingIds: state.dismissedMeetingIds.filter((id) => id !== taskId),
+    }));
+    trackEvent('meeting_restored');
   },
 }));

@@ -25,8 +25,8 @@ export class VotesService {
       include: { threadLinks: true },
     });
     if (!task) throw new NotFoundException('Task not found');
-    if (task.type !== 'VOTE')
-      throw new BadRequestException('Task is not a vote task');
+    if (task.type !== 'VOTE' && task.type !== 'MEETING')
+      throw new BadRequestException('Task does not support voting');
 
     // Validate choice against voteConfig
     const config = task.voteConfig as VoteConfig | null;
@@ -78,8 +78,8 @@ export class VotesService {
   async getResults(taskId: string, userId: string) {
     const task = await this.prisma.task.findUnique({ where: { id: taskId } });
     if (!task) throw new NotFoundException('Task not found');
-    if (task.type !== 'VOTE')
-      throw new BadRequestException('Task is not a vote task');
+    if (task.type !== 'VOTE' && task.type !== 'MEETING')
+      throw new BadRequestException('Task does not support voting');
 
     // User must have voted to see results
     const userVote = await this.prisma.vote.findUnique({
@@ -155,9 +155,11 @@ export class VotesService {
       // Create notification for creator
       await this.prisma.notification.create({
         data: {
-          type: 'VOTE_COMPLETE',
+          type: task.type === 'MEETING' ? 'MEETING_INVITED' : 'VOTE_COMPLETE',
           userId: task.creatorId,
-          title: 'Vote completed',
+          title: task.type === 'MEETING'
+            ? 'All attendees have responded'
+            : 'Vote completed',
           data: {
             taskId,
             taskTitle: task.title,

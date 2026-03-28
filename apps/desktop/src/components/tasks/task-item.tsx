@@ -52,6 +52,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -127,6 +133,8 @@ export function TaskItem({
   const [isDeclining, setIsDeclining] = useState(false);
   const [declineReason, setDeclineReason] = useState('');
   const [isPulling, setIsPulling] = useState(false);
+  const [showPullPopover, setShowPullPopover] = useState(false);
+  const [pullMessage, setPullMessage] = useState('');
   const [showReminderInput, setShowReminderInput] = useState(false);
   const [reminderDate, setReminderDate] = useState('');
   const [reminderTime, setReminderTime] = useState('');
@@ -270,16 +278,19 @@ export function TaskItem({
     task.creator.id === user.id &&
     task.assignee?.id !== user.id;
 
-  const handlePull = async () => {
+  const handlePull = async (message?: string) => {
     if (isPulling) return;
     setIsPulling(true);
     try {
+      const msg = message?.trim() || undefined;
       if (pullableLink) {
-        await pullThread(pullableLink.id);
+        await pullThread(pullableLink.id, msg);
       } else if (canPullAssignee) {
-        await pullCurrentAssignee(task.id);
+        await pullCurrentAssignee(task.id, msg);
       }
       toast.success(t('pullSuccess'));
+      setPullMessage('');
+      setShowPullPopover(false);
     } catch (error: unknown) {
       const axiosErr = error as { response?: { data?: { message?: string } } };
       toast.error(axiosErr?.response?.data?.message || t('pullCooldown'));
@@ -371,6 +382,12 @@ export function TaskItem({
               <span className="inline-flex items-center gap-0.5 text-[10px] text-purple-400 bg-purple-400/10 px-1.5 py-0.5 rounded">
                 <Vote className="h-2.5 w-2.5" />
                 {t('voteTask')}
+              </span>
+            )}
+            {task.type === 'MEETING' && (
+              <span className="inline-flex items-center gap-0.5 text-[10px] text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded">
+                <CalendarIcon className="h-2.5 w-2.5" />
+                {t('meetingTask')}
               </span>
             )}
             {hasThreads && (
@@ -511,23 +528,40 @@ export function TaskItem({
               </>
             )}
             {(pullableLink || canPullAssignee) && (
-              <Tooltip>
-                <TooltipTrigger
+              <Popover open={showPullPopover} onOpenChange={(open) => { setShowPullPopover(open); if (!open) setPullMessage(''); }}>
+                <PopoverTrigger
                   render={
                     <Button
                       size="sm"
                       variant="ghost"
                       className="h-7 text-xs text-amber-500 hover:text-amber-400"
-                      disabled={isPulling}
-                      onClick={handlePull}
                     />
                   }
                 >
                   <ArrowDownFromLine className="h-3.5 w-3.5 mr-1" />
-                  {isPulling ? '...' : t('pullThread')}
-                </TooltipTrigger>
-                <TooltipContent>{t('pullTooltip')}</TooltipContent>
-              </Tooltip>
+                  {t('pullThread')}
+                </PopoverTrigger>
+                <PopoverContent className="w-64 p-2" side="bottom" align="start">
+                  <div className="flex flex-col gap-2">
+                    <Input
+                      placeholder={t('pullMessagePlaceholder')}
+                      value={pullMessage}
+                      onChange={(e) => setPullMessage(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') handlePull(pullMessage); }}
+                      className="h-8 text-xs"
+                      autoFocus
+                    />
+                    <Button
+                      size="sm"
+                      className="h-7 text-xs"
+                      disabled={isPulling}
+                      onClick={() => handlePull(pullMessage)}
+                    >
+                      {isPulling ? '...' : t('pullSend')}
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
             )}
             <Button
               size="sm"
@@ -692,15 +726,39 @@ export function TaskItem({
             </Button>
           )}
           {(pullableLink || canPullAssignee) && (
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-6 w-6 p-0 text-amber-500 hover:text-amber-400"
-              disabled={isPulling}
-              onClick={handlePull}
-            >
-              <ArrowDownFromLine className="h-3.5 w-3.5" />
-            </Button>
+            <Popover open={showPullPopover} onOpenChange={(open) => { setShowPullPopover(open); if (!open) setPullMessage(''); }}>
+              <PopoverTrigger
+                render={
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 w-6 p-0 text-amber-500 hover:text-amber-400"
+                  />
+                }
+              >
+                <ArrowDownFromLine className="h-3.5 w-3.5" />
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-2" side="bottom" align="start">
+                <div className="flex flex-col gap-2">
+                  <Input
+                    placeholder={t('pullMessagePlaceholder')}
+                    value={pullMessage}
+                    onChange={(e) => setPullMessage(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handlePull(pullMessage); }}
+                    className="h-8 text-xs"
+                    autoFocus
+                  />
+                  <Button
+                    size="sm"
+                    className="h-7 text-xs"
+                    disabled={isPulling}
+                    onClick={() => handlePull(pullMessage)}
+                  >
+                    {isPulling ? '...' : t('pullSend')}
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
           )}
           <Button
             size="sm"

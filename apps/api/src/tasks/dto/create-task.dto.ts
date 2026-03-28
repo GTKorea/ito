@@ -32,10 +32,10 @@ export class CreateTaskDto {
   @IsString()
   taskGroupId?: string;
 
-  @ApiPropertyOptional({ enum: ['STANDARD', 'VOTE'] })
+  @ApiPropertyOptional({ enum: ['STANDARD', 'VOTE', 'MEETING'] })
   @IsOptional()
-  @IsEnum(['STANDARD', 'VOTE'])
-  type?: 'STANDARD' | 'VOTE';
+  @IsEnum(['STANDARD', 'VOTE', 'MEETING'])
+  type?: 'STANDARD' | 'VOTE' | 'MEETING';
 
   @ApiPropertyOptional({ description: 'Vote configuration JSON' })
   @IsOptional()

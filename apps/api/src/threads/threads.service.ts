@@ -857,7 +857,7 @@ export class ThreadsService {
    * Only the sender (fromUser) of a PENDING PERSON link can pull.
    * 5-minute cooldown between pulls.
    */
-  async pullThread(threadLinkId: string, userId: string) {
+  async pullThread(threadLinkId: string, userId: string, message?: string) {
     const link = await this.prisma.threadLink.findUnique({
       where: { id: threadLinkId },
       include: {
@@ -897,12 +897,13 @@ export class ThreadsService {
         userId: link.toUserId,
         type: 'THREAD_PULLED',
         title: `${link.fromUser.name}님이 실을 당겼습니다`,
-        body: `"${link.task.title}" 태스크를 확인해주세요`,
+        body: message || `"${link.task.title}" 태스크를 확인해주세요`,
         data: {
           taskId: link.taskId,
           taskTitle: link.task.title,
           pullerName: link.fromUser.name,
           pullerUserId: link.fromUserId,
+          ...(message ? { message } : {}),
         },
       });
     }
@@ -914,7 +915,7 @@ export class ThreadsService {
    * Pull the current assignee of a task — nudge them to respond.
    * Only the task creator can pull. 5-minute cooldown.
    */
-  async pullCurrentAssignee(taskId: string, userId: string) {
+  async pullCurrentAssignee(taskId: string, userId: string, message?: string) {
     const task = await this.prisma.task.findUnique({
       where: { id: taskId },
       include: {
@@ -949,12 +950,13 @@ export class ThreadsService {
       userId: task.assigneeId,
       type: 'THREAD_PULLED',
       title: `${task.creator.name}님이 실을 당겼습니다`,
-      body: `"${task.title}" 태스크를 확인해주세요`,
+      body: message || `"${task.title}" 태스크를 확인해주세요`,
       data: {
         taskId: task.id,
         taskTitle: task.title,
         pullerName: task.creator.name,
         pullerUserId: task.creatorId,
+        ...(message ? { message } : {}),
       },
     });
 

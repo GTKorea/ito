@@ -29,6 +29,7 @@ import { toast } from 'sonner';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { ChatPanel } from '@/components/chat/chat-panel';
 import { VotePanel } from '@/components/tasks/vote-panel';
+import { MeetingPanel } from '@/components/tasks/meeting-panel';
 import { useAuthStore } from '@/stores/auth-store';
 import { useWorkspaceMembers } from '@/hooks/use-workspace-members';
 
@@ -464,6 +465,21 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
                   {t('voteTask')}
                 </h3>
                 <VotePanel
+                  taskId={task.id}
+                  voteConfig={task.voteConfig}
+                  isCreator={task.creator?.id === user?.id}
+                />
+              </div>
+            )}
+
+            {/* Meeting Panel */}
+            {task.type === 'MEETING' && task.voteConfig && (
+              <div className="space-y-2 border-t border-border pt-4">
+                <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+                  <Users className="h-3.5 w-3.5" />
+                  {t('meetingTask')}
+                </h3>
+                <MeetingPanel
                   taskId={task.id}
                   voteConfig={task.voteConfig}
                   isCreator={task.creator?.id === user?.id}

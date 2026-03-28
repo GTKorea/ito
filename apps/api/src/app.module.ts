@@ -22,6 +22,7 @@ import { SharedSpacesModule } from './shared-spaces/shared-spaces.module';
 import { TaskGroupsModule } from './task-groups/task-groups.module';
 import { VotesModule } from './votes/votes.module';
 import { RemindersModule } from './reminders/reminders.module';
+import { MeetingsModule } from './meetings/meetings.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { RemindersModule } from './reminders/reminders.module';
     TaskGroupsModule,
     VotesModule,
     RemindersModule,
+    MeetingsModule,
   ],
 })
 export class AppModule {}

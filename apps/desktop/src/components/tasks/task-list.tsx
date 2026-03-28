@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { TaskItem } from './task-item';
-import { ChevronDown, ChevronRight, Clock, CheckCircle } from 'lucide-react';
+import { ChevronDown, ChevronRight, Clock, CheckCircle, Calendar, X } from 'lucide-react';
 
 import {
   DndContext,
@@ -46,6 +46,8 @@ interface Task {
   description?: string;
   status: string;
   priority: string;
+  type?: string;
+  voteConfig?: any;
   dueDate?: string;
   order?: number;
   creator: User;
@@ -61,6 +63,8 @@ interface TaskListProps {
   actionRequired: Task[];
   waiting: Task[];
   completed: Task[];
+  meetings?: Task[];
+  dismissedMeetingIds?: string[];
   onSelectTask?: (id: string, openChat?: boolean) => void;
   sortBy?: string;
   workspaceId?: string;
@@ -70,11 +74,12 @@ interface TaskListProps {
   currentGroupId?: string;
 }
 
-export function TaskList({ actionRequired, waiting, completed, onSelectTask, sortBy, workspaceId, isSelecting, selectedTaskIds, onToggleSelect, currentGroupId }: TaskListProps) {
+export function TaskList({ actionRequired, waiting, completed, meetings = [], dismissedMeetingIds = [], onSelectTask, sortBy, workspaceId, isSelecting, selectedTaskIds, onToggleSelect, currentGroupId }: TaskListProps) {
   const t = useTranslations('tasks');
-  const { reorderTasks } = useTaskStore();
+  const { reorderTasks, dismissMeeting, restoreMeeting } = useTaskStore();
   const [waitingExpanded, setWaitingExpanded] = useState(true);
   const [showCompleted, setShowCompleted] = useState(false);
+  const [meetingsExpanded, setMeetingsExpanded] = useState(true);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -92,7 +97,7 @@ export function TaskList({ actionRequired, waiting, completed, onSelectTask, sor
     reorderTasks(workspaceId, newOrder);
   };
 
-  if (actionRequired.length === 0 && waiting.length === 0 && completed.length === 0) {
+  if (actionRequired.length === 0 && waiting.length === 0 && completed.length === 0 && meetings.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
         <p className="text-sm">{t('noTasksYet')}</p>
@@ -101,8 +106,76 @@ export function TaskList({ actionRequired, waiting, completed, onSelectTask, sor
     );
   }
 
+  const visibleMeetings = meetings.filter((m) => !dismissedMeetingIds.includes(m.id));
+  const hiddenMeetingCount = meetings.length - visibleMeetings.length;
+
   return (
     <div className="space-y-6">
+      {/* Section 0: Upcoming Meetings — pinned announcement section */}
+      {meetings.length > 0 && (
+        <div>
+          <button
+            onClick={() => setMeetingsExpanded(!meetingsExpanded)}
+            className="flex items-center gap-1.5 text-xs font-medium text-emerald-400 mb-2 px-2 hover:text-emerald-300 transition-colors"
+          >
+            {meetingsExpanded ? (
+              <ChevronDown className="h-3 w-3" />
+            ) : (
+              <ChevronRight className="h-3 w-3" />
+            )}
+            <Calendar className="h-3 w-3" />
+            {t('upcomingMeetings', { count: visibleMeetings.length })}
+          </button>
+          {meetingsExpanded && (
+            <div className="space-y-1.5 mb-2">
+              {visibleMeetings.map((meeting) => {
+                const config = meeting.voteConfig;
+                const scheduledDate = config?.scheduledAt ? new Date(config.scheduledAt) : null;
+                return (
+                  <div
+                    key={meeting.id}
+                    className="flex items-center justify-between rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 cursor-pointer hover:bg-emerald-500/10 transition-colors"
+                    onClick={() => onSelectTask?.(meeting.id)}
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Calendar className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                      <span className="text-sm font-medium truncate">{meeting.title}</span>
+                      {scheduledDate && (
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          {scheduledDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                          {' '}
+                          {scheduledDate.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        dismissMeeting(meeting.id);
+                      }}
+                      className="text-muted-foreground hover:text-foreground p-0.5 shrink-0"
+                      title={t('dismissMeeting')}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                );
+              })}
+              {hiddenMeetingCount > 0 && (
+                <button
+                  onClick={() => {
+                    dismissedMeetingIds.forEach((id) => restoreMeeting(id));
+                  }}
+                  className="text-xs text-muted-foreground hover:text-foreground px-2 transition-colors"
+                >
+                  {t('hiddenMeetings', { count: hiddenMeetingCount })} — {t('restoreMeetings')}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Section 1: Action Required — tasks I need to handle right now */}
       {actionRequired.length > 0 && (
         <div className="space-y-1">

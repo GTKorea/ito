@@ -111,7 +111,7 @@ export default function WorkspacePage() {
   const tt = useTranslations('tasks');
   const tg = useTranslations('groups');
   const { currentWorkspace, isLoading: wsLoading } = useWorkspaceStore();
-  const { actionRequired, waiting, completed, isLoading, fetchCategorizedTasks } = useTaskStore();
+  const { actionRequired, waiting, completed, meetings, dismissedMeetingIds, isLoading, fetchCategorizedTasks } = useTaskStore();
   const { groups, deleteGroup, archiveGroup, updateGroup } = useTaskGroupStore();
   const { checkAndStartWizard } = useOnboardingStore();
   const currentGroup = groupId ? groups.find((g) => g.id === groupId) : null;
@@ -552,6 +552,8 @@ export default function WorkspacePage() {
             actionRequired={filteredActionRequired}
             waiting={filteredWaiting}
             completed={filteredCompleted}
+            meetings={meetings}
+            dismissedMeetingIds={dismissedMeetingIds}
             onSelectTask={handleSelectTask}
             sortBy={sortBy}
             workspaceId={currentWorkspace.id}

@@ -311,12 +311,42 @@ export class TasksService {
     const actionRequired: typeof allTasks = [];
     const waiting: typeof allTasks = [];
     const completed: typeof allTasks = [];
+    const meetings: typeof allTasks = [];
+
+    // Fetch meeting-related data for confirmed meetings
+    const meetingTasks = allTasks.filter(
+      (t) => t.type === 'MEETING' && (t.voteConfig as any)?.confirmed,
+    );
+    const meetingDismissals = meetingTasks.length > 0
+      ? await this.prisma.meetingDismissal.findMany({
+          where: { userId, taskId: { in: meetingTasks.map((t) => t.id) } },
+        })
+      : [];
+    const dismissedTaskIds = new Set(meetingDismissals.map((d) => d.taskId));
+
+    const meetingVotes = meetingTasks.length > 0
+      ? await this.prisma.vote.findMany({
+          where: { userId, taskId: { in: meetingTasks.map((t) => t.id) } },
+        })
+      : [];
+    const meetingVoteMap = new Map(meetingVotes.map((v) => [v.taskId, v.choice]));
 
     for (const task of allTasks) {
       const isActive = !['COMPLETED', 'CANCELLED'].includes(task.status);
       const isAssignee = task.assigneeId === userId;
       const isCreator = task.creatorId === userId;
       const isCoCreator = task.coCreators?.some((cc) => cc.userId === userId) ?? false;
+
+      // Confirmed meetings go to the meetings array for pinned announcements
+      if (
+        task.type === 'MEETING' &&
+        isActive &&
+        (task.voteConfig as any)?.confirmed &&
+        (meetingVoteMap.get(task.id) === 'attend' || isCreator)
+      ) {
+        meetings.push(task);
+        continue;
+      }
 
       if (!isActive) {
         completed.push(task);
@@ -353,7 +383,13 @@ export class TasksService {
       }
     }
 
-    return { actionRequired, waiting, completed };
+    return {
+      actionRequired,
+      waiting,
+      completed,
+      meetings,
+      dismissedMeetingIds: Array.from(dismissedTaskIds),
+    };
   }
 
   async getCalendarTasks(

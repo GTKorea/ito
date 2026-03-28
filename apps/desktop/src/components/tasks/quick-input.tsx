@@ -52,6 +52,11 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
   const [dueDate, setDueDate] = useState<string | null>(null);
   const [showPriorityMenu, setShowPriorityMenu] = useState(false);
   const [isVoteMode, setIsVoteMode] = useState(false);
+  const [isMeetingMode, setIsMeetingMode] = useState(false);
+  const [meetingDate, setMeetingDate] = useState('');
+  const [meetingTime, setMeetingTime] = useState('');
+  const [meetingDuration, setMeetingDuration] = useState(60);
+  const [meetingAgenda, setMeetingAgenda] = useState('');
 
   // Map of display name -> user ID for resolved mentions
   const resolvedUsersRef = useRef<Map<string, string>>(new Map());
@@ -281,6 +286,7 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
 
   const handleSubmit = async () => {
     if (!input.trim() || !currentWorkspace || isSubmitting) return;
+    if (isMeetingMode && (!meetingDate || !meetingTime)) return;
 
     const parsed = parseQuickInput(input);
     if (!parsed.title.trim()) return;
@@ -294,6 +300,22 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
           taskGroupId
         : taskGroupId;
 
+      const taskType = isMeetingMode ? 'MEETING' : isVoteMode ? 'VOTE' : undefined;
+      const taskConfig = isMeetingMode
+        ? {
+            mode: 'approve_reject',
+            options: ['attend', 'decline'],
+            allowChange: true,
+            anonymous: false,
+            scheduledAt: new Date(`${meetingDate}T${meetingTime}`).toISOString(),
+            duration: meetingDuration,
+            agenda: meetingAgenda || undefined,
+            confirmed: false,
+          }
+        : isVoteMode
+          ? { mode: 'approve_reject', options: ['approve', 'reject', 'abstain'], allowChange: true, anonymous: false }
+          : undefined;
+
       const task = await createTask(
         currentWorkspace.id,
         parsed.title,
@@ -301,8 +323,8 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
         priority ?? undefined,
         dueDate ?? undefined,
         effectiveGroupId,
-        isVoteMode ? 'VOTE' : undefined,
-        isVoteMode ? { mode: 'approve_reject', options: ['approve', 'reject', 'abstain'], allowChange: true, anonymous: false } : undefined,
+        taskType,
+        taskConfig,
       );
 
       if (parsed.chain.length > 0) {
@@ -371,6 +393,11 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
       setPriority(null);
       setDueDate(null);
       setIsVoteMode(false);
+      setIsMeetingMode(false);
+      setMeetingDate('');
+      setMeetingTime('');
+      setMeetingDuration(60);
+      setMeetingAgenda('');
       resolvedUsersRef.current.clear();
       resolvedGroupRef.current.clear();
       setTimeout(() => inputRef.current?.focus(), 0);
@@ -783,6 +810,7 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
                 type="button"
                 onClick={() => {
                   setIsVoteMode((prev) => !prev);
+                  if (!isVoteMode) setIsMeetingMode(false);
                   inputRef.current?.focus();
                 }}
                 title={t('voteTask')}
@@ -796,12 +824,46 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
               >
                 <Vote className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
               </button>
+
+              {/* Meeting button */}
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMeetingMode((prev) => !prev);
+                  if (!isMeetingMode) setIsVoteMode(false);
+                  inputRef.current?.focus();
+                }}
+                title={t('meetingMode')}
+                className={cn(
+                  'flex h-7 w-7 lg:h-8 lg:w-8 items-center justify-center rounded-md transition-colors',
+                  'cursor-pointer',
+                  isMeetingMode
+                    ? 'text-emerald-400 bg-emerald-400/10'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
+                )}
+              >
+                <Users className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
+              </button>
             </div>
         </div>
 
         {/* Badges row — shows selected priority/due date */}
-        {(selectedPriority || dueDate || isVoteMode) && (
+        {(selectedPriority || dueDate || isVoteMode || isMeetingMode) && (
           <div className="flex items-center gap-1.5 px-4 pt-2">
+            {isMeetingMode && (
+              <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/15 px-2 py-0.5 text-[11px] font-medium text-emerald-400">
+                <Users className="h-3 w-3" />
+                {t('meetingMode')}
+                <button
+                  type="button"
+                  onClick={() => setIsMeetingMode(false)}
+                  onMouseDown={handleToolbarMouseDown}
+                  className="ml-0.5 hover:opacity-70 cursor-pointer"
+                >
+                  x
+                </button>
+              </span>
+            )}
             {isVoteMode && (
               <span className="inline-flex items-center gap-1 rounded-md bg-purple-500/15 px-2 py-0.5 text-[11px] font-medium text-purple-400">
                 <Vote className="h-3 w-3" />
@@ -850,6 +912,48 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
                 </button>
               </span>
             )}
+          </div>
+        )}
+
+        {/* Meeting config panel */}
+        {isMeetingMode && (
+          <div className="px-4 pt-2 space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
+                <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
+                <input
+                  type="date"
+                  value={meetingDate}
+                  onChange={(e) => setMeetingDate(e.target.value)}
+                  className="h-7 rounded-md border border-border bg-transparent px-2 text-xs text-foreground w-32"
+                />
+              </div>
+              <input
+                type="time"
+                value={meetingTime}
+                onChange={(e) => setMeetingTime(e.target.value)}
+                className="h-7 rounded-md border border-border bg-transparent px-2 text-xs text-foreground w-24"
+              />
+              <select
+                value={meetingDuration}
+                onChange={(e) => setMeetingDuration(Number(e.target.value))}
+                className="h-7 rounded-md border border-border bg-transparent px-2 text-xs text-foreground"
+              >
+                <option value={15}>15min</option>
+                <option value={30}>30min</option>
+                <option value={45}>45min</option>
+                <option value={60}>60min</option>
+                <option value={90}>90min</option>
+                <option value={120}>120min</option>
+              </select>
+            </div>
+            <input
+              type="text"
+              value={meetingAgenda}
+              onChange={(e) => setMeetingAgenda(e.target.value)}
+              placeholder={t('meetingAgendaPlaceholder')}
+              className="w-full h-7 rounded-md border border-border bg-transparent px-2 text-xs text-foreground placeholder:text-muted-foreground"
+            />
           </div>
         )}
 
