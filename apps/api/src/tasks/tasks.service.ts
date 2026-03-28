@@ -26,6 +26,9 @@ const TASK_INCLUDE_FULL = {
     },
     orderBy: { chainIndex: 'asc' as const },
   },
+  tags: {
+    include: { tag: true },
+  },
   _count: { select: { threadLinks: true, files: true, chatMessages: true } },
 } as const;
 
@@ -79,6 +82,7 @@ export class TasksService {
           include: { user: { select: { id: true, name: true, avatarUrl: true } } },
         },
         threadLinks: true,
+        tags: { include: { tag: true } },
       },
     });
 
@@ -173,6 +177,7 @@ export class TasksService {
         creator: { select: { id: true, name: true, avatarUrl: true } },
         assignee: { select: { id: true, name: true, avatarUrl: true } },
         threadLinks: true,
+        tags: { include: { tag: true } },
       },
     });
 
