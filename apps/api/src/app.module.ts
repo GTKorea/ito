@@ -20,6 +20,7 @@ import { AdminModule } from './admin/admin.module';
 import { ChatModule } from './chat/chat.module';
 import { SharedSpacesModule } from './shared-spaces/shared-spaces.module';
 import { TaskGroupsModule } from './task-groups/task-groups.module';
+import { TagsModule } from './tags/tags.module';
 import { VotesModule } from './votes/votes.module';
 import { RemindersModule } from './reminders/reminders.module';
 
@@ -46,6 +47,7 @@ import { RemindersModule } from './reminders/reminders.module';
     ChatModule,
     SharedSpacesModule,
     TaskGroupsModule,
+    TagsModule,
     VotesModule,
     RemindersModule,
   ],
