@@ -62,6 +62,11 @@ export interface Task {
   completionWatchers?: CompletionWatcher[];
   taskGroup?: { id: string; name: string } | null;
   threadLinks: ThreadLink[];
+  tags?: Array<{
+    id: string;
+    tagId: string;
+    tag: { id: string; name: string; color: string; taskGroupId: string };
+  }>;
   createdAt: string;
 }
 
@@ -118,6 +123,8 @@ interface TaskState {
   declineThread: (threadLinkId: string, reason?: string) => Promise<void>;
   reorderTasks: (workspaceId: string, taskIds: string[]) => Promise<void>;
   silentRefetch: (workspaceId: string, taskGroupId?: string) => Promise<void>;
+  addTagToTask: (taskId: string, tagId: string) => Promise<void>;
+  removeTagFromTask: (taskId: string, tagId: string) => Promise<void>;
   pullThread: (linkId: string) => Promise<void>;
   pullCurrentAssignee: (taskId: string) => Promise<void>;
   batchMoveCheck: (taskIds: string[], workspaceId?: string, taskGroupId?: string) => Promise<{ movable: Task[]; blocked: { task: Task; reason: string }[] }>;
@@ -224,6 +231,14 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
   silentRefetch: async (workspaceId, taskGroupId) => {
     await fetchAndSetCategorized(set, workspaceId, taskGroupId);
+  },
+
+  addTagToTask: async (taskId, tagId) => {
+    await api.post(`/tasks/${taskId}/tags`, { tagId });
+  },
+
+  removeTagFromTask: async (taskId, tagId) => {
+    await api.delete(`/tasks/${taskId}/tags/${tagId}`);
   },
 
   createTask: async (workspaceId, title, description, priority, dueDate, taskGroupId, type, voteConfig, coCreatorIds) => {
