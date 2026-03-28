@@ -36,6 +36,7 @@ import {
 import { QuickInput } from '@/components/tasks/quick-input';
 import { MoveTasksDialog } from '@/components/tasks/move-tasks-dialog';
 import { GroupMembersPopover } from '@/components/groups/group-members-popover';
+import { TagManager } from '@/components/groups/tag-manager';
 import { cn } from '@/lib/utils';
 
 
@@ -122,6 +123,7 @@ export default function WorkspacePage() {
   const [openWithChat, setOpenWithChat] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(420);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showTagManager, setShowTagManager] = useState(false);
   const [memberFilter, setMemberFilterState] = useState<Set<string>>(new Set());
   const [groupFilter, setGroupFilterState] = useState<Set<string>>(new Set());
   const [tagFilter, setTagFilterState] = useState<Set<string>>(new Set());
@@ -536,6 +538,10 @@ export default function WorkspacePage() {
                         <><Lock className="mr-2 h-4 w-4" />{tg('makePrivate')}</>
                       )}
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setShowTagManager(true)}>
+                      <TagIcon className="mr-2 h-4 w-4" />
+                      {tg('manageTags')}
+                    </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={async () => {
                         await archiveGroup(currentGroup.id);
@@ -782,6 +788,18 @@ export default function WorkspacePage() {
           currentWorkspaceId={currentWorkspace.id}
           currentGroupId={groupId || undefined}
         />
+      )}
+
+      {/* Tag Manager Dialog */}
+      {showTagManager && currentGroup && (
+        <Dialog open onOpenChange={() => setShowTagManager(false)}>
+          <DialogContent className="sm:max-w-sm">
+            <DialogHeader>
+              <DialogTitle>{tg('manageTags')}</DialogTitle>
+            </DialogHeader>
+            <TagManager groupId={currentGroup.id} />
+          </DialogContent>
+        </Dialog>
       )}
 
       {/* Delete Group Confirmation */}
