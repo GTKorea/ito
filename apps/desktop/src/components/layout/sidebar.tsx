@@ -221,8 +221,25 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                       <span className="ml-auto text-xs text-muted-foreground/60">{totalActiveTaskCount}</span>
                     )}
                   </Link>
-                  {/* Workspace groups */}
-                  {groups.map((group) => (
+                  {/* System groups (pinned to top) */}
+                  {groups.filter((g) => g.isSystem).map((group) => (
+                    <Link
+                      key={group.id}
+                      href={`/workspace?group=${group.id}`}
+                      className={cn(
+                        'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
+                        searchParams.get('group') === group.id
+                          ? 'bg-accent text-accent-foreground'
+                          : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
+                      )}
+                    >
+                      <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
+                      <span className="truncate">{group.name}</span>
+                      <span className="ml-auto text-xs text-muted-foreground/60">{group._count.tasks}</span>
+                    </Link>
+                  ))}
+                  {/* Regular groups */}
+                  {groups.filter((g) => !g.isSystem).map((group) => (
                     <Link
                       key={group.id}
                       href={`/workspace?group=${group.id}`}
