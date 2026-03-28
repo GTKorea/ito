@@ -367,6 +367,15 @@ export function TaskItem({
             >
               {task.title}
             </span>
+            {task.tags && task.tags.length > 0 && task.tags.map((tt) => (
+              <span
+                key={tt.id}
+                className="inline-flex items-center rounded-full px-1.5 py-0 text-[10px] font-medium leading-4"
+                style={{ backgroundColor: tt.tag.color + '20', color: tt.tag.color }}
+              >
+                {tt.tag.name}
+              </span>
+            ))}
             {task.type === 'VOTE' && (
               <span className="inline-flex items-center gap-0.5 text-[10px] text-purple-400 bg-purple-400/10 px-1.5 py-0.5 rounded">
                 <Vote className="h-2.5 w-2.5" />
