@@ -303,7 +303,7 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
       const taskType = isMeetingMode ? 'MEETING' : isVoteMode ? 'VOTE' : undefined;
       const taskConfig = isMeetingMode
         ? {
-            mode: 'approve_reject',
+            mode: 'approve_reject' as const,
             options: ['attend', 'decline'],
             allowChange: true,
             anonymous: false,
@@ -313,7 +313,7 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
             confirmed: false,
           }
         : isVoteMode
-          ? { mode: 'approve_reject', options: ['approve', 'reject', 'abstain'], allowChange: true, anonymous: false }
+          ? { mode: 'approve_reject' as const, options: ['approve', 'reject', 'abstain'], allowChange: true, anonymous: false }
           : undefined;
 
       const task = await createTask(
