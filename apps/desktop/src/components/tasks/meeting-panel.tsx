@@ -13,16 +13,7 @@ import { toast } from 'sonner';
 
 interface MeetingPanelProps {
   taskId: string;
-  voteConfig: {
-    mode: string;
-    options: string[];
-    allowChange?: boolean;
-    scheduledAt: string;
-    duration?: number;
-    agenda?: string;
-    confirmed: boolean;
-    confirmedAt?: string;
-  };
+  voteConfig: any;
   isCreator: boolean;
 }
 
