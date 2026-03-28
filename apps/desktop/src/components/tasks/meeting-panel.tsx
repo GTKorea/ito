@@ -11,9 +11,21 @@ import { Calendar, Clock, Users, Check, X, Loader2, RefreshCw } from 'lucide-rea
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
+interface MeetingConfig {
+  mode: string;
+  options: string[];
+  allowChange?: boolean;
+  anonymous?: boolean;
+  scheduledAt: string;
+  duration?: number;
+  agenda?: string;
+  confirmed: boolean;
+  confirmedAt?: string;
+}
+
 interface MeetingPanelProps {
   taskId: string;
-  voteConfig: any;
+  voteConfig: MeetingConfig;
   isCreator: boolean;
 }
 

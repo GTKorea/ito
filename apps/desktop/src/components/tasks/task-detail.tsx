@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useTaskStore } from '@/stores/task-store';
-import type { Task } from '@/stores/task-store';
+import type { Task, MeetingConfig } from '@/stores/task-store';
 import { api } from '@/lib/api-client';
 import { getApiErrorMessage } from '@/lib/error-utils';
 import { statusColors, priorityColors } from '@/lib/task-constants';
@@ -488,7 +488,7 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
                 </h3>
                 <MeetingPanel
                   taskId={task.id}
-                  voteConfig={task.voteConfig}
+                  voteConfig={task.voteConfig as MeetingConfig}
                   isCreator={task.creator?.id === user?.id}
                 />
               </div>

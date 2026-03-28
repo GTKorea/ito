@@ -32,6 +32,14 @@ export interface VoteConfig {
   anonymous?: boolean;
 }
 
+export interface MeetingConfig extends VoteConfig {
+  scheduledAt: string;
+  duration?: number;
+  agenda?: string;
+  confirmed: boolean;
+  confirmedAt?: string;
+}
+
 export interface CoCreator {
   id: string;
   user: User;
@@ -54,7 +62,7 @@ export interface Task {
   dueDate?: string;
   order?: number;
   type?: string;
-  voteConfig?: VoteConfig;
+  voteConfig?: VoteConfig | MeetingConfig;
   taskGroupId?: string;
   creator: User;
   assignee: User;
@@ -113,7 +121,7 @@ interface TaskState {
   fetchCategorizedTasks: (workspaceId: string, taskGroupId?: string, memberIds?: string[]) => Promise<void>;
   fetchCalendarTasks: (workspaceId: string, start: string, end: string) => Promise<void>;
   fetchCalendarEvents: (start: string, end: string) => Promise<void>;
-  createTask: (workspaceId: string, title: string, description?: string, priority?: string, dueDate?: string, taskGroupId?: string, type?: string, voteConfig?: VoteConfig, coCreatorIds?: string[]) => Promise<Task>;
+  createTask: (workspaceId: string, title: string, description?: string, priority?: string, dueDate?: string, taskGroupId?: string, type?: string, voteConfig?: VoteConfig | MeetingConfig, coCreatorIds?: string[]) => Promise<Task>;
   updateTask: (id: string, data: Partial<Task>) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
   connectChain: (taskId: string, userIds: string[]) => Promise<Task>;
