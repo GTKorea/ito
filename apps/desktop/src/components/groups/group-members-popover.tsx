@@ -50,10 +50,30 @@ export function GroupMembersPopover({ groupId, memberCount }: GroupMembersPopove
     }
   };
 
+  const loadWorkspaceMembers = async () => {
+    if (!currentWorkspace) return;
+    setIsSearching(true);
+    try {
+      const { data } = await api.get(`/workspaces/${currentWorkspace.id}`);
+      const wsMembers = data.members || [];
+      const memberUserIds = new Set(members.map((m) => m.user.id));
+      setSearchResults(
+        wsMembers
+          .map((m: { user: { id: string; name: string; email: string; avatarUrl?: string } }) => m.user)
+          .filter((u: { id: string }) => !memberUserIds.has(u.id)),
+      );
+    } catch {
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
-    if (!query.trim() || !currentWorkspace) {
-      setSearchResults([]);
+    if (!currentWorkspace) return;
+    if (!query.trim()) {
+      await loadWorkspaceMembers();
       return;
     }
     setIsSearching(true);
@@ -108,7 +128,11 @@ export function GroupMembersPopover({ groupId, memberCount }: GroupMembersPopove
             variant="ghost"
             size="sm"
             className="h-6 w-6 p-0"
-            onClick={() => setShowAddMember(!showAddMember)}
+            onClick={() => {
+              const next = !showAddMember;
+              setShowAddMember(next);
+              if (next) loadWorkspaceMembers();
+            }}
           >
             <UserPlus className="h-3.5 w-3.5" />
           </Button>
@@ -148,7 +172,7 @@ export function GroupMembersPopover({ groupId, memberCount }: GroupMembersPopove
                 ))}
               </div>
             )}
-            {searchQuery && searchResults.length === 0 && !isSearching && (
+            {searchResults.length === 0 && !isSearching && (
               <p className="text-xs text-muted-foreground px-2 py-1.5">{t('noMembersFound')}</p>
             )}
           </div>
