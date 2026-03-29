@@ -219,8 +219,10 @@ export default function WorkspacePage() {
   // Fetch workspace members for all-tasks member filter
   useEffect(() => {
     if (currentWorkspace) {
-      api.get(`/workspaces/${currentWorkspace.id}/members`).then((res) => {
-        setWorkspaceMembers(res.data);
+      api.get(`/workspaces/${currentWorkspace.id}`).then((res) => {
+        const members = (res.data.members || [])
+          .filter((m: { user: { id: string } }) => m.user.id !== useAuthStore.getState().user?.id);
+        setWorkspaceMembers(members);
       }).catch(() => {});
     }
   }, [currentWorkspace]);
