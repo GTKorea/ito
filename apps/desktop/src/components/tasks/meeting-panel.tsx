@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { api } from '@/lib/api-client';
+import { getApiErrorMessage } from '@/lib/error-utils';
 import { useTaskStore } from '@/stores/task-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -81,8 +82,8 @@ export function MeetingPanel({ taskId, voteConfig, isCreator }: MeetingPanelProp
       await api.post(`/tasks/${taskId}/vote`, { choice });
       await fetchStatus();
       toast.success(choice === 'attend' ? t('meetingAttend') : t('meetingDecline'));
-    } catch {
-      toast.error('Failed to submit response');
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Failed to submit response'));
     } finally {
       setIsSubmitting(false);
     }
@@ -94,8 +95,8 @@ export function MeetingPanel({ taskId, voteConfig, isCreator }: MeetingPanelProp
       await confirmMeeting(taskId);
       await fetchStatus();
       toast.success(t('meetingConfirmed'));
-    } catch {
-      toast.error('Failed to confirm meeting');
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Failed to confirm meeting'));
     } finally {
       setIsConfirming(false);
     }
@@ -112,8 +113,8 @@ export function MeetingPanel({ taskId, voteConfig, isCreator }: MeetingPanelProp
       setNewTime('');
       await fetchStatus();
       toast.success(t('meetingReschedule'));
-    } catch {
-      toast.error('Failed to reschedule');
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Failed to reschedule'));
     } finally {
       setIsConfirming(false);
     }

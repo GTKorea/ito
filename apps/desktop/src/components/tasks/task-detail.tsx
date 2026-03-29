@@ -603,7 +603,9 @@ function CoCreatorSection({
         ...prev,
         coCreators: prev.coCreators?.filter((c) => c.id !== ccId),
       } : prev);
-    } catch {}
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, t('saveFailed')));
+    }
   };
 
   return (
@@ -794,7 +796,9 @@ function CompletionWatcherSection({
         ...prev,
         completionWatchers: prev.completionWatchers?.filter((w) => w.watcher.id !== watcherId),
       } : prev);
-    } catch {}
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, t('saveFailed')));
+    }
   };
 
   return (

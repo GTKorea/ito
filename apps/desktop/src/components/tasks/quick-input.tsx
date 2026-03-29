@@ -9,6 +9,8 @@ import { api } from '@/lib/api-client';
 import { parseQuickInput } from '@/lib/quick-input-parser';
 import { useTranslations } from 'next-intl';
 import { Send, Loader2, AtSign, ChevronRight, Flag, CalendarDays, ShieldAlert, Hash, Users, Vote, Tag as TagIcon, X, Check } from 'lucide-react';
+import { toast } from 'sonner';
+import { getApiErrorMessage } from '@/lib/error-utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 
@@ -516,8 +518,8 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
       resolvedGroupRef.current.clear();
       resolvedTagsRef.current.clear();
       setTimeout(() => inputRef.current?.focus(), 0);
-    } catch {
-      // Error handled silently — could add toast notification here
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Failed to create task'));
     } finally {
       setIsSubmitting(false);
     }

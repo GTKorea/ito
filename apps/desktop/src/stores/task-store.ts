@@ -3,6 +3,8 @@
 import { create } from 'zustand';
 import { api } from '@/lib/api-client';
 import { trackEvent } from '@/lib/analytics';
+import { toast } from 'sonner';
+import { getApiErrorMessage } from '@/lib/error-utils';
 import { useWorkspaceStore } from './workspace-store';
 import { useTaskGroupStore } from './task-group-store';
 
@@ -372,50 +374,75 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   },
 
   connectChain: async (taskId: string, userIds: string[]) => {
-    const res = await api.post(`/tasks/${taskId}/connect-chain`, { userIds });
-    set((state) => moveToWaiting(state, taskId, res.data));
-    return res.data;
+    try {
+      const res = await api.post(`/tasks/${taskId}/connect-chain`, { userIds });
+      set((state) => moveToWaiting(state, taskId, res.data));
+      return res.data;
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Failed to connect thread'));
+      throw error;
+    }
   },
 
   connectThread: async (taskId, toUserId, message) => {
-    const { data } = await api.post(`/tasks/${taskId}/connect`, { toUserId, message });
-    set((state) => moveToWaiting(state, taskId, data.task || data));
-    trackEvent('thread_connected');
+    try {
+      const { data } = await api.post(`/tasks/${taskId}/connect`, { toUserId, message });
+      set((state) => moveToWaiting(state, taskId, data.task || data));
+      trackEvent('thread_connected');
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Failed to connect thread'));
+      throw error;
+    }
   },
 
   connectMultiThread: async (taskId, toUserIds, message) => {
-    const { data } = await api.post(`/tasks/${taskId}/connect`, { toUserIds, message });
-    const updatedTask = data.task || data;
-    set((state) => {
-      if (toUserIds.length === 1) {
-        return moveToWaiting(state, taskId, updatedTask);
-      }
-      // Multi-connect: update in place (assignee stays with sender for parallel)
-      return {
-        actionRequired: state.actionRequired.map((t) => t.id === taskId ? { ...t, ...updatedTask } : t),
-      };
-    });
-    trackEvent('thread_connected');
+    try {
+      const { data } = await api.post(`/tasks/${taskId}/connect`, { toUserIds, message });
+      const updatedTask = data.task || data;
+      set((state) => {
+        if (toUserIds.length === 1) {
+          return moveToWaiting(state, taskId, updatedTask);
+        }
+        // Multi-connect: update in place (assignee stays with sender for parallel)
+        return {
+          actionRequired: state.actionRequired.map((t) => t.id === taskId ? { ...t, ...updatedTask } : t),
+        };
+      });
+      trackEvent('thread_connected');
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Failed to connect thread'));
+      throw error;
+    }
   },
 
   connectBlocker: async (taskId, blockerNote) => {
-    await api.post(`/tasks/${taskId}/block`, { blockerNote });
-    // Move task to waiting (blocked state)
-    set((state) => {
-      const task = state.actionRequired.find((t) => t.id === taskId);
-      return {
-        actionRequired: state.actionRequired.filter((t) => t.id !== taskId),
-        waiting: task ? [...state.waiting, { ...task, status: 'BLOCKED' }] : state.waiting,
-      };
-    });
-    trackEvent('blocker_connected');
-    await refetchCategorized(set);
+    try {
+      await api.post(`/tasks/${taskId}/block`, { blockerNote });
+      // Move task to waiting (blocked state)
+      set((state) => {
+        const task = state.actionRequired.find((t) => t.id === taskId);
+        return {
+          actionRequired: state.actionRequired.filter((t) => t.id !== taskId),
+          waiting: task ? [...state.waiting, { ...task, status: 'BLOCKED' }] : state.waiting,
+        };
+      });
+      trackEvent('blocker_connected');
+      await refetchCategorized(set);
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Failed to add blocker'));
+      throw error;
+    }
   },
 
   resolveBlocker: async (threadLinkId) => {
-    await api.post(`/thread-links/${threadLinkId}/resolve-blocker`);
-    trackEvent('blocker_resolved');
-    await refetchCategorized(set);
+    try {
+      await api.post(`/thread-links/${threadLinkId}/resolve-blocker`);
+      trackEvent('blocker_resolved');
+      await refetchCategorized(set);
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Failed to resolve blocker'));
+      throw error;
+    }
   },
 
   resolveThread: async (threadLinkId) => {
@@ -425,10 +452,16 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         (t) => !t.threadLinks.some((l) => l.id === threadLinkId),
       ),
     }));
-    await api.post(`/thread-links/${threadLinkId}/resolve`);
-    trackEvent('thread_resolved');
-    // Refetch to get authoritative categorization (snap-back changes state for others)
-    await refetchCategorized(set);
+    try {
+      await api.post(`/thread-links/${threadLinkId}/resolve`);
+      trackEvent('thread_resolved');
+      // Refetch to get authoritative categorization (snap-back changes state for others)
+      await refetchCategorized(set);
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Failed to resolve thread'));
+      await refetchCategorized(set);
+      throw error;
+    }
   },
 
   declineThread: async (threadLinkId, reason) => {
@@ -438,10 +471,16 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         (t) => !t.threadLinks.some((l) => l.id === threadLinkId),
       ),
     }));
-    await api.post(`/thread-links/${threadLinkId}/decline`, { reason });
-    trackEvent('thread_declined');
-    // Refetch to get authoritative categorization
-    await refetchCategorized(set);
+    try {
+      await api.post(`/thread-links/${threadLinkId}/decline`, { reason });
+      trackEvent('thread_declined');
+      // Refetch to get authoritative categorization
+      await refetchCategorized(set);
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Failed to decline thread'));
+      await refetchCategorized(set);
+      throw error;
+    }
   },
 
   reorderTasks: async (workspaceId, taskIds) => {
@@ -463,13 +502,23 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   },
 
   pullThread: async (linkId, message?) => {
-    await api.post(`/thread-links/${linkId}/pull`, { message });
-    trackEvent('thread_pulled');
+    try {
+      await api.post(`/thread-links/${linkId}/pull`, { message });
+      trackEvent('thread_pulled');
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Failed to pull thread'));
+      throw error;
+    }
   },
 
   pullCurrentAssignee: async (taskId, message?) => {
-    await api.post(`/tasks/${taskId}/pull`, { message });
-    trackEvent('thread_pulled');
+    try {
+      await api.post(`/tasks/${taskId}/pull`, { message });
+      trackEvent('thread_pulled');
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Failed to pull assignee'));
+      throw error;
+    }
   },
 
   batchMoveCheck: async (taskIds, workspaceId, taskGroupId) => {
