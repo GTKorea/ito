@@ -104,6 +104,11 @@ interface TaskItemProps {
       chainIndex: number;
       groupId?: string;
     }>;
+    tags?: Array<{
+      id: string;
+      tagId: string;
+      tag: { id: string; name: string; color: string; taskGroupId: string };
+    }>;
     _count?: { files: number; chatMessages: number };
     unreadChatCount?: number;
   };
