@@ -220,9 +220,7 @@ export default function WorkspacePage() {
   useEffect(() => {
     if (currentWorkspace) {
       api.get(`/workspaces/${currentWorkspace.id}`).then((res) => {
-        const members = (res.data.members || [])
-          .filter((m: { user: { id: string } }) => m.user.id !== useAuthStore.getState().user?.id);
-        setWorkspaceMembers(members);
+        setWorkspaceMembers(res.data.members || []);
       }).catch(() => {});
     }
   }, [currentWorkspace]);
