@@ -173,18 +173,19 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
   // Debounced auto-save for title/description
   useEffect(() => {
     if (!task) return;
-    if (composingRef.current) return; // Skip during IME composition
     const { title: initTitle, description: initDesc } = initialValuesRef.current;
     if (title === initTitle && description === initDesc) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
     setSaveStatus('saving');
     debounceRef.current = setTimeout(async () => {
-      if (composingRef.current) return; // Double-check after timeout
+      if (composingRef.current) return; // Skip if still composing (IME)
+      const { title: curTitle, description: curDesc } = initialValuesRef.current;
+      const updates: Record<string, string> = {};
+      if (title !== curTitle) updates.title = title;
+      if (description !== curDesc) updates.description = description;
+      if (Object.keys(updates).length === 0) return;
       try {
-        await updateTask(taskId, {
-          ...(title !== initTitle ? { title } : {}),
-          ...(description !== initDesc ? { description } : {}),
-        });
+        await updateTask(taskId, updates);
         initialValuesRef.current = { title, description };
         markSaved();
       } catch {
