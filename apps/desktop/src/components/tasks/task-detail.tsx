@@ -174,16 +174,33 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
   useEffect(() => {
     if (!task) return;
     const { title: initTitle, description: initDesc } = initialValuesRef.current;
-    if (title === initTitle && description === initDesc) return;
+    if (title === initTitle && description === initDesc) {
+      // Values match initial — clear any pending save indicator
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      return;
+    }
     if (debounceRef.current) clearTimeout(debounceRef.current);
     setSaveStatus('saving');
     debounceRef.current = setTimeout(async () => {
-      if (composingRef.current) return; // Skip if still composing (IME)
+      if (composingRef.current) {
+        // Still composing — reschedule
+        setSaveStatus('idle');
+        return;
+      }
+      // Re-read current values to avoid stale closure
       const { title: curTitle, description: curDesc } = initialValuesRef.current;
       const updates: Record<string, string> = {};
       if (title !== curTitle) updates.title = title;
       if (description !== curDesc) updates.description = description;
-      if (Object.keys(updates).length === 0) return;
+      if (Object.keys(updates).length === 0) {
+        setSaveStatus('idle');
+        return;
+      }
+      // Don't save empty title
+      if ('title' in updates && !updates.title.trim()) {
+        setSaveStatus('idle');
+        return;
+      }
       try {
         await updateTask(taskId, updates);
         initialValuesRef.current = { title, description };
