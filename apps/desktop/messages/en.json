@@ -974,6 +974,12 @@
     "nameAlreadyExists": "A group with this name already exists",
     "createFailed": "Failed to create group"
   },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. Please try again or go back to the home page.",
+    "tryAgain": "Try again",
+    "goHome": "Home"
+  },
   "meta": {
     "title": "ito - Thread-based Task Collaboration",
     "description": "Connect teammates with threads, hand off tasks, and automatically get them back. A new way to manage teamwork.",

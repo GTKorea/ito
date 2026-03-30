@@ -974,6 +974,12 @@
     "nameAlreadyExists": "Un groupe avec ce nom existe déjà",
     "createFailed": "Échec de la création du groupe"
   },
+  "errorBoundary": {
+    "title": "Une erreur est survenue",
+    "description": "Une erreur inattendue s'est produite. Veuillez réessayer ou retourner à la page d'accueil.",
+    "tryAgain": "Réessayer",
+    "goHome": "Accueil"
+  },
   "meta": {
     "title": "ito - Collaboration de tâches basée sur les fils",
     "description": "Connectez vos coéquipiers par des fils, déléguez des tâches et récupérez-les automatiquement.",

@@ -974,6 +974,12 @@
     "nameAlreadyExists": "Já existe um grupo com este nome",
     "createFailed": "Falha ao criar grupo"
   },
+  "errorBoundary": {
+    "title": "Algo deu errado",
+    "description": "Ocorreu um erro inesperado. Por favor, tente novamente ou volte para a página inicial.",
+    "tryAgain": "Tentar novamente",
+    "goHome": "Início"
+  },
   "meta": {
     "title": "ito - Colaboração de tarefas baseada em threads",
     "description": "Conecte colegas com threads, delegue tarefas e receba-as automaticamente de volta.",

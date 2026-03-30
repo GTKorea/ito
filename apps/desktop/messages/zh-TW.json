@@ -974,6 +974,12 @@
     "nameAlreadyExists": "同名群組已存在",
     "createFailed": "建立群組失敗"
   },
+  "errorBoundary": {
+    "title": "發生了問題",
+    "description": "發生了意外錯誤。請重試或返回首頁。",
+    "tryAgain": "重試",
+    "goHome": "返回首頁"
+  },
   "meta": {
     "title": "ito - 基於線程的任務協作",
     "description": "用線程連結團隊成員，交接任務，自動回收。全新的團隊協作方式。",

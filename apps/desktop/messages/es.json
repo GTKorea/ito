@@ -974,6 +974,12 @@
     "nameAlreadyExists": "Ya existe un grupo con este nombre",
     "createFailed": "Error al crear el grupo"
   },
+  "errorBoundary": {
+    "title": "Algo salió mal",
+    "description": "Ocurrió un error inesperado. Por favor, inténtalo de nuevo o vuelve a la página principal.",
+    "tryAgain": "Reintentar",
+    "goHome": "Inicio"
+  },
   "meta": {
     "title": "ito - Colaboración de tareas basada en hilos",
     "description": "Conecta compañeros con hilos, delega tareas y recíbelas automáticamente de vuelta.",

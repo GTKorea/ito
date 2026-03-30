@@ -974,6 +974,12 @@
     "nameAlreadyExists": "Eine Gruppe mit diesem Namen existiert bereits",
     "createFailed": "Gruppe konnte nicht erstellt werden"
   },
+  "errorBoundary": {
+    "title": "Etwas ist schiefgelaufen",
+    "description": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut oder kehren Sie zur Startseite zurück.",
+    "tryAgain": "Erneut versuchen",
+    "goHome": "Startseite"
+  },
   "meta": {
     "title": "ito - Thread-basierte Aufgabenzusammenarbeit",
     "description": "Verbinden Sie Teammitglieder mit Threads, übergeben Sie Aufgaben und erhalten Sie sie automatisch zurück.",

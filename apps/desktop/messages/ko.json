@@ -974,6 +974,12 @@
     "nameAlreadyExists": "같은 이름의 그룹이 이미 존재합니다",
     "createFailed": "그룹 생성에 실패했습니다"
   },
+  "errorBoundary": {
+    "title": "문제가 발생했습니다",
+    "description": "예기치 않은 오류가 발생했습니다. 다시 시도하거나 홈 페이지로 돌아가세요.",
+    "tryAgain": "다시 시도",
+    "goHome": "홈으로"
+  },
   "meta": {
     "title": "ito - 연결 기반 협업 태스크 관리",
     "description": "팀원을 연결하고, 업무를 넘기고, 자동으로 돌려받는 새로운 태스크 관리 도구",
