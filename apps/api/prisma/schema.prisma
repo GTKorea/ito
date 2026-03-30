@@ -325,6 +325,7 @@ enum NotificationType {
   MEETING_INVITED
   MEETING_CONFIRMED
   MEETING_RESCHEDULED
+  MEETING_CANCELLED
 }
 
 model NotificationPreference {

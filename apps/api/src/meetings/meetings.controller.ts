@@ -53,6 +53,15 @@ export class MeetingsController {
     return this.meetingsService.restore(taskId, userId);
   }
 
+  @Post('cancel')
+  @ApiOperation({ summary: 'Cancel a meeting' })
+  cancel(
+    @Param('taskId') taskId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.meetingsService.cancel(taskId, userId);
+  }
+
   @Get('status')
   @ApiOperation({ summary: 'Get meeting RSVP status' })
   getStatus(

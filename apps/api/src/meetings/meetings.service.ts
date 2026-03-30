@@ -183,6 +183,48 @@ export class MeetingsService {
     return { success: true };
   }
 
+  async cancel(taskId: string, userId: string) {
+    const task = await this.prisma.task.findUnique({
+      where: { id: taskId },
+      include: {
+        creator: { select: { id: true, name: true } },
+        threadLinks: {
+          where: { status: 'PENDING' },
+          include: { toUser: { select: { id: true, name: true } } },
+        },
+      },
+    });
+    if (!task) throw new NotFoundException('Task not found');
+    if (task.type !== 'MEETING')
+      throw new BadRequestException('Task is not a meeting');
+    if (task.creatorId !== userId)
+      throw new ForbiddenException('Only the creator can cancel a meeting');
+
+    // Set task status to CANCELLED
+    await this.prisma.task.update({
+      where: { id: taskId },
+      data: { status: 'CANCELLED' },
+    });
+
+    // Clean up votes and dismissals
+    await this.prisma.vote.deleteMany({ where: { taskId } });
+    await this.prisma.meetingDismissal.deleteMany({ where: { taskId } });
+
+    // Notify participants
+    for (const link of task.threadLinks) {
+      if (!link.toUserId || link.toUserId === userId) continue;
+      await this.notificationsService.create({
+        userId: link.toUserId,
+        type: 'MEETING_CANCELLED',
+        title: '미팅이 취소되었습니다',
+        body: `"${task.title}" 미팅이 ${task.creator.name}에 의해 취소되었습니다`,
+        data: { taskId, taskTitle: task.title, cancelledBy: task.creator.name },
+      });
+    }
+
+    return { success: true };
+  }
+
   async getStatus(taskId: string, userId: string) {
     const task = await this.prisma.task.findUnique({
       where: { id: taskId },

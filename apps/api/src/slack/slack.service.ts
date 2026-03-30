@@ -308,9 +308,9 @@ export class SlackService implements OnModuleInit {
 
     if (!channelId) return;
 
-    const text = this.formatNotification(notification);
+    const { text, blocks } = this.formatNotification(notification);
     try {
-      await client.chat.postMessage({ channel: channelId, text });
+      await client.chat.postMessage({ channel: channelId, text, blocks });
     } catch (error) {
       this.logger.error(
         `Failed to send Slack notification to user ${userId}`,
@@ -476,26 +476,80 @@ export class SlackService implements OnModuleInit {
     type: string;
     title: string;
     data?: Record<string, unknown>;
-  }): string {
+  }): { text: string; blocks: SlackBlock[] } {
     const data = notification.data || {};
-    const taskTitle = data.taskTitle || notification.title;
-    const fromUser = data.fromUserName || 'Someone';
+    const taskTitle = (data.taskTitle || notification.title) as string;
+    const fromUser = (data.fromUserName || 'Someone') as string;
+    const priority = data.priority as string | undefined;
+    const dueDate = data.dueDate as string | undefined;
 
     switch (notification.type) {
-      case 'THREAD_RECEIVED':
-        return `\u{1F9F5} ${fromUser}\uB2D8\uC774 '${taskTitle}' \uD0DC\uC2A4\uD06C\uB97C \uB118\uACBC\uC2B5\uB2C8\uB2E4`;
+      case 'THREAD_RECEIVED': {
+        const fields: Array<{ type: string; text: string }> = [];
+        if (priority) {
+          fields.push({ type: 'mrkdwn', text: `*Priority:* ${priority}` });
+        }
+        if (dueDate) {
+          fields.push({ type: 'mrkdwn', text: `*Due:* ${new Date(dueDate).toLocaleDateString()}` });
+        }
+        const blocks: SlackBlock[] = [
+          {
+            type: 'section',
+            text: { type: 'mrkdwn', text: `🧵 *${fromUser}*님이 태스크를 넘겼습니다` },
+          },
+          {
+            type: 'section',
+            text: { type: 'mrkdwn', text: `> *${taskTitle}*` },
+            ...(fields.length > 0 ? { fields } : {}),
+          },
+        ];
+        return {
+          text: `🧵 ${fromUser}님이 '${taskTitle}' 태스크를 넘겼습니다`,
+          blocks,
+        };
+      }
       case 'THREAD_SNAPPED':
-        return `\u{1F519} '${taskTitle}' \uD0DC\uC2A4\uD06C\uAC00 \uB418\uB3CC\uC544\uC654\uC2B5\uB2C8\uB2E4`;
+        return {
+          text: `🔙 '${taskTitle}' 태스크가 되돌아왔습니다`,
+          blocks: [
+            { type: 'section', text: { type: 'mrkdwn', text: `🔙 *${taskTitle}* 태스크가 되돌아왔습니다\n당신의 차례입니다.` } },
+          ],
+        };
       case 'THREAD_COMPLETED':
-        return `\u2705 '${taskTitle}' \uD0DC\uC2A4\uD06C\uC758 \uC2E4\uC774 \uC644\uB8CC\uB418\uC5C8\uC2B5\uB2C8\uB2E4`;
+        return {
+          text: `✅ '${taskTitle}' 태스크의 실이 완료되었습니다`,
+          blocks: [
+            { type: 'section', text: { type: 'mrkdwn', text: `✅ *${taskTitle}* 태스크의 실이 완료되었습니다` } },
+          ],
+        };
       case 'WORKSPACE_INVITE':
-        return `\u{1F4E8} \uC6CC\uD06C\uC2A4\uD398\uC774\uC2A4 \uCD08\uB300\uAC00 \uB3C4\uCC29\uD588\uC2B5\uB2C8\uB2E4`;
+        return {
+          text: `📨 워크스페이스 초대가 도착했습니다`,
+          blocks: [
+            { type: 'section', text: { type: 'mrkdwn', text: '📨 워크스페이스 초대가 도착했습니다' } },
+          ],
+        };
       case 'TASK_ASSIGNED':
-        return `\u{1F4CB} '${taskTitle}' \uD0DC\uC2A4\uD06C\uAC00 \uBC30\uC815\uB418\uC5C8\uC2B5\uB2C8\uB2E4`;
+        return {
+          text: `📋 '${taskTitle}' 태스크가 배정되었습니다`,
+          blocks: [
+            { type: 'section', text: { type: 'mrkdwn', text: `📋 *${taskTitle}* 태스크가 배정되었습니다` } },
+          ],
+        };
       case 'TASK_COMPLETED':
-        return `\u2705 '${taskTitle}' \uD0DC\uC2A4\uD06C\uAC00 \uC644\uB8CC\uB418\uC5C8\uC2B5\uB2C8\uB2E4`;
+        return {
+          text: `✅ '${taskTitle}' 태스크가 완료되었습니다`,
+          blocks: [
+            { type: 'section', text: { type: 'mrkdwn', text: `✅ *${taskTitle}* 태스크가 완료되었습니다` } },
+          ],
+        };
       default:
-        return notification.title;
+        return {
+          text: notification.title,
+          blocks: [
+            { type: 'section', text: { type: 'mrkdwn', text: notification.title } },
+          ],
+        };
     }
   }
 

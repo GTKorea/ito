@@ -47,6 +47,26 @@ export function getFileViewUrl(fileUrl: string): string {
 }
 
 /**
+ * Download a file using the authenticated API client.
+ * Uses blob response type and creates a temporary link to trigger download.
+ */
+export async function downloadFile(fileId: string, filename: string): Promise<void> {
+  const { api } = await import('@/lib/api-client');
+  const response = await api.get(`/files/${fileId}/download`, {
+    responseType: 'blob',
+  });
+  const blob = new Blob([response.data]);
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+}
+
+/**
  * Upload files to a task. Shared by FileUpload component and TaskDetail drag-and-drop.
  */
 export async function uploadTaskFiles(

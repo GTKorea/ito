@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react';
 import { api } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Download, Trash2, Loader2, Eye } from 'lucide-react';
+import { toast } from 'sonner';
 import { FilePreviewModal } from './file-preview-modal';
-import { getFileTypeInfo, getFileUrl, getFileViewUrl } from '@/lib/file-utils';
+import { getFileTypeInfo, getFileViewUrl, downloadFile } from '@/lib/file-utils';
 
 interface FileItem {
   id: string;
@@ -54,8 +55,12 @@ export function FileList({ taskId, refreshKey }: FileListProps) {
     }
   };
 
-  const handleDownload = (file: FileItem) => {
-    window.open(getFileUrl(file.id), '_blank');
+  const handleDownload = async (file: FileItem) => {
+    try {
+      await downloadFile(file.id, file.filename);
+    } catch {
+      toast.error('Download failed');
+    }
   };
 
   if (isLoading) {

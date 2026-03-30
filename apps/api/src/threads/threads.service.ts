@@ -89,21 +89,20 @@ export class ThreadsService {
       );
     }
 
-    // Check for circular references — no user in toUserIds should be in the active chain
-    const usersInActiveChain = new Set<string>();
+    // Check for circular references — cannot connect to a user who currently
+    // has a PENDING link (they haven't acted on it yet). Users with FORWARDED
+    // links have already passed the task along and can receive it again.
+    const usersWithPendingLink = new Set<string>();
     for (const link of task.threadLinks) {
-      if (link.status === 'PENDING' || link.status === 'FORWARDED') {
-        usersInActiveChain.add(link.fromUserId);
-        if (link.toUserId) usersInActiveChain.add(link.toUserId);
+      if (link.status === 'PENDING' && link.toUserId) {
+        usersWithPendingLink.add(link.toUserId);
       }
     }
-    // Also add the task creator if they are still part of the active chain
-    usersInActiveChain.add(task.creatorId);
 
     for (const toUserId of toUserIds) {
-      if (usersInActiveChain.has(toUserId)) {
+      if (usersWithPendingLink.has(toUserId)) {
         throw new BadRequestException(
-          'Cannot connect to a user who is already in the active thread chain',
+          'Cannot connect to a user who already has a pending connection in this chain',
         );
       }
     }
@@ -171,7 +170,15 @@ export class ThreadsService {
         type: 'THREAD_RECEIVED',
         title: 'New thread connected to you',
         body: message || `${link.fromUser.name} connected a task to you`,
-        data: { taskId, threadLinkId: link.id, groupId },
+        data: {
+          taskId,
+          threadLinkId: link.id,
+          groupId,
+          taskTitle: task.title,
+          fromUserName: link.fromUser.name,
+          priority: task.priority,
+          dueDate: task.dueDate,
+        },
       });
     }
 
@@ -477,19 +484,18 @@ export class ThreadsService {
       }
     }
 
-    // Check for circular connections with existing active chain
-    const usersInActiveChain = new Set<string>();
-    usersInActiveChain.add(task.creatorId);
+    // Check for circular connections — only block users with a PENDING link
+    // (they haven't acted yet). FORWARDED users can receive again.
+    const usersWithPendingLink = new Set<string>();
     for (const link of task.threadLinks) {
-      if (link.status === 'PENDING' || link.status === 'FORWARDED') {
-        usersInActiveChain.add(link.fromUserId);
-        if (link.toUserId) usersInActiveChain.add(link.toUserId);
+      if (link.status === 'PENDING' && link.toUserId) {
+        usersWithPendingLink.add(link.toUserId);
       }
     }
     for (const userId of userIds) {
-      if (usersInActiveChain.has(userId)) {
+      if (usersWithPendingLink.has(userId)) {
         throw new BadRequestException(
-          'A user in the chain is already part of the active thread chain',
+          'A user in the chain already has a pending connection',
         );
       }
     }
@@ -580,7 +586,14 @@ export class ThreadsService {
         type: 'THREAD_RECEIVED',
         title: 'New thread connected to you',
         body: `${link.fromUser.name} connected a task to you`,
-        data: { taskId, threadLinkId: link.id },
+        data: {
+          taskId,
+          threadLinkId: link.id,
+          taskTitle: task.title,
+          fromUserName: link.fromUser.name,
+          priority: task.priority,
+          dueDate: task.dueDate,
+        },
       });
     }
 

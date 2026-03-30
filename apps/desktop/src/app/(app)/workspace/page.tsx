@@ -12,7 +12,6 @@ import { api } from '@/lib/api-client';
 import { OnboardingWizard } from '@/components/onboarding/onboarding-wizard';
 
 import { TaskList } from '@/components/tasks/task-list';
-import { CreateTask } from '@/components/tasks/create-task';
 import { TaskDetail } from '@/components/tasks/task-detail';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -117,7 +116,6 @@ export default function WorkspacePage() {
   const { groups, deleteGroup, archiveGroup, updateGroup, tags, fetchTags } = useTaskGroupStore();
   const { checkAndStartWizard } = useOnboardingStore();
   const currentGroup = groupId ? groups.find((g) => g.id === groupId) : null;
-  const [showCreate, setShowCreate] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [openWithChat, setOpenWithChat] = useState(false);
@@ -683,23 +681,11 @@ export default function WorkspacePage() {
           <kbd className="hidden sm:inline-flex h-5 items-center gap-0.5 rounded border border-border bg-muted px-1.5 text-[10px] text-muted-foreground">
             <span className="text-xs">&#8984;</span>K
           </kbd>
-          <Button size="sm" onClick={() => setShowCreate(true)} data-onboarding="new-task">
-            <Plus className="mr-1 h-4 w-4" />
-            {t('newTask')}
-          </Button>
         </div>
       </div>
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-2">
-        {showCreate && (
-          <CreateTask
-            workspaceId={currentWorkspace.id}
-            taskGroupId={groupId || undefined}
-            onClose={() => setShowCreate(false)}
-          />
-        )}
-
         {isLoading ? (
           <div className="flex justify-center py-12">
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />

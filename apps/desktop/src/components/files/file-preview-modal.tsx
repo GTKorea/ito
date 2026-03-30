@@ -4,7 +4,8 @@ import { useEffect, useCallback, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { X, ChevronLeft, ChevronRight, Download, Music } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { getFileTypeInfo, getFileUrl, getFileViewUrl } from '@/lib/file-utils';
+import { toast } from 'sonner';
+import { getFileTypeInfo, getFileUrl, getFileViewUrl, downloadFile } from '@/lib/file-utils';
 
 interface FileItem {
   id: string;
@@ -112,7 +113,13 @@ export function FilePreviewModal({ files, initialIndex, onClose }: FilePreviewMo
         </div>
         <Button
           size="sm"
-          onClick={() => window.open(getFileUrl(file.id), '_blank')}
+          onClick={async () => {
+            try {
+              await downloadFile(file.id, file.filename);
+            } catch {
+              toast.error('Download failed');
+            }
+          }}
         >
           <Download className="h-4 w-4 mr-1.5" />
           {t('download')}
@@ -148,7 +155,13 @@ export function FilePreviewModal({ files, initialIndex, onClose }: FilePreviewMo
           variant="ghost"
           size="sm"
           className="h-7 px-2 text-xs text-white/70 hover:text-white hover:bg-white/10"
-          onClick={() => window.open(getFileUrl(file.id), '_blank')}
+          onClick={async () => {
+            try {
+              await downloadFile(file.id, file.filename);
+            } catch {
+              toast.error('Download failed');
+            }
+          }}
         >
           <Download className="h-3.5 w-3.5 mr-1" />
           {t('download')}

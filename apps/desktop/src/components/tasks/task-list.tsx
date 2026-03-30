@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { TaskItem } from './task-item';
-import { ChevronDown, ChevronRight, Clock, CheckCircle, Calendar, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, Clock, CheckCircle, Calendar, X, XCircle } from 'lucide-react';
 
 import {
   DndContext,
@@ -20,44 +20,8 @@ import {
   verticalListSortingStrategy,
   arrayMove,
 } from '@dnd-kit/sortable';
-import { useTaskStore } from '@/stores/task-store';
-
-interface User {
-  id: string;
-  name: string;
-  avatarUrl?: string;
-}
-
-interface ThreadLink {
-  id: string;
-  fromUser: User;
-  toUser: User | null;
-  type?: 'PERSON' | 'BLOCKER';
-  blockerNote?: string;
-  message?: string;
-  status: string;
-  chainIndex: number;
-  groupId?: string;
-}
-
-interface Task {
-  id: string;
-  title: string;
-  description?: string;
-  status: string;
-  priority: string;
-  type?: string;
-  voteConfig?: any;
-  dueDate?: string;
-  order?: number;
-  creator: User;
-  assignee: User;
-  taskGroup?: { id: string; name: string } | null;
-  threadLinks: ThreadLink[];
-  createdAt: string;
-  _count?: { files: number; chatMessages: number };
-  unreadChatCount?: number;
-}
+import { useTaskStore, type Task, type MeetingConfig } from '@/stores/task-store';
+import { useAuthStore } from '@/stores/auth-store';
 
 interface TaskListProps {
   actionRequired: Task[];
@@ -76,7 +40,8 @@ interface TaskListProps {
 
 export function TaskList({ actionRequired, waiting, completed, meetings = [], dismissedMeetingIds = [], onSelectTask, sortBy, workspaceId, isSelecting, selectedTaskIds, onToggleSelect, currentGroupId }: TaskListProps) {
   const t = useTranslations('tasks');
-  const { reorderTasks, dismissMeeting, restoreMeeting } = useTaskStore();
+  const { reorderTasks, dismissMeeting, restoreMeeting, cancelMeeting } = useTaskStore();
+  const user = useAuthStore((s) => s.user);
   const [waitingExpanded, setWaitingExpanded] = useState(true);
   const [showCompleted, setShowCompleted] = useState(false);
   const [meetingsExpanded, setMeetingsExpanded] = useState(true);
@@ -129,7 +94,7 @@ export function TaskList({ actionRequired, waiting, completed, meetings = [], di
           {meetingsExpanded && (
             <div className="space-y-1.5 mb-2">
               {visibleMeetings.map((meeting) => {
-                const config = meeting.voteConfig;
+                const config = meeting.voteConfig as MeetingConfig | undefined;
                 const scheduledDate = config?.scheduledAt ? new Date(config.scheduledAt) : null;
                 return (
                   <div
@@ -148,16 +113,32 @@ export function TaskList({ actionRequired, waiting, completed, meetings = [], di
                         </span>
                       )}
                     </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        dismissMeeting(meeting.id);
-                      }}
-                      className="text-muted-foreground hover:text-foreground p-0.5 shrink-0"
-                      title={t('dismissMeeting')}
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {meeting.creator?.id === user?.id && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (window.confirm(t('confirmCancelMeeting'))) {
+                              cancelMeeting(meeting.id);
+                            }
+                          }}
+                          className="text-muted-foreground hover:text-red-400 p-0.5"
+                          title={t('cancelMeeting')}
+                        >
+                          <XCircle className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          dismissMeeting(meeting.id);
+                        }}
+                        className="text-muted-foreground hover:text-foreground p-0.5"
+                        title={t('dismissMeeting')}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
                   </div>
                 );
               })}

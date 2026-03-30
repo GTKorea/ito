@@ -175,19 +175,18 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
     if (!task) return;
     const { title: initTitle, description: initDesc } = initialValuesRef.current;
     if (title === initTitle && description === initDesc) {
-      // Values match initial — clear any pending save indicator
       if (debounceRef.current) clearTimeout(debounceRef.current);
       return;
     }
     if (debounceRef.current) clearTimeout(debounceRef.current);
     setSaveStatus('saving');
-    debounceRef.current = setTimeout(async () => {
+
+    const attemptSave = () => {
       if (composingRef.current) {
-        // Still composing — reschedule
-        setSaveStatus('idle');
+        // Still composing — retry after another 300ms
+        debounceRef.current = setTimeout(attemptSave, 300);
         return;
       }
-      // Re-read current values to avoid stale closure
       const { title: curTitle, description: curDesc } = initialValuesRef.current;
       const updates: Record<string, string> = {};
       if (title !== curTitle) updates.title = title;
@@ -201,16 +200,19 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
         setSaveStatus('idle');
         return;
       }
-      try {
-        await updateTask(taskId, updates);
-        initialValuesRef.current = { title, description };
-        markSaved();
-      } catch {
-        setSaveStatus('idle');
-        toast.error(t('saveFailed'));
-      }
-    }, 300);
-  }, [title, description]);
+      updateTask(taskId, updates)
+        .then(() => {
+          initialValuesRef.current = { title, description };
+          markSaved();
+        })
+        .catch(() => {
+          setSaveStatus('idle');
+          toast.error(t('saveFailed'));
+        });
+    };
+
+    debounceRef.current = setTimeout(attemptSave, 300);
+  }, [title, description, task, taskId, updateTask, markSaved, t]);
 
   // Immediate save for status/priority/dueDate
   const saveField = async (field: string, value: string) => {

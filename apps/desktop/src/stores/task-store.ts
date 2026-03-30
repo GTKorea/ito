@@ -78,6 +78,8 @@ export interface Task {
     tag: { id: string; name: string; color: string; taskGroupId: string };
   }>;
   createdAt: string;
+  _count?: { files: number; chatMessages: number };
+  unreadChatCount?: number;
 }
 
 interface CalendarTask {
@@ -142,6 +144,7 @@ interface TaskState {
   batchMoveCheck: (taskIds: string[], workspaceId?: string, taskGroupId?: string) => Promise<{ movable: Task[]; blocked: { task: Task; reason: string }[] }>;
   batchMoveExecute: (taskIds: string[], workspaceId?: string, taskGroupId?: string) => Promise<void>;
   transferTask: (taskId: string, newOwnerId: string) => Promise<void>;
+  cancelMeeting: (taskId: string) => Promise<void>;
   confirmMeeting: (taskId: string) => Promise<void>;
   rescheduleMeeting: (taskId: string, scheduledAt: string, duration?: number) => Promise<void>;
   dismissMeeting: (taskId: string) => Promise<void>;
@@ -579,6 +582,15 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     await api.post(`/tasks/${taskId}/meeting/reschedule`, { scheduledAt, duration });
     trackEvent('meeting_rescheduled');
     await refetchCategorized(set);
+  },
+
+  cancelMeeting: async (taskId: string) => {
+    await api.post(`/tasks/${taskId}/meeting/cancel`);
+    // Remove from meetings list since it's cancelled
+    set((state) => ({
+      meetings: state.meetings.filter((m) => m.id !== taskId),
+    }));
+    trackEvent('meeting_cancelled');
   },
 
   dismissMeeting: async (taskId) => {

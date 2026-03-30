@@ -8,7 +8,8 @@ import { useAuthStore } from '@/stores/auth-store';
 import { api } from '@/lib/api-client';
 import { parseQuickInput } from '@/lib/quick-input-parser';
 import { useTranslations } from 'next-intl';
-import { Send, Loader2, AtSign, ChevronRight, Flag, CalendarDays, ShieldAlert, Hash, Users, Vote, Tag as TagIcon, X, Check } from 'lucide-react';
+import { Send, Loader2, AtSign, ChevronRight, Flag, CalendarDays, ShieldAlert, Hash, Users, Vote, Tag as TagIcon, X, Check, Paperclip } from 'lucide-react';
+import { uploadTaskFiles } from '@/lib/file-utils';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/error-utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -66,12 +67,13 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
   const [meetingDate, setMeetingDate] = useState('');
   const [meetingTime, setMeetingTime] = useState('');
   const [meetingDuration, setMeetingDuration] = useState(60);
-  const [meetingAgenda, setMeetingAgenda] = useState('');
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
 
   // Map of display name -> user ID for resolved mentions
   const resolvedUsersRef = useRef<Map<string, string>>(new Map());
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const dateInputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const blurTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -399,7 +401,6 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
             anonymous: false,
             scheduledAt: new Date(`${meetingDate}T${meetingTime}`).toISOString(),
             duration: meetingDuration,
-            agenda: meetingAgenda || undefined,
             confirmed: false,
           }
         : isVoteMode
@@ -502,6 +503,12 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
         }
       }
 
+      // Upload pending files if any
+      if (pendingFiles.length > 0 && task?.id) {
+        await uploadTaskFiles(task.id, pendingFiles);
+        setPendingFiles([]);
+      }
+
       // Refresh the task list
       await silentRefetch(currentWorkspace.id, taskGroupId);
       setInput('');
@@ -512,7 +519,7 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
       setMeetingDate('');
       setMeetingTime('');
       setMeetingDuration(60);
-      setMeetingAgenda('');
+      setPendingFiles([]);
       setSelectedTags([]);
       resolvedUsersRef.current.clear();
       resolvedGroupRef.current.clear();
@@ -1012,6 +1019,21 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
               >
                 <Users className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
               </button>
+
+              {/* File attachment button */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className={cn(
+                  'flex h-7 w-7 lg:h-8 lg:w-8 items-center justify-center rounded-md transition-colors cursor-pointer',
+                  pendingFiles.length > 0
+                    ? 'text-blue-400 bg-blue-400/10'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
+                )}
+                title={t('attachFiles')}
+              >
+                <Paperclip className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
+              </button>
             </div>
         </div>
 
@@ -1038,9 +1060,9 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
           </div>
         )}
 
-        {/* Badges row — shows selected priority/due date */}
-        {(selectedPriority || dueDate || isVoteMode || isMeetingMode) && (
-          <div className="flex items-center gap-1.5 px-4 pt-2">
+        {/* Badges row — shows selected priority/due date/files */}
+        {(selectedPriority || dueDate || isVoteMode || isMeetingMode || pendingFiles.length > 0) && (
+          <div className="flex items-center gap-1.5 px-4 pt-2 flex-wrap">
             {isMeetingMode && (
               <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/15 px-2 py-0.5 text-[11px] font-medium text-emerald-400">
                 <Users className="h-3 w-3" />
@@ -1103,6 +1125,23 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
                 </button>
               </span>
             )}
+            {pendingFiles.length > 0 && pendingFiles.map((file, idx) => (
+              <span
+                key={idx}
+                className="inline-flex items-center gap-1 rounded-md bg-blue-500/15 px-2 py-0.5 text-[11px] font-medium text-blue-400"
+              >
+                <Paperclip className="h-3 w-3" />
+                {file.name.length > 20 ? file.name.slice(0, 17) + '...' : file.name}
+                <button
+                  type="button"
+                  onClick={() => setPendingFiles((prev) => prev.filter((_, i) => i !== idx))}
+                  onMouseDown={handleToolbarMouseDown}
+                  className="ml-0.5 hover:opacity-70 cursor-pointer"
+                >
+                  x
+                </button>
+              </span>
+            ))}
           </div>
         )}
 
@@ -1116,19 +1155,19 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
                   type="date"
                   value={meetingDate}
                   onChange={(e) => setMeetingDate(e.target.value)}
-                  className="h-7 rounded-md border border-border bg-transparent px-2 text-xs text-foreground w-32"
+                  className="h-7 rounded-md border border-border bg-transparent px-2 text-xs text-foreground w-32 [color-scheme:dark]"
                 />
               </div>
               <input
                 type="time"
                 value={meetingTime}
                 onChange={(e) => setMeetingTime(e.target.value)}
-                className="h-7 rounded-md border border-border bg-transparent px-2 text-xs text-foreground w-24"
+                className="h-7 rounded-md border border-border bg-transparent px-2 text-xs text-foreground w-24 [color-scheme:dark]"
               />
               <select
                 value={meetingDuration}
                 onChange={(e) => setMeetingDuration(Number(e.target.value))}
-                className="h-7 rounded-md border border-border bg-transparent px-2 text-xs text-foreground"
+                className="h-7 rounded-md border border-border bg-transparent px-2 text-xs text-foreground [color-scheme:dark]"
               >
                 <option value={15}>15min</option>
                 <option value={30}>30min</option>
@@ -1138,13 +1177,9 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
                 <option value={120}>120min</option>
               </select>
             </div>
-            <input
-              type="text"
-              value={meetingAgenda}
-              onChange={(e) => setMeetingAgenda(e.target.value)}
-              placeholder={t('meetingAgendaPlaceholder')}
-              className="w-full h-7 rounded-md border border-border bg-transparent px-2 text-xs text-foreground placeholder:text-muted-foreground"
-            />
+            <p className="text-[11px] text-muted-foreground/70">
+              {t('meetingParticipantHint')}
+            </p>
           </div>
         )}
 
@@ -1156,7 +1191,7 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
               aria-hidden
               className="absolute inset-0 flex items-center text-sm pointer-events-none whitespace-pre overflow-hidden"
             >
-              <span className="text-transparent">{!input && t('quickInputPlaceholder')}</span>
+              <span className="text-transparent">{!input && (isMeetingMode ? t('meetingInputPlaceholder') : t('quickInputPlaceholder'))}</span>
               {renderHighlightedInput(input)}
             </div>
             <input
@@ -1168,7 +1203,7 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
               onKeyDown={handleKeyDown}
               onFocus={handleFocus}
               onBlur={handleBlur}
-              placeholder={t('quickInputPlaceholder')}
+              placeholder={isMeetingMode ? t('meetingInputPlaceholder') : t('quickInputPlaceholder')}
               disabled={isSubmitting}
               className={cn(
                 "relative h-8 w-full bg-transparent text-sm placeholder:text-muted-foreground/60 focus:outline-none disabled:opacity-50",
@@ -1195,6 +1230,18 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
           </button>
         </div>
       </div>
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        className="hidden"
+        onChange={(e) => {
+          if (e.target.files) {
+            setPendingFiles((prev) => [...prev, ...Array.from(e.target.files!)]);
+            e.target.value = '';
+          }
+        }}
+      />
     </div>
   );
 }
