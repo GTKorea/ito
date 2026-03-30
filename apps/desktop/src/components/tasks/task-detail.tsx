@@ -72,8 +72,8 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
   const saveStatusTimer = useRef<NodeJS.Timeout | null>(null);
   const dragCounter = useRef(0);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
-  const initialValuesRef = useRef({ title: '', description: '' });
-  const composingRef = useRef(false);
+  const savedValuesRef = useRef({ title: '', description: '' });
+  const latestValuesRef = useRef({ title: '', description: '' });
   const t = useTranslations('tasks');
   const tc = useTranslations('chat');
   const tf = useTranslations('files');
@@ -122,7 +122,8 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
         setStatus(data.status);
         setPriority(data.priority);
         setDueDate(data.dueDate ? data.dueDate.slice(0, 10) : '');
-        initialValuesRef.current = { title: data.title, description: data.description || '' };
+        savedValuesRef.current = { title: data.title, description: data.description || '' };
+        latestValuesRef.current = { title: data.title, description: data.description || '' };
       })
       .catch((e) => console.error('Failed to load task:', e))
       .finally(() => setIsLoading(false));
@@ -170,49 +171,23 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
     saveStatusTimer.current = setTimeout(() => setSaveStatus('idle'), 2000);
   }, []);
 
-  // Debounced auto-save for title/description
-  useEffect(() => {
-    if (!task) return;
-    const { title: initTitle, description: initDesc } = initialValuesRef.current;
-    if (title === initTitle && description === initDesc) {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      return;
-    }
+  // Debounced auto-save — triggered by onChange handlers, reads from refs
+  const scheduleSave = useCallback(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     setSaveStatus('saving');
-
-    const attemptSave = () => {
-      if (composingRef.current) {
-        // Still composing — retry after another 300ms
-        debounceRef.current = setTimeout(attemptSave, 300);
-        return;
-      }
-      const { title: curTitle, description: curDesc } = initialValuesRef.current;
+    debounceRef.current = setTimeout(() => {
+      const { title: cur, description: curDesc } = latestValuesRef.current;
+      const { title: saved, description: savedDesc } = savedValuesRef.current;
       const updates: Record<string, string> = {};
-      if (title !== curTitle) updates.title = title;
-      if (description !== curDesc) updates.description = description;
-      if (Object.keys(updates).length === 0) {
-        setSaveStatus('idle');
-        return;
-      }
-      // Don't save empty title
-      if ('title' in updates && !updates.title.trim()) {
-        setSaveStatus('idle');
-        return;
-      }
+      if (cur !== saved) updates.title = cur;
+      if (curDesc !== savedDesc) updates.description = curDesc;
+      if (Object.keys(updates).length === 0) { setSaveStatus('idle'); return; }
+      if ('title' in updates && !updates.title.trim()) { setSaveStatus('idle'); return; }
       updateTask(taskId, updates)
-        .then(() => {
-          initialValuesRef.current = { title, description };
-          markSaved();
-        })
-        .catch(() => {
-          setSaveStatus('idle');
-          toast.error(t('saveFailed'));
-        });
-    };
-
-    debounceRef.current = setTimeout(attemptSave, 300);
-  }, [title, description, task, taskId, updateTask, markSaved, t]);
+        .then(() => { savedValuesRef.current = { ...latestValuesRef.current }; markSaved(); })
+        .catch(() => { setSaveStatus('idle'); });
+    }, 500);
+  }, [taskId, updateTask, markSaved]);
 
   // Immediate save for status/priority/dueDate
   const saveField = async (field: string, value: string) => {
@@ -359,9 +334,7 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
             {/* Title */}
             <Input
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              onCompositionStart={() => { composingRef.current = true; }}
-              onCompositionEnd={(e) => { composingRef.current = false; setTitle((e.target as HTMLInputElement).value); }}
+              onChange={(e) => { setTitle(e.target.value); latestValuesRef.current.title = e.target.value; scheduleSave(); }}
               className="text-base font-semibold bg-transparent border-none px-2 focus-visible:ring-0"
               placeholder={t('title')}
             />
@@ -369,9 +342,7 @@ export function TaskDetail({ taskId, onClose, initialShowChat }: TaskDetailProps
             {/* Description */}
             <Textarea
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              onCompositionStart={() => { composingRef.current = true; }}
-              onCompositionEnd={(e) => { composingRef.current = false; setDescription((e.target as HTMLTextAreaElement).value); }}
+              onChange={(e) => { setDescription(e.target.value); latestValuesRef.current.description = e.target.value; scheduleSave(); }}
               className="bg-transparent border-border min-h-[80px] text-sm"
               placeholder={t('addDescription')}
               rows={3}
