@@ -174,12 +174,7 @@ export class TasksService {
     const updated = await this.prisma.task.update({
       where: { id },
       data,
-      include: {
-        creator: { select: { id: true, name: true, avatarUrl: true } },
-        assignee: { select: { id: true, name: true, avatarUrl: true } },
-        threadLinks: true,
-        tags: { include: { tag: true } },
-      },
+      include: TASK_INCLUDE_FULL,
     });
 
     // Cancel reminders when task is completed or cancelled
