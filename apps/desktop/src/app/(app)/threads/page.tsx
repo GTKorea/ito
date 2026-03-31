@@ -389,9 +389,7 @@ export default function ThreadsPage() {
                 {view === 'incoming' ? t('noIncoming') : t('noOutgoing')}
               </p>
               <p className="mt-1 text-xs">
-                {view === 'incoming'
-                  ? t('noIncomingHint', { defaultMessage: 'Threads will appear here when someone connects a task to you' })
-                  : t('noOutgoingHint', { defaultMessage: 'Connect a task to someone to start a thread' })}
+                {view === 'incoming' ? t('noIncomingHint') : t('noOutgoingHint')}
               </p>
             </div>
           ) : (

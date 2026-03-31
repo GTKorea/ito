@@ -80,7 +80,7 @@ export default function NotificationsPage() {
             <BellOff className="h-8 w-8 mb-3 opacity-40" />
             <p className="text-sm font-medium text-foreground/70">{t('noNotifications')}</p>
             <p className="mt-1 text-xs">
-              {t('noNotificationsHint', { defaultMessage: 'You\'ll be notified when someone connects a thread or invites you' })}
+              {t('noNotificationsHint')}
             </p>
           </div>
         ) : (
