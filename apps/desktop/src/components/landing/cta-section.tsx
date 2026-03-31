@@ -10,7 +10,7 @@ export function CTASection() {
   const { ref, isVisible } = useScrollAnimation();
 
   return (
-    <section ref={ref} className="relative overflow-hidden py-24 sm:py-32">
+    <section ref={ref} className="relative overflow-hidden py-16 sm:py-24">
       {/* Background */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
         <ThreadVisual

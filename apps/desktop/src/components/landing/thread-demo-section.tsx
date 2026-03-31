@@ -248,7 +248,7 @@ export function ThreadDemoSection() {
     <section
       id="thread-demo"
       ref={ref}
-      className="relative py-24 sm:py-32"
+      className="relative py-16 sm:py-24"
     >
       <div
         className={`mx-auto max-w-6xl px-6 transition-all duration-700 ${
