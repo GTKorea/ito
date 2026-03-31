@@ -214,24 +214,24 @@ export function TaskSearch() {
 
   return (
     <CommandDialog open={open} onOpenChange={handleOpenChange}>
-      {activeGroupFilter && !parsedGroupName && (
-        <div className="flex items-center gap-1 px-3 pt-2">
+      <div className="flex items-center gap-1 p-1 pb-0">
+        {activeGroupFilter && !parsedGroupName && (
           <button
             onClick={handleRemoveGroupFilter}
-            className="flex shrink-0 items-center gap-1 rounded-md bg-accent px-2 py-1 text-xs text-foreground hover:bg-accent/80"
+            className="ml-1 flex shrink-0 items-center gap-1 rounded-md bg-accent px-2 py-1 text-xs text-foreground hover:bg-accent/80"
           >
             <Hash className="h-3 w-3" />
             {activeGroupFilter.name}
             <X className="h-3 w-3 text-muted-foreground" />
           </button>
-        </div>
-      )}
-      <CommandInput
-        placeholder={activeGroupFilter ? t('searchInGroup') : t('placeholder')}
-        value={query}
-        onValueChange={setQuery}
-        onKeyDown={handleKeyDown}
-      />
+        )}
+        <CommandInput
+          placeholder={activeGroupFilter ? t('searchInGroup') : t('placeholder')}
+          value={query}
+          onValueChange={setQuery}
+          onKeyDown={handleKeyDown}
+        />
+      </div>
       <CommandList>
         {isLoadingTasks ? (
           <div className="flex items-center justify-center py-6">
