@@ -994,5 +994,12 @@
     "title": "ito - Colaboração de tarefas baseada em threads",
     "description": "Conecte colegas com threads, delegue tarefas e receba-as automaticamente de volta.",
     "keywords": "gestão de tarefas, colaboração em equipe, gestão de projetos, delegação de tarefas, automação de fluxos"
+  },
+  "taskSearch": {
+    "placeholder": "Pesquisar tarefas... (#grupo para filtrar)",
+    "noResults": "Nenhuma tarefa encontrada",
+    "allTasks": "Todas as tarefas",
+    "groups": "Grupos",
+    "inGroup": "em #{group}"
   }
 }

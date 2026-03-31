@@ -994,5 +994,12 @@
     "title": "ito - Collaboration de tâches basée sur les fils",
     "description": "Connectez vos coéquipiers par des fils, déléguez des tâches et récupérez-les automatiquement.",
     "keywords": "gestion des tâches, collaboration d'équipe, gestion de projet, délégation de tâches, automatisation des flux"
+  },
+  "taskSearch": {
+    "placeholder": "Rechercher des tâches... (#groupe pour filtrer)",
+    "noResults": "Aucune tâche trouvée",
+    "allTasks": "Toutes les tâches",
+    "groups": "Groupes",
+    "inGroup": "dans #{group}"
   }
 }

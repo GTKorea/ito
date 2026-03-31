@@ -9,6 +9,7 @@ import { useMediaQuery } from '@/hooks/use-media-query';
 import { Sidebar } from '@/components/layout/sidebar';
 import { BottomNav } from '@/components/layout/bottom-nav';
 import { CommandPalette } from '@/components/layout/command-palette';
+import { TaskSearch } from '@/components/layout/task-search';
 import { TopHeader } from '@/components/layout/top-header';
 import { OnboardingOverlay } from '@/components/onboarding/onboarding-overlay';
 import { cn } from '@/lib/utils';
@@ -68,6 +69,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </main>
       {isMobile && <BottomNav />}
       <CommandPalette />
+      <TaskSearch />
       <OnboardingOverlay />
     </div>
   );

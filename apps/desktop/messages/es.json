@@ -994,5 +994,12 @@
     "title": "ito - Colaboración de tareas basada en hilos",
     "description": "Conecta compañeros con hilos, delega tareas y recíbelas automáticamente de vuelta.",
     "keywords": "gestión de tareas, colaboración en equipo, gestión de proyectos, delegación de tareas, automatización de flujos"
+  },
+  "taskSearch": {
+    "placeholder": "Buscar tareas... (#grupo para filtrar)",
+    "noResults": "No se encontraron tareas",
+    "allTasks": "Todas las tareas",
+    "groups": "Grupos",
+    "inGroup": "en #{group}"
   }
 }

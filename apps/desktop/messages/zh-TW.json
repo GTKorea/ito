@@ -994,5 +994,12 @@
     "title": "ito - 基於線程的任務協作",
     "description": "用線程連結團隊成員，交接任務，自動回收。全新的團隊協作方式。",
     "keywords": "任務管理, 團隊協作, 專案管理, 任務委派, 工作流自動化"
+  },
+  "taskSearch": {
+    "placeholder": "搜尋任務... (#群組篩選)",
+    "noResults": "未找到任務",
+    "allTasks": "所有任務",
+    "groups": "群組",
+    "inGroup": "#{group} 中"
   }
 }

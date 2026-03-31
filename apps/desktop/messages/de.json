@@ -994,5 +994,12 @@
     "title": "ito - Thread-basierte Aufgabenzusammenarbeit",
     "description": "Verbinden Sie Teammitglieder mit Threads, übergeben Sie Aufgaben und erhalten Sie sie automatisch zurück.",
     "keywords": "Aufgabenverwaltung, Teamzusammenarbeit, Projektmanagement, Aufgabendelegation, Workflow-Automatisierung"
+  },
+  "taskSearch": {
+    "placeholder": "Aufgaben suchen... (#Gruppe zum Filtern)",
+    "noResults": "Keine Aufgaben gefunden",
+    "allTasks": "Alle Aufgaben",
+    "groups": "Gruppen",
+    "inGroup": "in #{group}"
   }
 }

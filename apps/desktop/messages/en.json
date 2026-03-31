@@ -994,5 +994,12 @@
     "title": "ito - Thread-based Task Collaboration",
     "description": "Connect teammates with threads, hand off tasks, and automatically get them back. A new way to manage teamwork.",
     "keywords": "task management, team collaboration, thread-based, project management, task delegation, workflow automation"
+  },
+  "taskSearch": {
+    "placeholder": "Search tasks... (#group to filter)",
+    "noResults": "No tasks found",
+    "allTasks": "All Tasks",
+    "groups": "Groups",
+    "inGroup": "in #{group}"
   }
 }

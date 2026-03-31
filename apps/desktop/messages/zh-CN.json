@@ -994,5 +994,12 @@
     "title": "ito - 基于线程的任务协作",
     "description": "用线程连接团队成员，交接任务，自动回收。全新的团队协作方式。",
     "keywords": "任务管理, 团队协作, 项目管理, 任务委派, 工作流自动化"
+  },
+  "taskSearch": {
+    "placeholder": "搜索任务... (#分组筛选)",
+    "noResults": "未找到任务",
+    "allTasks": "所有任务",
+    "groups": "分组",
+    "inGroup": "#{group} 中"
   }
 }
