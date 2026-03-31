@@ -218,7 +218,7 @@ export function TaskSearch() {
         {activeGroupFilter && !parsedGroupName && (
           <button
             onClick={handleRemoveGroupFilter}
-            className="ml-1 mt-1 flex shrink-0 items-center gap-1 self-center rounded-md bg-accent px-2 py-1 text-xs text-foreground hover:bg-accent/80"
+            className="ml-1 mt-1 inline-flex shrink-0 items-center gap-1 self-center rounded-md bg-accent px-2 py-1 text-xs leading-none text-foreground hover:bg-accent/80"
           >
             <Hash className="h-3 w-3" />
             {activeGroupFilter.name}
