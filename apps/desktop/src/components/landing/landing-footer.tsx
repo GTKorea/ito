@@ -20,24 +20,24 @@ export function LandingFooter() {
         </div>
 
         {/* Links */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-2">
           <a
             href="https://github.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             GitHub
           </a>
           <Link
             href="/privacy"
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             {t('footer.privacy')}
           </Link>
           <Link
             href="/terms-of-service"
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             {t('footer.terms')}
           </Link>

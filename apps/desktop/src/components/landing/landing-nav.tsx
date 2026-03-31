@@ -57,19 +57,19 @@ export function LandingNav() {
         <div className="hidden items-center gap-8 md:flex">
           <button
             onClick={() => scrollTo('features')}
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             {t('nav.features')}
           </button>
           <button
             onClick={() => scrollTo('integrations')}
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             {t('nav.integrations')}
           </button>
           <button
             onClick={() => scrollTo('pricing')}
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             {t('nav.pricing')}
           </button>
