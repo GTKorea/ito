@@ -661,7 +661,10 @@
       "CHAT_MESSAGE": "Mensaje de chat",
       "VOTE_COMPLETE": "Votación completada",
       "THREAD_PULLED": "Hilo tirado",
-      "TASK_REMINDER": "Recordatorio de tarea"
+      "TASK_REMINDER": "Recordatorio de tarea",
+      "MEETING_INVITED": "Meeting Invited",
+      "MEETING_CONFIRMED": "Meeting Confirmed",
+      "MEETING_RESCHEDULED": "Meeting Rescheduled"
     }
   },
   "help": {

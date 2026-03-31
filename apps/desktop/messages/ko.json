@@ -661,7 +661,10 @@
       "CHAT_MESSAGE": "채팅 메시지",
       "VOTE_COMPLETE": "투표 완료",
       "THREAD_PULLED": "실 당기기",
-      "TASK_REMINDER": "태스크 리마인더"
+      "TASK_REMINDER": "태스크 리마인더",
+      "MEETING_INVITED": "Meeting Invited",
+      "MEETING_CONFIRMED": "Meeting Confirmed",
+      "MEETING_RESCHEDULED": "Meeting Rescheduled"
     }
   },
   "help": {

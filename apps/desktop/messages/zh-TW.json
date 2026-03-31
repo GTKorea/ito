@@ -661,7 +661,10 @@
       "CHAT_MESSAGE": "聊天訊息",
       "VOTE_COMPLETE": "投票完成",
       "THREAD_PULLED": "拉線提醒",
-      "TASK_REMINDER": "任務提醒"
+      "TASK_REMINDER": "任務提醒",
+      "MEETING_INVITED": "Meeting Invited",
+      "MEETING_CONFIRMED": "Meeting Confirmed",
+      "MEETING_RESCHEDULED": "Meeting Rescheduled"
     }
   },
   "help": {

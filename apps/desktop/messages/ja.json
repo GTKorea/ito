@@ -661,7 +661,10 @@
       "CHAT_MESSAGE": "チャットメッセージ",
       "VOTE_COMPLETE": "投票完了",
       "THREAD_PULLED": "糸を引く",
-      "TASK_REMINDER": "タスクリマインダー"
+      "TASK_REMINDER": "タスクリマインダー",
+      "MEETING_INVITED": "Meeting Invited",
+      "MEETING_CONFIRMED": "Meeting Confirmed",
+      "MEETING_RESCHEDULED": "Meeting Rescheduled"
     }
   },
   "help": {
