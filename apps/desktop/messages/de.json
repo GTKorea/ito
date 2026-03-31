@@ -1000,6 +1000,7 @@
     "noResults": "Keine Aufgaben gefunden",
     "allTasks": "Alle Aufgaben",
     "groups": "Gruppen",
-    "inGroup": "in #{group}"
+    "inGroup": "in #{group}",
+    "searchInGroup": "In dieser Gruppe suchen..."
   }
 }

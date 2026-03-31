@@ -1000,6 +1000,7 @@
     "noResults": "태스크를 찾을 수 없습니다",
     "allTasks": "전체 태스크",
     "groups": "그룹",
-    "inGroup": "#{group} 내"
+    "inGroup": "#{group} 내",
+    "searchInGroup": "이 그룹에서 검색..."
   }
 }

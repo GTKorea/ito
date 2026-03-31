@@ -1000,6 +1000,7 @@
     "noResults": "No tasks found",
     "allTasks": "All Tasks",
     "groups": "Groups",
-    "inGroup": "in #{group}"
+    "inGroup": "in #{group}",
+    "searchInGroup": "Search in this group..."
   }
 }

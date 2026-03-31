@@ -1000,6 +1000,7 @@
     "noResults": "未找到任务",
     "allTasks": "所有任务",
     "groups": "分组",
-    "inGroup": "#{group} 中"
+    "inGroup": "#{group} 中",
+    "searchInGroup": "在此分组中搜索..."
   }
 }

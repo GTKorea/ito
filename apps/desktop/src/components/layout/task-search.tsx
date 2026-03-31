@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import {
@@ -11,11 +11,20 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import { Hash, CheckSquare, Circle, Loader2, AlertTriangle, Clock } from 'lucide-react';
-import { useTaskStore, type Task } from '@/stores/task-store';
+import { Hash, CheckSquare, Circle, Loader2, AlertTriangle, X } from 'lucide-react';
 import { useTaskGroupStore } from '@/stores/task-group-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
+import { api } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
+
+interface SearchTask {
+  id: string;
+  title: string;
+  status: string;
+  priority: string;
+  taskGroupId?: string;
+  taskGroup?: { id: string; name: string } | null;
+}
 
 const STATUS_ICONS: Record<string, React.ReactNode> = {
   OPEN: <Circle className="h-3.5 w-3.5 text-muted-foreground" />,
@@ -34,11 +43,14 @@ const PRIORITY_COLORS: Record<string, string> = {
 export function TaskSearch() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [activeGroupFilter, setActiveGroupFilter] = useState<{ id: string; name: string } | null>(null);
+  const [allTasks, setAllTasks] = useState<SearchTask[]>([]);
+  const [isLoadingTasks, setIsLoadingTasks] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const t = useTranslations('taskSearch');
+  const fetchedRef = useRef(false);
 
-  const { actionRequired, waiting, completed, meetings } = useTaskStore();
   const { groups } = useTaskGroupStore();
   const { currentWorkspace } = useWorkspaceStore();
 
@@ -54,81 +66,117 @@ export function TaskSearch() {
     return () => document.removeEventListener('keydown', down);
   }, []);
 
-  // 닫힐 때 쿼리 초기화
+  // 열릴 때: 전체 태스크 로드 + 현재 그룹 기본 필터
+  useEffect(() => {
+    if (!open) return;
+
+    // 현재 그룹 기본 필터 적용
+    const currentGroupId = searchParams.get('group');
+    if (currentGroupId) {
+      const group = groups.find((g) => g.id === currentGroupId);
+      if (group) {
+        setActiveGroupFilter({ id: group.id, name: group.name });
+      }
+    } else {
+      setActiveGroupFilter(null);
+    }
+
+    // 전체 태스크 로드 (그룹 무관)
+    if (!currentWorkspace?.id || fetchedRef.current) return;
+    setIsLoadingTasks(true);
+    api
+      .get(`/workspaces/${currentWorkspace.id}/tasks/categorized`)
+      .then(({ data }) => {
+        const tasks: SearchTask[] = [
+          ...(data.actionRequired || []),
+          ...(data.waiting || []),
+          ...(data.completed || []),
+          ...(data.meetings || []),
+        ];
+        // 중복 제거
+        const map = new Map<string, SearchTask>();
+        for (const task of tasks) {
+          map.set(task.id, task);
+        }
+        setAllTasks(Array.from(map.values()));
+        fetchedRef.current = true;
+      })
+      .catch(() => {})
+      .finally(() => setIsLoadingTasks(false));
+  }, [open, currentWorkspace?.id, searchParams, groups]);
+
+  // 닫힐 때 초기화
   const handleOpenChange = useCallback((value: boolean) => {
     setOpen(value);
-    if (!value) setQuery('');
+    if (!value) {
+      setQuery('');
+      setActiveGroupFilter(null);
+      fetchedRef.current = false;
+    }
   }, []);
 
-  // 모든 태스크 합치기
-  const allTasks = useMemo(() => {
-    const taskMap = new Map<string, Task>();
-    for (const task of [...actionRequired, ...waiting, ...completed, ...meetings]) {
-      taskMap.set(task.id, task);
-    }
-    return Array.from(taskMap.values());
-  }, [actionRequired, waiting, completed, meetings]);
-
-  // 쿼리 파싱: #그룹명 검색어
-  const { groupFilter, searchTerm } = useMemo(() => {
+  // 쿼리에서 #그룹 파싱
+  const { parsedGroupName, searchTerm } = useMemo(() => {
     const trimmed = query.trim();
     if (trimmed.startsWith('#')) {
       const spaceIdx = trimmed.indexOf(' ');
       if (spaceIdx > 0) {
         return {
-          groupFilter: trimmed.slice(1, spaceIdx),
+          parsedGroupName: trimmed.slice(1, spaceIdx),
           searchTerm: trimmed.slice(spaceIdx + 1).trim(),
         };
       }
-      return { groupFilter: trimmed.slice(1), searchTerm: '' };
+      return { parsedGroupName: trimmed.slice(1), searchTerm: '' };
     }
-    return { groupFilter: null, searchTerm: trimmed };
+    return { parsedGroupName: null, searchTerm: trimmed };
   }, [query]);
 
   // 그룹 자동완성 (#만 입력했을 때)
   const showGroupSuggestions = query.startsWith('#') && !query.includes(' ');
   const matchingGroups = useMemo(() => {
     if (!showGroupSuggestions) return [];
-    const partial = (groupFilter || '').toLowerCase();
+    const partial = (parsedGroupName || '').toLowerCase();
     return groups.filter((g) => g.name.toLowerCase().includes(partial));
-  }, [showGroupSuggestions, groupFilter, groups]);
+  }, [showGroupSuggestions, parsedGroupName, groups]);
+
+  // 실제 적용될 그룹 필터 (activeGroupFilter 또는 쿼리의 #그룹)
+  const effectiveGroupFilter = useMemo(() => {
+    if (parsedGroupName) {
+      const matched = groups.find(
+        (g) => g.name.toLowerCase() === parsedGroupName.toLowerCase(),
+      );
+      return matched ? { id: matched.id, name: matched.name } : null;
+    }
+    return activeGroupFilter;
+  }, [parsedGroupName, activeGroupFilter, groups]);
 
   // 태스크 필터링
   const filteredTasks = useMemo(() => {
-    if (!query.trim()) return allTasks.slice(0, 20);
-
     let tasks = allTasks;
 
     // 그룹 필터
-    if (groupFilter) {
-      const matchedGroup = groups.find(
-        (g) => g.name.toLowerCase() === groupFilter.toLowerCase(),
-      );
-      if (matchedGroup) {
-        tasks = tasks.filter((t) => t.taskGroupId === matchedGroup.id);
-      } else {
-        tasks = tasks.filter((t) =>
-          t.taskGroup?.name?.toLowerCase().includes(groupFilter.toLowerCase()),
-        );
-      }
+    if (effectiveGroupFilter) {
+      tasks = tasks.filter((t) => t.taskGroupId === effectiveGroupFilter.id);
     }
 
     // 텍스트 검색
-    if (searchTerm) {
-      const lower = searchTerm.toLowerCase();
+    const term = parsedGroupName ? searchTerm : query.trim();
+    if (term) {
+      const lower = term.toLowerCase();
       tasks = tasks.filter((t) => t.title.toLowerCase().includes(lower));
     }
 
     return tasks.slice(0, 30);
-  }, [allTasks, query, groupFilter, searchTerm, groups]);
+  }, [allTasks, query, effectiveGroupFilter, parsedGroupName, searchTerm]);
 
   // 태스크 선택
   const handleSelect = useCallback(
-    (task: Task) => {
+    (task: SearchTask) => {
       setOpen(false);
       setQuery('');
+      setActiveGroupFilter(null);
+      fetchedRef.current = false;
 
-      // 그룹이 다르면 그룹 전환
       const currentGroup = searchParams.get('group');
       if (task.taskGroupId && task.taskGroupId !== currentGroup) {
         router.push(`/workspace?group=${task.taskGroupId}&task=${task.id}`);
@@ -140,77 +188,119 @@ export function TaskSearch() {
   );
 
   // 그룹 선택 (자동완성에서)
-  const handleGroupSelect = useCallback((groupName: string) => {
-    setQuery(`#${groupName} `);
+  const handleGroupSelect = useCallback((group: { id: string; name: string }) => {
+    setActiveGroupFilter(group);
+    setQuery('');
   }, []);
+
+  // 그룹 필터 제거
+  const handleRemoveGroupFilter = useCallback(() => {
+    setActiveGroupFilter(null);
+    setQuery('');
+  }, []);
+
+  // Backspace로 그룹 필터 제거
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Backspace' && query === '' && activeGroupFilter) {
+        e.preventDefault();
+        handleRemoveGroupFilter();
+      }
+    },
+    [query, activeGroupFilter, handleRemoveGroupFilter],
+  );
+
+  const filterLabel = effectiveGroupFilter?.name;
 
   return (
     <CommandDialog open={open} onOpenChange={handleOpenChange}>
-      <CommandInput
-        placeholder={t('placeholder')}
-        value={query}
-        onValueChange={setQuery}
-      />
-      <CommandList>
-        <CommandEmpty>{t('noResults')}</CommandEmpty>
-
-        {/* 그룹 자동완성 */}
-        {showGroupSuggestions && matchingGroups.length > 0 && (
-          <CommandGroup heading={t('groups')}>
-            {matchingGroups.map((group) => (
-              <CommandItem
-                key={group.id}
-                value={`group-${group.name}`}
-                onSelect={() => handleGroupSelect(group.name)}
-              >
-                <Hash className="mr-2 h-4 w-4 text-muted-foreground" />
-                <span>{group.name}</span>
-                <span className="ml-auto text-xs text-muted-foreground">
-                  {group._count.tasks}
-                </span>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        )}
-
-        {/* 태스크 검색 결과 */}
-        {!showGroupSuggestions && (
-          <CommandGroup
-            heading={
-              groupFilter
-                ? `${t('inGroup', { group: groupFilter })}`
-                : t('allTasks')
-            }
+      <div className="flex items-center border-b border-border px-3">
+        {activeGroupFilter && !parsedGroupName && (
+          <button
+            onClick={handleRemoveGroupFilter}
+            className="mr-1 flex shrink-0 items-center gap-1 rounded-md bg-accent px-2 py-1 text-xs text-foreground hover:bg-accent/80"
           >
-            {filteredTasks.map((task) => (
-              <CommandItem
-                key={task.id}
-                value={`task-${task.title}-${task.id}`}
-                onSelect={() => handleSelect(task)}
-              >
-                <div className="mr-2 shrink-0">
-                  {STATUS_ICONS[task.status] || STATUS_ICONS.OPEN}
-                </div>
-                <span className="truncate">{task.title}</span>
-                {task.taskGroup && (
-                  <span className="ml-auto flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
-                    <Hash className="h-3 w-3" />
-                    {task.taskGroup.name}
-                  </span>
-                )}
-                {!task.taskGroup && task.priority && (
-                  <span
-                    className={cn(
-                      'ml-auto text-xs',
-                      PRIORITY_COLORS[task.priority] || 'text-muted-foreground',
-                    )}
+            <Hash className="h-3 w-3" />
+            {activeGroupFilter.name}
+            <X className="h-3 w-3 text-muted-foreground" />
+          </button>
+        )}
+        <CommandInput
+          placeholder={activeGroupFilter ? t('searchInGroup') : t('placeholder')}
+          value={query}
+          onValueChange={setQuery}
+          onKeyDown={handleKeyDown}
+          className="border-none focus:ring-0"
+        />
+      </div>
+      <CommandList>
+        {isLoadingTasks ? (
+          <div className="flex items-center justify-center py-6">
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <>
+            <CommandEmpty>{t('noResults')}</CommandEmpty>
+
+            {/* 그룹 자동완성 */}
+            {showGroupSuggestions && matchingGroups.length > 0 && (
+              <CommandGroup heading={t('groups')}>
+                {matchingGroups.map((group) => (
+                  <CommandItem
+                    key={group.id}
+                    value={`group-${group.name}`}
+                    onSelect={() => handleGroupSelect({ id: group.id, name: group.name })}
                   >
-                    {task.priority === 'URGENT' ? '!!!' : task.priority === 'HIGH' ? '!!' : ''}
-                  </span>
-                )}
-              </CommandItem>
-            ))}
-          </CommandGroup>
+                    <Hash className="mr-2 h-4 w-4 text-muted-foreground" />
+                    <span>{group.name}</span>
+                    <span className="ml-auto text-xs text-muted-foreground">
+                      {group._count.tasks}
+                    </span>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+
+            {/* 태스크 검색 결과 */}
+            {!showGroupSuggestions && (
+              <CommandGroup
+                heading={
+                  filterLabel
+                    ? t('inGroup', { group: filterLabel })
+                    : t('allTasks')
+                }
+              >
+                {filteredTasks.map((task) => (
+                  <CommandItem
+                    key={task.id}
+                    value={`task-${task.title}-${task.id}`}
+                    onSelect={() => handleSelect(task)}
+                  >
+                    <div className="mr-2 shrink-0">
+                      {STATUS_ICONS[task.status] || STATUS_ICONS.OPEN}
+                    </div>
+                    <span className="truncate">{task.title}</span>
+                    {task.taskGroup && (
+                      <span className="ml-auto flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
+                        <Hash className="h-3 w-3" />
+                        {task.taskGroup.name}
+                      </span>
+                    )}
+                    {!task.taskGroup && task.priority && (
+                      <span
+                        className={cn(
+                          'ml-auto text-xs',
+                          PRIORITY_COLORS[task.priority] || 'text-muted-foreground',
+                        )}
+                      >
+                        {task.priority === 'URGENT' ? '!!!' : task.priority === 'HIGH' ? '!!' : ''}
+                      </span>
+                    )}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+          </>
         )}
       </CommandList>
     </CommandDialog>

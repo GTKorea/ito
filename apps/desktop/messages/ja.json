@@ -1000,6 +1000,7 @@
     "noResults": "タスクが見つかりません",
     "allTasks": "全タスク",
     "groups": "グループ",
-    "inGroup": "#{group} 内"
+    "inGroup": "#{group} 内",
+    "searchInGroup": "このグループ内を検索..."
   }
 }

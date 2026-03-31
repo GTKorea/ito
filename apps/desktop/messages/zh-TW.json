@@ -1000,6 +1000,7 @@
     "noResults": "未找到任務",
     "allTasks": "所有任務",
     "groups": "群組",
-    "inGroup": "#{group} 中"
+    "inGroup": "#{group} 中",
+    "searchInGroup": "在此群組中搜尋..."
   }
 }
