@@ -7,6 +7,11 @@ export function useScrollAnimation(options?: IntersectionObserverInit) {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setIsVisible(true);
+      return;
+    }
+
     const element = ref.current;
     if (!element) return;
 
