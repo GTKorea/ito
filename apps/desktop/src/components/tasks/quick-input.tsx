@@ -931,7 +931,7 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
                     'flex h-7 w-7 lg:h-8 lg:w-8 items-center justify-center rounded-md transition-colors',
                     'cursor-pointer',
                     dueDate
-                      ? 'text-blue-400'
+                      ? 'text-blue-400 hover:bg-accent/50'
                       : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
                   )}
                 >
