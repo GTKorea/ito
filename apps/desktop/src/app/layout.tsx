@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Noto_Sans_JP, Noto_Sans_SC, Noto_Sans_TC } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LocaleProvider } from "@/components/locale-provider";
 import { PostHogProvider } from "@/components/posthog-provider";
@@ -7,10 +7,27 @@ import { TauriDeepLinkListener } from "@/components/tauri-deep-link-listener";
 import { Toaster } from "sonner";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-sans",
+const notoSansJP = Noto_Sans_JP({
+  variable: "--font-noto-jp",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
+
+const notoSansSC = Noto_Sans_SC({
+  variable: "--font-noto-sc",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+const notoSansTC = Noto_Sans_TC({
+  variable: "--font-noto-tc",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://itothread.com';
 
@@ -156,7 +173,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
       </head>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${notoSansJP.variable} ${notoSansSC.variable} ${notoSansTC.variable} font-sans antialiased`}>
         <TauriDeepLinkListener />
         <PostHogProvider>
           <LocaleProvider>
