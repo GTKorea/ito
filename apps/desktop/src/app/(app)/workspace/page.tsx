@@ -289,11 +289,12 @@ export default function WorkspacePage() {
     }
   }, [currentWorkspace, checkAndStartWizard]);
 
-  // Auto-select task from query param (e.g. from notification click)
+  // Auto-select task from query param (e.g. from notification click or search)
   useEffect(() => {
     const taskId = searchParams.get('task');
     if (taskId) {
       setSelectedTaskId(taskId);
+      setDrawerVisible(true);
     }
   }, [searchParams]);
 
