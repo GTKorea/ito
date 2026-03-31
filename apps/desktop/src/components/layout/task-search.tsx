@@ -225,12 +225,15 @@ export function TaskSearch() {
             <X className="h-3 w-3 text-muted-foreground" />
           </button>
         )}
-        <CommandInput
-          placeholder={activeGroupFilter ? t('searchInGroup') : t('placeholder')}
-          value={query}
-          onValueChange={setQuery}
-          onKeyDown={handleKeyDown}
-        />
+        <div className="flex-1">
+          <CommandInput
+            placeholder={activeGroupFilter ? t('searchInGroup') : t('placeholder')}
+            value={query}
+            onValueChange={setQuery}
+            onKeyDown={handleKeyDown}
+            autoFocus
+          />
+        </div>
       </div>
       <CommandList>
         {isLoadingTasks ? (
