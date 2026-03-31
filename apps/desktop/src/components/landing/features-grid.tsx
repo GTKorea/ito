@@ -33,16 +33,16 @@ export function FeaturesGrid() {
           </p>
         </div>
 
-        <div className="mx-auto grid max-w-4xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mx-auto grid max-w-4xl gap-px overflow-hidden rounded-2xl border border-border/50 bg-border/50 sm:grid-cols-2 lg:grid-cols-3">
           {FEATURES.map(({ icon: Icon, key }) => (
             <div
               key={key}
-              className="group rounded-xl border border-border/50 bg-card/30 p-6 transition-colors duration-300 hover:border-indigo-500/20 hover:bg-card/50"
+              className="group bg-background p-6 transition-colors duration-200 hover:bg-card/80"
             >
-              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400 transition-colors group-hover:bg-indigo-500/15">
-                <Icon size={20} />
+              <div className="mb-3 text-muted-foreground transition-colors group-hover:text-foreground">
+                <Icon size={18} strokeWidth={1.5} />
               </div>
-              <h3 className="mb-1.5 text-sm font-semibold text-foreground">
+              <h3 className="mb-1.5 text-base font-semibold text-foreground">
                 {t(`features.${key}.title`)}
               </h3>
               <p className="text-sm leading-relaxed text-muted-foreground">
