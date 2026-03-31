@@ -385,8 +385,13 @@ export default function ThreadsPage() {
           ) : list.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
               <Link2 className="h-8 w-8 mb-3 opacity-40" />
-              <p className="text-sm">
+              <p className="text-sm font-medium text-foreground/70">
                 {view === 'incoming' ? t('noIncoming') : t('noOutgoing')}
+              </p>
+              <p className="mt-1 text-xs">
+                {view === 'incoming'
+                  ? t('noIncomingHint', { defaultMessage: 'Threads will appear here when someone connects a task to you' })
+                  : t('noOutgoingHint', { defaultMessage: 'Connect a task to someone to start a thread' })}
               </p>
             </div>
           ) : (
