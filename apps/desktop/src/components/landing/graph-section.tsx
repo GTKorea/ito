@@ -4,25 +4,25 @@ import { useTranslations } from 'next-intl';
 import { useScrollAnimation } from './use-scroll-animation';
 
 const GRAPH_NODES = [
-  { x: 120, y: 80, label: 'You', size: 24, color: '#e5e5e5' },
-  { x: 300, y: 60, label: 'Sarah', size: 20, color: '#a3a3a3' },
-  { x: 480, y: 100, label: 'Mike', size: 18, color: '#737373' },
-  { x: 220, y: 200, label: 'Alex', size: 20, color: '#a3a3a3' },
-  { x: 400, y: 220, label: 'Jina', size: 16, color: '#737373' },
-  { x: 560, y: 200, label: 'Tom', size: 14, color: '#737373' },
-  { x: 140, y: 300, label: 'Kai', size: 16, color: '#a3a3a3' },
-  { x: 340, y: 320, label: 'Emi', size: 14, color: '#737373' },
+  { x: 120, y: 80, label: 'You', size: 24, color: '#6366f1' },
+  { x: 300, y: 60, label: 'Sarah', size: 20, color: '#8b5cf6' },
+  { x: 480, y: 100, label: 'Mike', size: 18, color: '#a78bfa' },
+  { x: 220, y: 200, label: 'Alex', size: 20, color: '#818cf8' },
+  { x: 400, y: 220, label: 'Jina', size: 16, color: '#c084fc' },
+  { x: 560, y: 200, label: 'Tom', size: 14, color: '#a78bfa' },
+  { x: 140, y: 300, label: 'Kai', size: 16, color: '#818cf8' },
+  { x: 340, y: 320, label: 'Emi', size: 14, color: '#c084fc' },
 ];
 
 const GRAPH_EDGES: [number, number, string][] = [
-  [0, 1, '#525252'],
-  [1, 2, '#525252'],
-  [0, 3, '#525252'],
-  [3, 4, '#404040'],
-  [2, 5, '#404040'],
-  [3, 6, '#404040'],
-  [4, 7, '#404040'],
-  [1, 4, '#404040'],
+  [0, 1, '#6366f1'],
+  [1, 2, '#8b5cf6'],
+  [0, 3, '#6366f1'],
+  [3, 4, '#818cf8'],
+  [2, 5, '#a78bfa'],
+  [3, 6, '#818cf8'],
+  [4, 7, '#c084fc'],
+  [1, 4, '#8b5cf6'],
 ];
 
 export function GraphSection() {
@@ -30,7 +30,7 @@ export function GraphSection() {
   const { ref, isVisible } = useScrollAnimation();
 
   return (
-    <section ref={ref} className="relative py-16 sm:py-24">
+    <section ref={ref} className="relative py-24 sm:py-32">
       <div
         className={`mx-auto max-w-6xl px-6 transition-all duration-700 ${
           isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'

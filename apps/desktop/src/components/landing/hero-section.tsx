@@ -36,7 +36,7 @@ export function HeroSection() {
           className="absolute left-1/2 top-1/3 h-[600px] w-[800px] -translate-x-1/2 -translate-y-1/2"
           style={{
             background:
-              'radial-gradient(ellipse, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 40%, transparent 70%)',
+              'radial-gradient(ellipse, rgba(99,102,241,0.08) 0%, rgba(139,92,246,0.04) 40%, transparent 70%)',
           }}
         />
       </div>

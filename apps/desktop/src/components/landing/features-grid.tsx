@@ -18,7 +18,7 @@ export function FeaturesGrid() {
   const { ref, isVisible } = useScrollAnimation();
 
   return (
-    <section id="features" ref={ref} className="relative py-16 sm:py-24">
+    <section id="features" ref={ref} className="relative py-24 sm:py-32">
       <div
         className={`mx-auto max-w-6xl px-6 transition-all duration-700 ${
           isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
