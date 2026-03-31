@@ -51,12 +51,12 @@ function PlanCard({
     <div
       className={`relative flex flex-col rounded-2xl border p-6 ${
         isPopular
-          ? 'border-indigo-500/50 bg-indigo-500/5'
+          ? 'border-foreground/20 bg-card/50'
           : 'border-border/50 bg-card/30'
       }`}
     >
       {isPopular && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-indigo-500 px-3 py-0.5 text-xs font-medium text-white">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-foreground px-3 py-0.5 text-xs font-medium text-background">
           {t('pricing.popular')}
         </div>
       )}
@@ -133,7 +133,7 @@ function PlanCard({
           href="/register"
           className={`inline-flex h-10 items-center justify-center rounded-xl px-6 text-sm font-medium transition-opacity hover:opacity-90 ${
             isPopular
-              ? 'bg-indigo-500 text-white'
+              ? 'bg-foreground text-background'
               : 'bg-foreground text-background'
           }`}
         >
@@ -167,9 +167,9 @@ export function PricingSection() {
 
         {/* Early Access Banner */}
         <div className="mb-12 flex justify-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-2 text-sm">
-            <Sparkles size={16} className="text-indigo-400" />
-            <span className="text-indigo-300">{t('pricing.earlyAccess')}</span>
+          <div className="inline-flex items-center gap-2 rounded-full border border-foreground/20 bg-foreground/5 px-4 py-2 text-sm">
+            <Sparkles size={16} className="text-foreground/60" />
+            <span className="text-foreground/70">{t('pricing.earlyAccess')}</span>
           </div>
         </div>
 

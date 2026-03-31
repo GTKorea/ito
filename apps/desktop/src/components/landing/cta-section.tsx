@@ -23,7 +23,7 @@ export function CTASection() {
         className="pointer-events-none absolute left-1/2 top-1/2 h-[500px] w-[600px] -translate-x-1/2 -translate-y-1/2"
         style={{
           background:
-            'radial-gradient(ellipse, rgba(99,102,241,0.06) 0%, transparent 60%)',
+            'radial-gradient(ellipse, rgba(255,255,255,0.03) 0%, transparent 60%)',
         }}
       />
 
