@@ -945,7 +945,7 @@ export function QuickInput({ taskGroupId }: QuickInputProps) {
                     setDueDate(e.target.value || null);
                     inputRef.current?.focus();
                   }}
-                  className="absolute inset-0 opacity-0 w-7 h-7 lg:w-8 lg:h-8 cursor-pointer"
+                  className="absolute inset-0 opacity-0 w-7 h-7 lg:w-8 lg:h-8 pointer-events-none"
                   tabIndex={-1}
                 />
               </div>
