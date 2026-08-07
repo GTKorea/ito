@@ -1,0 +1,35 @@
+name: Deploy to on-prem
+
+# 사무실 맥(self-hosted 러너)에서 이미지를 빌드하고 krow-infra compose 로 재기동한다.
+# 기존 EC2 배포(deploy-api.yml)는 온프레미스 이관으로 비활성화됨.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-onprem-ito
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, onprem]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -f apps/api/Dockerfile -t gtkorea/ito-api:local .
+
+      - name: Restart via compose
+        run: |
+          cd "$HOME/apps/krow-infra"
+          docker-compose --profile apps up -d --force-recreate ito-api
+
+      - name: Health check
+        run: |
+          for i in $(seq 1 12); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3011/ || true)
+            if [ "$code" = "404" ]; then echo "정상 기동 (HTTP $code)"; exit 0; fi
+            sleep 3
+          done
+          echo "헬스체크 실패"; docker logs --tail 30 krow-infra-ito-api; exit 1
